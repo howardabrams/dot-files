@@ -1,0 +1,840 @@
+#+TITLE:  Emacs Configuration File
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+
+* Introduction
+
+  This file is really a /script/ that generates my Emacs configuration
+  file. For all of this to work, you need a modern version of Emacs
+  (like [[http://aquamacs.org/][Aquamacs]]).
+
+#+BEGIN_HTML
+  <p>
+    You can download the <a href="dot-emacs.org">original org-mode
+    file</a> or view the <a href="dot-emacs.el">tangled end results</a>.
+  </p>
+#+END_HTML
+
+  We begin this initialization script with a warning not to edit the
+  generated file:
+
+#+NAME: Note
+#+BEGIN_SRC elisp :comments off
+  ;;; ------------------------------------------
+  ;;; Do not edit the generated file, as it has
+  ;;; been generated, as a tangled file, by the
+  ;;; fandifluous org-mode.
+  ;;;
+  ;;; Source: ~/Dropbox/emacs.d/dotemacs.org
+  ;;; ------------------------------------------
+#+END_SRC
+
+** Installing Dependencies
+
+   Emacs already comes bundled to edit most files, like Java and Ruby.
+   However, some of the new stuff that I use isn't bundled, yet.
+
+   To begin installing these new packages, you need [[http://tromey.com/elpa/install.html][ELPA]] (Emacs Package
+   Manager).  Simply hit =C-c C-c= in the buffer below to get that
+   installed (if that fails, then you need to go to the last paren and
+   hit =C-x C-e=).
+
+#+BEGIN_SRC emacs-lisp :tangle no :results silent
+  (let ((buffer (url-retrieve-synchronously
+                 "http://tromey.com/elpa/package-install.el")))
+    (save-excursion
+      (message "Completed download of %s" buffer)
+      (set-buffer buffer)
+      (goto-char (point-min))
+      (re-search-forward "^$" nil 'move)
+      (eval-region (point) (point-max))
+      (kill-buffer (current-buffer))))
+#+END_SRC
+
+   This code writes some magic to the =~/.emacs= file, so make sure
+   you get rid of it at some point.
+
+   What I really like is the extra packages contained in the more
+   up-to-date [[http://marmalade-repo.org/][Marmalade repository]], but this seems to like a
+   /different/ version of =package.el=, so execute this bit of magic
+   to re-download the correct version.
+
+#+BEGIN_SRC sh :tangle no :results silent
+  curl -o ~/.emacs.d/elpa/package.el "http://repo.or.cz/w/emacs.git/blob_plain/1a0a666f941c99882093d7bd08ced15033bc3f0c:/lisp/emacs-lisp/package.el"
+  # wget "http://repo.or.cz/w/emacs.git/blob_plain/1a0a666f941c99882093d7bd08ced15033bc3f0c:/lisp/emacs-lisp/package.el" -O ~/.emacs.d/elpa/package.el
+#+END_SRC
+
+   Run the following (with a =C-x C-e= on the last paren) to install
+   and start up the package manager:
+
+#+BEGIN_SRC emacs-lisp :tangle no :results silent
+  (let ()
+    (load "~/.emacs.d/elpa/package.el")
+    (require 'package)
+    (add-to-list 'package-archives
+                 '("marmalade" . "http://marmalade-repo.org/packages/") t)
+    (package-initialize)
+    (package-refresh-contents)
+    (package-list-packages))
+#+END_SRC
+
+   From the list that shows up, install the following packages:
+
+   - [ ] =ac-nrepl=
+   - [ ] =auto-complete=
+   - [ ] =clojure-mode= (and probably others)
+   - [ ] =clojurescript-mode= (optional)
+   - [ ] =coffee-mode= (optional)
+   - [ ] =color-theme=
+   - [ ] =elein= (Running leiningen commands, see [[https://github.com/remvee/elein][this project]])
+   - [ ] =flymake=
+   - [ ] =flymake-jshint=
+   - [ ] =flymake-jslint=
+   - [ ] =git-auto-commit-mode=
+   - [ ] =git-commit-mode=  (Not =git-commit=)
+   - [ ] =gitconfig-mode=
+   - [ ] =gitignore-mode=
+   - [ ] =graphviz-dot-mode=
+   - [ ] =handlebars=mode=
+   - [ ] =htmlize= (need version 1.34 or greater to get source code colorization)
+   - [ ] =js2-mode= (better editor for JavaScript)
+   - [ ] =json-mode=
+   - [ ] =markdown-mode=
+   - [ ] =marmalade=
+   - [ ] =mustache-mode=
+   - [ ] =nrepl= (probably installed by ac-nrepl)
+   - [ ] =org= (We should probably do this by hand, see below)
+   - [ ] =org-mime=
+   - [ ] =org-presie=
+   - [ ] =paredit-mode=
+   - [ ] =plantuml-mode=
+   - [ ] =scala-mode=
+   - [ ] =yasnippet=
+   - [ ] =yasnippet-bundle=
+
+   *Note:* I haven't found any specific color themes to be very helpful to install.
+
+   Anything that you don't install above, may cause problems in the code below.
+   So, either install it, or comment out the equivalent code section (by adding
+   a =:tangle no= at the end of the first line of code).
+
+   The following sections discuss installation of libraries that are
+   not available via ELPA.
+
+*** PlantUML
+
+    The [[http://plantuml.sourceforge.net][PlantUML project]] allows you to draw UML diagrams with textual descriptions.
+    A sweet feature for literate programmers. Download [[http://plantuml.sourceforge.net/download.html][the Jar file]] and put it in
+    your =bin= directory:
+
+#+BEGIN_EXAMPLE
+  curl -o ~/bin/plantuml.jar http://sourceforge.net/projects/plantuml/files/plantuml.jar/download
+#+END_EXAMPLE
+
+*** Org-Mode Installation
+
+    The [[http://orgmode.org][org-mode]] program is so critical, that I want a version > 7.9.
+    Download a version and un-pack it in =~/.emacs.d= and create a
+    symlink to it called: =~/.emacs.d/org=
+
+    From this point, we expect this it to be in this spot.
+
+*** Ensime Installation
+
+    [[https://github.com/aemoncannon/ensime][Ensime]] is an enhanced mode for Scala. Complete instructions are
+    on the github page, but it amounts to 
+
+    - [[https://github.com/aemoncannon/ensime/downloads][Download a distribution]]
+    - Positioning: =cd ~/.emacs=
+    - Extracting: =tar xvf ~/Downloads/ensime_2.9.2-0.9.8.1.tar= (or equivalent)
+    - Symlinking: =ln -s ensime_2.9.2-0.9.8.1 ensime=
+
+    That should do 'er.
+
+**** Checking out the Ensime Source Code
+
+     You could check out the ensime source code and compiling a
+     version. As long as we have a =~/.emacs.d/ensime/elisp= that we
+     can load, we are golden...
+
+#+BEGIN_EXAMPLE
+  git clone https://github.com/aemoncannon/ensime.git
+  cd ~/.emacs.d/ensime
+  ln -s dist_2.9.2/elisp .
+#+END_EXAMPLE
+
+* General Settings
+
+** Variables
+
+   General settings about me that other packages can use. The biggest
+   problem is guessing my email address based on what computer I am using:
+
+#+BEGIN_SRC elisp
+  (if (equal "habrams" user-login-name)
+      (setq user-mail-address "habrams@gilt.com")
+    (setq user-mail-address "howard.abrams@gmail.com"))
+#+END_SRC
+
+*** Tabs vs Spaces
+
+   I have learned to distrust tabs in my source code, so let's make
+   sure that we only have spaces.
+
+#+BEGIN_SRC elisp
+  (setq-default indent-tabs-mode nil)
+  (setq tab-width 2)
+  (setq js-basic-indent 2)
+#+END_SRC
+
+   Why yes, it seems that the JavaScript mode has a special
+   indentation setting. Go below?
+
+** Extra Packages
+
+   Extra packages not available via the package manager go in my
+   personal stash at: =$HOME/.emacs.d=
+
+#+BEGIN_SRC elisp
+  (add-to-list 'load-path "~/.emacs.d/")
+#+END_SRC
+
+** Package Manager
+
+   Emacs has become like every other operating system, and now has a
+   [[http://tromey.com/elpa/][package manager]] with its own collection of repositories. Of
+   course, now, instead of trying to figure out and maintain
+   packages, we have to keep track of what packages live on what
+   repos. This is [[http://batsov.com/articles/2012/02/19/package-management-in-emacs-the-good-the-bad-and-the-ugly/][an improvement]].
+
+   We want to add the [[http://marmalade-repo.org/][Marmalade repository]].
+
+#+BEGIN_SRC elisp
+  (load "~/.emacs.d/elpa/package.el")
+  (require 'package)
+  (add-to-list 'package-archives
+               '("marmalade" . "http://marmalade-repo.org/packages/") t)
+#+END_SRC
+
+** Font Settings
+
+   I love syntax highlighting.
+
+#+BEGIN_SRC elisp
+  (global-font-lock-mode 1)
+#+END_SRC
+
+   Specify the default font as =Source Code Pro=, which should already
+   be [[http://blogs.adobe.com/typblography/2012/09/source-code-pro.html][downloaded]] and installed.
+
+#+BEGIN_SRC elisp
+  (set-default-font "Source Code Pro")
+  (set-face-attribute 'default nil :font "Source Code Pro")
+  (set-face-font 'default "Source Code Pro")
+#+END_SRC
+
+   While I do like the =Anonymous Pro= font (and usually have it download and
+   installed), I don't like it as much.
+
+#+BEGIN_SRC elisp :tangle no
+  (set-default-font "Anonymous Pro")
+  (set-face-attribute 'default nil :font "Anonymous Pro")
+  (set-face-font 'default "Anonymous Pro")
+#+END_SRC
+
+** Color Theme
+
+   We use the color theme project and followed [[http://www.nongnu.org/color-theme/][these instructions]].
+   We now can do =M-x color-theme-<TAB> RET=
+
+#+BEGIN_SRC elisp
+  (require 'color-theme)
+#+END_SRC
+
+   The color themes work quite well, except they don't know about the
+   org-mode source code blocks, so we need to set up a couple
+   functions that we can use to set them.
+
+#+BEGIN_SRC elisp
+  (defun org-src-color-blocks-light ()
+    "Colors the block headers and footers to make them stand out more for lighter themes"
+    (interactive)
+    (custom-set-faces
+     '(org-block-begin-line 
+      ((t (:underline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF"))))
+     '(org-block-background
+       ((t (:background "#FFFFEA"))))
+     '(org-block-end-line
+       ((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))))
+  
+    (set-face-foreground 'minibuffer "black")
+    (set-face-foreground 'minibuffer-prompt "red"))
+  
+  (defun org-src-color-blocks-dark ()
+    "Colors the block headers and footers to make them stand out more for dark themes"
+    (interactive)
+    (custom-set-faces
+     '(org-block-begin-line 
+       ((t (:foreground "#008ED1" :background "#002E41"))))
+     '(org-block-background
+       ((t (:background "#111111"))))
+     '(org-block-end-line
+       ((t (:foreground "#008ED1" :background "#002E41")))))
+  
+    (set-face-foreground 'minibuffer "white")
+    (set-face-foreground 'minibuffer-prompt "white"))
+#+END_SRC
+
+   My main reason for wanting to use the color theme project is to
+   switch between /black on white/ during the day, and /white on
+   black/ at night.
+
+#+BEGIN_SRC elisp
+  (defun color-theme-my-default ()
+    "Tries to set up a normal color scheme"
+    (interactive)
+    (org-src-color-blocks-light)
+    ;; Perhaps color-theme-standard
+    (color-theme-emacs-nw))
+  
+  ;; During the day, we use the "standard" theme:
+  (global-set-key (kbd "<f9> d") 'color-theme-my-default)
+  
+  ;; A good late-night scheme that isn't too harsh
+  (global-set-key (kbd "<f9> l") (lambda () (interactive) 
+                                  (color-theme-charcoal-black)
+                                  (org-src-color-blocks-dark)))
+  
+  ;; Programming late into the night
+  (global-set-key (kbd "<f9> m") (lambda () (interactive) 
+                                  (color-theme-midnight)
+                                  (org-src-color-blocks-dark)))
+  
+  ;; Too harsh? Use the late night theme
+  (global-set-key (kbd "<f9> n") (lambda () (interactive) 
+                                  (color-theme-late-night)
+                                  (org-src-color-blocks-dark)))
+  
+  
+#+END_SRC
+
+* Org Mode
+
+  The [[http://orgmode.org][Org Mode]] feature was a big reason in my recent re-kindling of my
+  Emacs love affair.
+
+** Initial Variables
+
+   On a semi-regular basis, we store some *important* files as
+   variables that can be referenced elsewhere.
+
+*** Org-Mode Sprint Note Files
+
+    At the beginning of each sprint, we need to set this to the new
+    sprint file.
+
+#+BEGIN_SRC elisp
+  (setq current-sprint "2013-02")
+  
+  (defun get-current-sprint-file ()
+    (expand-file-name (concat "~/Dropbox/org/gilt/Sprint-" current-sprint ".org")))
+  (defvar current-sprint-file 
+    (get-current-sprint-file)
+    "The name of an Org mode that stores information about the current sprint.")
+  
+  ;; Changed the name of the sprint? Run:   (create-sprint-file)
+#+END_SRC
+
+    When we change to a new sprint, we need to create a new Sprint
+    Org File (from a template).
+
+#+BEGIN_SRC elisp
+  (defun create-sprint-file ()
+    "Creates a new Sprint file"
+    (interactive)
+    (let (today (format-time-string "%Y-%m-%d %a"))
+      (setq template (concat "#+TITLE:  Sprint " current-sprint "\n"
+                    "#+AUTHOR: Howard Abrams\n"
+                    "#+EMAIL:  habrams@gilt.com\n"
+                    "#+DATE:   " today "\n\n"
+                    "* My Work Issues\n\n"
+                    "* Sprint Retrospective\n\n"))
+      (with-temp-file current-sprint-file
+        (insert template)
+        (message (concat "Created " current-sprint-file)))))
+#+END_SRC
+
+*** Org-Mode Colors
+
+  Before we load =org-mode= proper, we need to set the following
+  syntax high-lighting parameters. These are used to help bring out
+  the source code during literate programming mode.
+
+  This information came from [[http://orgmode.org/worg/org-contrib/babel/examples/fontify-src-code-blocks.html][these instructions]], however, they tend
+  to conflict with the /color-theme/, so we'll turn them off for now.
+
+#+BEGIN_SRC elisp
+  (defface org-block-begin-line
+    '((t (:underline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))
+    "Face used for the line delimiting the begin of source blocks.")
+  
+  (defface org-block-background
+    '((t (:background "#FFFFEA")))
+    "Face used for the source block background.")
+  
+  (defface org-block-end-line
+    '((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))
+    "Face used for the line delimiting the end of source blocks.")
+#+END_SRC
+
+** Library Loading
+
+   The standard package manager (and most recent versions of Emacs)
+   include =org-mode=, however, I want the latest version that has
+   specific features for literate programming.
+
+   Org-mode is installed in the global directory.
+
+#+BEGIN_SRC elisp
+  (add-to-list 'load-path "~/.emacs.d/org/lisp")
+  (require 'org)
+  ; (require 'org-install)
+  (require 'ob-tangle)
+#+END_SRC
+
+** Global Key Bindings for Org-Mode
+
+   The =org-mode= has some useful keybindings that are helpful no
+   matter what mode you are using currently.
+
+#+BEGIN_SRC elisp
+  (global-set-key "\C-cl" 'org-store-link)
+  (global-set-key "\C-ca" 'org-agenda)
+  (global-set-key "\C-cb" 'org-iswitchb)
+#+END_SRC
+
+** Specify the Org Directories
+
+   I keep all my =org-mode= files in a few directories, and I would
+   like them automatically searched when I generate agendas.
+
+#+BEGIN_SRC elisp
+(setq org-agenda-files '("~/Dropbox/org/personal" 
+                         "~/Dropbox/org/gilt" 
+                         "~/Dropbox/org/lg" 
+                         "~/Dropbox/org/rpg" 
+                         "~/Dropbox/org/project"))
+#+END_SRC
+
+** Auto Note Capturing
+
+   Let's say you were in the middle of something, but would like to
+   /take a quick note/, but without affecting the file you are
+   working on. This is called a "capture", and is bound to the
+   following key:
+
+#+BEGIN_SRC elisp
+  (define-key global-map "\C-cc" 'org-capture)
+#+END_SRC
+
+   This will bring up a list of /note capturing templates/:
+
+#+BEGIN_SRC elisp
+  (setq org-capture-templates
+        '(("t" "Thought or Note" plain (file "~/Dropbox/org/notes/GTD Thoughts.txt")
+           "  * %i%?\n    %a")
+          ("d" "General TODO Tasks" entry (file "~/Dropbox/org/notes/GTD Tasks.org")
+           "* TODO %?\n  %i\n  %a" :empty-lines 1)
+          ("g" "Interesting Gilt Link" entry (file+headline "~/Dropbox/org/gilt/General.org" "Links")
+           "* %i%? :gilt:\n  Captured: %t\n  Linked: %a" :empty-lines 1)
+          ("w" "Work Task" entry (file+headline "~/Dropbox/org/gilt/General.org" "Tasks")
+           "* TODO %?%i :gilt:" :empty-lines 1)
+          ("r" "Retrospective Note" entry (file+headline current-sprint-file "Sprint Retrospective")
+           "* (Good/Bad) %i%? :gilt:\n  Sprint: %t\n  Linked: %a" :empty-lines 1)
+          ("j" "Journal" entry (file+datetree "~/Dropbox/org/Journal Events.org")
+           "* %?\nEntered on %U\n  %i\n  %a")))
+  
+  ;; General notes go into this file:
+  (setq org-default-notes-file "~/Dropbox/org/notes/GTD Tasks.org")
+#+END_SRC
+
+   After you have selected the template, you type in your note and hit
+   =C-c C-c= to store it in the file listed above.
+
+   Just remember, at some point to hit =C-c C-w= to /refile/ that note
+   in the appropriate place.
+
+*** RSS Feeds to Notes
+
+    A cool feature allows me to automatically take the tasks assigned
+    to me during a Sprint, and create entries for me to add my
+    personal notes and comments.
+
+#+BEGIN_SRC elisp
+  (setq org-feed-alist
+        (list (list "Gilt Jira"
+          "https://jira.gilt.com/sr/jira.issueviews:searchrequest-xml/15717/SearchRequest-15717.xml"
+          (get-current-sprint-file) "My Work Issues")))
+  (setq org-feed-default-template "** %h\n   %a")
+  ;; We really want to change the %h to %( replace ... \"%h\" and \"%a\" )
+  ;; %(concat \"[[\%a][\" (substring \"%h\" 1) \"]\")
+#+END_SRC
+
+    To regen the list, hit: =C-c C-x g=
+
+** Checking Things Off
+
+   When I check off an item as done, sometimes I want to add some
+   details about the completion (this is really only helpful when I'm
+   consulting). 
+
+   With this setting, each time you turn an entry from a TODO state
+   into the DONE state, a line ‘CLOSED: [timestamp]’ will be inserted
+   just after the headline. If you turn the entry back into a TODO
+   item through further state cycling, that line will be removed
+   again.
+
+#+BEGIN_SRC elisp
+  ; (setq org-log-done 'time)
+  (setq org-log-done 'note)
+#+END_SRC
+
+** Org Publishing
+
+   The brilliance of =org-mode= is the ability to publish your notes
+   as HTML files into a web server. See [[http://orgmode.org/worg/org-tutorials/org-publish-html-tutorial.html][these instructions]].
+
+#+BEGIN_SRC elisp
+  (require 'org-publish)
+  
+  (setq org-publish-project-alist  '(
+    ("org-notes"
+     :base-directory        "~/Dropbox/org/"
+     :base-extension        "org"
+     :publishing-directory  "~/Sites/"
+     :recursive             t
+     :publishing-function   org-publish-org-to-html
+     :headline-levels       4             ; Just the default for this project.
+     :auto-preamble         t
+     :auto-sitemap          t             ; Generate sitemap.org automagically...
+     :makeindex             t
+     :section-numbers       nil
+     :table-of-contents     nil
+     :style "<link rel=\"stylesheet\" href=\"../css/styles.css\" type=\"text/css\"/><link rel=\"stylesheet\" href=\"css/styles.css\" type=\"text/css\"/> <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js\" type=\"text/javascript\"></script> <link href=\"http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/smoothness/jquery-ui.css\" type=\"text/css\" rel=\"Stylesheet\" />    <script src=\"https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js\" type=\"text/javascript\"></script> <script =\"text/jacascript\" src=\"js/script.js\"></script>"
+     )
+  
+    ("org-static"
+     :base-directory       "~/Dropbox/org/"
+     :base-extension       "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+     :publishing-directory "~/Sites/"
+     :recursive            t
+     :publishing-function  org-publish-attachment
+     )
+  
+    ("all" :components ("org-notes" "org-static"))))
+#+END_SRC
+
+   I really, really would like to affect the output of the
+   exported/published HTML files to make them /prettier/.
+
+#+BEGIN_SRC elisp
+  (setq org-export-html-style "<link rel='stylesheet' href='http://www.howardism.org/styles/org-export-html-style.css' type='text/css'/>
+  <script src='http://use.edgefonts.net/source-sans-pro.js'></script>
+  <script src='http://use.edgefonts.net/source-code-pro.js'></script>")
+#+END_SRC
+
+** The Tower of Babel
+
+   The trick to literate programming is in the [[http://orgmode.org/worg/org-contrib/babel/intro.html][Babel project]], which
+   allows org-mode to not only interpret source code blocks, but
+   evaluate them and tangle them out to a file.
+
+#+BEGIN_SRC elisp
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((sh         . t)
+   (js         . t)
+   (emacs-lisp . t)
+   (scala      . t)
+   (clojure    . t)
+   (dot        . t)
+   (css        . t)
+   (plantuml   . t)))
+#+END_SRC
+
+   It seems to automatically recognize the language used in a source
+   block, but if not, call =org-babel-lob-ingest= to add all the
+   languages from the code block into the list that Babel supports.
+   Keystroke: =C-c C-v i=.
+
+*** Font Coloring in Code Blocks
+    
+    Normally, fontifying the individual code blocks makes it
+    impossible to work with, so we have them based on keystrokes.
+
+#+BEGIN_SRC elisp
+  ;; fontify code in code blocks
+  ; (setq org-src-fontify-natively t)
+  
+  (global-set-key (kbd "<f9> g") 'org-src-fontify-buffer)
+  (global-set-key (kbd "<f9> f") 'org-src-fontify-block)
+#+END_SRC
+* Programming Languages
+** Clojure
+
+   Me like Clojure, and since it is a LISP, then Emacs likes it too.
+   We are using the latest version, that we installed locally:
+
+#+BEGIN_SRC elisp
+  (add-to-list 'load-path "~/.emacs.d/clojure-mode")
+  (require 'clojure-mode)
+#+END_SRC
+
+   With the =elein= project installed, it allows us to do things
+   like: =M-x elein-run-cmd koan run=
+
+   The following makes [[https://github.com/weavejester/compojure/wiki][Compojure]] macro calls look better:
+
+#+BEGIN_SRC elisp
+  (define-clojure-indent
+    (defroutes 'defun)
+    (GET 2)
+    (POST 2)
+    (PUT 2)
+    (DELETE 2)
+    (HEAD 2)
+    (ANY 2)
+    (context 2))
+#+END_SRC
+
+*** Paredit
+
+    One of the cooler features of Emacs is the [[http://emacswiki.org/emacs/ParEdit][ParEdit mode]] which
+    keeps all parenthesis balanced in Lisp-oriented languages.
+    See this [[http://www.emacswiki.org/emacs/PareditCheatsheet][cheatsheet]].
+
+#+BEGIN_SRC elisp
+  (autoload 'paredit-mode "paredit"
+    "Minor mode for pseudo-structurally editing Lisp code." t)
+#+END_SRC
+
+    We need to associate specific language modes with ParEdit.
+    We first create a helper function:
+
+#+BEGIN_SRC elisp
+  (defun turn-on-paredit () (paredit-mode 1))
+#+END_SRC
+
+    Then associate the following Lisp-based modes with ParEdit:
+
+#+BEGIN_SRC elisp
+  (add-hook 'emacs-lisp-mode-hook       'turn-on-paredit)
+  (add-hook 'lisp-mode-hook             'turn-on-paredit)
+  (add-hook 'lisp-interaction-mode-hook 'turn-on-paredit)
+  (add-hook 'scheme-mode-hook           'turn-on-paredit)
+  (add-hook 'clojure-mode-hook          'turn-on-paredit)
+#+END_SRC
+
+    Without the helpful functions, we would have to do something like:
+
+#+BEGIN_SRC elisp :tangle no
+  (add-hook 'clojure-mode-hook          (lambda () (paredit-mode +1)))
+#+END_SRC
+
+** Scala
+
+   We need to load the [[https://github.com/haxney/scala-mode][scala mode]].
+   We follow [[http://www.scala-lang.org/node/354][these instructions]] to hook it up with [[http://code.google.com/p/yasnippet/][Yasnippet]].
+
+#+BEGIN_SRC elisp
+  (require 'scala-mode)
+  
+  ;; Shouldn't this be done by default?
+  (add-to-list 'auto-mode-alist '("\\.scala$" . scala-mode))
+  
+  (add-hook 'scala-mode-hook
+            '(lambda ()
+               (yas/minor-mode-on)
+               (scala-mode-feature-electric-mode)))
+#+END_SRC
+
+   We follow [[http://jawher.net/2011/01/17/scala-development-environment-emacs-sbt-ensime/][these instructions]] to set it up with [[https://github.com/aemoncannon/ensime][Ensime]].
+   Ensime is not available as a package, so I had to download and
+   install it, so we need to add it to the =load-path=.
+
+#+BEGIN_SRC elisp
+  (add-to-list 'load-path "~/.emacs.d/ensime/elisp")
+  (require 'ensime)
+  (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+#+END_SRC
+
+** JavaScript
+
+   While editing JavaScript is baked into Emacs, it is kinda cool to
+   associate it with [[https://github.com/keturn/lintnode][LintNode]] and [[http://www.emacswiki.org/emacs/FlymakeJavaScript][FlyMake]].
+
+#+BEGIN_SRC elisp :tangle no
+  (add-to-list 'load-path "/Users/habrams/Code/os/lintnode")
+  (require 'flymake-jslint)
+  ;; Make sure we can find the lintnode executable
+  (setq lintnode-location "/Users/habrams/Code/os/lintnode")
+  ;; JSLint can be... opinionated
+  (setq lintnode-jslint-excludes (list 'nomen 'undef 'plusplus 'onevar 'white))
+  ;; Start the server when we first open a js file and start checking
+  (add-hook 'javascript-mode-hook
+            (lambda ()
+              (lintnode-hook)))
+#+END_SRC
+
+   I've turned this off until I feel I need it. Also,
+   I've looked at [[http://koansys.com/tech/flymake-mode-for-emacs-javascript-v8-edition][these instructions]] for setting it up.
+
+** Markdown and Mustache
+
+   Once upon a time, all text files I edited were written using
+   [[http://daringfireball.net/projects/markdown/syntax][Markdown syntax]]. While I'm doing more =org-mode=, I might as well
+   associate these extensions.
+
+#+BEGIN_SRC elisp
+  (autoload 'markdown-mode "markdown-mode" "Markdown editing mode." t)
+  (add-to-list 'auto-mode-alist '("\.txt$"      . markdown-mode))
+  (add-to-list 'auto-mode-alist '("\.markdown$" . markdown-mode))
+  (add-to-list 'auto-mode-alist '("\.md$"       . markdown-mode))
+#+END_SRC
+
+*** Mustache and Handlebars
+
+    I sometimes have to edit template languages, like [[http://mustache.github.com][mustache]] and
+    [[http://handlebarsjs.com][handlebars]]. There's a mode for that.
+
+#+BEGIN_SRC elisp
+  (require 'mustache-mode)
+  (require 'handlebars-mode)
+#+END_SRC
+
+** Groovy
+
+   I'm not doing much work in [[http://groovy.codehaus.org][Groovy]] nowadays. Should I turn this off?
+
+#+BEGIN_SRC elisp
+  (autoload 'groovy-mode "groovy-mode" "Groovy editing mode." t)
+  (add-to-list        'auto-mode-alist '("\.groovy$" . groovy-mode))
+  (add-to-list 'interpreter-mode-alist '(  "groovy"  . groovy-mode))
+#+END_SRC
+
+   Note the last line associates a /shebang/ like =#!/bin/groovy= on
+   the first line. This might be useful elsewhere.
+
+** Visual Diagram Tools
+
+   I really like the concept that I can write /textual descriptions/
+   and have graphical diagrams appear in Emacs that I can email.
+
+*** PlantUML
+
+   The [[http://plantuml.sourceforge.net][PlantUML project]] needs to specify  where the JAR file resides
+   so that we can pick it up and use it.
+
+   Emacs needs the =plantuml-jar-path= while =org-mode= needs the
+   value set as =org-plantuml-jar-path= ... let's set up both:
+
+#+BEGIN_SRC elisp
+  (setq     plantuml-jar-path (expand-file-name "~/bin/plantuml.jar"))
+  (setq org-plantuml-jar-path (expand-file-name "~/bin/plantuml.jar"))
+  
+  (add-to-list 'auto-mode-alist '("\.uml$" . plantuml-mode))
+  (require 'plantuml-mode)
+#+END_SRC
+
+*** GraphViz
+
+    Unlike PlantUML, the [[http://www.graphviz.org][Graphviz project]] focuses on directed graphs.
+    There doesn't seem to be any configuration for [[http://www.graphviz.org/Misc/graphviz-dot-mode.el][graphviz-dot-mode]].
+    See [[http://users.skynet.be/ppareit/projects/graphviz-dot-mode/graphviz-dot-mode.html][these instructions]].
+
+* Tools
+** Git
+
+   To interface with [[http://git-scm.com][Git]], we simply load up the project that comes
+   with the =git= distribution:
+
+#+BEGIN_SRC elisp
+  (add-to-list 'load-path
+               "/usr/local/Cellar/git/1.7.5.4/share/doc/git-core/contrib/emacs")
+  (require 'git)
+  (require 'git-blame)
+#+END_SRC
+
+** Auto Complete
+
+   This feature scans the code and suggests completions for what you
+   are typing. Useful at times ... annoying at others.
+
+#+BEGIN_SRC elisp
+(require 'auto-complete-config)
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+(ac-config-default)
+#+END_SRC
+
+   Note that we specify where a dictionary lives for each specific
+   language.
+
+** Yas Snippet
+
+   The [[http://code.google.com/p/yasnippet/][yasnippet project]] allows me to create snippets of code that
+   can be brought into a file, based on the language. 
+
+#+BEGIN_SRC elisp
+(add-to-list 'load-path "~/.emacs.d/yasnippet")
+(require 'yasnippet)
+(yas/global-mode 1)
+; (yas/initialize)
+#+END_SRC
+
+   We just have different directories for each:
+
+#+BEGIN_SRC elisp
+(setq yas/snippet-dirs
+      '("~/.emacs.d/snippets"            ;; personal snippets
+        "~/.emacs.d/yasnippet/extras/imported"
+        "~/Dropbox/emacs.d/snippets/javascript-mode"
+        "~/Dropbox/emacs.d/snippets/clojure-mode"
+        "~/Dropbox/emacs.d/snippets/org-mode"
+        "~/Dropbox/emacs.d/snippets/emacs-list-mode"
+        "~/.emacs.d/scala-emacs/contrib/yasnippet/snippets"))
+
+; (mapc 'yas/load-directory yas-snippet-dirs)
+#+END_SRC
+
+** Note Grep
+
+   I use the standard [[http://emacswiki.org/emacs/GrepMode#toc1][grep package]] in Emacs and wrap it so that I
+   can easily search through my notes.
+
+#+BEGIN_SRC elisp
+  (defun ngrep (reg-exp)
+    "Searches the Notes and ORG directory tree for an expression."
+    (interactive "sSearch note directory for: ")
+    (let ((file-ext "*.org *.md *.txt *.markdown")
+          (search-dir "~/Dropbox/org"))
+      (message "Searching in %s" search-dir)
+      (grep-compute-defaults)
+      (rgrep reg-exp file-ext search-dir)))
+  
+  (global-set-key "\C-c\C-f" 'ngrep)
+#+END_SRC
+
+   That's right. My first emacs function I wrote in years. YEARS!!!
+
+* Technical Artifacts
+
+  Before you can build this on a new system, make sure that you put
+  the cursor over any of these properties, and hit: =C-c C-c=
+
+#+DESCRIPTION: A literate programming version of my Emacs Initialization script, loaded by the .emacs file.
+#+PROPERTY:    results silent
+#+PROPERTY:    tangle ~/.emacs-ext.el
+#+PROPERTY:    eval no
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
