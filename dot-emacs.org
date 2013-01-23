@@ -34,6 +34,8 @@
    Emacs already comes bundled to edit most files, like Java and Ruby.
    However, some of the new stuff that I use isn't bundled, yet.
 
+   *Note:* Version 24 already contains ELPA...
+
    To begin installing these new packages, you need [[http://tromey.com/elpa/install.html][ELPA]] (Emacs Package
    Manager).  Simply hit =C-c C-c= in the buffer below to get that
    installed (if that fails, then you need to go to the last paren and
@@ -81,7 +83,7 @@
    From the list that shows up, install the following packages:
 
    - [ ] =ac-nrepl=
-   - [ ] =auto-complete=
+   - [X] =auto-complete=
    - [ ] =clojure-mode= (and probably others)
    - [ ] =clojurescript-mode= (optional)
    - [ ] =coffee-mode= (optional)
@@ -97,6 +99,7 @@
    - [ ] =graphviz-dot-mode=
    - [ ] =handlebars=mode=
    - [ ] =htmlize= (need version 1.34 or greater to get source code colorization)
+   - [ ] =js-comint= (For doing a JavaScript repl)
    - [ ] =js2-mode= (better editor for JavaScript)
    - [ ] =json-mode=
    - [ ] =markdown-mode=
@@ -150,6 +153,25 @@
     - Symlinking: =ln -s ensime_2.9.2-0.9.8.1 ensime=
 
     That should do 'er.
+
+*** JavaScript Lint
+
+    Assuming that you have [[http://nodejs.org][node.js]] installed, you should install
+    [[http://www.jshint.com][jshint]] as a global command:
+
+#+BEGIN_EXAMPLE
+  sudo npm -g install jshint
+#+END_EXAMPLE
+
+    According to [[http://blog.deadpansincerity.com/2011/05/setting-up-emacs-as-a-javascript-editing-environment-for-fun-and-profit/][these instructions]], we need to get Lintnode,
+    however, this can be installed using Marmalade:
+
+#+BEGIN_EXAMPLE sh
+  cd ~/.emacs.d
+  git clone https://github.com/davidmiller/lintnode.git
+  cd lintnode
+  npm install express connect-form haml underscore
+#+END_EXAMPLE
 
 **** Checking out the Ensime Source Code
 
@@ -543,6 +565,20 @@
   <script src='http://use.edgefonts.net/source-code-pro.js'></script>")
 #+END_SRC
 
+*** Publishing as Presentation
+
+    Out of all [[http://orgmode.org/worg/org-tutorials/non-beamer-presentations.html][the ideas]] online, I prefer using [[http://meyerweb.com/eric/tools/s5/][S5]], and by loading
+    [[https://github.com/eschulte/org-S5/blob/master/org-export-as-s5.el][this code]], we can issue =org-export-as-s5=:
+
+#+BEGIN_SRC elisp
+  (load-library "org-export-as-s5")
+#+END_SRC
+
+    And let's tie this to a keystroke to make it easier to use:
+
+#+BEGIN_SRC elisp
+  (global-set-key (kbd "<f9> p") 'org-export-as-s5)
+#+END_SRC
 ** The Tower of Babel
 
    The trick to literate programming is in the [[http://orgmode.org/worg/org-contrib/babel/intro.html][Babel project]], which
@@ -570,10 +606,11 @@
 *** Font Coloring in Code Blocks
     
     Normally, fontifying the individual code blocks makes it
-    impossible to work with, so we have them based on keystrokes.
+    impossible to work with, so instead of turning it on at the global
+    level for all blocks, I created a couple of keystrokes to
+    selectively colorize one block at a time.
 
 #+BEGIN_SRC elisp
-  ;; fontify code in code blocks
   ; (setq org-src-fontify-natively t)
   
   (global-set-key (kbd "<f9> g") 'org-src-fontify-buffer)
@@ -670,90 +707,95 @@
 
 ** JavaScript
 
+   JavaScript should have three parts:
+   - Syntax highlight (already done)
+   - Syntax verification (with lintnode)
+   - Interactive REPL
+
+*** LintNode
+
    While editing JavaScript is baked into Emacs, it is kinda cool to
    associate it with [[https://github.com/keturn/lintnode][LintNode]] and [[http://www.emacswiki.org/emacs/FlymakeJavaScript][FlyMake]].
 
-#+BEGIN_SRC elisp :tangle no
-  (add-to-list 'load-path "/Users/habrams/Code/os/lintnode")
-  (require 'flymake-jslint)
+#+BEGIN_SRC elisp
+  (add-to-list 'load-path "~/.emacs.d/lintnode")
+  (require 'flymake-jshint)
   ;; Make sure we can find the lintnode executable
-  (setq lintnode-location "/Users/habrams/Code/os/lintnode")
+  (setq lintnode-location "~/.emacs.d/lintnode")
+  
   ;; JSLint can be... opinionated
-  (setq lintnode-jslint-excludes (list 'nomen 'undef 'plusplus 'onevar 'white))
+  ; (setq lintnode-jslint-excludes (list 'nomen 'plusplus 'onevar 'white))
+  
   ;; Start the server when we first open a js file and start checking
   (add-hook 'javascript-mode-hook
             (lambda ()
               (lintnode-hook)))
 #+END_SRC
 
-   I've turned this off until I feel I need it. Also,
-   I've looked at [[http://koansys.com/tech/flymake-mode-for-emacs-javascript-v8-edition][these instructions]] for setting it up.
+*** JavaScript REPL
 
-** Markdown and Mustache
+    We can use two different approaches for a JavaScript REPL.
+    *Note:* Neither are working very effectively.
 
-   Once upon a time, all text files I edited were written using
-   [[http://daringfireball.net/projects/markdown/syntax][Markdown syntax]]. While I'm doing more =org-mode=, I might as well
-   associate these extensions.
+**** Client JS with MozRepl
 
-#+BEGIN_SRC elisp
-  (autoload 'markdown-mode "markdown-mode" "Markdown editing mode." t)
-  (add-to-list 'auto-mode-alist '("\.txt$"      . markdown-mode))
-  (add-to-list 'auto-mode-alist '("\.markdown$" . markdown-mode))
-  (add-to-list 'auto-mode-alist '("\.md$"       . markdown-mode))
-#+END_SRC
-
-*** Mustache and Handlebars
-
-    I sometimes have to edit template languages, like [[http://mustache.github.com][mustache]] and
-    [[http://handlebarsjs.com][handlebars]]. There's a mode for that.
+     Assuming you have Mozilla Firefox running with the [[https://addons.mozilla.org/en-US/firefox/addon/mozrepl/][MozRepl]]
+     add-on:
 
 #+BEGIN_SRC elisp
-  (require 'mustache-mode)
-  (require 'handlebars-mode)
-#+END_SRC
-
-** Groovy
-
-   I'm not doing much work in [[http://groovy.codehaus.org][Groovy]] nowadays. Should I turn this off?
-
-#+BEGIN_SRC elisp
-  (autoload 'groovy-mode "groovy-mode" "Groovy editing mode." t)
-  (add-to-list        'auto-mode-alist '("\.groovy$" . groovy-mode))
-  (add-to-list 'interpreter-mode-alist '(  "groovy"  . groovy-mode))
-#+END_SRC
-
-   Note the last line associates a /shebang/ like =#!/bin/groovy= on
-   the first line. This might be useful elsewhere.
-
-** Visual Diagram Tools
-
-   I really like the concept that I can write /textual descriptions/
-   and have graphical diagrams appear in Emacs that I can email.
-
-*** PlantUML
-
-   The [[http://plantuml.sourceforge.net][PlantUML project]] needs to specify  where the JAR file resides
-   so that we can pick it up and use it.
-
-   Emacs needs the =plantuml-jar-path= while =org-mode= needs the
-   value set as =org-plantuml-jar-path= ... let's set up both:
-
-#+BEGIN_SRC elisp
-  (setq     plantuml-jar-path (expand-file-name "~/bin/plantuml.jar"))
-  (setq org-plantuml-jar-path (expand-file-name "~/bin/plantuml.jar"))
+  (autoload 'moz-minor-mode "moz" "Mozilla Minor and Inferior Mozilla Modes" t)
   
-  (add-to-list 'auto-mode-alist '("\.uml$" . plantuml-mode))
-  (require 'plantuml-mode)
+  (add-hook 'js-mode-hook 'javascript-custom-setup)
+  (defun javascript-custom-setup ()
+    (moz-minor-mode 1))
 #+END_SRC
 
-*** GraphViz
+     This gives you the following commands:
 
-    Unlike PlantUML, the [[http://www.graphviz.org][Graphviz project]] focuses on directed graphs.
-    There doesn't seem to be any configuration for [[http://www.graphviz.org/Misc/graphviz-dot-mode.el][graphviz-dot-mode]].
-    See [[http://users.skynet.be/ppareit/projects/graphviz-dot-mode/graphviz-dot-mode.html][these instructions]].
+     - C-c C-s: open a MozRepl interaction buffer and switch to it
+     - C-c C-l: save the current buffer and load it in MozRepl
+     - C-M-x: send the current function (as recognized by c-mark-function) to MozRepl
+     - C-c C-c: send the current function to MozRepl and switch to the interaction buffer
+     - C-c C-r: send the current region to MozRepl
+
+**** Server JS with Node.js
+
+    We use [[http://js-comint-el.sourceforge.net][js-comint]], but hook it up with node.js:
+
+#+BEGIN_SRC elisp
+  (require 'js-comint)
+  ;; Use node as our repl
+  (setq inferior-js-program-command "node")
+   
+  (setq inferior-js-mode-hook
+        (lambda ()
+          ;; We like nice colors
+          (ansi-color-for-comint-mode-on)
+          ;; Deal with some prompt nonsense
+          (add-to-list 'comint-preoutput-filter-functions
+                       (lambda (output)
+                         (replace-regexp-in-string ".*1G\.\.\..*5G" "..."
+                       (replace-regexp-in-string ".*1G.*3G" "&gt;" output))))))
+#+END_SRC
+
+    Now, we can start up a JavaScript node REPL: =run-js=
+
+    Let's test this out:
+
+#+BEGIN_SRC js :tangle no
+  function factorial(n) { 
+    return n == 0 ? 1 : n * factorial(n - 1);
+  }
+  factorial(16);
+#+END_SRC
+
+   I've looked at [[http://koansys.com/tech/flymake-mode-for-emacs-javascript-v8-edition][these instructions]] for using V8 as the JavaScript
+   REPL engine instead of node.js.
 
 * Tools
 ** Git
+
+   According to [[http://emacswiki.org/emacs/Git][these instructions]], Git is already part of Emacs.
 
    To interface with [[http://git-scm.com][Git]], we simply load up the project that comes
    with the =git= distribution:
@@ -834,7 +876,8 @@
 #+DESCRIPTION: A literate programming version of my Emacs Initialization script, loaded by the .emacs file.
 #+PROPERTY:    results silent
 #+PROPERTY:    tangle ~/.emacs-ext.el
-#+PROPERTY:    eval no
+#+PROPERTY:    eval no-export
 #+PROPERTY:    comments org
 #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil
 #+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
