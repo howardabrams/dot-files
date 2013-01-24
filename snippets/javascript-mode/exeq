@@ -1,0 +1,7 @@
+# -*- coding: utf-8; mode: snippet -*-
+# name: Jasmine expect Equal
+# key: exeq
+# group: Jasmine
+# contributor: David Miller <david@deadpansincerity.com>
+# --
+expect(${1:attribute}).toEqual(${2:expected});$0

@@ -1,0 +1,17 @@
+# -*- mode: snippet -*-
+# name: PlantUML Class Diagram
+# key: uml-class
+# --
+#+NAME: ${1:Class Diagram}
+#+BEGIN_SRC plantuml :file $2.png
+@startuml $1.png
+
+$0Dummy <|-- Foobar
+
+class Dummy {
+  String data
+  void methods()
+}
+
+@enduml
+#+END_SRC

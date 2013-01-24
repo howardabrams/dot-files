@@ -1,0 +1,18 @@
+# -*- mode: snippet -*-
+# name: PlantUML State
+# key: uml-state
+# --
+#+NAME: ${1:State Diagram}
+#+BEGIN_SRC plantuml :file $2.png
+@startuml $1.png
+
+$0[*] --> State1
+State1 --> [*]
+State1 : this is a string
+State1 : this is another string
+
+State1 -> State2
+State2 --> [*]
+
+@enduml
+#+END_SRC

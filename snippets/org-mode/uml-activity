@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: PlantUML Activity Diagram
+# key: uml-activity
+# --
+#+NAME: ${1:Activity Diagram}
+#+BEGIN_SRC plantuml :file $2.png
+@startuml $1.png
+
+$0(*) --> "First Activity"
+"First Activity" --> (*)
+
+@enduml
+#+END_SRC

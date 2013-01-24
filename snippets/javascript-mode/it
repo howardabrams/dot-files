@@ -1,0 +1,9 @@
+# -*- coding: utf-8; mode: snippet -*-
+# name: Jasmine it
+# key: it
+# group: Jasmine
+# contributor: David Miller <david@deadpansincerity.com>
+# --
+it('Should ${1:have a description}', function () {
+    var $0
+});

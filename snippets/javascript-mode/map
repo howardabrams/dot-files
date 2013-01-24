@@ -1,0 +1,9 @@
+# -*- coding: utf-8; mode: snippet -*-
+# name: _.map
+# key: map
+# group: _
+# contributor: David Miller <david@deadpansincerity.com>
+# --
+_.map(${1:iterable}, function(${2:args}){
+    $0
+});

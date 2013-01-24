@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: PlantUML Component
+# key: uml-component
+# --
+#+NAME: ${1:Component Diagram}
+#+BEGIN_SRC plantuml :file $2.png
+@startuml $1.png
+
+$0DataAccess - [First Component] 
+[First Component] ..> HTTP : use
+
+@enduml
+#+END_SRC

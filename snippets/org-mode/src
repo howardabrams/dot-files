@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: Source Code block
+# key: src
+# --
+#+SRCNAME: $1
+#+BEGIN_SRC ${2:java}
+$0
+#+END_SRC

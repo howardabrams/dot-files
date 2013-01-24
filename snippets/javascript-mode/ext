@@ -1,0 +1,9 @@
+# -*- coding: utf-8; mode: snippet -*-
+# name: _.extend
+# key: ext
+# group: _
+# contributor: David Miller <david@deadpansincerity.com>
+# --
+_.extend(${1:Target}, {
+    $0
+});

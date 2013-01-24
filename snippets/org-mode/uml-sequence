@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: PlantUML Sequence
+# key: uml-sequence
+# --
+#+NAME: ${1:Sequence Diagram}
+#+BEGIN_SRC plantuml :file $2.png
+@startuml $2.png
+
+  $0Alice -> Bob: synchronous call
+  Alice ->> Bob: asynchronous call
+
+@enduml
+#+END_SRC

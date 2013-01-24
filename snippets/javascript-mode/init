@@ -1,0 +1,10 @@
+# -*- coding: utf-8; mode: snippet -*-
+# name: Backbone initialize
+# key: init
+# group: backbone
+# contributor: David Miller <david@deadpansincerity.com>
+# --
+initialize: function(){
+    _.bindAll(this, "render");
+    $0
+},

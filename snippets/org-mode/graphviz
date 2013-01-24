@@ -1,0 +1,12 @@
+# -*- mode: snippet -*-
+# name: Graphviz
+# key: graphviz
+# --
+#+srcname: $1 Diagram
+#+begin_src dot :file $2.png :cmdline -Kdot -Tpng
+  digraph G {
+    node [shape=box]
+
+    node [label=""] Base
+  }
+#+end_src
