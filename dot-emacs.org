@@ -2,11 +2,26 @@
 #+AUTHOR: Howard Abrams
 #+EMAIL:  howard.abrams@gmail.com
 
+This is my =.emacs= file, written using [[http://www.orgmode.org][org-mode]], so that I can
+organize it and take notes on all the complexity.
+
+  - The =tab= key opens/close a particular section
+  - Shift + =tab= cycles between the outline and full text
+  - Render it with:  =C-c C-v t=
+  - Creates a file:  =~/.emacs-ext.el=
+  - Load it during from real =.emacs= file:
+
+#+BEGIN_EXAMPLE
+  ;; Load our Literate Programming version of our Dot Emacs
+  ;; file, from file: ~/Dropbox/emacs.d/dot-emacs.org
+  (load-file "~/.emacs-ext.el")
+#+END_EXAMPLE
+
 * Introduction
 
   This file is really a /script/ that generates my Emacs configuration
-  file. For all of this to work, you need a modern version of Emacs
-  (like [[http://aquamacs.org/][Aquamacs]]).
+  file. For all of this to work, you need version 24 (or at least,
+  version 23, like [[http://aquamacs.org/][Aquamacs]]).
 
 #+BEGIN_HTML
   <p>
@@ -34,12 +49,12 @@
    Emacs already comes bundled to edit most files, like Java and Ruby.
    However, some of the new stuff that I use isn't bundled, yet.
 
-   *Note:* Version 24 already contains ELPA...
+*** Version 23
 
-   To begin installing these new packages, you need [[http://tromey.com/elpa/install.html][ELPA]] (Emacs Package
-   Manager).  Simply hit =C-c C-c= in the buffer below to get that
-   installed (if that fails, then you need to go to the last paren and
-   hit =C-x C-e=).
+   To begin installing these new packages in version 23, you need [[http://tromey.com/elpa/install.html][ELPA]]
+   (Emacs Package Manager).  Simply hit =C-c C-c= in the buffer below
+   to get that installed (if that fails, then you need to go to the
+   last paren and hit =C-x C-e=).
 
 #+BEGIN_SRC emacs-lisp :tangle no :results silent
   (let ((buffer (url-retrieve-synchronously
@@ -80,19 +95,20 @@
     (package-list-packages))
 #+END_SRC
 
+*** Install Needed Packages
+
    From the list that shows up, install the following packages:
 
    - [ ] =ac-nrepl=
-   - [X] =auto-complete=
+   - [ ] =auto-complete=
    - [ ] =clojure-mode= (and probably others)
    - [ ] =clojurescript-mode= (optional)
    - [ ] =coffee-mode= (optional)
    - [ ] =color-theme=
+   - [ ] =color-theme-sanityinc-tomorrow=
    - [ ] =elein= (Running leiningen commands, see [[https://github.com/remvee/elein][this project]])
    - [ ] =flymake=
    - [ ] =flymake-jshint=
-   - [ ] =flymake-jslint=
-   - [ ] =git-auto-commit-mode=
    - [ ] =git-commit-mode=  (Not =git-commit=)
    - [ ] =gitconfig-mode=
    - [ ] =gitignore-mode=
@@ -102,8 +118,8 @@
    - [ ] =js-comint= (For doing a JavaScript repl)
    - [ ] =js2-mode= (better editor for JavaScript)
    - [ ] =json-mode=
+   - [ ] =mac-key-mode= (for Mac OS X support)
    - [ ] =markdown-mode=
-   - [ ] =marmalade=
    - [ ] =mustache-mode=
    - [ ] =nrepl= (probably installed by ac-nrepl)
    - [ ] =org= (We should probably do this by hand, see below)
@@ -111,11 +127,10 @@
    - [ ] =org-presie=
    - [ ] =paredit-mode=
    - [ ] =plantuml-mode=
+   - [ ] =redo+= (needed by the =mac-key-mode=)
    - [ ] =scala-mode=
    - [ ] =yasnippet=
    - [ ] =yasnippet-bundle=
-
-   *Note:* I haven't found any specific color themes to be very helpful to install.
 
    Anything that you don't install above, may cause problems in the code below.
    So, either install it, or comment out the equivalent code section (by adding
@@ -163,15 +178,7 @@
   sudo npm -g install jshint
 #+END_EXAMPLE
 
-    According to [[http://blog.deadpansincerity.com/2011/05/setting-up-emacs-as-a-javascript-editing-environment-for-fun-and-profit/][these instructions]], we need to get Lintnode,
-    however, this can be installed using Marmalade:
-
-#+BEGIN_EXAMPLE sh
-  cd ~/.emacs.d
-  git clone https://github.com/davidmiller/lintnode.git
-  cd lintnode
-  npm install express connect-form haml underscore
-#+END_EXAMPLE
+    Now you can customize the [[*JavaScript][JavaScript]] section.
 
 **** Checking out the Ensime Source Code
 
@@ -186,6 +193,48 @@
 #+END_EXAMPLE
 
 * General Settings
+
+** Extra Packages
+
+   Extra packages not available via the package manager go in my
+   personal stash at: =$HOME/.emacs.d=
+
+#+BEGIN_SRC elisp
+  (add-to-list 'load-path "~/.emacs.d/")
+#+END_SRC
+
+** Package Manager
+
+   Emacs has become like every other operating system, and now has a
+   [[http://tromey.com/elpa/][package manager]] with its own collection of repositories. Of
+   course, now, instead of trying to figure out and maintain
+   packages, we have to keep track of what packages live on what
+   repos. This is [[http://batsov.com/articles/2012/02/19/package-management-in-emacs-the-good-the-bad-and-the-ugly/][an improvement]].
+
+   *NB:* We want to add the [[http://marmalade-repo.org/][Marmalade repository]].
+
+#+BEGIN_SRC elisp
+  ; (load "~/.emacs.d/elpa/package.el") Needed for version 23 only!
+
+  (require 'package)
+
+  ;; Add the original Emacs Lisp Package Archive
+  (add-to-list 'package-archives
+             '("elpa" . "http://tromey.com/elpa/"))
+
+  ;; Add the user-contributed repository
+  (add-to-list 'package-archives
+               '("marmalade" . "http://marmalade-repo.org/packages/") t)
+#+END_SRC
+
+   While we can now do a =package-list-packages=, you can install and
+   everything is good, however, we can't =require= any of these
+   packages (in order to customize them in this file) until we do
+   this:
+
+#+BEGIN_SRC elisp
+  (package-initialize)
+#+END_SRC
 
 ** Variables
 
@@ -206,36 +255,6 @@
 #+BEGIN_SRC elisp
   (setq-default indent-tabs-mode nil)
   (setq tab-width 2)
-  (setq js-basic-indent 2)
-#+END_SRC
-
-   Why yes, it seems that the JavaScript mode has a special
-   indentation setting. Go below?
-
-** Extra Packages
-
-   Extra packages not available via the package manager go in my
-   personal stash at: =$HOME/.emacs.d=
-
-#+BEGIN_SRC elisp
-  (add-to-list 'load-path "~/.emacs.d/")
-#+END_SRC
-
-** Package Manager
-
-   Emacs has become like every other operating system, and now has a
-   [[http://tromey.com/elpa/][package manager]] with its own collection of repositories. Of
-   course, now, instead of trying to figure out and maintain
-   packages, we have to keep track of what packages live on what
-   repos. This is [[http://batsov.com/articles/2012/02/19/package-management-in-emacs-the-good-the-bad-and-the-ugly/][an improvement]].
-
-   We want to add the [[http://marmalade-repo.org/][Marmalade repository]].
-
-#+BEGIN_SRC elisp
-  (load "~/.emacs.d/elpa/package.el")
-  (require 'package)
-  (add-to-list 'package-archives
-               '("marmalade" . "http://marmalade-repo.org/packages/") t)
 #+END_SRC
 
 ** Font Settings
@@ -251,7 +270,7 @@
 
 #+BEGIN_SRC elisp
   (set-default-font "Source Code Pro")
-  (set-face-attribute 'default nil :font "Source Code Pro")
+  (set-face-attribute 'default nil :font "Source Code Pro" :height 140)
   (set-face-font 'default "Source Code Pro")
 #+END_SRC
 
@@ -260,7 +279,7 @@
 
 #+BEGIN_SRC elisp :tangle no
   (set-default-font "Anonymous Pro")
-  (set-face-attribute 'default nil :font "Anonymous Pro")
+  (set-face-attribute 'default nil :font "Anonymous Pro" :height 140)
   (set-face-font 'default "Anonymous Pro")
 #+END_SRC
 
@@ -339,6 +358,36 @@
   
   
 #+END_SRC
+
+** Macintosh
+
+   I like the ability to use the Command key to turn a standard Emacs
+   into a more Macintosh-specific application. (See [[http://stackoverflow.com/questions/162896/emacs-on-mac-os-x-leopard-key-bindings][these online notes]])
+
+#+BEGIN_SRC elisp
+  (when (eq system-type 'darwin)
+    (require 'redo+)
+    (require 'mac-key-mode)
+    (mac-key-mode 1)
+  
+    (define-key mac-key-mode-map [(alt +)] 'text-scale-increase)
+    (define-key mac-key-mode-map [(alt _)] 'text-scale-decrease)
+    (define-key mac-key-mode-map [(alt l)] 'goto-line))  
+#+END_SRC
+
+** Full Screen Support
+
+   The downside to version 24 is the lack of [[http://emacswiki.org/emacs/FullScreen#toc24][full screen support]],
+   however, mm5t has [[https://github.com/rmm5t/maxframe.el][this patch]], which you must [[https://raw.github.com/rmm5t/maxframe.el/master/maxframe.el][download]] to the
+   =~/.emacs.d= directory.
+
+#+BEGIN_SRC elisp
+   (require 'maxframe)
+   (add-hook 'window-setup-hook 'maximize-frame t)
+   (define-key mac-key-mode-map [(alt S-F)] 'maximize-frame)
+#+END_SRC
+
+   This /almost/ works, but not quite. It will have to do.
 
 * Org Mode
 
@@ -620,10 +669,8 @@
 ** Clojure
 
    Me like Clojure, and since it is a LISP, then Emacs likes it too.
-   We are using the latest version, that we installed locally:
 
 #+BEGIN_SRC elisp
-  (add-to-list 'load-path "~/.emacs.d/clojure-mode")
   (require 'clojure-mode)
 #+END_SRC
 
@@ -708,29 +755,34 @@
 ** JavaScript
 
    JavaScript should have three parts:
-   - Syntax highlight (already done)
-   - Syntax verification (with lintnode)
+   - Syntax highlight (already included)
+   - Syntax verification (with flymake-jshint)
    - Interactive REPL
 
-*** LintNode
-
-   While editing JavaScript is baked into Emacs, it is kinda cool to
-   associate it with [[https://github.com/keturn/lintnode][LintNode]] and [[http://www.emacswiki.org/emacs/FlymakeJavaScript][FlyMake]].
+   Why yes, it seems that the JavaScript mode has a special
+   indentation setting. Go below?
 
 #+BEGIN_SRC elisp
-  (add-to-list 'load-path "~/.emacs.d/lintnode")
-  (require 'flymake-jshint)
-  ;; Make sure we can find the lintnode executable
-  (setq lintnode-location "~/.emacs.d/lintnode")
-  
-  ;; JSLint can be... opinionated
-  ; (setq lintnode-jslint-excludes (list 'nomen 'plusplus 'onevar 'white))
-  
-  ;; Start the server when we first open a js file and start checking
-  (add-hook 'javascript-mode-hook
-            (lambda ()
-              (lintnode-hook)))
+  (setq js-basic-indent 2)
 #+END_SRC
+
+*** FlyMake and JSHint
+
+   While editing JavaScript is baked into Emacs, it is kinda cool to
+   have it give you red sections based on [[http://www.jshint.com/][jshint]].
+   This is done with [[http://www.emacswiki.org/emacs/FlymakeJavaScript][FlyMake]].
+
+#+BEGIN_SRC elisp
+  ;; Make sure that PATH can reference the 'jshint' executable:
+  (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
+  (setq exec-path '( "/usr/local/bin" "/usr/bin" ))
+  
+  (require 'flymake-jshint)
+  (add-hook 'js-mode-hook
+            (lambda () (flymake-mode 1)))
+#+END_SRC
+
+   Now load and edit a JavaScript file, like [[file:~/jshint-code-test.js][jshint-code-test.js]].
 
 *** JavaScript REPL
 
@@ -740,9 +792,9 @@
 **** Client JS with MozRepl
 
      Assuming you have Mozilla Firefox running with the [[https://addons.mozilla.org/en-US/firefox/addon/mozrepl/][MozRepl]]
-     add-on:
+     add-on and you've installed a =moz= executable:
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle no
   (autoload 'moz-minor-mode "moz" "Mozilla Minor and Inferior Mozilla Modes" t)
   
   (add-hook 'js-mode-hook 'javascript-custom-setup)
@@ -780,7 +832,9 @@
 
     Now, we can start up a JavaScript node REPL: =run-js=
 
-    Let's test this out:
+    Let's test this out by loading this into a separate buffer (=C-c '=)
+    and then doing a =M-x send-buffer-and-go=. The problem is
+    intrepreting node's =>= prompt as =&GT;= ... sigh.
 
 #+BEGIN_SRC js :tangle no
   function factorial(n) { 
@@ -788,9 +842,6 @@
   }
   factorial(16);
 #+END_SRC
-
-   I've looked at [[http://koansys.com/tech/flymake-mode-for-emacs-javascript-v8-edition][these instructions]] for using V8 as the JavaScript
-   REPL engine instead of node.js.
 
 * Tools
 ** Git
@@ -800,7 +851,7 @@
    To interface with [[http://git-scm.com][Git]], we simply load up the project that comes
    with the =git= distribution:
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle no
   (add-to-list 'load-path
                "/usr/local/Cellar/git/1.7.5.4/share/doc/git-core/contrib/emacs")
   (require 'git)
