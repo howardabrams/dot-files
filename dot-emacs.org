@@ -119,6 +119,8 @@ organize it and take notes on all the complexity.
    - [ ] =js2-mode= (better editor for JavaScript)
    - [ ] =json-mode=
    - [ ] =mac-key-mode= (for Mac OS X support)
+   - [ ] =magit=
+   - [ ] =magit-simple-keys=
    - [ ] =markdown-mode=
    - [ ] =mustache-mode=
    - [ ] =nrepl= (probably installed by ac-nrepl)
@@ -484,6 +486,16 @@ organize it and take notes on all the complexity.
   (global-set-key "\C-cb" 'org-iswitchb)
 #+END_SRC
 
+** Speed Keys
+
+   If point is at the beginning of a headline or code block in
+   org-mode, single keys do fun things. See =org-speed-command-help=
+   for details (or hit the ? key at a headline).
+
+#+BEGIN_SRC elisp
+  (setq org-use-speed-commands t)
+#+END_SRC
+
 ** Specify the Org Directories
 
    I keep all my =org-mode= files in a few directories, and I would
@@ -628,6 +640,54 @@ organize it and take notes on all the complexity.
 #+BEGIN_SRC elisp
   (global-set-key (kbd "<f9> p") 'org-export-as-s5)
 #+END_SRC
+
+*** Publish as Markdown
+
+    Using the [[http://orgmode.org/worg/org-contrib/org-export-generic.php][org-export-generic]] feature, we can export to Markdown
+    using =C-c C-e g M=:
+
+#+BEGIN_SRC elisp
+(require 'org-export-generic)
+(org-set-generic-type
+ "Markdown" 
+ '(:file-suffix ".markdown"
+   :key-binding ?M
+   :title-format "%s\n"
+   :title-suffix ?=
+   :body-header-section-numbers t
+   :body-header-section-number-format "%s) "
+   :body-section-header-prefix	("\n## " "\n### " "\n#### " "\n##### " "\n###### ")
+   :body-section-header-format	"%s"
+   :body-section-header-suffix "\n\n"
+   :todo-keywords-export t
+   :body-line-format "  %s\n"
+   :body-tags-export	t
+   :body-tags-prefix	" <tags>"
+   :body-tags-suffix	"</tags>\n"
+   ;;:body-section-prefix	"<secprefix>\n"
+   ;;:body-section-suffix	"</secsuffix>\n"
+   :body-line-export-preformated	t
+   :body-line-fixed-prefix	"<pre>\n"
+   :body-line-fixed-suffix	"\n</pre>\n"
+   :body-line-fixed-format	"%s\n"
+   :body-list-prefix	"\n"
+   :body-list-suffix	"\n"
+   :body-list-format	"  * %s\n"
+   ;;:body-number-list-prefix	"<ol>\n"
+   ;;:body-number-list-suffix	"</ol>\n"
+   ;;:body-number-list-format	"<li>%s</li>\n"
+   ;;:body-number-list-leave-number	t
+   :body-list-checkbox-todo	"[_] "
+   :body-list-checkbox-todo-end	""
+   :body-list-checkbox-done	"[X] "
+   :body-list-checkbox-done-end ""
+   :body-line-format	"%s"
+   body-line-wrap	85
+   :body-text-prefix	""
+   :body-text-suffix	""
+   ))
+#+END_SRC
+
 ** The Tower of Babel
 
    The trick to literate programming is in the [[http://orgmode.org/worg/org-contrib/babel/intro.html][Babel project]], which
@@ -846,16 +906,11 @@ organize it and take notes on all the complexity.
 * Tools
 ** Git
 
-   According to [[http://emacswiki.org/emacs/Git][these instructions]], Git is already part of Emacs.
-
-   To interface with [[http://git-scm.com][Git]], we simply load up the project that comes
-   with the =git= distribution:
-
-#+BEGIN_SRC elisp :tangle no
-  (add-to-list 'load-path
-               "/usr/local/Cellar/git/1.7.5.4/share/doc/git-core/contrib/emacs")
-  (require 'git)
-  (require 'git-blame)
+   Git is [[http://emacswiki.org/emacs/Git][already part of Emacs]]. However, [[http://philjackson.github.com/magit/magit.html][Magit]] is sweet.
+   
+#+BEGIN_SRC elisp
+  (require 'magit)
+  (define-key global-map "\M-\C-g" 'magit-status)
 #+END_SRC
 
 ** Auto Complete
@@ -899,6 +954,19 @@ organize it and take notes on all the complexity.
 ; (mapc 'yas/load-directory yas-snippet-dirs)
 #+END_SRC
 
+** Markdown
+
+   Don't use Markdown nearly as much as I used to, but I'm surprised
+   that the following extension-associations aren't the default:
+
+#+BEGIN_SRC elisp
+  (autoload 'markdown-mode "markdown-mode.el"
+     "Major mode for editing Markdown files" t)
+  (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+  (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+  (add-to-list 'auto-mode-alist '("\\.txt\\'" . markdown-mode))
+#+END_SRC   
+
 ** Note Grep
 
    I use the standard [[http://emacswiki.org/emacs/GrepMode#toc1][grep package]] in Emacs and wrap it so that I
@@ -914,10 +982,9 @@ organize it and take notes on all the complexity.
       (grep-compute-defaults)
       (rgrep reg-exp file-ext search-dir)))
   
-  (global-set-key "\C-c\C-f" 'ngrep)
+  (define-key global-map "\C-x\C-n" 'ngrep)
+  (define-key global-map "\C-x\C-r" 'rgrep)
 #+END_SRC
-
-   That's right. My first emacs function I wrote in years. YEARS!!!
 
 * Technical Artifacts
 
