@@ -409,20 +409,6 @@ brew install ispell
   (load-library "line-move")
 #+END_SRC
 
-** Full Screen Support
-
-   The downside to version 24 is the lack of [[http://emacswiki.org/emacs/FullScreen#toc24][full screen support]],
-   however, mm5t has [[https://github.com/rmm5t/maxframe.el][this patch]], which you must [[https://raw.github.com/rmm5t/maxframe.el/master/maxframe.el][download]] to the
-   =~/.emacs.d= directory.
-
-#+BEGIN_SRC elisp :tangle no
-   (require 'maxframe)
-   (add-hook 'window-setup-hook 'maximize-frame t)
-   (define-key mac-key-mode-map [(alt S-F)] 'maximize-frame)
-#+END_SRC
-
-   This /almost/ works, but not quite. It will have to do.
-
 ** Miscellaneous Settings
 
 *** IDO (Interactively DO Things)
