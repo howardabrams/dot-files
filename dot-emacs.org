@@ -9,7 +9,7 @@ organize it and take notes on all the complexity.
   - Shift + =tab= cycles between the outline and full text
   - Render it with:  =C-c C-v t=
   - Creates a file:  =~/.emacs-ext.el=
-  - Load it during from real =.emacs= file:
+  - Load it during from the =.emacs= file, like:
 
 #+BEGIN_EXAMPLE
   ;; Load our Literate Programming version of our Dot Emacs
@@ -21,7 +21,7 @@ organize it and take notes on all the complexity.
 
   This file is really a /script/ that generates my Emacs configuration
   file. For all of this to work, you need version 24 (or at least,
-  version 23, like [[http://aquamacs.org/][Aquamacs]]).
+  version 23, like [[http://aquamacs.org/][Aquamacs]]). Pick [[https://github.com/railwaycat/emacs-mac-port][Yamamoto Mitsuharu's version]]!
 
 #+BEGIN_HTML
   <p>
@@ -97,46 +97,62 @@ organize it and take notes on all the complexity.
 
 *** Install Needed Packages
 
-   From the list that shows up, install the following packages:
+    Here is the list that should be installed to begin.
+    Install them all with a =C-c C-c= inside this block:
 
-   - [ ] =ac-nrepl=
-   - [ ] =auto-complete=
-   - [ ] =clojure-mode= (and probably others)
-   - [ ] =clojurescript-mode= (optional)
-   - [ ] =coffee-mode= (optional)
-   - [ ] =color-theme=
-   - [ ] =color-theme-sanityinc-tomorrow=
-   - [ ] =elein= (Running leiningen commands, see [[https://github.com/remvee/elein][this project]])
-   - [ ] =flymake=
-   - [ ] =flymake-jshint=
-   - [ ] =git-commit-mode=  (Not =git-commit=)
-   - [ ] =gitconfig-mode=
-   - [ ] =gitignore-mode=
-   - [ ] =graphviz-dot-mode=
-   - [ ] =handlebars=mode=
-   - [ ] =htmlize= (need version 1.34 or greater to get source code colorization)
-   - [ ] =js-comint= (For doing a JavaScript repl)
-   - [ ] =js2-mode= (better editor for JavaScript)
-   - [ ] =json-mode=
-   - [ ] =mac-key-mode= (for Mac OS X support)
-   - [ ] =magit=
-   - [ ] =magit-simple-keys=
-   - [ ] =markdown-mode=
-   - [ ] =mustache-mode=
-   - [ ] =nrepl= (probably installed by ac-nrepl)
-   - [ ] =org= (We should probably do this by hand, see below)
-   - [ ] =org-mime=
-   - [ ] =org-presie=
-   - [ ] =paredit-mode=
-   - [ ] =plantuml-mode=
-   - [ ] =redo+= (needed by the =mac-key-mode=)
-   - [ ] =scala-mode=
-   - [ ] =yasnippet=
-   - [ ] =yasnippet-bundle=
+#+BEGIN_SRC elisp :tangle no
+  (let ((my-packages (list
 
-   Anything that you don't install above, may cause problems in the code below.
-   So, either install it, or comment out the equivalent code section (by adding
-   a =:tangle no= at the end of the first line of code).
+   'ac-nrepl
+   'auto-complete
+   'clojure-mode
+   'clojurescript-mode
+   'coffee-mode
+   'color-theme
+   'color-theme-sanityinc-tomorrow
+   'elein
+   'flymake
+   'flymake-jshint
+   'flyspell
+   'git-commit-mode
+   'gitconfig-mode
+   'gitignore-mode
+   'graphviz-dot-mode
+   'handlebars-mode
+   'htmlize
+   'js-comint
+   'js2-mode
+   'json-mode
+   'mac-key-mode
+   'magit
+   'magit-simple-keys
+   'markdown-mode
+   'mustache-mode
+   'nrepl
+   'org
+   'org-mime
+   'org-presie
+   'paredit
+   'plantuml-mode
+   'redo+
+   'scala-mode
+   'smex
+   'yasnippet
+   'yasnippet-bundle
+
+    )))
+
+    (unless package-archive-contents
+      (package-refresh-contents))
+    (dolist (package my-packages)
+       (unless (package-installed-p package)
+        (package-install package))))
+
+#+END_SRC
+
+   Anything that you don't install above, may cause problems in the
+   code below.  So, either install it, or comment out its code section
+   (by adding a =:tangle no= at the end of the first line of code).
 
    The following sections discuss installation of libraries that are
    not available via ELPA.
@@ -194,6 +210,15 @@ organize it and take notes on all the complexity.
   ln -s dist_2.9.2/elisp .
 #+END_EXAMPLE
 
+*** ISpell
+
+    The spelling feature in Emacs using =ispell=, so this should be
+    installed with something like Homebrew:
+
+#+BEGIN_SRC sh :tangle no
+brew install ispell
+#+END_SRC
+
 * General Settings
 
 ** Extra Packages
@@ -220,13 +245,10 @@ organize it and take notes on all the complexity.
 
   (require 'package)
 
-  ;; Add the original Emacs Lisp Package Archive
-  (add-to-list 'package-archives
-             '("elpa" . "http://tromey.com/elpa/"))
-
-  ;; Add the user-contributed repository
-  (add-to-list 'package-archives
-               '("marmalade" . "http://marmalade-repo.org/packages/") t)
+  (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
+                           ("gnu"       . "http://elpa.gnu.org/packages/")
+                           ("tromey"    . "http://tromey.com/elpa/")
+                           ("marmalade" . "http://marmalade-repo.org/packages/")))
 #+END_SRC
 
    While we can now do a =package-list-packages=, you can install and
@@ -309,9 +331,11 @@ organize it and take notes on all the complexity.
        ((t (:background "#FFFFEA"))))
      '(org-block-end-line
        ((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))))
-  
-    (set-face-foreground 'minibuffer "black")
-    (set-face-foreground 'minibuffer-prompt "red"))
+
+     ;; Looks like the minibuffer issues are only for v23
+     ; (set-face-foreground 'minibuffer "black")
+     ; (set-face-foreground 'minibuffer-prompt "red")
+  )
   
   (defun org-src-color-blocks-dark ()
     "Colors the block headers and footers to make them stand out more for dark themes"
@@ -324,8 +348,10 @@ organize it and take notes on all the complexity.
      '(org-block-end-line
        ((t (:foreground "#008ED1" :background "#002E41")))))
   
-    (set-face-foreground 'minibuffer "white")
-    (set-face-foreground 'minibuffer-prompt "white"))
+     ;; Looks like the minibuffer issues are only for v23
+     ; (set-face-foreground 'minibuffer "white")
+     ; (set-face-foreground 'minibuffer-prompt "white")
+  )
 #+END_SRC
 
    My main reason for wanting to use the color theme project is to
@@ -336,29 +362,26 @@ organize it and take notes on all the complexity.
   (defun color-theme-my-default ()
     "Tries to set up a normal color scheme"
     (interactive)
-    (org-src-color-blocks-light)
-    ;; Perhaps color-theme-standard
-    (color-theme-emacs-nw))
+    (color-theme-sanityinc-tomorrow-day)
+    (org-src-color-blocks-light))
   
   ;; During the day, we use the "standard" theme:
   (global-set-key (kbd "<f9> d") 'color-theme-my-default)
   
   ;; A good late-night scheme that isn't too harsh
-  (global-set-key (kbd "<f9> l") (lambda () (interactive) 
-                                  (color-theme-charcoal-black)
-                                  (org-src-color-blocks-dark)))
+  (global-set-key (kbd "<f9> l") (lambda () (interactive)
+                                   (color-theme-sanityinc-tomorrow-eighties)
+                                   (org-src-color-blocks-dark)))
   
   ;; Programming late into the night
-  (global-set-key (kbd "<f9> m") (lambda () (interactive) 
-                                  (color-theme-midnight)
-                                  (org-src-color-blocks-dark)))
+  (global-set-key (kbd "<f9> m") (lambda () (interactive)
+                                   (color-theme-sanityinc-tomorrow-bright)
+                                   (org-src-color-blocks-dark)))
   
   ;; Too harsh? Use the late night theme
-  (global-set-key (kbd "<f9> n") (lambda () (interactive) 
-                                  (color-theme-late-night)
-                                  (org-src-color-blocks-dark)))
-  
-  
+  (global-set-key (kbd "<f9> n") (lambda () (interactive)
+                                   (color-theme-sanityinc-tomorrow-night)
+                                   (org-src-color-blocks-dark)))
 #+END_SRC
 
 ** Macintosh
@@ -368,7 +391,7 @@ organize it and take notes on all the complexity.
 
 #+BEGIN_SRC elisp
   (when (eq system-type 'darwin)
-    (require 'redo+)
+    ; (require 'redo+)
     (require 'mac-key-mode)
     (mac-key-mode 1)
   
@@ -377,13 +400,22 @@ organize it and take notes on all the complexity.
     (define-key mac-key-mode-map [(alt l)] 'goto-line))  
 #+END_SRC
 
+** More Key Definitions
+
+   I like the ability to move the current line up or down by just
+   doing =S-M-up= and =S-M-down= (just like in Eclipse):
+
+#+BEGIN_SRC elisp
+  (load-library "line-move")
+#+END_SRC
+
 ** Full Screen Support
 
    The downside to version 24 is the lack of [[http://emacswiki.org/emacs/FullScreen#toc24][full screen support]],
    however, mm5t has [[https://github.com/rmm5t/maxframe.el][this patch]], which you must [[https://raw.github.com/rmm5t/maxframe.el/master/maxframe.el][download]] to the
    =~/.emacs.d= directory.
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle no
    (require 'maxframe)
    (add-hook 'window-setup-hook 'maximize-frame t)
    (define-key mac-key-mode-map [(alt S-F)] 'maximize-frame)
@@ -391,6 +423,61 @@ organize it and take notes on all the complexity.
 
    This /almost/ works, but not quite. It will have to do.
 
+** Miscellaneous Settings
+
+*** IDO (Interactively DO Things)
+
+    According to [[http://www.masteringemacs.org/articles/2010/10/10/introduction-to-ido-mode/][Mickey]], IDO is the greatest thing.
+
+#+BEGIN_SRC elisp
+  (setq ido-enable-flex-matching t)
+  (setq ido-everywhere t)
+  (ido-mode 1)
+#+END_SRC
+
+    I guess you can call =ido-use-url-at-point= with Markdown to jump
+    to the URLs. Perhaps?
+
+*** SMEX
+
+    Built using [[*IDO%20(Interactively%20DO%20Things)][IDO]].
+
+#+BEGIN_SRC elisp :tangle no
+  (require 'smex)
+  (smex-initialize) ; Can be omitted. This might cause a (minimal) delay
+
+  (global-set-key (kbd "M-x") 'smex)
+  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
+
+  ;; This is our old M-x.
+  (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
+#+END_SRC
+
+*** Backup Settings
+
+    This setting moves all backup files to a central location.
+    Got it from [[http://whattheemacsd.com/init.el-02.html][this page]].
+
+#+BEGIN_SRC elisp
+  (setq backup-directory-alist
+        `(("." . ,(expand-file-name
+                   (concat user-emacs-directory "backups")))))
+#+END_SRC
+
+   Make backups of files, even when they're in version control
+
+#+BEGIN_SRC elisp
+  (setq vc-make-backup-files t)
+#+END_SRC
+
+*** Smart Scan
+
+    Use the =M-n= to search the buffer for the word the cursor is
+    currently pointing. =M-p= to go backwards.
+
+#+BEGIN_SRC elisp
+  (load-library "smart-scan")
+#+END_SRC
 * Org Mode
 
   The [[http://orgmode.org][Org Mode]] feature was a big reason in my recent re-kindling of my
@@ -826,6 +913,27 @@ organize it and take notes on all the complexity.
   (setq js-basic-indent 2)
 #+END_SRC
 
+#+BEGIN_SRC elisp
+(autoload 'espresso-mode "espresso" "Start espresso-mode" t)
+#+END_SRC
+   Change the word "function" to just an "f":
+
+#+BEGIN_SRC elisp
+  (font-lock-add-keywords
+   'js-mode `(("\\(function *\\)("
+                     (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                                               "ƒ")
+                               nil)))))
+#+END_SRC
+
+   Place warning font around TODO and others:
+
+#+BEGIN_SRC elisp
+(font-lock-add-keywords 'js-mode
+                        '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
+                           1 font-lock-warning-face t)))
+#+END_SRC
+
 *** FlyMake and JSHint
 
    While editing JavaScript is baked into Emacs, it is kinda cool to
@@ -908,7 +1016,7 @@ organize it and take notes on all the complexity.
 
    Git is [[http://emacswiki.org/emacs/Git][already part of Emacs]]. However, [[http://philjackson.github.com/magit/magit.html][Magit]] is sweet.
    
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle no
   (require 'magit)
   (define-key global-map "\M-\C-g" 'magit-status)
 #+END_SRC
@@ -984,6 +1092,26 @@ organize it and take notes on all the complexity.
   
   (define-key global-map "\C-x\C-n" 'ngrep)
   (define-key global-map "\C-x\C-r" 'rgrep)
+#+END_SRC
+
+
+** Spell Checking
+
+   I like spell checking with [[http://www.emacswiki.org/emacs/FlySpell][FlySpell]].
+
+#+BEGIN_SRC elisp
+  (setq ispell-local-dictionary "~/Work/dictionary.txt")
+
+  (dolist (hook '(text-mode-hook))
+    (add-hook hook (lambda () (flyspell-mode 1))))
+#+END_SRC
+
+   If I find any =text-mode= derived mode that I don't want to
+   spell-check, then I need to use the following:
+
+#+BEGIN_SRC elisp :tangle no
+  (dolist (hook '(change-log-mode-hook log-edit-mode-hook))
+    (add-hook hook (lambda () (flyspell-mode -1))))
 #+END_SRC
 
 * Technical Artifacts
