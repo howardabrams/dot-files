@@ -128,6 +128,7 @@ organize it and take notes on all the complexity.
    'magit-simple-keys
    'markdown-mode
    'mustache-mode
+   'nlinum
    'nrepl
    'org
    'org-mime
@@ -455,6 +456,16 @@ brew install ispell
 #+BEGIN_SRC elisp
   (setq vc-make-backup-files t)
 #+END_SRC
+
+*** Line Numbers
+
+    Let's create keystrokes to turn on/off line numbering:
+
+#+BEGIN_SRC elisp
+  (define-key mac-key-mode-map [(alt k)] 'nlinum-mode)
+#+END_SRC
+
+    Do we want this to turn on automatically with certain modes?
 
 *** Smart Scan
 
@@ -1110,6 +1121,6 @@ brew install ispell
 #+PROPERTY:    tangle ~/.emacs-ext.el
 #+PROPERTY:    eval no-export
 #+PROPERTY:    comments org
-#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
 #+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
 #+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
