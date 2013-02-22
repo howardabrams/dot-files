@@ -220,6 +220,19 @@ organize it and take notes on all the complexity.
 brew install ispell
 #+END_SRC
 
+*** Support for GMAIL
+
+    While reading email in Emacs is generally "fine", I like to use
+    it because I can create direct links between my notes and the
+    mail messages I get.
+
+    To send email through Gmail, you'll need the TLS package
+    installed. Using [[http://mxcl.github.com/homebrew/][Homebrew]] is simple enough:
+
+#+BEGIN_SRC sh :tangle no
+  brew install gnutls
+#+END_SRC
+
 * General Settings
 
 ** Extra Packages
@@ -491,7 +504,7 @@ brew install ispell
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-02")
+  (setq current-sprint "2013-04")
   
   (defun get-current-sprint-file ()
     (expand-file-name (concat "~/Dropbox/org/gilt/Sprint-" current-sprint ".org")))
@@ -656,7 +669,7 @@ brew install ispell
    consulting). 
 
    With this setting, each time you turn an entry from a TODO state
-   into the DONE state, a line ‘CLOSED: [timestamp]’ will be inserted
+   into the DONE state, a line 'CLOSED: [timestamp]' will be inserted
    just after the headline. If you turn the entry back into a TODO
    item through further state cycling, that line will be removed
    again.
@@ -708,6 +721,20 @@ brew install ispell
   (setq org-export-html-style "<link rel='stylesheet' href='http://www.howardism.org/styles/org-export-html-style.css' type='text/css'/>
   <script src='http://use.edgefonts.net/source-sans-pro.js'></script>
   <script src='http://use.edgefonts.net/source-code-pro.js'></script>")
+#+END_SRC
+
+*** Default Export Settings
+
+    To make the =org-mode= export defaults closer to my liking
+    (without having to put specific #+PROPERTY commands), start by
+    =describe-variable= the =org-export-plist-vars= variable.
+
+    This returns the list of variables that can be customized:
+
+#+BEGIN_SRC elisp
+  (setq org-export-with-section-numbers nil)
+  (setq org-export-with-toc nil)
+  (setq org-export-skip-text-before-1st-heading nil)
 #+END_SRC
 
 *** Publishing as Presentation
@@ -835,6 +862,12 @@ brew install ispell
     (context 2))
 #+END_SRC
 
+   Really want to try out my new [[file:~/Dropbox/Clojure/clojuredocs-emacs/org/clojuredocs.org][ClojureDocs functions]]:
+
+#+BEGIN_SRC elisp
+  (load-library "clojuredocs")
+#+END_SRC
+
 *** Paredit
 
     One of the cooler features of Emacs is the [[http://emacswiki.org/emacs/ParEdit][ParEdit mode]] which
@@ -908,27 +941,33 @@ brew install ispell
 
 #+BEGIN_SRC elisp
   (setq js-basic-indent 2)
+
+  (setq js2-basic-offset 2)
+  (setq js2-cleanup-whitespace t)
+  (setq js2-enter-indents-newline t)
+  (setq js2-global-externs "jQuery $")
+  (setq js2-indent-on-enter-key t)
+  (setq js2-mode-indent-ignore-first-tab t)
+
+  (autoload 'js2-mode "js2-mode" nil t)
+  (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 #+END_SRC
 
-#+BEGIN_SRC elisp
-(autoload 'espresso-mode "espresso" "Start espresso-mode" t)
-#+END_SRC
    Change the word "function" to just an "f":
 
 #+BEGIN_SRC elisp
   (font-lock-add-keywords
-   'js-mode `(("\\(function *\\)("
-                     (0 (progn (compose-region (match-beginning 1) (match-end 1)
-                                               "ƒ")
-                               nil)))))
+   'js2-mode `(("\\(function *\\)("
+               (0 (progn (compose-region (match-beginning 1) (match-end 1) "ƒ")
+                         nil)))))
 #+END_SRC
 
    Place warning font around TODO and others:
 
 #+BEGIN_SRC elisp
-(font-lock-add-keywords 'js-mode
-                        '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
-                           1 font-lock-warning-face t)))
+  (font-lock-add-keywords 'js2-mode
+                          '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
+                             1 font-lock-warning-face t)))
 #+END_SRC
 
 *** FlyMake and JSHint
@@ -939,8 +978,8 @@ brew install ispell
 
 #+BEGIN_SRC elisp
   ;; Make sure that PATH can reference the 'jshint' executable:
-  (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
-  (setq exec-path '( "/usr/local/bin" "/usr/bin" ))
+  (setenv "PATH" (concat "/usr/local/bin:/opt/local/bin:" (getenv "PATH")))
+  (setq exec-path '( "/usr/local/bin" "/usr/bin" "/opt/local/bin"))
   
   (require 'flymake-jshint)
   (add-hook 'js-mode-hook
@@ -981,31 +1020,64 @@ brew install ispell
 
 #+BEGIN_SRC elisp
   (require 'js-comint)
+  (setenv "NODE_NO_READLINE" "1")   ;; Turn off fancy node prompt
   ;; Use node as our repl
   (setq inferior-js-program-command "node")
-   
+#+END_SRC
+
+    According to [[http://nodejs.org/api/all.html#all_repl][these instructions]], we set the =NODE_NO_READLINE=
+    variable.
+
+    Need some prompt configuration for the REPL:
+
+#+BEGIN_SRC elisp
   (setq inferior-js-mode-hook
         (lambda ()
           ;; We like nice colors
           (ansi-color-for-comint-mode-on)
           ;; Deal with some prompt nonsense
-          (add-to-list 'comint-preoutput-filter-functions
-                       (lambda (output)
-                         (replace-regexp-in-string ".*1G\.\.\..*5G" "..."
-                       (replace-regexp-in-string ".*1G.*3G" "&gt;" output))))))
+          (add-to-list
+           'comint-preoutput-filter-functions
+           (lambda (output)
+             (replace-regexp-in-string "\033\\[[0-9]+[GK]" "" output)
+             (replace-regexp-in-string ".*1G.*3G" "&GT;" output)
+             (replace-regexp-in-string "&GT;" "> " output)
+  ))))
 #+END_SRC
 
     Now, we can start up a JavaScript node REPL: =run-js=
 
     Let's test this out by loading this into a separate buffer (=C-c '=)
-    and then doing a =M-x send-buffer-and-go=. The problem is
-    intrepreting node's =>= prompt as =&GT;= ... sigh.
+    and then doing a =M-x send-buffer-and-go=.
 
-#+BEGIN_SRC js :tangle no
+    Set up some helpful keyboard instructions:
+
+#+BEGIN_SRC elisp
+  (add-hook 'js2-mode-hook
+          (lambda () 
+            (local-set-key (kbd "C-x C-e") #'js-send-buffer-and-go)
+            (local-set-key (kbd "C-x r")   #'run-js)))
+#+END_SRC
+
+    Wanna try it all out?
+
+#+BEGIN_SRC js2 :tangle no
   function factorial(n) { 
     return n == 0 ? 1 : n * factorial(n - 1);
   }
   factorial(16);
+#+END_SRC
+
+** Java
+*** JSP
+
+    Dealing with [[http://www.emacswiki.org/emacs/JspMode][JSP files]] is bad. But we'll try the [[http://www.crossleys.org/~jim/work/jsp.el][jsp-mode]] first:
+
+#+BEGIN_SRC elisp
+    ; (autoload 'jsp-mode "jsp" "JSP" t)
+
+    ; Tell emacs to use jsp-mode for .jsp files
+    (add-to-list 'auto-mode-alist '("\\.jsp\\'" . html-mode))
 #+END_SRC
 
 * Tools
@@ -1091,13 +1163,32 @@ brew install ispell
   (define-key global-map "\C-x\C-r" 'rgrep)
 #+END_SRC
 
+   Don't forget that after doing a =C-x C-f= to find a file, you can
+   hit another =M-f= to do a find the given directory (and subs).
+
+   Also, you can do a full locate with =C-x C-l=:
+
+#+BEGIN_SRC elisp
+  (define-key global-map "\C-x\C-l" 'locate)
+  (setq locate-command "mdfind")  ;; Use Mac OS X's Spotlight
+#+END_SRC
 
 ** Spell Checking
 
-   I like spell checking with [[http://www.emacswiki.org/emacs/FlySpell][FlySpell]].
+
+   I like spell checking with [[http://www.emacswiki.org/emacs/FlySpell][FlySpell]], which uses =ispell=.
+
+   To build a dictionary hash (seems important now), do this:
+
+#+BEGIN_SRC sh :tangle no
+  buildhash ~/Dropbox/dictionary-personal.txt /opt/local/lib/english.aff ~/Dropbox/dictionary-personal.txt.hash
+#+END_SRC
+
+   Then, we can use it like:
 
 #+BEGIN_SRC elisp
-  (setq ispell-local-dictionary "~/Work/dictionary.txt")
+  (setq ispell-personal-dictionary 
+      (concat (getenv "HOME") "/Dropbox/dictionary-personal.txt"))
 
   (dolist (hook '(text-mode-hook))
     (add-hook hook (lambda () (flyspell-mode 1))))
@@ -1107,10 +1198,51 @@ brew install ispell
    spell-check, then I need to use the following:
 
 #+BEGIN_SRC elisp :tangle no
-  (dolist (hook '(change-log-mode-hook log-edit-mode-hook))
+  (dolist (hook '(change-log-mode-hook log-edit-mode-hook org-agenda-mode-hook))
     (add-hook hook (lambda () (flyspell-mode -1))))
 #+END_SRC
 
+** Closing Windows
+
+   I would like Command-W to close a frame, but only if it only has a
+   single window in it. I found this code on [[http://www.emacswiki.org/emacs/frame-cmds.el][this site]].\
+
+#+BEGIN_SRC elisp
+  (defun delete-single-window (&optional window)
+    "Remove WINDOW from the display.  Default is `selected-window'.
+  If WINDOW is the only one in its frame, then `delete-frame' too."
+    (interactive)
+    (save-current-buffer
+      (setq window (or window (selected-window)))
+      (select-window window)
+      (kill-buffer)
+      (if (one-window-p t) 
+          (delete-frame) 
+          (delete-window (selected-window)))))
+  
+  (define-key mac-key-mode-map [(alt w)] 'delete-single-window)
+#+END_SRC
+
+** Mail with Gnus
+
+   I would like to hook up my [[http://www.emacswiki.org/emacs/GnusGmail][Gmail with GNUS mail reader]].
+   See these [[http://www.mostlymaths.net/2010/12/emacs-30-day-challenge-using-gnus-to.html][detailed instructions]] if we run into problems.
+   The instructions are contained in [[file:gnus.org][gnus.org]] file.
+
+#+BEGIN_SRC elisp
+  (load-library "gnus-config")
+#+END_SRC
+
+** Reading Mail?
+
+   Well, Gnus is pretty gunky. It works, but ...
+
+#+BEGIN_SRC elisp :tangle no
+(autoload 'vm "~/vm" "Start VM on your primary inbox." t)
+(autoload 'vm-visit-folder "~/vm" "Start VM on an arbitrary folder." t)
+(autoload 'vm-mail "~/vm" "Send a mail message using VM." t)
+(autoload 'vm-submit-bug-report "~/vm" "Send a bug report about VM." t)
+#+END_SRC
 * Technical Artifacts
 
   Before you can build this on a new system, make sure that you put
