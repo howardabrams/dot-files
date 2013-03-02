@@ -1,0 +1,172 @@
+#+TITLE: GNUS Configuration
+#+AUTHOR: Howard Abrams
+#+EMAIL: howard.abrams@gmail.com
+#+DATE: 2013-01-28 Mon
+
+   I would like to hook up my [[http://www.emacswiki.org/emacs/GnusGmail][Gmail with GNUS mail reader]].
+   See these [[http://www.mostlymaths.net/2010/12/emacs-30-day-challenge-using-gnus-to.html][detailed instructions]] if we run into problems.
+   The instructions are contained in [[file:gnus.org][gnus.org]] file.
+
+#+BEGIN_SRC elisp
+  (require 'gnus)
+#+END_SRC
+
+* General Configuration
+
+  All Gmail system labels have a prefix =[Gmail]=, which matches the
+  default value of gnus-ignored-newsgroups. A workaround is to
+  redefine it as follows:
+
+#+BEGIN_SRC elisp
+  (setq gnus-ignored-newsgroups "")
+#+END_SRC
+
+  I also saw this version:
+
+#+BEGIN_SRC elisp :tangle no
+  (setq gnus-ignored-newsgroups "^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]")
+#+END_SRC
+
+  My version of gnus in my Mac does not handle html messages correctly
+  (the one in the netbook does, I guess it is a different version). The
+  following will chose plaintext every time this is possible.
+
+#+BEGIN_SRC elisp
+  (setq mm-discouraged-alternatives '("text/html" "text/richtext"))
+#+END_SRC
+
+* IMAP
+
+  And this to configure gmail imap
+
+#+BEGIN_SRC elisp
+    (setq gnus-select-method '(nnimap "gmail"
+                                      (nnimap-address "imap.gmail.com")
+                                      (nnimap-server-port 993)
+                                      (nnimap-stream ssl)))
+    (setq gnus-secondary-select-methods
+        '((nnimap "personal"
+                  (nnimap-address "imap.gmail.com")
+                  (nnimap-server-port 993)
+                  (nnimap-stream ssl)
+                  (nnimap-authinfo-file "~/.authinfo"))
+          (nnimap "work"
+                  (nnimap-address "imap.gmail.com")
+                  (nnimap-server-port 993)
+                  (nnimap-stream ssl)
+                  (nnimap-authinfo-file "~/.authinfo"))))
+#+END_SRC
+
+* SMTP
+
+  Available SMTP accounts. The format is
+
+  - type of connection
+  - account in the from field 
+  - smtp server
+  - port
+  - login name
+  - password.
+
+  You can leave the password field as NIL and emacs will ask every time.
+
+#+BEGIN_SRC elisp
+  (defvar smtp-accounts 
+     '(
+       (ssl "howard.abrams@gmail.com" "smtp.gmail.com"
+            587 "howard.abrams@gmail.com") ;; Last entry is password
+       (ssl "howard@howardabrams.com" "smtp.gmail.com"
+            587 "howard@howardabrams.com")
+       (ssl "habrams@gilt.com" "smtp.gmail.com"
+            587 "habrams@gilt.com" ) ))
+#+END_SRC
+
+  A /too-simplistic approach/ is the following:
+
+#+BEGIN_SRC elisp :tangle no
+  (setq message-send-mail-function 'smtpmail-send-it
+        smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
+        smtpmail-auth-credentials '(("smtp.gmail.com" 587 "habrams@gilt.com" nil))
+        smtpmail-default-smtp-server "smtp.gmail.com"
+        smtpmail-smtp-server "smtp.gmail.com"
+        smtpmail-smtp-service 587
+        smtpmail-local-domain "gilt.com")
+#+END_SRC
+
+  Now lets configure smtpmail.el with your name and functions to send
+  mail using your smtp accounts by changing the from field
+
+#+BEGIN_SRC elisp
+  (require 'smtpmail)
+  (setq send-mail-function 'smtpmail-send-it
+        message-send-mail-function 'smtpmail-send-it
+        mail-from-style nil user-full-name "Howard Abrams"
+        smtpmail-debug-info t smtpmail-debug-verb t)
+  
+  (defun set-smtp (mech server port user password)
+    "Set related SMTP variables for supplied parameters."
+    (setq smtpmail-smtp-server server smtpmail-smtp-service port
+          smtpmail-auth-credentials (list (list server port user
+                                                password)) smtpmail-auth-supported (list mech)
+                                                smtpmail-starttls-credentials nil)
+    (message "Setting SMTP server to `%s:%s' for user `%s'."
+             server port user))
+  
+  (defun set-smtp-ssl (server port user password &optional key
+                              cert)
+    "Set related SMTP and SSL variables for supplied parameters."
+    (setq starttls-use-gnutls t
+          starttls-gnutls-program "gnutls-cli"
+          starttls-extra-arguments nil smtpmail-smtp-server server
+          smtpmail-smtp-service port
+          smtpmail-auth-credentials (list (list server port user
+                                                password)) smtpmail-starttls-credentials (list (list
+                                                                                                server port key cert)))
+    (message
+     "Setting SMTP server to `%s:%s' for user `%s'. (SSL enabled.)" server port user))
+  
+  (defun change-smtp ()
+    "Change the SMTP server according to the current from line."
+    (save-excursion
+      (loop with from = (save-restriction
+                          (message-narrow-to-headers)
+                          (message-fetch-field "from"))
+            for (auth-mech address . auth-spec) in smtp-accounts
+            when (string-match address from) do (cond
+                                                 ((memq auth-mech '(cram-md5 plain login))
+                                                  (return (apply 'set-smtp (cons auth-mech auth-spec))))
+                                                 ((eql auth-mech 'ssl)
+                                                  (return (apply 'set-smtp-ssl auth-spec)))
+                                                 (t (error "Unrecognized SMTP auth. mechanism: `%s'." auth-mech))) 
+            finally (error "Cannot infer SMTP information."))))
+#+END_SRC
+
+The previous function will complain if you fill the from field with
+an account not present in smtp-accounts.
+
+#+BEGIN_SRC elisp
+  (defvar %smtpmail-via-smtp (symbol-function 'smtpmail-via-smtp))
+  
+  (defun smtpmail-via-smtp (recipient smtpmail-text-buffer)
+    (with-current-buffer smtpmail-text-buffer
+      (change-smtp))
+    (funcall (symbol-value '%smtpmail-via-smtp) recipient
+             smtpmail-text-buffer))
+#+END_SRC
+
+This wraps send mail via smtp mail, to be able to send multiple
+messages with smtpmail.
+
+* Technical Artifacts
+
+  Before you can build this on a new system, make sure that you put
+  the cursor over any of these properties, and hit: =C-c C-c=
+
+#+DESCRIPTION: A literate programming version of my GNUS email configuration for Emacs
+#+PROPERTY:    results silent
+#+PROPERTY:    tangle ~/.emacs.d/gnus-config.el
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js

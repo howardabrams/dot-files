@@ -1,0 +1,295 @@
+#+TITLE:     Shell Profile
+#+AUTHOR:    Howard Abrams
+#+EMAIL:     howard.abrams@gmail.com
+#+DATE:      2013-02-26 Tue
+
+
+#+BEGIN_SRC sh
+  echo "> > > .bash.all.sh"
+#+END_SRC
+
+Common functions and aliases that I can share among all my computers.
+This file is written to =$HOME/.bash.all.rc= and should be called
+from =.bashrc= and/or =.zshrc=, via:
+
+#+BEGIN_SRC sh :tangle no
+  if [ -f "$HOME/.bash.all.sh" ]; then
+    source "$HOME/.bash.all.sh"
+  fi
+#+END_SRC
+
+According to [[http://shreevatsa.wordpress.com/2008/03/30/zshbash-startup-files-loading-order-bashrc-zshrc-etc/][this article]]:
+
+  - For bash, put stuff in =~/.bashrc=, and make =~/.profile= source it.
+  - For zsh, put stuff in =~/.zshrc=, which is always executed.
+
+Machine-specific gunk goes in the standard =.bashrc= and =~/.zshrc= files,
+and global variables are stored in =.profile= and =.zsh_profile=.
+
+* Technical Gunk
+
+  If not running interactively, we don't need to do anything:
+
+#+BEGIN_SRC sh
+  [ -z "$PS1" ] && return
+#+END_SRC
+
+  The following are the tangled settings. Type: =C-c C-v t=
+  to create the script file.
+
+#+PROPERTY: tangle ~/.bash.all.sh
+#+PROPERTY: comments org
+
+* Editor
+
+  Wrapper around the standard =emacsclient= executable. It attempts
+  to be smart about if it should "wait" or not based on whether we
+  call =e= from an interactive shell.
+
+#+BEGIN_SRC sh :tangle ~/bin/e :shebang #!/bin/bash
+  if [ -z $PS1 ]
+  then
+      # non-interactive
+      /Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -c -q -a /Applications/Emacs.app/Contents/MacOS/Emacs $* &
+  else
+      # interactive
+      /Applications/Emacs.app/Contents/MacOS/bin/emacsclient -c -q -a /Applications/Emacs.app/Contents/MacOS/Emacs $*
+  fi
+#+END_SRC
+
+  Wrapper around the =emacsclient=. This tries not to start up a new
+  frame (note the missing -c option), but that doesn't seem to bother
+  it much.
+
+#+BEGIN_SRC sh :tangle ~/bin/emacs :shebang #!/bin/bash
+  /Applications/Emacs.app/Contents/MacOS/bin/emacsclient -q -a /Applications/Emacs.app/Contents/MacOS/Emacs $*
+#+END_SRC
+
+  It is unclear whether =e= is a good version for the =EDITOR=
+  variable. According to the /info/ docs, we should do the following:
+
+#+BEGIN_EXAMPLE
+  EDITOR="emacsclient --alternate-editor emacs +%d %s"
+#+END_EXAMPLE
+
+  However, the =emacs= is not a very good executable, so it should
+  really be:
+
+#+BEGIN_EXAMPLE
+  EDITOR="/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -a /Applications/Emacs.app/Contents/MacOS/Emacs +%d %s"
+#+END_EXAMPLE
+
+* Listing Files
+
+  Using the GNU versions of =ls=, which can be installed by Homebrew
+  or Ports, via: =port install coreutils=
+
+#+BEGIN_SRC sh
+  alias ls="gls --color"
+  alias ll="gls --color -lhA"
+#+END_SRC
+
+* Finding Files
+
+  The interface to =find=, while powerful, if quite obnoxious. Here
+  is a few wrapper functions.
+
+** f
+
+   Wrapper around 'find' that excludes some useless directories, like
+   =classes= and =.git= that ignores case, and does an /or/ around
+   every file name:
+
+#+BEGIN_SRC sh
+  function f {
+      find * -not \( -path '*classes*' -or -path '.git*' \) -and -iname $(perl -e 'print join " -o -iname ", @ARGV' $*)
+  }
+#+END_SRC
+
+** sf
+
+   Wrapper around 'find' that returns only a single file. Helpful for calls
+   to an editor when you are pretty sure of the name of the file.
+
+#+BEGIN_SRC sh
+  function sf {
+      f "*$1*" | head -1
+  }
+#+END_SRC
+
+** ef
+
+  Combines my 'f' and 'e' functions to easily edit a file in the local
+  directory tree solely by the file name.
+
+#+BEGIN_SRC sh
+  function ef {
+      e $(sf $*)
+  }
+#+END_SRC
+
+* Window Title
+
+  Can we title the terminal window? Note, don't call this function
+  =title= or bad things will happen.
+
+#+BEGIN_SRC sh
+  function xtitle {
+      # Old Style? echo -n -e "\033]0;$*\007";;
+      case "$1" in
+          -t)     shift; echo "\e]1;$*\a";;
+          -w)     shift; echo "\e]2;$*\a";;
+          -b)     shift; echo "\e]0;$*\a";;
+           *)     echo "\e]0;$*\a";;
+      esac
+  }
+#+END_SRC
+
+* Tab
+
+  Opens a tab in the `Terminal` program and start something running in it.
+
+#+BEGIN_SRC sh
+  function xtab() {
+    TITLE="$1"
+    if [[ $1 = "-t" ]]
+    then
+        TITLE="$2"
+        shift
+        shift
+    fi
+    
+    HISTFILE=$HOME/.zsh_histories/$(echo $TITLE | sed 's/ /_/g')
+  
+    osascript <<EOF
+      tell application "System Events"
+        tell process "Terminal" to keystroke "t" using command down
+      end
+      tell application "Terminal"
+        activate
+        set custom title of first window to "$TITLE"
+        -- do script "echo '\e]1;$TITLE\a'" in window 1
+        do script with command "xtitle $TITLE; HISTFILE=$HISTFILE; clear; $*" in window 1
+      end tell
+  EOF
+  }
+#+END_SRC
+
+* Note Aliases
+
+#+BEGIN_SRC sh
+alias gilt="$HOME/bin/note -e aquamacs -g gilt -t gilt"
+alias work="$HOME/bin/note -e aquamacs -g gilt -t gilt"
+alias diary="$HOME/bin/note -e aquamacs -g personal -t personal"
+export LATEST="$HOME/Dropbox/Notes/gilt/latest"
+
+alias notes-find="notes -a find"
+alias notes-view="notes -a view"
+alias notes-list="notes -a list"
+alias notes-show="notes -a find -f"
+alias notes-export="notes -a export"
+
+if [ -f "$HOME/.notes/notes-tag-helper" ]
+then
+    source "$HOME/.notes/notes-tag-helper"
+fi
+#+END_SRC
+
+* Beep
+
+  I can put this at the end of a long running command and have it
+  tell me when it is complete.
+
+#+BEGIN_SRC sh
+  function beep {
+      if [ $? -eq 0 ]
+      then
+          echo $1
+          MSG="The background process has completed."
+          SAY="I am done."
+          if [ -n "$1" ]; then
+              MSG="$1 has completed."
+              SAY="$1 is done."
+          fi
+          terminal-notifier -message "$MSG" -title "Process Complete"
+          say "$SAY"
+      else
+          MSG="The background process has failed."
+          SAY="I have failed."
+          if [ -n "$1" ]; then
+              MSG="$1 has failed."
+              SAY="$1 has failed."
+          fi
+          terminal-notifier -message "$MSG" -title "Process Failed"
+          say "$SAY"
+          /bin/ls /no-file 2>/dev/null   # Make next process know previous failed
+      fi
+  }
+#+END_SRC
+
+* Git Helpers
+** Tab Completion
+
+   Complete expected git commands by pressing the tab key:
+
+#+BEGIN_SRC sh
+if [ -e $GIT_HOME/contrib/completion/git-completion.bash -a "$0" = "-bash" ]
+then
+    . $GIT_HOME/contrib/completion/git-completion.bash
+fi
+#+END_SRC
+
+** Whitespace Removers
+
+   These alias remove trailing whitespace and lines containing
+   nothing by spaces/tabs.
+
+#+BEGIN_SRC sh
+  alias pre-commit='git status --porcelain | egrep '\''^[MA]'\'' | cut -d '\'' '\'' -f 3 | xargs perl -pi -e '\''s/\t/    /g; s/[\t ]+$//'\'''
+  alias pre-add='git status --porcelain | grep "^ M" | cut -d" " -f3 | xargs git add'
+  alias white='xargs perl -pi -e '\''s/\t/    /g; s/[\t ]+$//'\'''
+#+END_SRC
+
+** Pull
+
+   Allows me to pull new information from the remote branch, but not
+   loose anything.
+
+#+BEGIN_SRC sh
+function pull {
+    git stash
+    git pull
+    git stash pop
+}
+#+END_SRC
+* Directory Bookmarks
+
+  [[https://github.com/huyng/bashmarks][This script]] allows us to leave bookmarks to "popular" directories,
+  to jump directly there with a single name.
+
+  - s bookmarkname - saves the curr dir as bookmarkname
+  - g bookmarkname - jumps to the that bookmark
+  - g b[TAB] - tab completion is available
+  - p bookmarkname - prints the bookmark
+  - p b[TAB] - tab completion is available
+  - d bookmarkname - deletes the bookmark
+  - d [TAB] - tab completion is available
+  - l - list all bookmarks
+
+#+BEGIN_SRC sh
+if [ -e ~/.bash.d/bashmarks.sh ]
+then
+    source ~/.bash.d/bashmarks.sh
+fi
+#+END_SRC
+* Language Support
+
+** Scala Helpers
+
+   SBT requires more memory than it deserves.
+
+#+BEGIN_SRC sh
+alias bigsbt='java -Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=384M -jar /opt/local/share/sbt/sbt-launch.jar'
+#+END_SRC
+
+

@@ -1,0 +1,70 @@
+#+TITLE Gilt-Specific Shell Functions
+
+* Projects
+
+  Some projects that I deal with a lot needs some special love and
+  care and functions.
+
+** Swift
+
+   Build and run the =swift= project:
+
+#+BEGIN_SRC sh
+alias swift-build-and-run='ant clean dist; beep "the Swift build" && ( JVM_DEBUG_ADDRESS=5005 bin/development.sh ; beep Swift )'
+alias swift-build='ant clean dist; beep "the Swift build"'
+alias swift-run='JVM_DEBUG_ADDRESS=5005 bin/development.sh ; beep Swift'
+#+END_SRC
+
+** Order Service
+
+   Building the =order_service= project is pretty complicated.
+
+#+BEGIN_SRC sh
+  alias order_build='cd /web/order_service/external &&
+  ant $* clean test publish:development &&
+  cd /web/order_service/core &&
+  ant $* clean test publish:development &&
+  cd /web/order_service/client &&
+  ant $* clean test publish:development &&
+  cd /web/order_service/server &&
+  ant $* clean test dist && echo Great, now run the fucker with: bin/start-dev.sh'
+#+END_SRC
+
+* Services
+
+** Postgresql
+
+   Stop and start the Posgresql Database server
+
+#+BEGIN_SRC sh
+  alias start-postgres='sudo -u postgres /opt/local/lib/postgresql90/bin/pg_ctl -D /opt/local/var/db/postgresql90/defaultdb/ start -m f'
+  alias stop-postgres='sudo -u postgres /opt/local/lib/postgresql90/bin/pg_ctl -D /opt/local/var/db/postgresql90/defaultdb/ stop -m f'
+#+END_SRC
+
+** Nginx
+
+   Start and stop the standard installation of nginx installed in
+   =/opt/nginx=.
+
+#+BEGIN_SRC sh
+  alias start-nginx='sudo /opt/nginx/sbin/nginx -c /web/tools/config/nginx/new/nginx.conf'
+  alias stop-nginx='sudo /opt/nginx/sbin/nginx -c /web/tools/config/nginx/new/nginx.conf -s stop'
+#+END_SRC
+
+** Rabbit
+
+   Start and stop the RabbitMQ system.
+
+#+BEGIN_SRC sh
+  alias start-rabbit='sudo rabbitmq-server -detached'
+  alias stop-rabbit='sudo rabbitmqctl stop'
+#+END_SRC
+
+* Technical Gunk
+
+  The following are the tangled settings. Type: =C-c C-v t=
+  to create the script file.
+
+#+PROPERTY: tangle ~/.zshenv-gilt
+#+PROPERTY: comments org
+#+PROPERTY: shebang #!/usr/local/bin/zsh

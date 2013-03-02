@@ -168,6 +168,12 @@ organize it and take notes on all the complexity.
   curl -o ~/bin/plantuml.jar http://sourceforge.net/projects/plantuml/files/plantuml.jar/download
 #+END_EXAMPLE
 
+    We then need to reference this Jar file:
+
+#+BEGIN_SRC elisp
+  (setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+#+END_SRC
+
 *** Org-Mode Installation
 
     The [[http://orgmode.org][org-mode]] program is so critical, that I want a version > 7.9.
@@ -423,6 +429,18 @@ brew install ispell
   (load-library "line-move")
 #+END_SRC
 
+** Recent File List
+
+   According to [[http://www.emacswiki.org/emacs-es/RecentFiles][this article]], Emacs already has the recent file
+   listing available, just not turned on.
+
+#+BEGIN_SRC elisp
+  (require 'recentf)
+  (recentf-mode 1)
+  (setq recentf-max-menu-items 25)
+  (global-set-key "\C-x\ \C-r" 'recentf-open-files)
+#+END_SRC
+
 ** Miscellaneous Settings
 
 *** IDO (Interactively DO Things)
@@ -498,13 +516,31 @@ brew install ispell
    On a semi-regular basis, we store some *important* files as
    variables that can be referenced elsewhere.
 
+*** Recent and Heavily Used Files
+
+    We want both a recently seen files as well, as a top 10. This
+    /Top 10/ file list can just be an Org file, right?
+
+#+BEGIN_SRC elisp
+  (defun find-file-top-10 ()
+    (interactive)
+    (find-file "~/.emacs-recent.org"))
+
+  (defun find-file-current-sprint ()
+    (interactive)
+    (find-file current-sprint-file))
+
+  (define-key global-map "\C-x\C-y" 'find-file-top-10)
+  (define-key global-map "\C-x\C-u" 'find-file-current-sprint)
+#+END_SRC
+
 *** Org-Mode Sprint Note Files
 
     At the beginning of each sprint, we need to set this to the new
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-04")
+  (setq current-sprint "2013-POP24")
   
   (defun get-current-sprint-file ()
     (expand-file-name (concat "~/Dropbox/org/gilt/Sprint-" current-sprint ".org")))
@@ -735,6 +771,14 @@ brew install ispell
   (setq org-export-with-section-numbers nil)
   (setq org-export-with-toc nil)
   (setq org-export-skip-text-before-1st-heading nil)
+
+  (setq org-export-html-postamble nil) ;; We don't need any gunk at end
+
+  ; (setq org-export-creator-info nil)
+  ; (setq org-export-email-info nil)
+  ; (setq org-export-author-info nil)
+  ; (setq org-export-time-stamp-file nil)
+  ; (setq org-export-html-with-timestamp nil)
 #+END_SRC
 
 *** Publishing as Presentation
@@ -979,7 +1023,8 @@ brew install ispell
 #+BEGIN_SRC elisp
   ;; Make sure that PATH can reference the 'jshint' executable:
   (setenv "PATH" (concat "/usr/local/bin:/opt/local/bin:" (getenv "PATH")))
-  (setq exec-path '( "/usr/local/bin" "/usr/bin" "/opt/local/bin"))
+  (setq exec-path '( "/usr/local/bin" "/usr/bin" "/opt/local/bin"
+                     (concat (getenv "HOME") "/bin")))
   
   (require 'flymake-jshint)
   (add-hook 'js-mode-hook

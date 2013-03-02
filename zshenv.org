@@ -1,0 +1,317 @@
+#+TITLE: Z Shell Environment
+
+Z Shell is pretty bitchin. To begin a new setup, run the following
+command which will create a =.zshrc= file:
+
+#+BEGIN_SRC sh
+  echo "> > > .zshenv"
+#+END_SRC
+
+#+BEGIN_SRC sh :tangle no
+  autoload -U compinstall && compinstall
+#+END_SRC
+
+* Environment Variables
+
+  Path to the oh-my-zsh configuration.
+
+#+BEGIN_SRC sh
+  ZSH=$HOME/.oh-my-zsh
+#+END_SRC
+
+  I really should create my own theme based on the prompts in this
+  file, but we'll do that later.
+
+#+BEGIN_SRC sh
+  unset ZSH_THEME
+#+END_SRC
+
+  Most important is the =EDITOR= to start up an =emacsclient=:
+
+#+BEGIN_SRC sh
+  export ALTERNATE_EDITOR=/Applications/Emacs.app/Contents/MacOS/Emacs
+  export EDITOR=/Applications/Emacs.app/Contents/MacOS/bin/emacsclient
+  export VISUAL="$EDITOR -c"
+#+END_SRC
+
+  Disable autosetting terminal title.
+
+#+BEGIN_SRC sh
+  DISABLE_AUTO_TITLE="true"
+#+END_SRC
+
+  Displays red dots while waiting for completion
+
+#+BEGIN_SRC sh
+  COMPLETION_WAITING_DOTS="true"
+#+END_SRC
+
+  Disable bi-weekly auto-update checks
+
+#+BEGIN_SRC sh
+DISABLE_AUTO_UPDATE="true"
+#+END_SRC
+
+** History
+
+   We will let the =HISTFILE= variable as it is.
+
+#+BEGIN_SRC sh
+SAVEHIST=1000
+HISTSIZE=1000
+#+END_SRC
+
+** Path
+
+   We want to add these directories, but only if they exist. This
+   makes this more portable between my computers.
+
+#+BEGIN_SRC sh
+  OLDPATH=$PATH
+  PATH=$HOME/bin
+
+  for DIR in /web/tools/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/git/bin
+  do
+    if [[ -d $DIR ]]
+    then
+        PATH=$PATH:$DIR
+    fi
+  done
+  
+  PATH=$PATH:$OLDPATH
+#+END_SRC
+
+* Options
+
+  See [[http://linux.die.net/man/1/zshoptions][this page]] for all options.
+  Why would you type 'cd dir' if you could just type 'dir'?
+
+#+BEGIN_SRC sh
+  setopt AUTO_CD
+#+END_SRC
+
+  This makes cd = pushd
+
+#+BEGIN_SRC sh
+  setopt AUTO_PUSHD
+#+END_SRC
+
+  When you type in things, being case insensitive sounds like a good
+  idea:
+
+#+BEGIN_SRC sh
+  setopt NO_CASE_GLOB
+  setopt NO_CASE_MATCH
+#+END_SRC
+
+  I don't like every tab on my terminal sharing the same history.
+
+#+BEGIN_SRC sh
+  setopt NO_SHARE_HISTORY
+#+END_SRC
+
+* Key Bindings
+
+  On the Mac, open up the Terminal preferences, under your =Basic=
+  settings, select the =Keyboard= tab and select the checkbox for
+  =Use option as meta key= to take avantage of these.
+
+#+BEGIN_SRC sh
+  bindkey -e
+#+END_SRC
+
+  Meta-u to chdir to the parent directory.
+
+#+BEGIN_SRC sh
+  bindkey -s '\eu' '^Ucd ..; ls^M'
+#+END_SRC
+
+  If AUTO_PUSHD is set, Meta-p pops the dir stack
+
+#+BEGIN_SRC sh
+  bindkey -s '\ep' '^Upopd >/dev/null; dirs -v^M'
+#+END_SRC
+
+  Pipe the current command through less with M-l
+
+#+BEGIN_SRC sh
+  bindkey -s "\el" " 2>&1|less^M"
+#+END_SRC
+
+* Modules
+
+  Using the modules from [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]]. 
+  The plugins are in =~/.oh-my-zsh/plugins/*=
+
+#+BEGIN_SRC sh
+  plugins=(git osx terminalapp gnu-utils lein npm brew macports)
+#+END_SRC
+
+* Oh My Zsh
+
+  Load up the modules and other goodies from Oh my Zsh.
+
+#+BEGIN_SRC sh
+  source $ZSH/oh-my-zsh.sh
+#+END_SRC
+
+* Happy Prompt
+
+  We first need to load the special prompt features as well as the
+  nicer color variables:
+
+#+BEGIN_SRC sh
+  setopt prompt_subst
+  autoload -U colors && colors
+#+END_SRC
+
+  Our prompt checks the last command ran, and displays a red sad
+  face, if the command failed. Cute, true, but I'm not sure how
+  useful it is.
+
+  Prompt options:
+   * %n - User's name: habrams
+   * %m - Machine name
+   * %~ - Current directory with HOME substituted
+   * %c - Basename of the current directory
+   * %d - Current directory without substitution
+
+  Prompt colors: %{%F{red}%}
+   - red
+   - blue
+   - green
+   - yellow
+
+#+BEGIN_SRC sh
+  my_prompt_string() {
+    local ST=$?
+    PROMPT_SAD="%{%F{red}%}(O_o)%{$reset_color%}"
+    PROMPT_HAPPY="%{%F{green}%}(^_^)%{$reset_color%}"
+    PROMPT_REST="%{%F{yellow}%}%c %{%F{blue}%}➜ %{$reset_color%}"
+    if [[ $ST = 0 ]]
+    then
+        echo "$PROMPT_HAPPY $PROMPT_REST "
+    else
+        echo "$PROMPT_SAD $PROMPT_REST "
+    fi
+  }
+#+END_SRC
+
+  The prompt is simply the execution of our =my_prompt_string= function.
+
+#+BEGIN_SRC sh
+  PROMPT='$(my_prompt_string)'
+#+END_SRC
+
+* Git Support
+
+** Prompt
+
+   According to [[http://blog.joshdick.net/2012/12/30/my_git_prompt_for_zsh.html][this article]], we have a clever way of describing the
+   status of the current git repository with traffic lights.
+
+   Modify the colors and symbols in these variables as desired.
+
+#+BEGIN_SRC sh
+  GIT_PROMPT_SYMBOL="%{$fg[blue]%}±"
+  GIT_PROMPT_PREFIX="%{$fg[green]%}[%{$reset_color%}"
+  GIT_PROMPT_SUFFIX="%{$fg[green]%}]%{$reset_color%}"
+  GIT_PROMPT_AHEAD="%{$fg[red]%}ANUM%{$reset_color%}"
+  GIT_PROMPT_BEHIND="%{$fg[cyan]%}BNUM%{$reset_color%}"
+  GIT_PROMPT_MERGING="%{$fg_bold[magenta]%}⚡︎%{$reset_color%}"
+  GIT_PROMPT_UNTRACKED="%{$fg_bold[red]%}●%{$reset_color%}"
+  GIT_PROMPT_MODIFIED="%{$fg_bold[yellow]%}●%{$reset_color%}"
+  GIT_PROMPT_STAGED="%{$fg_bold[green]%}●%{$reset_color%}"
+#+END_SRC
+
+   Show Git branch/tag, or name-rev if on detached head
+
+#+BEGIN_SRC sh
+  parse_git_branch() {
+    (git symbolic-ref -q HEAD || git name-rev --name-only --no-undefined --always HEAD) 2> /dev/null
+  }
+#+END_SRC
+
+   Show different symbols as appropriate for various Git repository states
+
+#+BEGIN_SRC sh
+  parse_git_state() {
+    # Compose this value via multiple conditional appends.
+    local GIT_STATE=""
+  
+    local NUM_AHEAD="$(git log --oneline @{u}.. 2> /dev/null | wc -l | tr -d ' ')"
+    if [ "$NUM_AHEAD" -gt 0 ]; then
+      GIT_STATE=$GIT_STATE${GIT_PROMPT_AHEAD//NUM/$NUM_AHEAD}
+    fi
+  
+    local NUM_BEHIND="$(git log --oneline ..@{u} 2> /dev/null | wc -l | tr -d ' ')"
+    if [ "$NUM_BEHIND" -gt 0 ]; then
+      GIT_STATE=$GIT_STATE${GIT_PROMPT_BEHIND//NUM/$NUM_BEHIND}
+    fi
+  
+    local GIT_DIR="$(git rev-parse --git-dir 2> /dev/null)"
+    if [ -n $GIT_DIR ] && test -r $GIT_DIR/MERGE_HEAD; then
+      GIT_STATE=$GIT_STATE$GIT_PROMPT_MERGING
+    fi
+  
+    if [[ -n $(git ls-files --other --exclude-standard 2> /dev/null) ]]; then
+      GIT_STATE=$GIT_STATE$GIT_PROMPT_UNTRACKED
+    fi
+  
+    if ! git diff --quiet 2> /dev/null; then
+      GIT_STATE=$GIT_STATE$GIT_PROMPT_MODIFIED
+    fi
+  
+    if ! git diff --cached --quiet 2> /dev/null; then
+      GIT_STATE=$GIT_STATE$GIT_PROMPT_STAGED
+    fi
+  
+    if [[ -n $GIT_STATE ]]; then
+      echo "$GIT_PROMPT_PREFIX$GIT_STATE$GIT_PROMPT_SUFFIX"
+    fi
+  }
+#+END_SRC
+
+   If inside a Git repository, print its branch and state
+
+#+BEGIN_SRC sh
+  git_prompt_string() {
+    local git_where="$(parse_git_branch)"
+    [ -n "$git_where" ] && echo "$GIT_PROMPT_SYMBOL$(parse_git_state)$GIT_PROMPT_PREFIX%{$fg[yellow]%}${git_where#(refs/heads/|tags/)}$GIT_PROMPT_SUFFIX"
+  }
+#+END_SRC
+
+   Set the right-hand prompt. Not sure why we don't use =RPROMPT=.
+
+#+BEGIN_SRC sh
+  RPROMPT='$(git_prompt_string)'
+#+END_SRC
+
+** Completion
+
+   Zsh has better support for Git than the Bash autocompletion:
+
+#+BEGIN_SRC sh :tangle no
+  autoload zgitinit
+#+END_SRC
+
+* Our Functions
+
+  Load up our [[file:bash-profile.org][shared functions]]. 
+  These are shared with Bash.
+
+#+BEGIN_SRC sh
+  if [[ -f $HOME/.bash.all.sh ]]
+  then
+      source $HOME/.bash.all.sh
+  fi
+#+END_SRC
+
+* Technical Gunk
+
+  The following are the tangled settings. Type: =C-c C-v t=
+  to create the script file.
+
+#+PROPERTY: tangle ~/.zshenv
+#+PROPERTY: comments org
+#+PROPERTY: shebang #!/usr/local/bin/zsh
