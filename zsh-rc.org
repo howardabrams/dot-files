@@ -1,0 +1,91 @@
+#+TITLE:     ZShell Resources Startup File
+#+AUTHOR:    Howard Abrams
+#+EMAIL:     howard.abrams@gmail.com
+
+This startup file is loaded for /interactive/ shells, so most of the
+things here are for callable functions, aliases and the like.
+
+#+BEGIN_SRC sh
+  echo "> > > .zshrc"
+#+END_SRC
+
+* Key Bindings
+
+  On the Mac, open up the Terminal preferences, under your =Basic=
+  settings, select the =Keyboard= tab and select the checkbox for
+  =Use option as meta key= to take avantage of these.
+
+#+BEGIN_SRC sh
+  bindkey -e
+#+END_SRC
+
+  =Meta-u= to chdir to the parent directory and then display the contents.
+
+#+BEGIN_SRC sh
+  bindkey -s '\eu' '^Ucd ..; ls^M'
+#+END_SRC
+
+  Since =AUTO_PUSHD= is set, =Meta-p= pops the dir stack
+
+#+BEGIN_SRC sh
+  bindkey -s '\ep' '^Upopd >/dev/null; dirs -v^M'
+#+END_SRC
+
+  Pipe the current command through less with =Meta-l=
+
+#+BEGIN_SRC sh
+  bindkey -s "\el" " 2>&1|less^M"
+#+END_SRC
+
+* Modules
+
+  Using the modules from [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]]. 
+  The plugins are in =~/.oh-my-zsh/plugins/*=
+
+#+BEGIN_SRC sh
+  plugins=(osx terminalapp gnu-utils git lein npm)
+#+END_SRC
+
+  I use [[http://mxcl.github.com/homebrew/][Homebrew]] on my home computers, but [[http://www.macports.org][MacPorts]] at work.
+  We will check to see which is installed, and then add that
+  completion module:
+
+#+BEGIN_SRC sh
+  if [[ -f /usr/local/Cellar ]]
+  then
+      plugins+=(homebrew)
+  else
+      plugins+=(macports)
+  fi
+#+END_SRC
+
+* Oh My Zsh
+
+  Load up the modules and other goodies from Oh my Zsh.
+
+#+BEGIN_SRC sh
+  source $ZSH/oh-my-zsh.sh
+#+END_SRC
+
+* My Functions
+
+  Load up my [[file:sh-functions.org][shared functions]]. 
+  These can be shared with Bash.
+
+#+BEGIN_SRC sh
+  if [[ -f $HOME/.sh-funcs.sh ]]
+  then
+      source $HOME/.sh-funcs.sh
+  fi
+#+END_SRC
+
+* Technical Gunk
+
+  The following are the tangled settings. Type: =C-c C-v t=
+  to create the script file.
+
+#+PROPERTY: tangle ~/.zshrc
+#+PROPERTY: comments org
+#+PROPERTY: shebang #!/usr/local/bin/zsh
+#+DESCRIPTION: Functions, aliases and other resources for ZShell
+

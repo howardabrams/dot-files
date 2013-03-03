@@ -1,0 +1,125 @@
+#+TITLE:     ZShell Environment Startup File
+#+AUTHOR:    Howard Abrams
+#+EMAIL:     howard.abrams@gmail.com
+
+This startup file is always loaded, even for /non-interactive/ shell
+scripts, so this file should be light and only contain environment
+variable settings.
+
+*Note:* I could use this to store any functions that I want to share
+between my other scripts, but so far I haven't thought of anything.
+
+#+BEGIN_SRC sh
+  echo "> > > .zshenv"
+#+END_SRC
+
+* Environment Variables
+
+  Path to the [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]] configuration.
+
+#+BEGIN_SRC sh
+  ZSH=$HOME/.oh-my-zsh
+#+END_SRC
+
+  Use my own [[file:zsh-theme.org][Happiness Zsh theme]] (stored in the =~/.oh-my-zsh/themes=
+  directory.
+
+#+BEGIN_SRC sh
+  ZSH_THEME="happiness"
+#+END_SRC
+
+  Set =EDITOR= to start up an =emacsclient=:
+
+#+BEGIN_SRC sh
+  export ALTERNATE_EDITOR=/Applications/Emacs.app/Contents/MacOS/Emacs
+  export EDITOR=/Applications/Emacs.app/Contents/MacOS/bin/emacsclient
+  export VISUAL="$EDITOR -c"
+#+END_SRC
+
+  Disable autosetting terminal title.
+
+#+BEGIN_SRC sh
+  DISABLE_AUTO_TITLE="true"
+#+END_SRC
+
+  Displays red dots while waiting for completion.
+
+#+BEGIN_SRC sh
+  COMPLETION_WAITING_DOTS="true"
+#+END_SRC
+
+  Disable bi-weekly auto-update checks of Oh My Zsh.
+  This has caused problems for me. I will update by hand.
+
+#+BEGIN_SRC sh
+  DISABLE_AUTO_UPDATE="true"
+#+END_SRC
+
+** History
+
+   We will let the =HISTFILE= variable as it is.
+
+#+BEGIN_SRC sh
+SAVEHIST=1000
+HISTSIZE=1000
+#+END_SRC
+
+** Path
+
+   We want to add these directories, but only if they exist. This
+   makes this more portable between my computers.
+
+#+BEGIN_SRC sh
+  OLDPATH=$PATH
+  PATH=$HOME/bin
+
+  for DIR in /web/tools/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/git/bin
+  do
+    if [[ -d $DIR ]]
+    then
+        PATH=$PATH:$DIR
+    fi
+  done
+  
+  PATH=$PATH:$OLDPATH
+#+END_SRC
+
+* Options
+
+  See [[http://linux.die.net/man/1/zshoptions][this page]] for all options.
+  Why would you type 'cd dir' if you could just type 'dir'?
+
+#+BEGIN_SRC sh
+  setopt AUTO_CD
+#+END_SRC
+
+  This makes cd = pushd
+
+#+BEGIN_SRC sh
+  setopt AUTO_PUSHD
+#+END_SRC
+
+  When you type in things, being case insensitive sounds like a good
+  idea:
+
+#+BEGIN_SRC sh
+  setopt NO_CASE_GLOB
+  setopt NO_CASE_MATCH
+#+END_SRC
+
+  I don't like every tab on my terminal sharing the same history.
+
+#+BEGIN_SRC sh
+  setopt NO_SHARE_HISTORY
+#+END_SRC
+
+* Technical Gunk
+
+  The following are the tangled settings. Type: =C-c C-v t=
+  to create the script file.
+
+#+PROPERTY: tangle ~/.zshenv
+#+PROPERTY: comments org
+#+PROPERTY: shebang #!/usr/local/bin/zsh
+#+DESCRIPTION: Global environment variables for ZShell
+

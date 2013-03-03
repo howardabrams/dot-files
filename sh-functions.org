@@ -1,11 +1,9 @@
 #+TITLE:     Shell Profile
 #+AUTHOR:    Howard Abrams
 #+EMAIL:     howard.abrams@gmail.com
-#+DATE:      2013-02-26 Tue
-
 
 #+BEGIN_SRC sh
-  echo "> > > .bash.all.sh"
+  echo "> > > .sh-funcs.sh"
 #+END_SRC
 
 Common functions and aliases that I can share among all my computers.
@@ -37,8 +35,10 @@ and global variables are stored in =.profile= and =.zsh_profile=.
   The following are the tangled settings. Type: =C-c C-v t=
   to create the script file.
 
-#+PROPERTY: tangle ~/.bash.all.sh
+#+PROPERTY: tangle ~/.sh-funcs.sh
 #+PROPERTY: comments org
+#+PROPERTY: shebang #!/bin/sh
+#+DESCRIPTION: Aliases and functions shareable between Bash and Zsh
 
 * Editor
 
@@ -177,6 +177,8 @@ and global variables are stored in =.profile= and =.zsh_profile=.
 
 * Note Aliases
 
+  My Note scripts allow me to create and search my text files.
+
 #+BEGIN_SRC sh
 alias gilt="$HOME/bin/note -e aquamacs -g gilt -t gilt"
 alias work="$HOME/bin/note -e aquamacs -g gilt -t gilt"
@@ -230,9 +232,10 @@ fi
 * Git Helpers
 ** Tab Completion
 
-   Complete expected git commands by pressing the tab key:
+   Complete expected git commands by pressing the tab key for Bash.
+   I don't use this anymore since Zsh has a better module for this.
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC sh :tangle no
 if [ -e $GIT_HOME/contrib/completion/git-completion.bash -a "$0" = "-bash" ]
 then
     . $GIT_HOME/contrib/completion/git-completion.bash
@@ -262,6 +265,7 @@ function pull {
     git stash pop
 }
 #+END_SRC
+
 * Directory Bookmarks
 
   [[https://github.com/huyng/bashmarks][This script]] allows us to leave bookmarks to "popular" directories,
@@ -277,19 +281,23 @@ function pull {
   - l - list all bookmarks
 
 #+BEGIN_SRC sh
-if [ -e ~/.bash.d/bashmarks.sh ]
-then
-    source ~/.bash.d/bashmarks.sh
-fi
+  unalias l      # These may be automatically aliased
+  unalias g
+  unalias d
+
+  if [ -e ~/.bash.d/bashmarks.sh ]
+  then
+      source ~/.bash.d/bashmarks.sh
+  fi
 #+END_SRC
 * Language Support
+
+  Certainly languages and frameworks could use a bit of help.
 
 ** Scala Helpers
 
    SBT requires more memory than it deserves.
 
 #+BEGIN_SRC sh
-alias bigsbt='java -Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=384M -jar /opt/local/share/sbt/sbt-launch.jar'
+  alias bigsbt='java -Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=384M -jar /opt/local/share/sbt/sbt-launch.jar'
 #+END_SRC
-
-
