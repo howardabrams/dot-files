@@ -1,3 +1,7 @@
-/dot-emacs.html
-/dot-emacs.markdown
-/dot-emacs.markdown~
+.*orgx
+*~
+sitemap.org
+theindex.inc
+theindex.org
+snippets/js-mode
+snippets/clojure-mode

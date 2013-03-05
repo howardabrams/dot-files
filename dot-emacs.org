@@ -739,6 +739,19 @@ brew install ispell
      :style "<link rel=\"stylesheet\" href=\"../css/styles.css\" type=\"text/css\"/><link rel=\"stylesheet\" href=\"css/styles.css\" type=\"text/css\"/> <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js\" type=\"text/javascript\"></script> <link href=\"http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/smoothness/jquery-ui.css\" type=\"text/css\" rel=\"Stylesheet\" />    <script src=\"https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js\" type=\"text/javascript\"></script> <script =\"text/jacascript\" src=\"js/script.js\"></script>"
      )
   
+    ("dot-files"
+     :base-directory       "~/Dropbox/dot-files/"
+     :base-extension       "org"
+     :publishing-directory "~/Dropbox/dot-files/docs"
+     :recursive            f
+     :publishing-function   org-publish-org-to-html
+     :auto-preamble         t
+     :auto-sitemap          t             ; Generate sitemap.org automagically...
+     :makeindex             f
+     :section-numbers       nil
+     :table-of-contents     nil
+     )
+
     ("org-static"
      :base-directory       "~/Dropbox/org/"
      :base-extension       "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
@@ -747,7 +760,7 @@ brew install ispell
      :publishing-function  org-publish-attachment
      )
   
-    ("all" :components ("org-notes" "org-static"))))
+    ("all" :components ("org-notes" "org-static" "dot-files"))))
 #+END_SRC
 
    I really, really would like to affect the output of the
@@ -1023,7 +1036,7 @@ brew install ispell
 #+BEGIN_SRC elisp
   ;; Make sure that PATH can reference the 'jshint' executable:
   (setenv "PATH" (concat "/usr/local/bin:/opt/local/bin:" (getenv "PATH")))
-  (setq exec-path '( "/usr/local/bin" "/usr/bin" "/opt/local/bin"
+  (setq exec-path '( "/usr/local/bin" "/usr/bin" "/opt/local/bin" "/bin"
                      (concat (getenv "HOME") "/bin")))
   
   (require 'flymake-jshint)
