@@ -12,53 +12,48 @@ What's in this project?
 Startup scripts for [Emacs][3] and [Zsh][6]. Specifically:
 
 <!-- Why yes, it is a shame that I can't do multimarkdown or org-mode tables -->
+<!-- But the end results are sure purdy. -->
 <table><thead><tr>
 <th>Source</th>
 <th>Destination</th>
 <th>Contents</th></tr></thead>
 <tbody>
 <tr><td>
-   [`dot-emacs.org`][f1]
+   <a href="http://howardabrams.com/projects/dot-files/dot-emacs.html"><code>dot-emacs.org</code></a>
 </td><td>
-  `.emacs-ext.el`
+  <code>.emacs-ext.el</code>
 </td><td>
-  "Sourced" in from the `.emacs` file
+  "Sourced" in from the <code>.emacs</code> file
 </td></tr><tr><td>
-  [`zsh-theme.org`][f2]
+  <a href="http://howardabrams.com/projects/dot-files/zsh-theme.html"><code>zsh-theme.org</code></a>
 </td><td>
-  `.oh-my-zsh/themes`
+  <code>.oh-my-zsh/themes</code>
 </td><td>
   My ZShell "theme" 
 </td></tr><tr><td>
-  [`zsh-env.org`][f3]
+  <a href="http://howardabrams.com/projects/dot-files/zsh-env.html"><code>zsh-env.org</code></a>
 </td><td>
-  `.zshenv`
+  <code>.zshenv</code>
 </td><td>
   Global Zsh environment variables
 </td></tr><tr><td>
-  [`zsh-rc.org`][f4]
+  <a href="http://howardabrams.com/projects/dot-files/zsh-rc.html"><code>zsh-rc.org</code></a>
 </td><td>
-  `.zshrc`
+  <code>.zshrc</code>
 </td><td>
-  Zsh functions ... calls `sh-funcs.sh`
+  Zsh functions ... calls <code>sh-funcs.sh</code>
 </td></tr><tr><td>
 </td><td>
-  `.zprofile`
+  <code>.zprofile</code>
 </td><td>
   Machine-specific environment variables
 </td></tr><tr><td>
-  [`sh-functions.org`][f5]
+  <a href="http://howardabrams.com/projects/dot-files/sh-functions.html"><code>sh-functions.org</code></a>
 </td><td>
-  `.sh-funcs.sh`
+  <code>.sh-funcs.sh</code>
 </td><td>
   Global functions and aliases
 </td></tr></tbody></table>
-
-  [f1]: http://howardabrams.com/projects/dot-files/dot-emacs.html
-  [f2]: http://howardabrams.com/projects/dot-files/zsh-theme.html
-  [f3]: http://howardabrams.com/projects/dot-files/zsh-env.html
-  [f4]: http://howardabrams.com/projects/dot-files/zsh-rc.html
-  [f5]: http://howardabrams.com/projects/dot-files/sh-functions.html
 
 
 Why is there a source for your scripts?
