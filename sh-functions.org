@@ -2,10 +2,6 @@
 #+AUTHOR:    Howard Abrams
 #+EMAIL:     howard.abrams@gmail.com
 
-#+BEGIN_SRC sh
-  echo "> > > .sh-funcs.sh"
-#+END_SRC
-
 Common functions and aliases that I can share among all my computers.
 This file is written to =$HOME/.bash.all.rc= and should be called
 from =.bashrc= and/or =.zshrc=, via:
@@ -226,6 +222,34 @@ fi
           say "$SAY"
           /bin/ls /no-file 2>/dev/null   # Make next process know previous failed
       fi
+  }
+#+END_SRC
+
+* Clip
+
+  If you want to gather data from the output, but starting with a
+  particular line, and ending with another, use =clip=. For instance:
+
+#+BEGIN_EXAMPLE
+  nmap -A 192.168.0.1 | clip 'PORT ' 'Service detection performed'
+#+END_EXAMPLE
+
+  Will show just the "good" stuff from the =nmap= command.
+
+  Function takes three arguments:
+
+  1. The text (regular expression, actually) to use to begin printing
+  2. The text to use to end printing (isn't actually
+     printed... should it?)
+  3. Optional text inserted at the beginning of each line.
+
+#+BEGIN_SRC sh
+  function clip {
+    FIRST=$1
+    ENDING=$2
+    PADDING=${3:-""}
+  
+    perl -ne "\$s=1 if (/$FIRST/); \$s=0 if (/$ENDING/); print \"$PADDING\$_\" if (\$s==1);"
   }
 #+END_SRC
 
