@@ -1,0 +1,514 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Shell Profile</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<meta name="title" content="Shell Profile"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2013-03-04T22:09-0800"/>
+<meta name="author" content="Howard Abrams"/>
+<meta name="description" content="Aliases and functions shareable between Bash and Zsh"/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  div.inlinetask {
+    padding:10px;
+    border:2px solid gray;
+    margin:10px;
+    background: #ffffcc;
+  }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style><link rel='stylesheet' href='http://www.howardism.org/styles/org-export-html-style.css' type='text/css'/>
+<script src='http://use.edgefonts.net/source-sans-pro.js'></script>
+<script src='http://use.edgefonts.net/source-code-pro.js'></script>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012  Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+
+</head>
+<body>
+
+<div id="preamble">
+
+</div>
+
+<div id="content">
+<h1 class="title">Shell Profile</h1>
+
+<p>Common functions and aliases that I can share among all my computers.
+This file is written to <code>$HOME/.bash.all.rc</code> and should be called
+from <code>.bashrc</code> and/or <code>.zshrc</code>, via:
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #b9ca4a;">if</span> [ -f <span style="color: #70c0b1;">"$HOME/.bash.all.sh"</span> ]; <span style="color: #b9ca4a;">then</span>
+  <span style="color: #c397d8;">source</span> <span style="color: #70c0b1;">"$HOME/.bash.all.sh"</span>
+<span style="color: #b9ca4a;">fi</span>
+</pre>
+
+
+<p>
+According to <a href="http://shreevatsa.wordpress.com/2008/03/30/zshbash-startup-files-loading-order-bashrc-zshrc-etc/">this article</a>:
+</p>
+<ul>
+<li>For bash, put stuff in <code>~/.bashrc</code>, and make <code>~/.profile</code> source it.
+</li>
+</ul>
+
+<p>  - For zsh, put stuff in <code>~/.zshrc</code>, which is always executed.
+</p>
+<p>
+Machine-specific gunk goes in the standard <code>.bashrc</code> and <code>~/.zshrc</code> files,
+and global variables are stored in <code>.profile</code> and <code>.zsh_profile</code>.
+</p>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1">Technical Gunk</h2>
+<div class="outline-text-2" id="text-1">
+
+
+<p>
+  If not running interactively, we don't need to do anything:
+</p>
+
+
+
+<pre class="src src-sh">[ -z <span style="color: #70c0b1;">"$PS1"</span> ] &amp;&amp; <span style="color: #b9ca4a;">return</span>
+</pre>
+
+
+<p>
+  The following are the tangled settings. Type: <code>C-c C-v t</code>
+  to create the script file.
+</p>
+
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2">Editor</h2>
+<div class="outline-text-2" id="text-2">
+
+
+<p>
+  Wrapper around the standard <code>emacsclient</code> executable. It attempts
+  to be smart about if it should "wait" or not based on whether we
+  call <code>e</code> from an interactive shell.
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #b9ca4a;">if</span> [ -z $<span style="color: #e7c547;">PS1</span> ]
+<span style="color: #b9ca4a;">then</span>
+    <span style="color: #969896; font-style: italic;"># </span><span style="color: #969896; font-style: italic;">non-interactive</span>
+    /Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -c -q -a /Applications/Emacs.app/Contents/MacOS/Emacs $<span style="color: #e7c547;">*</span> &amp;
+<span style="color: #b9ca4a;">else</span>
+    <span style="color: #969896; font-style: italic;"># </span><span style="color: #969896; font-style: italic;">interactive</span>
+    /Applications/Emacs.app/Contents/MacOS/bin/emacsclient -c -q -a /Applications/Emacs.app/Contents/MacOS/Emacs $<span style="color: #e7c547;">*</span>
+<span style="color: #b9ca4a;">fi</span>
+</pre>
+
+
+<p>
+  Wrapper around the <code>emacsclient</code>. This tries not to start up a new
+  frame (note the missing -c option), but that doesn't seem to bother
+  it much.
+</p>
+
+
+
+<pre class="src src-sh">/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -q -a /Applications/Emacs.app/Contents/MacOS/Emacs $<span style="color: #e7c547;">*</span>
+</pre>
+
+
+<p>
+  It is unclear whether <code>e</code> is a good version for the <code>EDITOR</code>
+  variable. According to the <i>info</i> docs, we should do the following:
+</p>
+
+
+
+<pre class="example">EDITOR="emacsclient --alternate-editor emacs +%d %s"
+</pre>
+
+
+<p>
+  However, the <code>emacs</code> is not a very good executable, so it should
+  really be:
+</p>
+
+
+
+<pre class="example">EDITOR="/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -a /Applications/Emacs.app/Contents/MacOS/Emacs +%d %s"
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3">Listing Files</h2>
+<div class="outline-text-2" id="text-3">
+
+
+<p>
+  Using the GNU versions of <code>ls</code>, which can be installed by Homebrew
+  or Ports, via: <code>port install coreutils</code>
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #c397d8;">alias</span> <span style="color: #e7c547;">ls</span>=<span style="color: #70c0b1;">"gls --color"</span>
+<span style="color: #c397d8;">alias</span> <span style="color: #e7c547;">ll</span>=<span style="color: #70c0b1;">"gls --color -lhA"</span>
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4">Finding Files</h2>
+<div class="outline-text-2" id="text-4">
+
+
+<p>
+  The interface to <code>find</code>, while powerful, if quite obnoxious. Here
+  is a few wrapper functions.
+</p>
+
+</div>
+
+<div id="outline-container-4-1" class="outline-3">
+<h3 id="sec-4-1">f</h3>
+<div class="outline-text-3" id="text-4-1">
+
+
+<p>
+   Wrapper around 'find' that excludes some useless directories, like
+   <code>classes</code> and <code>.git</code> that ignores case, and does an <i>or</i> around
+   every file name:
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #b9ca4a;">function</span> <span style="color: #7aa6da;">f</span> {
+    find * -not <span style="color: #70c0b1;">\(</span> -path <span style="color: #70c0b1;">'*classes*'</span> -or -path <span style="color: #70c0b1;">'.git*'</span> <span style="color: #70c0b1;">\)</span> -and -iname $(<span style="color: #c397d8;">perl</span> -e <span style="color: #70c0b1;">'print join " -o -iname ", @ARGV'</span> $<span style="color: #e7c547;">*</span>)
+}
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4-2" class="outline-3">
+<h3 id="sec-4-2">sf</h3>
+<div class="outline-text-3" id="text-4-2">
+
+
+<p>
+   Wrapper around 'find' that returns only a single file. Helpful for calls
+   to an editor when you are pretty sure of the name of the file.
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #b9ca4a;">function</span> <span style="color: #7aa6da;">sf</span> {
+    f <span style="color: #70c0b1;">"*$1*"</span> | head -1
+}
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4-3" class="outline-3">
+<h3 id="sec-4-3">ef</h3>
+<div class="outline-text-3" id="text-4-3">
+
+
+<p>
+  Combines my 'f' and 'e' functions to easily edit a file in the local
+  directory tree solely by the file name.
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #b9ca4a;">function</span> <span style="color: #7aa6da;">ef</span> {
+    e $(<span style="color: #c397d8;">sf</span> $<span style="color: #e7c547;">*</span>)
+}
+</pre>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-5" class="outline-2">
+<h2 id="sec-5">Window Title</h2>
+<div class="outline-text-2" id="text-5">
+
+
+<p>
+  Can we title the terminal window? Note, don't call this function
+  <code>title</code> or bad things will happen.
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #b9ca4a;">function</span> <span style="color: #7aa6da;">xtitle</span> {
+    <span style="color: #969896; font-style: italic;"># </span><span style="color: #969896; font-style: italic;">Old Style? echo -n -e "\033]0;$*\007";;</span>
+    <span style="color: #b9ca4a;">case</span> <span style="color: #70c0b1;">"$1"</span><span style="color: #b9ca4a;"> in</span>
+        -t)     <span style="color: #c397d8;">shift</span>; <span style="color: #c397d8;">echo</span> <span style="color: #70c0b1;">"\e]1;$*\a"</span>;;
+        -w)     <span style="color: #c397d8;">shift</span>; <span style="color: #c397d8;">echo</span> <span style="color: #70c0b1;">"\e]2;$*\a"</span>;;
+        -b)     <span style="color: #c397d8;">shift</span>; <span style="color: #c397d8;">echo</span> <span style="color: #70c0b1;">"\e]0;$*\a"</span>;;
+         *)     <span style="color: #c397d8;">echo</span> <span style="color: #70c0b1;">"\e]0;$*\a"</span>;;
+    <span style="color: #b9ca4a;">esac</span>
+}
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-6" class="outline-2">
+<h2 id="sec-6">Tab</h2>
+<div class="outline-text-2" id="text-6">
+
+
+<p>
+  Opens a tab in the `Terminal` program and start something running in it.
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #b9ca4a;">function</span> <span style="color: #7aa6da;">xtab</span>() {
+  <span style="color: #e7c547;">TITLE</span>=<span style="color: #70c0b1;">"$1"</span>
+  <span style="color: #b9ca4a;">if</span> [[ $<span style="color: #e7c547;">1</span> = <span style="color: #70c0b1;">"-t"</span> ]]
+  <span style="color: #b9ca4a;">then</span>
+      <span style="color: #e7c547;">TITLE</span>=<span style="color: #70c0b1;">"$2"</span>
+      <span style="color: #c397d8;">shift</span>
+      <span style="color: #c397d8;">shift</span>
+  <span style="color: #b9ca4a;">fi</span>
+
+  <span style="color: #e7c547;">HISTFILE</span>=$<span style="color: #e7c547;">HOME</span>/.zsh_histories/$(<span style="color: #c397d8;">echo</span> $<span style="color: #e7c547;">TITLE</span> | sed <span style="color: #70c0b1;">'s/ /_/g'</span>)
+
+  osascript &lt;&lt;EOF
+<span style="color: #70c0b1;">    tell application "System Events"</span>
+<span style="color: #70c0b1;">      tell process "Terminal" to keystroke "t" using command down</span>
+<span style="color: #70c0b1;">    end</span>
+<span style="color: #70c0b1;">    tell application "Terminal"</span>
+<span style="color: #70c0b1;">      activate</span>
+<span style="color: #70c0b1;">      set custom title of first window to "$TITLE"</span>
+<span style="color: #70c0b1;">      -- do script "echo '\e]1;$TITLE\a'" in window 1</span>
+<span style="color: #70c0b1;">      do script with command "xtitle $TITLE; HISTFILE=$HISTFILE; clear; $*" in window 1</span>
+<span style="color: #70c0b1;">    end tell</span>
+<span style="color: #70c0b1;">EOF</span>
+}
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-7" class="outline-2">
+<h2 id="sec-7">Note Aliases</h2>
+<div class="outline-text-2" id="text-7">
+
+
+<p>
+  My Note scripts allow me to create and search my text files.
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #c397d8;">alias</span> <span style="color: #e7c547;">gilt</span>=<span style="color: #70c0b1;">"$HOME/bin/note -e aquamacs -g gilt -t gilt"</span>
+<span style="color: #c397d8;">alias</span> <span style="color: #e7c547;">work</span>=<span style="color: #70c0b1;">"$HOME/bin/note -e aquamacs -g gilt -t gilt"</span>
+<span style="color: #c397d8;">alias</span> <span style="color: #e7c547;">diary</span>=<span style="color: #70c0b1;">"$HOME/bin/note -e aquamacs -g personal -t personal"</span>
+<span style="color: #c397d8;">export</span> <span style="color: #e7c547;">LATEST</span>=<span style="color: #70c0b1;">"$HOME/Dropbox/Notes/gilt/latest"</span>
+
+<span style="color: #c397d8;">alias</span> notes-find=<span style="color: #70c0b1;">"notes -a find"</span>
+<span style="color: #c397d8;">alias</span> notes-view=<span style="color: #70c0b1;">"notes -a view"</span>
+<span style="color: #c397d8;">alias</span> notes-list=<span style="color: #70c0b1;">"notes -a list"</span>
+<span style="color: #c397d8;">alias</span> notes-show=<span style="color: #70c0b1;">"notes -a find -f"</span>
+<span style="color: #c397d8;">alias</span> notes-export=<span style="color: #70c0b1;">"notes -a export"</span>
+
+<span style="color: #b9ca4a;">if</span> [ -f <span style="color: #70c0b1;">"$HOME/.notes/notes-tag-helper"</span> ]
+<span style="color: #b9ca4a;">then</span>
+    <span style="color: #c397d8;">source</span> <span style="color: #70c0b1;">"$HOME/.notes/notes-tag-helper"</span>
+<span style="color: #b9ca4a;">fi</span>
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-8" class="outline-2">
+<h2 id="sec-8">Beep</h2>
+<div class="outline-text-2" id="text-8">
+
+
+<p>
+  I can put this at the end of a long running command and have it
+  tell me when it is complete.
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #b9ca4a;">function</span> <span style="color: #7aa6da;">beep</span> {
+    <span style="color: #b9ca4a;">if</span> [ $<span style="color: #e7c547;">?</span> -eq 0 ]
+    <span style="color: #b9ca4a;">then</span>
+        <span style="color: #c397d8;">echo</span> $<span style="color: #e7c547;">1</span>
+        <span style="color: #e7c547;">MSG</span>=<span style="color: #70c0b1;">"The background process has completed."</span>
+        <span style="color: #e7c547;">SAY</span>=<span style="color: #70c0b1;">"I am done."</span>
+        <span style="color: #b9ca4a;">if</span> [ -n <span style="color: #70c0b1;">"$1"</span> ]; <span style="color: #b9ca4a;">then</span>
+            <span style="color: #e7c547;">MSG</span>=<span style="color: #70c0b1;">"$1 has completed."</span>
+            <span style="color: #e7c547;">SAY</span>=<span style="color: #70c0b1;">"$1 is done."</span>
+        <span style="color: #b9ca4a;">fi</span>
+        terminal-notifier -message <span style="color: #70c0b1;">"$MSG"</span> -title <span style="color: #70c0b1;">"Process Complete"</span>
+        say <span style="color: #70c0b1;">"$SAY"</span>
+    <span style="color: #b9ca4a;">else</span>
+        <span style="color: #e7c547;">MSG</span>=<span style="color: #70c0b1;">"The background process has failed."</span>
+        <span style="color: #e7c547;">SAY</span>=<span style="color: #70c0b1;">"I have failed."</span>
+        <span style="color: #b9ca4a;">if</span> [ -n <span style="color: #70c0b1;">"$1"</span> ]; <span style="color: #b9ca4a;">then</span>
+            <span style="color: #e7c547;">MSG</span>=<span style="color: #70c0b1;">"$1 has failed."</span>
+            <span style="color: #e7c547;">SAY</span>=<span style="color: #70c0b1;">"$1 has failed."</span>
+        <span style="color: #b9ca4a;">fi</span>
+        terminal-notifier -message <span style="color: #70c0b1;">"$MSG"</span> -title <span style="color: #70c0b1;">"Process Failed"</span>
+        say <span style="color: #70c0b1;">"$SAY"</span>
+        /bin/ls /no-file 2&gt;/dev/null   <span style="color: #969896; font-style: italic;"># </span><span style="color: #969896; font-style: italic;">Make next process know previous failed</span>
+    <span style="color: #b9ca4a;">fi</span>
+}
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-9" class="outline-2">
+<h2 id="sec-9">Clip</h2>
+<div class="outline-text-2" id="text-9">
+
+
+<p>
+  If you want to gather data from the output, but starting with a
+  particular line, and ending with another, use <code>clip</code>. For instance:
+</p>
+
+
+
+<pre class="example">nmap -A 192.168.0.1 | clip 'PORT ' 'Service detection performed'
+</pre>
+
+
+<p>
+  Will show just the "good" stuff from the <code>nmap</code> command.
+</p>
+<p>
+  Function takes three arguments:
+</p>
+<ol>
+<li>The text (regular 
+</li>
+</ol>
+
+</div>
+</div>
+</div>
+
+</body>
+</html>

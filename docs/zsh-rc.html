@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>ZShell Resources Startup File</title>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
+<meta name="title" content="ZShell Resources Startup File"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2013-03-04T22:09-0800"/>
+<meta name="author" content="Howard Abrams"/>
+<meta name="description" content="Functions, aliases and other resources for ZShell"/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  {margin-left:auto; margin-right:0px;  text-align:right;}
+  .left   {margin-left:0px;  margin-right:auto; text-align:left;}
+  .center {margin-left:auto; margin-right:auto; text-align:center;}
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top;  }
+  th.right  { text-align:center;  }
+  th.left   { text-align:center;   }
+  th.center { text-align:center; }
+  td.right  { text-align:right;  }
+  td.left   { text-align:left;   }
+  td.center { text-align:center; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  div.inlinetask {
+    padding:10px;
+    border:2px solid gray;
+    margin:10px;
+    background: #ffffcc;
+  }
+  textarea { overflow-x: auto; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style><link rel='stylesheet' href='http://www.howardism.org/styles/org-export-html-style.css' type='text/css'/>
+<script src='http://use.edgefonts.net/source-sans-pro.js'></script>
+<script src='http://use.edgefonts.net/source-code-pro.js'></script>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012  Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+
+</head>
+<body>
+
+<div id="preamble">
+
+</div>
+
+<div id="content">
+<h1 class="title">ZShell Resources Startup File</h1>
+
+<p>This startup file is loaded for <i>interactive</i> shells, so most of the
+things here are for callable functions, aliases and the like.
+</p>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1">Key Bindings</h2>
+<div class="outline-text-2" id="text-1">
+
+
+<p>
+  On the Mac, open up the Terminal preferences, under your <code>Basic</code>
+  settings, select the <code>Keyboard</code> tab and select the checkbox for
+  <code>Use option as meta key</code> to take avantage of these.
+</p>
+
+
+
+<pre class="src src-sh">bindkey -e
+</pre>
+
+
+<p>
+  <code>Meta-u</code> to chdir to the parent directory and then display the contents.
+</p>
+
+
+
+<pre class="src src-sh">bindkey -s <span style="color: #70c0b1;">'\eu'</span> <span style="color: #70c0b1;">'^Ucd ..; ls^M'</span>
+</pre>
+
+
+<p>
+  Since <code>AUTO_PUSHD</code> is set, <code>Meta-p</code> pops the dir stack
+</p>
+
+
+
+<pre class="src src-sh">bindkey -s <span style="color: #70c0b1;">'\ep'</span> <span style="color: #70c0b1;">'^Upopd &gt;/dev/null; dirs -v^M'</span>
+</pre>
+
+
+<p>
+  Pipe the current command through less with <code>Meta-l</code>
+</p>
+
+
+
+<pre class="src src-sh">bindkey -s <span style="color: #70c0b1;">"\el"</span> <span style="color: #70c0b1;">" 2&gt;&amp;1|less^M"</span>
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2">Modules</h2>
+<div class="outline-text-2" id="text-2">
+
+
+<p>
+  Using the modules from <a href="https://github.com/robbyrussell/oh-my-zsh">Oh My Zsh</a>. 
+  The plugins are in <code>~/.oh-my-zsh/plugins/*</code>
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #e7c547;">plugins</span>=(osx terminalapp gnu-utils git lein npm)
+</pre>
+
+
+<p>
+  I use <a href="http://mxcl.github.com/homebrew/">Homebrew</a> on my home computers, but <a href="http://www.macports.org">MacPorts</a> at work.
+  We will check to see which is installed, and then add that
+  completion module:
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #b9ca4a;">if</span> [[ -f /usr/local/Cellar ]]
+<span style="color: #b9ca4a;">then</span>
+    <span style="color: #e7c547;">plugins</span>+=(homebrew)
+<span style="color: #b9ca4a;">else</span>
+    <span style="color: #e7c547;">plugins</span>+=(macports)
+<span style="color: #b9ca4a;">fi</span>
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3">Oh My Zsh</h2>
+<div class="outline-text-2" id="text-3">
+
+
+<p>
+  Load up the modules and other goodies from Oh my Zsh.
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #c397d8;">source</span> $<span style="color: #e7c547;">ZSH</span>/oh-my-zsh.sh
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4">My Functions</h2>
+<div class="outline-text-2" id="text-4">
+
+
+<p>
+  Load up my <a href="sh-functions.html">shared functions</a>. 
+  These can be shared with Bash.
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #b9ca4a;">if</span> [[ -f $<span style="color: #e7c547;">HOME</span>/.sh-funcs.sh ]]
+<span style="color: #b9ca4a;">then</span>
+    <span style="color: #c397d8;">source</span> $<span style="color: #e7c547;">HOME</span>/.sh-funcs.sh
+<span style="color: #b9ca4a;">fi</span>
+</pre>
+
+
+<p>
+  Each machine I'm on (work or home), may have some special functions
+  or aliases, so let's load anything that begins with <code>.zshrc-</code>:
+</p>
+
+
+
+<pre class="src src-sh"><span style="color: #b9ca4a;">for</span> SH_FILE<span style="color: #b9ca4a;"> in</span> $<span style="color: #e7c547;">HOME</span>/.zshrc-*
+<span style="color: #b9ca4a;">do</span>
+  <span style="color: #c397d8;">source</span> $<span style="color: #e7c547;">SH_FILE</span>
+<span style="color: #b9ca4a;">done</span>
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5" class="outline-2">
+<h2 id="sec-5">Technical Gunk</h2>
+<div class="outline-text-2" id="text-5">
+
+
+<p>
+  The following are the tangled settings. Type: <code>C-c C-v t</code>
+  to create the script file.
+</p>
+
+</div>
+</div>
+</div>
+
+</body>
+</html>
