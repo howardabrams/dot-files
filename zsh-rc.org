@@ -5,10 +5,6 @@
 This startup file is loaded for /interactive/ shells, so most of the
 things here are for callable functions, aliases and the like.
 
-#+BEGIN_SRC sh
-  echo "> > > .zshrc"
-#+END_SRC
-
 * Key Bindings
 
   On the Mac, open up the Terminal preferences, under your =Basic=
@@ -77,6 +73,16 @@ things here are for callable functions, aliases and the like.
   then
       source $HOME/.sh-funcs.sh
   fi
+#+END_SRC
+
+  Each machine I'm on (work or home), may have some special functions
+  or aliases, so let's load anything that begins with =.zshrc-=:
+
+#+BEGIN_SRC sh
+  for SH_FILE in $HOME/.zshrc-*
+  do
+    source $SH_FILE
+  done
 #+END_SRC
 
 * Technical Gunk

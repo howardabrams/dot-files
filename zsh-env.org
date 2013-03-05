@@ -9,10 +9,6 @@ variable settings.
 *Note:* I could use this to store any functions that I want to share
 between my other scripts, but so far I haven't thought of anything.
 
-#+BEGIN_SRC sh
-  echo "> > > .zshenv"
-#+END_SRC
-
 * Environment Variables
 
   Path to the [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]] configuration.
