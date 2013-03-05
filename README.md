@@ -11,14 +11,55 @@ What's in this project?
 
 Startup scripts for [Emacs][3] and [Zsh][6]. Specifically:
 
-| Source             | Destination         | Contents                               |
-|--------------------+---------------------+----------------------------------------|
-| `dot-emacs.org`    | `.emacs-ext.el`     | "Sourced" in from the `.emacs` file    |
-| `zsh-theme.org`    | `.oh-my-zsh/themes` | My ZShell "theme"                      |
-| `zsh-env.org`      | `.zshenv`           | Global Zsh environment variables       |
-| `zsh-rc.org`       | `.zshrc`            | Zsh functions ... calls `sh-funcs.sh`  |
-|                    | `.zprofile`         | Machine-specific environment variables |
-| `sh-functions.org` | `.sh-funcs.sh`      | Global functions and aliases           |
+<!-- Why yes, it is a shame that I can't do multimarkdown or org-mode tables -->
+<table><thead><tr>
+<th>Source</th>
+<th>Destination</th>
+<th>Contents</th></tr></thead>
+<tbody>
+<tr><td>
+   [`dot-emacs.org`][f1]
+</td><td>
+  `.emacs-ext.el`
+</td><td>
+  "Sourced" in from the `.emacs` file
+</td></tr><tr><td>
+  [`zsh-theme.org`][f2]
+</td><td>
+  `.oh-my-zsh/themes`
+</td><td>
+  My ZShell "theme" 
+</td></tr><tr><td>
+  [`zsh-env.org`][f3]
+</td><td>
+  `.zshenv`
+</td><td>
+  Global Zsh environment variables
+</td></tr><tr><td>
+  [`zsh-rc.org`][f4]
+</td><td>
+  `.zshrc`
+</td><td>
+  Zsh functions ... calls `sh-funcs.sh`
+</td></tr><tr><td>
+</td><td>
+  `.zprofile`
+</td><td>
+  Machine-specific environment variables
+</td></tr><tr><td>
+  [`sh-functions.org`][f5]
+</td><td>
+  `.sh-funcs.sh`
+</td><td>
+  Global functions and aliases
+</td></tr></tbody></table>
+
+  [f1]: http://howardabrams.com/projects/dot-files/dot-emacs.html
+  [f2]: http://howardabrams.com/projects/dot-files/zsh-theme.html
+  [f3]: http://howardabrams.com/projects/dot-files/zsh-env.html
+  [f4]: http://howardabrams.com/projects/dot-files/zsh-rc.html
+  [f5]: http://howardabrams.com/projects/dot-files/sh-functions.html
+
 
 Why is there a source for your scripts?
 ----------------------------------
