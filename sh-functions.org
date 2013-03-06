@@ -94,11 +94,38 @@ and global variables are stored in =.profile= and =.zsh_profile=.
 
    Wrapper around 'find' that excludes some useless directories, like
    =classes= and =.git= that ignores case, and does an /or/ around
-   every file name:
+   every file name.
+
+   The first parameter can be a source directory to look for the
+   file(s), or you can do something like 'src/../some-file.txt' to
+   look in the 'src' directory for the files.
 
 #+BEGIN_SRC sh
   function f {
-      find * -not \( -path '*classes*' -or -path '.git*' \) -and -iname $(perl -e 'print join " -o -iname ", @ARGV' $*)
+      START_PATH='.'
+      FILES="$*"
+
+      # If we have a phrase src/../nav.handlebars, then we want to look
+      # in the 'src' directory for the filename given:
+      if echo "$1" | grep '\.\.' >/dev/null
+      then
+          set $(echo "$1" | sed 's/\/*\.\.\/*/  /');
+      fi
+
+      # If the first option is a directory, then look in that path, otherwise,
+      # start searching from the current directory.
+      if [ -d "$1" -a -n "$2" ]
+      then
+          START_PATH=$1
+          shift
+          FILES="$*"
+      fi
+      
+      # Ignore the classes and .git directories, as well as look for every
+      # file name given.
+      find $START_PATH \
+          -not \( -path '*classes*' -or -path '*node_modules*' -or -path '.git*' \) \
+          -and -iname $(perl -e 'print join " -o -iname ", @ARGV' $FILES)
   }
 #+END_SRC
 
@@ -120,7 +147,7 @@ and global variables are stored in =.profile= and =.zsh_profile=.
 
 #+BEGIN_SRC sh
   function ef {
-      e $(sf $*)
+      e $(f $*)
   }
 #+END_SRC
 
@@ -305,9 +332,14 @@ function pull {
   - l - list all bookmarks
 
 #+BEGIN_SRC sh
-  unalias l      # These may be automatically aliased
-  unalias g
-  unalias d
+  # The following may already be aliases...
+  for A in l g d
+  do
+    if [ alias = $(whence -w $A | cut -d: -f2) ]
+    then
+      unalias $A
+    fi
+  done
 
   if [ -e ~/.bash.d/bashmarks.sh ]
   then
