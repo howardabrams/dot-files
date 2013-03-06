@@ -1,0 +1,64 @@
+#!/usr/local/bin/zsh
+
+# #+TITLE:     ZShell Resources Startup File
+# #+AUTHOR:    Howard Abrams
+# #+EMAIL:     howard.abrams@gmail.com
+
+# This startup file is loaded for /interactive/ shells, so most of the
+# things here are for callable functions, aliases and the like.
+
+echo "> > > .zshrc"
+
+# Key Bindings
+
+#   On the Mac, open up the Terminal preferences, under your =Basic=
+#   settings, select the =Keyboard= tab and select the checkbox for
+#   =Use option as meta key= to take avantage of these.
+
+bindkey -e
+
+# =Meta-u= to chdir to the parent directory and then display the contents.
+
+bindkey -s '\eu' '^Ucd ..; ls^M'
+
+# Since =AUTO_PUSHD= is set, =Meta-p= pops the dir stack
+
+bindkey -s '\ep' '^Upopd >/dev/null; dirs -v^M'
+
+# Pipe the current command through less with =Meta-l=
+
+bindkey -s "\el" " 2>&1|less^M"
+
+# Modules
+
+#   Using the modules from [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]]. 
+#   The plugins are in =~/.oh-my-zsh/plugins/*=
+
+plugins=(osx terminalapp gnu-utils git lein npm)
+
+# I use [[http://mxcl.github.com/homebrew/][Homebrew]] on my home computers, but [[http://www.macports.org][MacPorts]] at work.
+#   We will check to see which is installed, and then add that
+#   completion module:
+
+if [[ -f /usr/local/Cellar ]]
+then
+    plugins+=(homebrew)
+else
+    plugins+=(macports)
+fi
+
+# Oh My Zsh
+
+#   Load up the modules and other goodies from Oh my Zsh.
+
+source $ZSH/oh-my-zsh.sh
+
+# My Functions
+
+#   Load up my [[file:sh-functions.org][shared functions]]. 
+#   These can be shared with Bash.
+
+if [[ -f $HOME/.bash.all.sh ]]
+then
+    source $HOME/.bash.all.sh
+fi

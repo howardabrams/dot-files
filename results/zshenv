@@ -1,0 +1,90 @@
+#!/usr/local/bin/zsh
+
+# #+TITLE:     ZShell Environment Startup File
+# #+AUTHOR:    Howard Abrams
+# #+EMAIL:     howard.abrams@gmail.com
+
+# This startup file is always loaded, even for /non-interactive/ shell
+# scripts, so this file should be light and only contain environment
+# variable settings.
+
+# *Note:* I could use this to store any functions that I want to share
+# between my other scripts, but so far I haven't thought of anything.
+
+echo "> > > .zshenv"
+
+# Environment Variables
+
+#   Path to the [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]] configuration.
+
+ZSH=$HOME/.oh-my-zsh
+
+# Use my own [[file:zsh-theme.org][Happiness Zsh theme]] (stored in the =~/.oh-my-zsh/themes=
+#   directory.
+
+ZSH_THEME="happiness"
+
+# Set =EDITOR= to start up an =emacsclient=:
+
+export ALTERNATE_EDITOR=/Applications/Emacs.app/Contents/MacOS/Emacs
+export EDITOR=/Applications/Emacs.app/Contents/MacOS/bin/emacsclient
+export VISUAL="$EDITOR -c"
+
+# Disable autosetting terminal title.
+
+DISABLE_AUTO_TITLE="true"
+
+# Displays red dots while waiting for completion.
+
+COMPLETION_WAITING_DOTS="true"
+
+# Disable bi-weekly auto-update checks of Oh My Zsh.
+#   This has caused problems for me. I will update by hand.
+
+DISABLE_AUTO_UPDATE="true"
+
+# History
+
+#    We will let the =HISTFILE= variable as it is.
+
+SAVEHIST=1000
+HISTSIZE=1000
+
+# Path
+
+#    We want to add these directories, but only if they exist. This
+#    makes this more portable between my computers.
+
+OLDPATH=$PATH
+PATH=$HOME/bin
+
+for DIR in /web/tools/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/git/bin
+do
+  if [[ -d $DIR ]]
+  then
+      PATH=$PATH:$DIR
+  fi
+done
+
+PATH=$PATH:$OLDPATH
+
+# Options
+
+#   See [[http://linux.die.net/man/1/zshoptions][this page]] for all options.
+#   Why would you type 'cd dir' if you could just type 'dir'?
+
+setopt AUTO_CD
+
+# This makes cd = pushd
+
+setopt AUTO_PUSHD
+
+# When you type in things, being case insensitive sounds like a good
+#   idea:
+
+setopt NO_CASE_GLOB
+setopt NO_CASE_MATCH
+
+# I don't like every tab on my terminal sharing the same history.
+
+setopt NO_SHARE_HISTORY
