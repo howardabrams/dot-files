@@ -27,14 +27,14 @@ alias ll="gls --color -lhA"
 function f {
     START_PATH='.'
     FILES="$*"
-    
+
     # If we have a phrase src/../nav.handlebars, then we want to look
     # in the 'src' directory for the filename given:
     if echo "$1" | grep '\.\.' >/dev/null
     then
         set $(echo "$1" | sed 's/\/*\.\.\/*/  /');
     fi
-    
+
     # If the first option is a directory, then look in that path, otherwise,
     # start searching from the current directory.
     if [ -d "$1" -a -n "$2" ]

@@ -1,18 +1,5 @@
 #!/usr/local/bin/zsh
 
-# #+TITLE:     ZShell Environment Startup File
-# #+AUTHOR:    Howard Abrams
-# #+EMAIL:     howard.abrams@gmail.com
-
-# This startup file is always loaded, even for /non-interactive/ shell
-# scripts, so this file should be light and only contain environment
-# variable settings.
-
-# *Note:* I could use this to store any functions that I want to share
-# between my other scripts, but so far I haven't thought of anything.
-
-echo "> > > .zshenv"
-
 # Environment Variables
 
 #   Path to the [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]] configuration.

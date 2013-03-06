@@ -414,7 +414,7 @@
    :base-directory       "~/Dropbox/dot-files/"
    :base-extension       "org"
    :publishing-directory "~/Dropbox/dot-files/docs"
-   :recursive            t
+   :recursive            f
    :publishing-function   org-publish-org-to-html
    :auto-preamble         t
    :auto-sitemap          t             ; Generate sitemap.org automagically...

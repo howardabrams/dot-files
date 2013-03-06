@@ -1,14 +1,5 @@
 #!/usr/local/bin/zsh
 
-# #+TITLE:     ZShell Resources Startup File
-# #+AUTHOR:    Howard Abrams
-# #+EMAIL:     howard.abrams@gmail.com
-
-# This startup file is loaded for /interactive/ shells, so most of the
-# things here are for callable functions, aliases and the like.
-
-echo "> > > .zshrc"
-
 # Key Bindings
 
 #   On the Mac, open up the Terminal preferences, under your =Basic=
@@ -58,7 +49,15 @@ source $ZSH/oh-my-zsh.sh
 #   Load up my [[file:sh-functions.org][shared functions]]. 
 #   These can be shared with Bash.
 
-if [[ -f $HOME/.bash.all.sh ]]
+if [[ -f $HOME/.sh-funcs.sh ]]
 then
-    source $HOME/.bash.all.sh
+    source $HOME/.sh-funcs.sh
 fi
+
+# Each machine I'm on (work or home), may have some special functions
+#   or aliases, so let's load anything that begins with =.zshrc-=:
+
+for SH_FILE in $HOME/.zshrc-*
+do
+  source $SH_FILE
+done
