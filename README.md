@@ -21,25 +21,25 @@ Startup scripts for [Emacs][3] and [Zsh][6]. Specifically:
 <tr><td>
    <a href="http://howardabrams.com/projects/dot-files/dot-emacs.html"><code>dot-emacs.org</code></a>
 </td><td>
-   <a href="results/emacss.el"><code>.emacs-ext.el</code></a>
+   <a href="blob/master/results/emacss.el"><code>.emacs-ext.el</code></a>
 </td><td>
   "Sourced" in from the <code>.emacs</code> file
 </td></tr><tr><td>
   <a href="http://howardabrams.com/projects/dot-files/zsh-theme.html"><code>zsh-theme.org</code></a>
 </td><td>
-   <a href="results/happiness.zsh-theme"><code>.oh-my-zsh/themes</code></a>
+   <a href="blob/master/results/happiness.zsh-theme"><code>.oh-my-zsh/themes</code></a>
 </td><td>
   My ZShell "theme" 
 </td></tr><tr><td>
   <a href="http://howardabrams.com/projects/dot-files/zsh-env.html"><code>zsh-env.org</code></a>
 </td><td>
-   <a href="results/zshenv"><code>.zshenv</code></a>
+   <a href="blob/master/results/zshenv"><code>.zshenv</code></a>
 </td><td>
   Global Zsh environment variables
 </td></tr><tr><td>
   <a href="http://howardabrams.com/projects/dot-files/zsh-rc.html"><code>zsh-rc.org</code></a>
 </td><td>
-   <a href="results/zshrc"><code>.zshrc</code></a>
+   <a href="blob/master/results/zshrc"><code>.zshrc</code></a>
 </td><td>
   Zsh functions ... calls <code>sh-funcs.sh</code>
 </td></tr><tr><td>
@@ -50,7 +50,7 @@ Startup scripts for [Emacs][3] and [Zsh][6]. Specifically:
 </td></tr><tr><td>
   <a href="http://howardabrams.com/projects/dot-files/sh-functions.html"><code>sh-functions.org</code></a>
 </td><td>
-   <a href="results/sh-functions.sh"><code>.sh-funcs.sh</code></a>
+   <a href="blob/master/results/sh-functions.sh"><code>.sh-funcs.sh</code></a>
 </td><td>
   Global functions and aliases
 </td></tr></tbody></table>

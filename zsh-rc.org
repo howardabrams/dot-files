@@ -79,10 +79,13 @@ things here are for callable functions, aliases and the like.
   or aliases, so let's load anything that begins with =.zshrc-=:
 
 #+BEGIN_SRC sh
-  for SH_FILE in $HOME/.zshrc-*
-  do
-    source $SH_FILE
-  done
+  if [[ -f $HOME/.zshrc-* ]]
+  then
+      for SH_FILE in $HOME/.zshrc-*
+      do
+          source $SH_FILE
+      done
+  fi
 #+END_SRC
 
 * Technical Gunk
