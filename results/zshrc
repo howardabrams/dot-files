@@ -57,7 +57,10 @@ fi
 # Each machine I'm on (work or home), may have some special functions
 #   or aliases, so let's load anything that begins with =.zshrc-=:
 
-for SH_FILE in $HOME/.zshrc-*
-do
-  source $SH_FILE
-done
+if [[ -f $HOME/.zshrc-* ]]
+then
+    for SH_FILE in $HOME/.zshrc-*
+    do
+        source $SH_FILE
+    done
+fi
