@@ -45,7 +45,7 @@ HISTSIZE=1000
 OLDPATH=$PATH
 PATH=$HOME/bin
 
-for DIR in /web/tools/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/git/bin
+for DIR in /Applications/Emacs.app/Contents/MacOS/bin /web/tools/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/git/bin
 do
   if [[ -d $DIR ]]
   then

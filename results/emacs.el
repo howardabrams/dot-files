@@ -724,24 +724,29 @@
 
 ;; Yas Snippet
 
-;;    The [[http://code.google.com/p/yasnippet/][yasnippet project]] allows me to create snippets of code that
-;;    can be brought into a file, based on the language.
+;;    While the [[https://github.com/capitaomorte/yasnippet][Github project]] claims that we can install yasnippet from
+;;    ELPA, I have found that the github version is the only one that
+;;    actually works:
 
 (add-to-list 'load-path "~/.emacs.d/yasnippet")
+
+;; The [[https://github.com/capitaomorte/yasnippet][yasnippet project]] allows me to create snippets of code that
+;;    can be brought into a file, based on the language.
+
 (require 'yasnippet)
-(yas/global-mode 1)
+(yas-global-mode 1)
+; Or is it   (yas/global-mode 1)
 ; (yas/initialize)
 
 ;; We just have different directories for each:
 
 (setq yas/snippet-dirs
-      '("~/.emacs.d/snippets"            ;; personal snippets
-        "~/.emacs.d/yasnippet/extras/imported"
-        "~/Dropbox/emacs.d/snippets/javascript-mode"
-        "~/Dropbox/emacs.d/snippets/clojure-mode"
-        "~/Dropbox/emacs.d/snippets/org-mode"
-        "~/Dropbox/emacs.d/snippets/emacs-list-mode"
-        "~/.emacs.d/scala-emacs/contrib/yasnippet/snippets"))
+      '("~/.emacs.d/snippets"                  ;; personal snippets
+        "~/.emacs.d/snippets/org-mode"
+        "~/.emacs.d/snippets/clojure-mode"
+        "~/.emacs.d/snippets/javascript-mode"  ;; FIX: symlinked together to match the
+        "~/.emacs.d/snippets/js-mode"          ;; mode that is automatically loaded
+        "~/.emacs.d/snippets/emacs-list-mode"))
 
 ; (mapc 'yas/load-directory yas-snippet-dirs)
 

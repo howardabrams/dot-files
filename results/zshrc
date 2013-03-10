@@ -25,17 +25,17 @@ bindkey -s "\el" " 2>&1|less^M"
 #   Using the modules from [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]]. 
 #   The plugins are in =~/.oh-my-zsh/plugins/*=
 
-plugins=(osx terminalapp gnu-utils git lein npm)
+plugins=(osx terminalapp gnu-utils lein npm)
 
 # I use [[http://mxcl.github.com/homebrew/][Homebrew]] on my home computers, but [[http://www.macports.org][MacPorts]] at work.
 #   We will check to see which is installed, and then add that
 #   completion module:
 
-if [[ -f /usr/local/Cellar ]]
+if [[ -d /usr/local/Cellar ]]
 then
-    plugins+=(homebrew)
+    plugins+=(brew)      # Adds a "brews" command
 else
-    plugins+=(macports)
+    plugins+=(macports)  # Adds "psu" for port self_update and others
 fi
 
 # Oh My Zsh
