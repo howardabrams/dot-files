@@ -1,8 +1,0 @@
-# -*- coding: utf-8; mode: snippet -*-
-# name: Jasmine expect Truthy
-# key: extru
-# group: Jasmine
-# contributor: David Miller <david@deadpansincerity.com>
-# --
-expect(${1:true}).toBeTruthy();
-$0
