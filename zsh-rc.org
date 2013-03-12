@@ -39,7 +39,7 @@ things here are for callable functions, aliases and the like.
   The plugins are in =~/.oh-my-zsh/plugins/*=
 
 #+BEGIN_SRC sh
-  plugins=(osx terminalapp gnu-utils git lein npm)
+  plugins=(osx terminalapp gnu-utils lein npm)
 #+END_SRC
 
   I use [[http://mxcl.github.com/homebrew/][Homebrew]] on my home computers, but [[http://www.macports.org][MacPorts]] at work.
@@ -47,11 +47,11 @@ things here are for callable functions, aliases and the like.
   completion module:
 
 #+BEGIN_SRC sh
-  if [[ -f /usr/local/Cellar ]]
+  if [[ -d /usr/local/Cellar ]]
   then
-      plugins+=(homebrew)
+      plugins+=(brew)      # Adds a "brews" command
   else
-      plugins+=(macports)
+      plugins+=(macports)  # Adds "psu" for port self_update and others
   fi
 #+END_SRC
 
