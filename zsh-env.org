@@ -56,8 +56,8 @@ between my other scripts, but so far I haven't thought of anything.
    We will let the =HISTFILE= variable as it is.
 
 #+BEGIN_SRC sh
-SAVEHIST=1000
-HISTSIZE=1000
+  SAVEHIST=1000
+  HISTSIZE=1000
 #+END_SRC
 
 ** Path
@@ -69,7 +69,7 @@ HISTSIZE=1000
   OLDPATH=$PATH
   PATH=$HOME/bin
 
-  for DIR in /web/tools/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/git/bin
+  for DIR in /Applications/Emacs.app/Contents/MacOS/bin /web/tools/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/git/bin
   do
     if [[ -d $DIR ]]
     then
