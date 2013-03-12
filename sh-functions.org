@@ -72,7 +72,7 @@ and global variables are stored in =.profile= and =.zsh_profile=.
   really be:
 
 #+BEGIN_EXAMPLE
-  EDITOR="/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -a /Applications/Emacs.app/Contents/MacOS/Emacs +%d %s"
+  EDITOR="emacsclient -a /Applications/Emacs.app/Contents/MacOS/Emacs +%d %s"
 #+END_EXAMPLE
 
 * Listing Files
