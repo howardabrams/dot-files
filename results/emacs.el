@@ -186,6 +186,89 @@
 (setq recentf-max-menu-items 25)
 (global-set-key "\C-x\ \C-r" 'recentf-open-files)
 
+;; Auto Complete
+
+;;    This feature scans the code and suggests completions for what you
+;;    are typing. Useful at times ... annoying at others.
+
+(require 'auto-complete-config)
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+(ac-config-default)
+
+;; Yas Snippet
+
+;;    While the [[https://github.com/capitaomorte/yasnippet][Github project]] claims that we can install yasnippet from
+;;    ELPA, I have found that downloading the source from github is the
+;;    only one that actually works.
+
+(add-to-list 'load-path "~/.emacs.d/yasnippet")
+
+;; The [[https://github.com/capitaomorte/yasnippet][yasnippet project]] allows me to create snippets of code that
+;;    can be brought into a file, based on the language.
+
+(require 'yasnippet)
+(require 'yasnippet-bundle)
+
+;; We load the standard libraries, but load our *special* library
+;;    first. Note: I also grab this collection of [[https://github.com/swannodette/clojure-snippets][Clojure Snippets]].
+;;    Inside each of these directories should be directories like
+;;    =clojure-mode= and =org-mode=. This tells it where to find
+;;    snippets for the current mode.
+
+(setq yas/root-directory
+      '("~/.emacs.d/snippets"            ;; personal snippets
+        "~/.emacs.d/clojure-snippets"
+        "~/.emacs.d/yasnippet/snippets"))
+
+(yas/global-mode 1)
+(yas/initialize)
+
+;; The following command can be used if we change anything
+(yas/reload-all)
+
+;; Dash
+
+;;    The [[http://kapeli.com/][Dash product]] looks interesting, and [[https://github.com/Kapeli/dash-at-point][this project]] allows Emacs
+;;    to open Dash for documentation of anything with a =C-c d= keystroke:
+
+(add-to-list 'load-path "~/.emacs.d/dash-at-point")
+(autoload 'dash-at-point "dash-at-point"
+          "Search the word at point with Dash." t nil)
+(global-set-key "\C-cd" 'dash-at-point)
+
+;; Note Grep
+
+;;    I use the standard [[http://emacswiki.org/emacs/GrepMode#toc1][grep package]] in Emacs and wrap it so that I
+;;    can easily search through my notes.
+
+(defun ngrep (reg-exp)
+  "Searches the Notes and ORG directory tree for an expression."
+  (interactive "sSearch note directory for: ")
+  (let ((file-ext "*.org *.md *.txt *.markdown")
+        (search-dir "~/Dropbox/org"))
+    (message "Searching in %s" search-dir)
+    (grep-compute-defaults)
+    (rgrep reg-exp file-ext search-dir)))
+
+(define-key global-map "\C-x\C-n" 'ngrep)
+(define-key global-map "\C-x\C-r" 'rgrep)
+
+;; Don't forget that after doing a =C-x C-f= to find a file, you can
+;;    hit another =M-f= to do a find the given directory (and subs).
+
+;;    Also, you can do a full locate with =C-x C-l=:
+
+(define-key global-map "\C-x\C-l" 'locate)
+(setq locate-command "mdfind")  ;; Use Mac OS X's Spotlight
+
+;; Then, we can use it like:
+
+(setq ispell-personal-dictionary
+    (concat (getenv "HOME") "/Dropbox/dictionary-personal.txt"))
+
+(dolist (hook '(text-mode-hook))
+  (add-hook hook (lambda () (flyspell-mode 1))))
+
 ;; IDO (Interactively DO Things)
 
 ;;     According to [[http://www.masteringemacs.org/articles/2010/10/10/introduction-to-ido-mode/][Mickey]], IDO is the greatest thing.
@@ -220,20 +303,24 @@
 
 (load-library "smart-scan")
 
+;; Initial Settings
+
+;;    Initialization of Org Mode by hooking it into YASnippets, which
+;;    should allow me to easily add templates to my files.
+
+(add-hook 'org-mode-hook
+          '(lambda ()
+             (yas/minor-mode-on)))
+
 ;; Recent and Heavily Used Files
 
 ;;     We want both a recently seen files as well, as a top 10. This
 ;;     /Top 10/ file list can just be an Org file, right?
 
-(defun find-file-top-10 ()
-  (interactive)
-  (find-file "~/.emacs-recent.org"))
-
 (defun find-file-current-sprint ()
   (interactive)
   (find-file current-sprint-file))
 
-(define-key global-map "\C-x\C-y" 'find-file-top-10)
 (define-key global-map "\C-x\C-u" 'find-file-current-sprint)
 
 ;; Org-Mode Sprint Note Files
@@ -551,6 +638,10 @@
 
 (require 'clojure-mode)
 
+(add-hook 'clojure-mode-hook
+          '(lambda ()
+             (yas/minor-mode-on)))
+
 ;; With the =elein= project installed, it allows us to do things
 ;;    like: =M-x elein-run-cmd koan run=
 
@@ -713,43 +804,6 @@
 ; Tell emacs to use jsp-mode for .jsp files
 (add-to-list 'auto-mode-alist '("\\.jsp\\'" . html-mode))
 
-;; Auto Complete
-
-;;    This feature scans the code and suggests completions for what you
-;;    are typing. Useful at times ... annoying at others.
-
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
-(ac-config-default)
-
-;; Yas Snippet
-
-;;    While the [[https://github.com/capitaomorte/yasnippet][Github project]] claims that we can install yasnippet from
-;;    ELPA, I have found that the github version is the only one that
-;;    actually works:
-
-(add-to-list 'load-path "~/.emacs.d/yasnippet")
-
-;; The [[https://github.com/capitaomorte/yasnippet][yasnippet project]] allows me to create snippets of code that
-;;    can be brought into a file, based on the language.
-
-(require 'yasnippet)
-(yas-global-mode 1)
-; Or is it   (yas/global-mode 1)
-; (yas/initialize)
-
-;; We just have different directories for each:
-
-(setq yas/snippet-dirs
-      '("~/.emacs.d/snippets"                  ;; personal snippets
-        "~/.emacs.d/snippets/org-mode"
-        "~/.emacs.d/snippets/clojure-mode"
-        "~/.emacs.d/snippets/javascript-mode"  ;; FIX: symlinked together to match the
-        "~/.emacs.d/snippets/js-mode"          ;; mode that is automatically loaded
-        "~/.emacs.d/snippets/emacs-list-mode"))
-
-; (mapc 'yas/load-directory yas-snippet-dirs)
-
 ;; Markdown
 
 ;;    Don't use Markdown nearly as much as I used to, but I'm surprised
@@ -760,39 +814,6 @@
 (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.txt\\'" . markdown-mode))
-
-;; Note Grep
-
-;;    I use the standard [[http://emacswiki.org/emacs/GrepMode#toc1][grep package]] in Emacs and wrap it so that I
-;;    can easily search through my notes.
-
-(defun ngrep (reg-exp)
-  "Searches the Notes and ORG directory tree for an expression."
-  (interactive "sSearch note directory for: ")
-  (let ((file-ext "*.org *.md *.txt *.markdown")
-        (search-dir "~/Dropbox/org"))
-    (message "Searching in %s" search-dir)
-    (grep-compute-defaults)
-    (rgrep reg-exp file-ext search-dir)))
-
-(define-key global-map "\C-x\C-n" 'ngrep)
-(define-key global-map "\C-x\C-r" 'rgrep)
-
-;; Don't forget that after doing a =C-x C-f= to find a file, you can
-;;    hit another =M-f= to do a find the given directory (and subs).
-
-;;    Also, you can do a full locate with =C-x C-l=:
-
-(define-key global-map "\C-x\C-l" 'locate)
-(setq locate-command "mdfind")  ;; Use Mac OS X's Spotlight
-
-;; Then, we can use it like:
-
-(setq ispell-personal-dictionary 
-    (concat (getenv "HOME") "/Dropbox/dictionary-personal.txt"))
-
-(dolist (hook '(text-mode-hook))
-  (add-hook hook (lambda () (flyspell-mode 1))))
 
 ;; Closing Windows
 
@@ -820,3 +841,13 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;    The instructions are contained in [[file:gnus.org][gnus.org]] file.
 
 (load-library "gnus-config")
+
+;; Overriding Keybindings
+
+;;    You would think that you could just set the keybindings you want
+;;    at the top of your file, and be good, but since modules like to
+;;    add their own binding, I want to override some of them:
+
+;;    Rebind =C-x C-y= to the Yas expand function:
+
+(define-key global-map "\C-x\C-y" 'yas/expand)
