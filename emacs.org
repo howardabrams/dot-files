@@ -897,7 +897,8 @@ organize it and take notes on all the complexity.
    Most LISP-based programming is better with rainbow ponies:
 
 #+BEGIN_SRC elisp
-  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+  (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
+  (add-hook 'nrepl-mode-hook 'rainbow-delimiters-mode)
 #+END_SRC
 
    With the =elein= project installed, it allows us to do things
@@ -922,13 +923,6 @@ organize it and take notes on all the complexity.
 #+BEGIN_SRC elisp
   (load-library "clojuredocs")
 #+END_SRC
-
-   Usage:
-
-   - =nrepl-jack-in= - For executing regular expressions with nREPL
-   - =nrepl-ritz-jack-in= - For debugging expressions with Ritz
-   - =nrepl-enable-on-existing-clojure-buffers= for Clojure buffers
-     opened prior to starting up the nREPL interface.
 
 *** Paredit
 
@@ -956,6 +950,7 @@ organize it and take notes on all the complexity.
   (add-hook 'lisp-interaction-mode-hook 'turn-on-paredit)
   (add-hook 'scheme-mode-hook           'turn-on-paredit)
   (add-hook 'clojure-mode-hook          'turn-on-paredit)
+  (add-hook 'nrepl-mode-hook            'turn-on-paredit)
 #+END_SRC
 
     Without the helpful functions, we would have to do something like:
@@ -966,7 +961,41 @@ organize it and take notes on all the complexity.
 
 *** ElDoc
 
-    Need to get [[http://emacswiki.org/emacs/ElDoc][ElDoc]] working with Clojure.
+    Need to get [[http://emacswiki.org/emacs/ElDoc][ElDoc]] working with Clojure (oh, and with Emacs Lisp).
+    Do I need [[https://gist.github.com/tomykaira/1386472][this EL file]]?
+
+#+BEGIN_SRC elisp
+  (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+  (add-hook 'clojure-mode-hook 'turn-on-eldoc-mode)
+  (add-hook 'nrepl-interaction-mode-hook 'nrepl-turn-on-eldoc-mode)
+#+END_SRC
+
+* nREPL and Ritz
+
+  The [[https://github.com/kingtim/nrepl.el][nRepl project]] is da bomb. Usage:
+
+   - =nrepl-jack-in= - For executing regular expressions with nREPL
+   - =nrepl-ritz-jack-in= - For debugging expressions with Ritz
+   - =nrepl-enable-on-existing-clojure-buffers= for Clojure buffers
+     opened prior to starting up the nREPL interface.
+
+  Don't care much for the extra buffers that show up when you start:
+
+#+BEGIN_SRC elisp
+  (setq nrepl-hide-special-buffers t)
+#+END_SRC
+
+Stop the error buffer from popping up while working in buffers other than the REPL:
+
+#+BEGIN_SRC elisp
+  (setq nrepl-popup-stacktraces nil)
+#+END_SRC
+
+Make C-c C-z switch to the *nrepl* buffer in the current window:
+
+#+BEGIN_SRC elisp
+  (add-to-list 'same-window-buffer-names "*nrepl*")
+#+END_SRC
 
 ** Scala
 
