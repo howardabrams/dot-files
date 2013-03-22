@@ -101,7 +101,7 @@ and global variables are stored in =.profile= and =.zsh_profile=.
    look in the 'src' directory for the files.
 
 #+BEGIN_SRC sh
-  function f {
+  function findit {
       START_PATH='.'
       FILES="$*"
 
@@ -127,6 +127,8 @@ and global variables are stored in =.profile= and =.zsh_profile=.
           -not \( -path '*classes*' -or -path '*node_modules*' -or -path '.git*' \) \
           -and -iname $(perl -e 'print join " -o -iname ", @ARGV' $FILES)
   }
+
+  alias f='noglob findit'
 #+END_SRC
 
 ** sf
@@ -136,7 +138,7 @@ and global variables are stored in =.profile= and =.zsh_profile=.
 
 #+BEGIN_SRC sh
   function sf {
-      f "*$1*" | head -1
+      noglob findit *$1* | head -1
   }
 #+END_SRC
 
@@ -203,10 +205,11 @@ and global variables are stored in =.profile= and =.zsh_profile=.
   My Note scripts allow me to create and search my text files.
 
 #+BEGIN_SRC sh
-alias gilt="$HOME/bin/note -e aquamacs -g gilt -t gilt"
-alias work="$HOME/bin/note -e aquamacs -g gilt -t gilt"
-alias diary="$HOME/bin/note -e aquamacs -g personal -t personal"
-export LATEST="$HOME/Dropbox/Notes/gilt/latest"
+alias work="note -g workday -t workday"
+alias clojure="note -g clojure -t clojure"
+alias conf="note -g conf -t clojure"
+alias diary="note -g personal -t personal -l entry -r $HOME/bin/note-skel-diary.sh"
+export LATEST="$HOME/Dropbox/org/latest"
 
 alias notes-find="notes -a find"
 alias notes-view="notes -a view"

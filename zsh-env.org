@@ -29,7 +29,7 @@ between my other scripts, but so far I haven't thought of anything.
 #+BEGIN_SRC sh
   export ALTERNATE_EDITOR=/Applications/Emacs.app/Contents/MacOS/Emacs
   export EDITOR=/Applications/Emacs.app/Contents/MacOS/bin/emacsclient
-  export VISUAL="$EDITOR -c"
+  export VISUAL="$EDITOR -n"
 #+END_SRC
 
   Disable autosetting terminal title.
