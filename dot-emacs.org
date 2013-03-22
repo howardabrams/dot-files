@@ -40,204 +40,18 @@ organize it and take notes on all the complexity.
   ;;; been generated, as a tangled file, by the
   ;;; fandifluous org-mode.
   ;;;
-  ;;; Source: ~/Dropbox/emacs.d/dotemacs.org
+  ;;; Source: ~/Dropbox/dot-files/emacs.org
   ;;; ------------------------------------------
 #+END_SRC
 
-** Installing Dependencies
+** Initializing a New Emacs
 
    Emacs already comes bundled to edit most files, like Java and Ruby.
    However, some of the new stuff that I use isn't bundled, yet.
 
-*** Version 23
-
-   To begin installing these new packages in version 23, you need [[http://tromey.com/elpa/install.html][ELPA]]
-   (Emacs Package Manager).  Simply hit =C-c C-c= in the buffer below
-   to get that installed (if that fails, then you need to go to the
-   last paren and hit =C-x C-e=).
-
-#+BEGIN_SRC emacs-lisp :tangle no :results silent
-  (let ((buffer (url-retrieve-synchronously
-                 "http://tromey.com/elpa/package-install.el")))
-    (save-excursion
-      (message "Completed download of %s" buffer)
-      (set-buffer buffer)
-      (goto-char (point-min))
-      (re-search-forward "^$" nil 'move)
-      (eval-region (point) (point-max))
-      (kill-buffer (current-buffer))))
-#+END_SRC
-
-   This code writes some magic to the =~/.emacs= file, so make sure
-   you get rid of it at some point.
-
-   What I really like is the extra packages contained in the more
-   up-to-date [[http://marmalade-repo.org/][Marmalade repository]], but this seems to like a
-   /different/ version of =package.el=, so execute this bit of magic
-   to re-download the correct version.
-
-#+BEGIN_SRC sh :tangle no :results silent
-  curl -o ~/.emacs.d/elpa/package.el "http://repo.or.cz/w/emacs.git/blob_plain/1a0a666f941c99882093d7bd08ced15033bc3f0c:/lisp/emacs-lisp/package.el"
-  # wget "http://repo.or.cz/w/emacs.git/blob_plain/1a0a666f941c99882093d7bd08ced15033bc3f0c:/lisp/emacs-lisp/package.el" -O ~/.emacs.d/elpa/package.el
-#+END_SRC
-
-   Run the following (with a =C-x C-e= on the last paren) to install
-   and start up the package manager:
-
-#+BEGIN_SRC emacs-lisp :tangle no :results silent
-  (let ()
-    (load "~/.emacs.d/elpa/package.el")
-    (require 'package)
-    (add-to-list 'package-archives
-                 '("marmalade" . "http://marmalade-repo.org/packages/") t)
-    (package-initialize)
-    (package-refresh-contents)
-    (package-list-packages))
-#+END_SRC
-
-*** Install Needed Packages
-
-    Here is the list that should be installed to begin.
-    Install them all with a =C-c C-c= inside this block:
-
-#+BEGIN_SRC elisp :tangle no
-  (let ((my-packages (list
-
-   'ac-nrepl
-   'auto-complete
-   'clojure-mode
-   'clojurescript-mode
-   'coffee-mode
-   'color-theme
-   'color-theme-sanityinc-tomorrow
-   'elein
-   'flymake
-   'flymake-jshint
-   'flyspell
-   'git-commit-mode
-   'gitconfig-mode
-   'gitignore-mode
-   'graphviz-dot-mode
-   'handlebars-mode
-   'htmlize
-   'js-comint
-   'js2-mode
-   'json-mode
-   'mac-key-mode
-   'magit
-   'magit-simple-keys
-   'markdown-mode
-   'mustache-mode
-   'nlinum
-   'nrepl
-   'org
-   'org-mime
-   'org-presie
-   'paredit
-   'plantuml-mode
-   'redo+
-   'scala-mode
-   'smex
-   'yasnippet
-   'yasnippet-bundle
-
-    )))
-
-    (unless package-archive-contents
-      (package-refresh-contents))
-    (dolist (package my-packages)
-       (unless (package-installed-p package)
-        (package-install package))))
-
-#+END_SRC
-
-   Anything that you don't install above, may cause problems in the
-   code below.  So, either install it, or comment out its code section
-   (by adding a =:tangle no= at the end of the first line of code).
-
-   The following sections discuss installation of libraries that are
-   not available via ELPA.
-
-*** PlantUML
-
-    The [[http://plantuml.sourceforge.net][PlantUML project]] allows you to draw UML diagrams with textual descriptions.
-    A sweet feature for literate programmers. Download [[http://plantuml.sourceforge.net/download.html][the Jar file]] and put it in
-    your =bin= directory:
-
-#+BEGIN_EXAMPLE
-  curl -o ~/bin/plantuml.jar http://sourceforge.net/projects/plantuml/files/plantuml.jar/download
-#+END_EXAMPLE
-
-    We then need to reference this Jar file:
-
-#+BEGIN_SRC elisp
-  (setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
-#+END_SRC
-
-*** Org-Mode Installation
-
-    The [[http://orgmode.org][org-mode]] program is so critical, that I want a version > 7.9.
-    Download a version and un-pack it in =~/.emacs.d= and create a
-    symlink to it called: =~/.emacs.d/org=
-
-    From this point, we expect this it to be in this spot.
-
-*** Ensime Installation
-
-    [[https://github.com/aemoncannon/ensime][Ensime]] is an enhanced mode for Scala. Complete instructions are
-    on the github page, but it amounts to 
-
-    - [[https://github.com/aemoncannon/ensime/downloads][Download a distribution]]
-    - Positioning: =cd ~/.emacs=
-    - Extracting: =tar xvf ~/Downloads/ensime_2.9.2-0.9.8.1.tar= (or equivalent)
-    - Symlinking: =ln -s ensime_2.9.2-0.9.8.1 ensime=
-
-    That should do 'er.
-
-*** JavaScript Lint
-
-    Assuming that you have [[http://nodejs.org][node.js]] installed, you should install
-    [[http://www.jshint.com][jshint]] as a global command:
-
-#+BEGIN_EXAMPLE
-  sudo npm -g install jshint
-#+END_EXAMPLE
-
-    Now you can customize the [[*JavaScript][JavaScript]] section.
-
-**** Checking out the Ensime Source Code
-
-     You could check out the ensime source code and compiling a
-     version. As long as we have a =~/.emacs.d/ensime/elisp= that we
-     can load, we are golden...
-
-#+BEGIN_EXAMPLE
-  git clone https://github.com/aemoncannon/ensime.git
-  cd ~/.emacs.d/ensime
-  ln -s dist_2.9.2/elisp .
-#+END_EXAMPLE
-
-*** ISpell
-
-    The spelling feature in Emacs using =ispell=, so this should be
-    installed with something like Homebrew:
-
-#+BEGIN_SRC sh :tangle no
-brew install ispell
-#+END_SRC
-
-*** Support for GMAIL
-
-    While reading email in Emacs is generally "fine", I like to use
-    it because I can create direct links between my notes and the
-    mail messages I get.
-
-    To send email through Gmail, you'll need the TLS package
-    installed. Using [[http://mxcl.github.com/homebrew/][Homebrew]] is simple enough:
-
-#+BEGIN_SRC sh :tangle no
-  brew install gnutls
-#+END_SRC
+   Before this startup file can run, we need to initialize a clean
+   Emacs instance by: =load-file ~/.emacs.d/init.el=
+   This file is created by [[file:emacs-init.org][emacs-init.org]].
 
 * General Settings
 
@@ -262,11 +76,11 @@ brew install ispell
 
 #+BEGIN_SRC elisp
   ; (load "~/.emacs.d/elpa/package.el") Needed for version 23 only!
-
   (require 'package)
 
   (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
                            ("gnu"       . "http://elpa.gnu.org/packages/")
+                           ("melpa"     . "http://melpa.milkbox.net/packages/")
                            ("tromey"    . "http://tromey.com/elpa/")
                            ("marmalade" . "http://marmalade-repo.org/packages/")))
 #+END_SRC
@@ -325,6 +139,14 @@ brew install ispell
   (set-default-font "Anonymous Pro")
   (set-face-attribute 'default nil :font "Anonymous Pro" :height 140)
   (set-face-font 'default "Anonymous Pro")
+#+END_SRC
+
+** Line Numbers
+
+   Do you want line numbers on the left side:
+
+#+BEGIN_SRC elisp
+  (line-number-mode 1)
 #+END_SRC
 
 ** Color Theme
@@ -411,14 +233,43 @@ brew install ispell
 
 #+BEGIN_SRC elisp
   (when (eq system-type 'darwin)
-    ; (require 'redo+)
-    (require 'mac-key-mode)
-    (mac-key-mode 1)
-  
-    (define-key mac-key-mode-map [(alt +)] 'text-scale-increase)
-    (define-key mac-key-mode-map [(alt _)] 'text-scale-decrease)
-    (define-key mac-key-mode-map [(alt l)] 'goto-line))  
+    ;; Aquamacs-specific code:
+    (when (boundp 'aquamacs-version)
+      (global-set-key [(alt k)] 'nlinum-mode))
+    
+    ;; Emacs on Mac specific code:
+    (unless (boundp 'aquamacs-version)
+      ;; Since I already have Command-V for pasting, I
+      ;; don't need Ctrl-V to do that, so disable CUA:
+      (cua-mode -1)
+      
+      (require 'mac-key-mode)
+      (mac-key-mode 1)
+      
+      (define-key mac-key-mode-map [(alt +)] 'text-scale-increase)
+      (define-key mac-key-mode-map [(alt _)] 'text-scale-decrease)
+      (define-key mac-key-mode-map [(alt l)] 'goto-line)
+      (define-key mac-key-mode-map [(alt w)] 'delete-single-window)
+      (define-key mac-key-mode-map [(alt k)] 'nlinum-mode)))
 #+END_SRC
+
+   I would like Command-W to close a frame, but only if it only has a
+   single window in it. I found this code on [[http://www.emacswiki.org/emacs/frame-cmds.el][this site]].
+
+#+BEGIN_SRC elisp
+  (defun delete-single-window (&optional window)
+    "Remove WINDOW from the display.  Default is `selected-window'.
+  If WINDOW is the only one in its frame, then `delete-frame' too."
+    (interactive)
+    (save-current-buffer
+      (setq window (or window (selected-window)))
+      (select-window window)
+      (kill-buffer)
+      (if (one-window-p t) 
+          (delete-frame) 
+          (delete-window (selected-window)))))
+#+END_SRC
+
 
 ** More Key Definitions
 
@@ -440,6 +291,24 @@ brew install ispell
   (setq recentf-max-menu-items 25)
   (global-set-key "\C-x\ \C-r" 'recentf-open-files)
 #+END_SRC
+
+** Project Management
+
+   Let's assume that every git repo was a project, wouldn't it be
+   nice to do finds and greps limited to such a project.
+   This is what [[https://github.com/bbatsov/projectile][Projectile]] attempts to do (see [[http://wikemacs.org/wiki/Projectile][this wiki page]]).
+
+#+BEGIN_SRC elisp
+  (require 'projectile)
+  (projectile-global-mode) ;; to enable in all buffers
+#+END_SRC
+
+   Useful Keybindings:
+
+   - =[C-c p f]= Find a file in the project.
+   - =[C-c p g]= Find text matches in the project
+
+   If indexing gets slow, you can cache the results.
 
 ** Auto Complete
 
@@ -550,7 +419,7 @@ brew install ispell
   (setq ispell-personal-dictionary
       (concat (getenv "HOME") "/Dropbox/dictionary-personal.txt"))
 
-  (dolist (hook '(text-mode-hook))
+  (dolist (hook '(text-mode-hook org-mode-hook))
     (add-hook hook (lambda () (flyspell-mode 1))))
 #+END_SRC
 
@@ -613,9 +482,6 @@ brew install ispell
 
     Let's create keystrokes to turn on/off line numbering:
 
-#+BEGIN_SRC elisp
-  (define-key mac-key-mode-map [(alt k)] 'nlinum-mode)
-#+END_SRC
 
     Do we want this to turn on automatically with certain modes?
 
@@ -1028,6 +894,12 @@ brew install ispell
                (yas/minor-mode-on)))
 #+END_SRC
 
+   Most LISP-based programming is better with rainbow ponies:
+
+#+BEGIN_SRC elisp
+  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+#+END_SRC
+
    With the =elein= project installed, it allows us to do things
    like: =M-x elein-run-cmd koan run=
 
@@ -1050,6 +922,13 @@ brew install ispell
 #+BEGIN_SRC elisp
   (load-library "clojuredocs")
 #+END_SRC
+
+   Usage:
+
+   - =nrepl-jack-in= - For executing regular expressions with nREPL
+   - =nrepl-ritz-jack-in= - For debugging expressions with Ritz
+   - =nrepl-enable-on-existing-clojure-buffers= for Clojure buffers
+     opened prior to starting up the nREPL interface.
 
 *** Paredit
 
@@ -1084,6 +963,10 @@ brew install ispell
 #+BEGIN_SRC elisp :tangle no
   (add-hook 'clojure-mode-hook          (lambda () (paredit-mode +1)))
 #+END_SRC
+
+*** ElDoc
+
+    Need to get [[http://emacswiki.org/emacs/ElDoc][ElDoc]] working with Clojure.
 
 ** Scala
 
@@ -1286,27 +1169,6 @@ brew install ispell
   (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
   (add-to-list 'auto-mode-alist '("\\.txt\\'" . markdown-mode))
 #+END_SRC   
-
-** Closing Windows
-
-   I would like Command-W to close a frame, but only if it only has a
-   single window in it. I found this code on [[http://www.emacswiki.org/emacs/frame-cmds.el][this site]].\
-
-#+BEGIN_SRC elisp
-  (defun delete-single-window (&optional window)
-    "Remove WINDOW from the display.  Default is `selected-window'.
-  If WINDOW is the only one in its frame, then `delete-frame' too."
-    (interactive)
-    (save-current-buffer
-      (setq window (or window (selected-window)))
-      (select-window window)
-      (kill-buffer)
-      (if (one-window-p t) 
-          (delete-frame) 
-          (delete-window (selected-window)))))
-  
-  (define-key mac-key-mode-map [(alt w)] 'delete-single-window)
-#+END_SRC
 
 ** Mail with Gnus
 
