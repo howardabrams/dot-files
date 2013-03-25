@@ -270,7 +270,6 @@ organize it and take notes on all the complexity.
           (delete-window (selected-window)))))
 #+END_SRC
 
-
 ** More Key Definitions
 
    I like the ability to move the current line up or down by just
@@ -325,14 +324,6 @@ organize it and take notes on all the complexity.
    language.
 
 ** Yas Snippet
-
-   While the [[https://github.com/capitaomorte/yasnippet][Github project]] claims that we can install yasnippet from
-   ELPA, I have found that downloading the source from github is the
-   only one that actually works.
-
-#+BEGIN_SRC elisp
-  (add-to-list 'load-path "~/.emacs.d/yasnippet")
-#+END_SRC
 
    The [[https://github.com/capitaomorte/yasnippet][yasnippet project]] allows me to create snippets of code that
    can be brought into a file, based on the language. 
@@ -441,6 +432,32 @@ organize it and take notes on all the complexity.
   (setq ido-enable-flex-matching t)
   (setq ido-everywhere t)
   (ido-mode 1)
+#+END_SRC
+
+    According to [[https://gist.github.com/rkneufeld/5126926][Ryan Kneufeld]], we could make IDO work
+    vertically. Not sure if I like this, but we'll try.
+
+#+BEGIN_SRC elisp
+(setq ido-decorations                                                      ; Make ido-mode display vertically
+      (quote
+       ("\n-> "           ; Opening bracket around prospect list
+        ""                ; Closing bracket around prospect list
+        "\n   "           ; separator between prospects
+        "\n   ..."        ; appears at end of truncated list of prospects
+        "["               ; opening bracket around common match string
+        "]"               ; closing bracket around common match string
+        " [No match]"     ; displayed when there is no match
+        " [Matched]"      ; displayed if there is a single match
+        " [Not readable]" ; current diretory is not readable
+        " [Too big]"      ; directory too big
+        " [Confirm]")))   ; confirm creation of new file or buffer
+ 
+(add-hook 'ido-setup-hook                                                  ; Navigate ido-mode vertically
+          (lambda ()
+            (define-key ido-completion-map [down] 'ido-next-match)
+            (define-key ido-completion-map [up] 'ido-prev-match)
+            (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
+            (define-key ido-completion-map (kbd "C-p") 'ido-prev-match)))
 #+END_SRC
 
     I guess you can call =ido-use-url-at-point= with Markdown to jump
