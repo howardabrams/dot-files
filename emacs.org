@@ -497,10 +497,15 @@ organize it and take notes on all the complexity.
 
 *** Line Numbers
 
-    Let's create keystrokes to turn on/off line numbering:
+    We can turn =nlinum-mode= on/off with
+    =Command-K= (see the [[*Macintosh][Macintosh]] section above).
+    However, we can turn this on automatically for certain modes?
 
-
-    Do we want this to turn on automatically with certain modes?
+#+BEGIN_SRC elisp
+  (add-hook 'clojure-mode-hook 'nlinum-mode)
+  (add-hook 'emacs-lisp-mode-hook 'nlinum-mode)
+  (add-hook 'js2-mode-hook 'nlinum-mode)
+#+END_SRC
 
 *** Smart Scan
 
