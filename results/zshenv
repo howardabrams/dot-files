@@ -15,7 +15,7 @@ ZSH_THEME="happiness"
 
 export ALTERNATE_EDITOR=/Applications/Emacs.app/Contents/MacOS/Emacs
 export EDITOR=/Applications/Emacs.app/Contents/MacOS/bin/emacsclient
-export VISUAL="$EDITOR -c"
+export VISUAL="$EDITOR -n"
 
 # Disable autosetting terminal title.
 

@@ -4,22 +4,8 @@
 ;;; been generated, as a tangled file, by the
 ;;; fandifluous org-mode.
 ;;;
-;;; Source: ~/Dropbox/emacs.d/dotemacs.org
+;;; Source: ~/Dropbox/dot-files/emacs.org
 ;;; ------------------------------------------
-
-;; PlantUML
-
-;;     The [[http://plantuml.sourceforge.net][PlantUML project]] allows you to draw UML diagrams with textual descriptions.
-;;     A sweet feature for literate programmers. Download [[http://plantuml.sourceforge.net/download.html][the Jar file]] and put it in
-;;     your =bin= directory:
-
-;; #+BEGIN_EXAMPLE
-;;   curl -o ~/bin/plantuml.jar http://sourceforge.net/projects/plantuml/files/plantuml.jar/download
-;; #+END_EXAMPLE
-
-;;     We then need to reference this Jar file:
-
-(setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
 
 ;; Extra Packages
 
@@ -39,11 +25,11 @@
 ;;    *NB:* We want to add the [[http://marmalade-repo.org/][Marmalade repository]].
 
 ; (load "~/.emacs.d/elpa/package.el") Needed for version 23 only!
-
 (require 'package)
 
 (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
                          ("gnu"       . "http://elpa.gnu.org/packages/")
+                         ("melpa"     . "http://melpa.milkbox.net/packages/")
                          ("tromey"    . "http://tromey.com/elpa/")
                          ("marmalade" . "http://marmalade-repo.org/packages/")))
 
@@ -83,6 +69,12 @@
 (set-default-font "Source Code Pro")
 (set-face-attribute 'default nil :font "Source Code Pro" :height 140)
 (set-face-font 'default "Source Code Pro")
+
+;; Line Numbers
+
+;;    Do you want line numbers on the left side:
+
+(line-number-mode 1)
 
 ;; Color Theme
 
@@ -161,13 +153,39 @@
 ;;    into a more Macintosh-specific application. (See [[http://stackoverflow.com/questions/162896/emacs-on-mac-os-x-leopard-key-bindings][these online notes]])
 
 (when (eq system-type 'darwin)
-  ; (require 'redo+)
-  (require 'mac-key-mode)
-  (mac-key-mode 1)
+  ;; Aquamacs-specific code:
+  (when (boundp 'aquamacs-version)
+    (global-set-key [(alt k)] 'nlinum-mode))
+  
+  ;; Emacs on Mac specific code:
+  (unless (boundp 'aquamacs-version)
+    ;; Since I already have Command-V for pasting, I
+    ;; don't need Ctrl-V to do that, so disable CUA:
+    (cua-mode -1)
+    
+    (require 'mac-key-mode)
+    (mac-key-mode 1)
+    
+    (define-key mac-key-mode-map [(alt +)] 'text-scale-increase)
+    (define-key mac-key-mode-map [(alt _)] 'text-scale-decrease)
+    (define-key mac-key-mode-map [(alt l)] 'goto-line)
+    (define-key mac-key-mode-map [(alt w)] 'delete-single-window)
+    (define-key mac-key-mode-map [(alt k)] 'nlinum-mode)))
 
-  (define-key mac-key-mode-map [(alt +)] 'text-scale-increase)
-  (define-key mac-key-mode-map [(alt _)] 'text-scale-decrease)
-  (define-key mac-key-mode-map [(alt l)] 'goto-line))
+;; I would like Command-W to close a frame, but only if it only has a
+;;    single window in it. I found this code on [[http://www.emacswiki.org/emacs/frame-cmds.el][this site]].
+
+(defun delete-single-window (&optional window)
+  "Remove WINDOW from the display.  Default is `selected-window'.
+If WINDOW is the only one in its frame, then `delete-frame' too."
+  (interactive)
+  (save-current-buffer
+    (setq window (or window (selected-window)))
+    (select-window window)
+    (kill-buffer)
+    (if (one-window-p t) 
+        (delete-frame) 
+        (delete-window (selected-window)))))
 
 ;; More Key Definitions
 
@@ -186,6 +204,15 @@
 (setq recentf-max-menu-items 25)
 (global-set-key "\C-x\ \C-r" 'recentf-open-files)
 
+;; Project Management
+
+;;    Let's assume that every git repo was a project, wouldn't it be
+;;    nice to do finds and greps limited to such a project.
+;;    This is what [[https://github.com/bbatsov/projectile][Projectile]] attempts to do (see [[http://wikemacs.org/wiki/Projectile][this wiki page]]).
+
+(require 'projectile)
+(projectile-global-mode) ;; to enable in all buffers
+
 ;; Auto Complete
 
 ;;    This feature scans the code and suggests completions for what you
@@ -197,13 +224,7 @@
 
 ;; Yas Snippet
 
-;;    While the [[https://github.com/capitaomorte/yasnippet][Github project]] claims that we can install yasnippet from
-;;    ELPA, I have found that downloading the source from github is the
-;;    only one that actually works.
-
-(add-to-list 'load-path "~/.emacs.d/yasnippet")
-
-;; The [[https://github.com/capitaomorte/yasnippet][yasnippet project]] allows me to create snippets of code that
+;;    The [[https://github.com/capitaomorte/yasnippet][yasnippet project]] allows me to create snippets of code that
 ;;    can be brought into a file, based on the language.
 
 (require 'yasnippet)
@@ -266,7 +287,7 @@
 (setq ispell-personal-dictionary
     (concat (getenv "HOME") "/Dropbox/dictionary-personal.txt"))
 
-(dolist (hook '(text-mode-hook))
+(dolist (hook '(text-mode-hook org-mode-hook))
   (add-hook hook (lambda () (flyspell-mode 1))))
 
 ;; IDO (Interactively DO Things)
@@ -276,6 +297,30 @@
 (setq ido-enable-flex-matching t)
 (setq ido-everywhere t)
 (ido-mode 1)
+
+;; According to [[https://gist.github.com/rkneufeld/5126926][Ryan Kneufeld]], we could make IDO work
+;;     vertically. Not sure if I like this, but we'll try.
+
+(setq ido-decorations                                                      ; Make ido-mode display vertically
+      (quote
+       ("\n-> "           ; Opening bracket around prospect list
+        ""                ; Closing bracket around prospect list
+        "\n   "           ; separator between prospects
+        "\n   ..."        ; appears at end of truncated list of prospects
+        "["               ; opening bracket around common match string
+        "]"               ; closing bracket around common match string
+        " [No match]"     ; displayed when there is no match
+        " [Matched]"      ; displayed if there is a single match
+        " [Not readable]" ; current diretory is not readable
+        " [Too big]"      ; directory too big
+        " [Confirm]")))   ; confirm creation of new file or buffer
+ 
+(add-hook 'ido-setup-hook                                                  ; Navigate ido-mode vertically
+          (lambda ()
+            (define-key ido-completion-map [down] 'ido-next-match)
+            (define-key ido-completion-map [up] 'ido-prev-match)
+            (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
+            (define-key ido-completion-map (kbd "C-p") 'ido-prev-match)))
 
 ;; Backup Settings
 
@@ -292,9 +337,13 @@
 
 ;; Line Numbers
 
-;;     Let's create keystrokes to turn on/off line numbering:
+;;     We can turn =nlinum-mode= on/off with
+;;     =Command-K= (see the [[*Macintosh][Macintosh]] section above).
+;;     However, we can turn this on automatically for certain modes?
 
-(define-key mac-key-mode-map [(alt k)] 'nlinum-mode)
+(add-hook 'clojure-mode-hook 'nlinum-mode)
+(add-hook 'emacs-lisp-mode-hook 'nlinum-mode)
+(add-hook 'js2-mode-hook 'nlinum-mode)
 
 ;; Smart Scan
 
@@ -642,6 +691,11 @@
           '(lambda ()
              (yas/minor-mode-on)))
 
+;; Most LISP-based programming is better with rainbow ponies:
+
+(add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
+(add-hook 'nrepl-mode-hook 'rainbow-delimiters-mode)
+
 ;; With the =elein= project installed, it allows us to do things
 ;;    like: =M-x elein-run-cmd koan run=
 
@@ -682,6 +736,37 @@
 (add-hook 'lisp-interaction-mode-hook 'turn-on-paredit)
 (add-hook 'scheme-mode-hook           'turn-on-paredit)
 (add-hook 'clojure-mode-hook          'turn-on-paredit)
+(add-hook 'nrepl-mode-hook            'turn-on-paredit)
+
+;; ElDoc
+
+;;     Need to get [[http://emacswiki.org/emacs/ElDoc][ElDoc]] working with Clojure (oh, and with Emacs Lisp).
+;;     Do I need [[https://gist.github.com/tomykaira/1386472][this EL file]]?
+
+(add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+(add-hook 'clojure-mode-hook 'turn-on-eldoc-mode)
+(add-hook 'nrepl-interaction-mode-hook 'nrepl-turn-on-eldoc-mode)
+
+;; nREPL and Ritz
+
+;;   The [[https://github.com/kingtim/nrepl.el][nRepl project]] is da bomb. Usage:
+
+;;    - =nrepl-jack-in= - For executing regular expressions with nREPL
+;;    - =nrepl-ritz-jack-in= - For debugging expressions with Ritz
+;;    - =nrepl-enable-on-existing-clojure-buffers= for Clojure buffers
+;;      opened prior to starting up the nREPL interface.
+
+;;   Don't care much for the extra buffers that show up when you start:
+
+(setq nrepl-hide-special-buffers t)
+
+;; Stop the error buffer from popping up while working in buffers other than the REPL:
+
+(setq nrepl-popup-stacktraces nil)
+
+;; Make C-c C-z switch to the *nrepl* buffer in the current window:
+
+(add-to-list 'same-window-buffer-names "*nrepl*")
 
 ;; Scala
 
@@ -814,25 +899,6 @@
 (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.txt\\'" . markdown-mode))
-
-;; Closing Windows
-
-;;    I would like Command-W to close a frame, but only if it only has a
-;;    single window in it. I found this code on [[http://www.emacswiki.org/emacs/frame-cmds.el][this site]].\
-
-(defun delete-single-window (&optional window)
-  "Remove WINDOW from the display.  Default is `selected-window'.
-If WINDOW is the only one in its frame, then `delete-frame' too."
-  (interactive)
-  (save-current-buffer
-    (setq window (or window (selected-window)))
-    (select-window window)
-    (kill-buffer)
-    (if (one-window-p t) 
-        (delete-frame) 
-        (delete-window (selected-window)))))
-
-(define-key mac-key-mode-map [(alt w)] 'delete-single-window)
 
 ;; Mail with Gnus
 

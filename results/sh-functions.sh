@@ -24,7 +24,7 @@ alias ll="gls --color -lhA"
 #    file(s), or you can do something like 'src/../some-file.txt' to
 #    look in the 'src' directory for the files.
 
-function f {
+function findit {
     START_PATH='.'
     FILES="$*"
 
@@ -51,13 +51,15 @@ function f {
         -and -iname $(perl -e 'print join " -o -iname ", @ARGV' $FILES)
 }
 
+alias f='noglob findit'
+
 # sf
 
 #    Wrapper around 'find' that returns only a single file. Helpful for calls
 #    to an editor when you are pretty sure of the name of the file.
 
 function sf {
-    f "*$1*" | head -1
+    noglob findit *$1* | head -1
 }
 
 # ef
@@ -116,10 +118,11 @@ EOF
 
 #   My Note scripts allow me to create and search my text files.
 
-alias gilt="$HOME/bin/note -e aquamacs -g gilt -t gilt"
-alias work="$HOME/bin/note -e aquamacs -g gilt -t gilt"
-alias diary="$HOME/bin/note -e aquamacs -g personal -t personal"
-export LATEST="$HOME/Dropbox/Notes/gilt/latest"
+alias work="note -g workday -t workday"
+alias clojure="note -g clojure -t clojure"
+alias conf="note -g conf -t clojure"
+alias diary="note -g personal -t personal -l entry -r $HOME/bin/note-skel-diary.sh"
+export LATEST="$HOME/Dropbox/org/latest"
 
 alias notes-find="notes -a find"
 alias notes-view="notes -a view"
