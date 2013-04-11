@@ -82,7 +82,7 @@ and global variables are stored in =.profile= and =.zsh_profile=.
 
 #+BEGIN_SRC sh
   alias ls="gls --color"
-  alias ll="gls --color -lhA"
+  alias ll="gls --color -olhA"
 #+END_SRC
 
 * Finding Files
