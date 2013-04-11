@@ -88,9 +88,10 @@ This can be done after this file has been tangled: =C-c C-v t=
                         plantuml-mode
                         projectile          ;; For dealing with projects
                         rainbow-delimiters  ;; Mode for alternating paren colors
-                        redo+
+                        ;; redo+            ;; If not installed, edit mac-key-mode
                         scala-mode
                         smex
+                        undo-tree
                         yasnippet
                         yasnippet-bundle
                         )
@@ -104,21 +105,12 @@ This can be done after this file has been tangled: =C-c C-v t=
    anything not already installed.
 
 #+BEGIN_SRC elisp
-  (dolist (p my-packages)
-    (when (not (package-installed-p p))
-      (package-install p)))
-#+END_SRC
-
-* A different attempt
-
-  I found the following code that might be helpful:
-
-#+BEGIN_SRC elisp :tangle no
-    (unless package-archive-contents
-      (package-refresh-contents))
-    (dolist (package my-packages)
-       (unless (package-installed-p package)
-        (package-install package))))
+  (unless package-archive-contents
+    (package-refresh-contents))
+  (dolist (package my-packages)
+    (unless (package-installed-p package)
+      (catch 'result ;; condition-case nil
+          (package-install package))))
 #+END_SRC
 
 * External Dependencies
@@ -159,6 +151,19 @@ This can be done after this file has been tangled: =C-c C-v t=
 
     That should do 'er.
 
+**** Checking out the Ensime Source Code
+
+     You could check out the ensime source code and compiling a
+     version. As long as we have a =~/.emacs.d/ensime/elisp= that we
+     can load, we are golden...
+
+#+BEGIN_EXAMPLE
+  cd ~/Other # or whatever
+  git clone https://github.com/aemoncannon/ensime.git
+  cd ~/.emacs.d
+  ln -s ~/Other/ensime/dist_2.9.2/elisp ensime
+#+END_EXAMPLE
+
 *** JavaScript Lint
 
     Assuming that you have [[http://nodejs.org][node.js]] installed, you should install
@@ -170,25 +175,13 @@ This can be done after this file has been tangled: =C-c C-v t=
 
     Now you can customize the [[*JavaScript][JavaScript]] section.
 
-**** Checking out the Ensime Source Code
-
-     You could check out the ensime source code and compiling a
-     version. As long as we have a =~/.emacs.d/ensime/elisp= that we
-     can load, we are golden...
-
-#+BEGIN_EXAMPLE
-  git clone https://github.com/aemoncannon/ensime.git
-  cd ~/.emacs.d/ensime
-  ln -s dist_2.9.2/elisp .
-#+END_EXAMPLE
-
 *** ISpell
 
     The spelling feature in Emacs using =ispell=, so this should be
     installed with something like Homebrew:
 
 #+BEGIN_SRC sh :tangle no
-brew install ispell
+  brew install ispell
 #+END_SRC
 
 *** Support for GMAIL
