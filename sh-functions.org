@@ -38,38 +38,23 @@ and global variables are stored in =.profile= and =.zsh_profile=.
 
 * Editor
 
-  Wrapper around the standard =emacsclient= executable. It attempts
-  to be smart about if it should "wait" or not based on whether we
-  call =e= from an interactive shell.
+  Wrapper around the standard =emacsclient= executable. This
+  essentially replaces the standard =emacs= command, but this
+  is asynchronous and *doesn't block*:
 
-#+BEGIN_SRC sh :tangle ~/bin/e :shebang #!/bin/bash
-  if [ -z $PS1 ]
-  then
-      # non-interactive
-      /Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -c -q -a /Applications/Emacs.app/Contents/MacOS/Emacs $* &
-  else
-      # interactive
-      /Applications/Emacs.app/Contents/MacOS/bin/emacsclient -c -q -a /Applications/Emacs.app/Contents/MacOS/Emacs $*
-  fi
+#+BEGIN_SRC sh
+  alias emacs='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
 #+END_SRC
 
-  Wrapper around the =emacsclient=. This tries not to start up a new
-  frame (note the missing -c option), but that doesn't seem to bother
-  it much.
+  Another wrapper around =emacsclient= but this is a blocking
+  approach suitable for being set to the =EDITOR= variable.
 
-#+BEGIN_SRC sh :tangle ~/bin/emacs :shebang #!/bin/bash
-  /Applications/Emacs.app/Contents/MacOS/bin/emacsclient -q -a /Applications/Emacs.app/Contents/MacOS/Emacs $*
+#+BEGIN_SRC sh
+  alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
 #+END_SRC
 
   It is unclear whether =e= is a good version for the =EDITOR=
-  variable. According to the /info/ docs, we should do the following:
-
-#+BEGIN_EXAMPLE
-  EDITOR="emacsclient --alternate-editor emacs +%d %s"
-#+END_EXAMPLE
-
-  However, the =emacs= is not a very good executable, so it should
-  really be:
+  variable. According to the /info/ docs, we should do something like:
 
 #+BEGIN_EXAMPLE
   EDITOR="emacsclient -a /Applications/Emacs.app/Contents/MacOS/Emacs +%d %s"

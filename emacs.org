@@ -992,7 +992,7 @@ organize it and take notes on all the complexity.
   (add-hook 'nrepl-interaction-mode-hook 'nrepl-turn-on-eldoc-mode)
 #+END_SRC
 
-* nREPL and Ritz
+*** nREPL and Ritz
 
   The [[https://github.com/kingtim/nrepl.el][nRepl project]] is da bomb. Usage:
 
@@ -1220,6 +1220,19 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
   (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
   (add-to-list 'auto-mode-alist '("\\.txt\\'" . markdown-mode))
 #+END_SRC   
+
+** Eshell
+
+   E-shell doesn't read the [[http://www.emacswiki.org/emacs/EshellAlias][standard shell resource]] files or allow
+   shell functions and aliases, so we need to create emacs-specific
+   ones:
+
+#+BEGIN_SRC elisp
+  (defun eshell/e (file)
+    (find-file file))
+  (defun eshell/emacs (file)
+    (find-file file))
+#+END_SRC
 
 ** Mail with Gnus
 
