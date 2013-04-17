@@ -94,14 +94,36 @@ organize it and take notes on all the complexity.
   (package-initialize)
 #+END_SRC
 
+** Package Loading
+
+   The =(require)= is a problem if the library isn't available, and if
+   it isn't available, then this file dies and doesn't complete.
+   Seems like it would be nice to wrap the configuration of a package
+   in a block that is ignored if the package isn't available.
+
+   This is what I found [[http://stackoverflow.com/questions/7790382/how-to-determine-whether-a-package-is-installed-in-elisp][in this discussion]].
+
+#+BEGIN_SRC elisp
+  (defun autofeaturep (feature)
+    "For a feature symbol 'foo, return a result equivalent to:
+  (or (featurep 'foo-autoloads) (featurep 'foo))
+  Does not support subfeatures."
+    (catch 'result
+      (let ((feature-name (symbol-name feature)))
+        (unless (string-match "-autoloads$" feature-name)
+          (let ((feature-autoloads (intern-soft (concat feature-name "-autoloads"))))
+            (when (and feature-autoloads (featurep feature-autoloads))
+              (throw 'result t))))
+        (featurep feature))))
+#+END_SRC
 ** Variables
 
    General settings about me that other packages can use. The biggest
    problem is guessing my email address based on what computer I am using:
 
 #+BEGIN_SRC elisp
-  (if (equal "habrams" user-login-name)
-      (setq user-mail-address "habrams@gilt.com")
+  (if (equal "howard.abrams" user-login-name)
+      (setq user-mail-address "howard.abrams@workday.com")
     (setq user-mail-address "howard.abrams@gmail.com"))
 #+END_SRC
 
@@ -269,6 +291,22 @@ organize it and take notes on all the complexity.
           (delete-frame) 
           (delete-window (selected-window)))))
 #+END_SRC
+*** Undo and Redo
+
+    According to [[http://ergoemacs.org/emacs/emacs_best_redo_mode.html][this article]], I get better functionality than the
+    =redo+= plugin (which I can't seem to get working well).
+
+#+BEGIN_SRC elisp
+  (require 'undo-tree)
+  (global-undo-tree-mode 1)
+  (defalias 'redo 'undo-tree-redo)
+
+  (define-key mac-key-mode-map [(alt z)] 'undo)
+  (define-key mac-key-mode-map [(alt S-z)] 'redo)
+
+  (global-set-key (kbd "C-z") 'undo) ; Zap to character isn't helpful
+  (global-set-key (kbd "C-S-z") 'redo)
+#+END_SRC
 
 ** More Key Definitions
 
@@ -314,8 +352,9 @@ organize it and take notes on all the complexity.
    This feature scans the code and suggests completions for what you
    are typing. Useful at times ... annoying at others.
 
-#+BEGIN_SRC elisp
-  (require 'auto-complete-config)
+#+BEGIN_SRC elisp :tangle no
+  (autoload 'auto-complete-config "auto-complete-config"
+            "Auto completion for general buffer types." t nil)
   (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
   (ac-config-default)
 #+END_SRC
@@ -342,8 +381,7 @@ organize it and take notes on all the complexity.
 #+BEGIN_SRC elisp
   (setq yas/root-directory
         '("~/.emacs.d/snippets"            ;; personal snippets
-          "~/.emacs.d/clojure-snippets"
-          "~/.emacs.d/yasnippet/snippets"))
+          "~/.emacs.d/clojure-snippets"))
 
   (yas/global-mode 1)
   (yas/initialize)
@@ -358,11 +396,13 @@ organize it and take notes on all the complexity.
    to open Dash for documentation of anything with a =C-c d= keystroke:
 
 #+BEGIN_SRC elisp
-  (add-to-list 'load-path "~/.emacs.d/dash-at-point")
   (autoload 'dash-at-point "dash-at-point"
             "Search the word at point with Dash." t nil)
   (global-set-key "\C-cd" 'dash-at-point)
 #+END_SRC
+
+   Note: I checked out the code elsewhere, and created a symlink from
+   my =~/.emacs.d= directory to the =dash-as-point.el= file.
 
 ** Note Grep
 
@@ -550,10 +590,10 @@ organize it and take notes on all the complexity.
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-POP24")
+  (setq current-sprint "2013-07")
   
   (defun get-current-sprint-file ()
-    (expand-file-name (concat "~/Dropbox/org/gilt/Sprint-" current-sprint ".org")))
+    (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
   (defvar current-sprint-file 
     (get-current-sprint-file)
     "The name of an Org mode that stores information about the current sprint.")
@@ -571,7 +611,7 @@ organize it and take notes on all the complexity.
     (let (today (format-time-string "%Y-%m-%d %a"))
       (setq template (concat "#+TITLE:  Sprint " current-sprint "\n"
                     "#+AUTHOR: Howard Abrams\n"
-                    "#+EMAIL:  habrams@gilt.com\n"
+                    "#+EMAIL:  howard.abrams@workday.com\n"
                     "#+DATE:   " today "\n\n"
                     "* My Work Issues\n\n"
                     "* Sprint Retrospective\n\n"))
@@ -810,7 +850,8 @@ organize it and take notes on all the complexity.
     [[https://github.com/eschulte/org-S5/blob/master/org-export-as-s5.el][this code]], we can issue =org-export-as-s5=:
 
 #+BEGIN_SRC elisp
-  (load-library "org-export-as-s5")
+  (autoload 'org-export-as-s5 "org-export-as-s5"
+            "Module extension for Presentations for Org-Mode." t nil)
 #+END_SRC
 
     And let's tie this to a keystroke to make it easier to use:
@@ -825,45 +866,46 @@ organize it and take notes on all the complexity.
     using =C-c C-e g M=:
 
 #+BEGIN_SRC elisp
-(require 'org-export-generic)
-(org-set-generic-type
- "Markdown" 
- '(:file-suffix ".markdown"
-   :key-binding ?M
-   :title-format "%s\n"
-   :title-suffix ?=
-   :body-header-section-numbers t
-   :body-header-section-number-format "%s) "
-   :body-section-header-prefix	("\n## " "\n### " "\n#### " "\n##### " "\n###### ")
-   :body-section-header-format	"%s"
-   :body-section-header-suffix "\n\n"
-   :todo-keywords-export t
-   :body-line-format "  %s\n"
-   :body-tags-export	t
-   :body-tags-prefix	" <tags>"
-   :body-tags-suffix	"</tags>\n"
-   ;;:body-section-prefix	"<secprefix>\n"
-   ;;:body-section-suffix	"</secsuffix>\n"
-   :body-line-export-preformated	t
-   :body-line-fixed-prefix	"<pre>\n"
-   :body-line-fixed-suffix	"\n</pre>\n"
-   :body-line-fixed-format	"%s\n"
-   :body-list-prefix	"\n"
-   :body-list-suffix	"\n"
-   :body-list-format	"  * %s\n"
-   ;;:body-number-list-prefix	"<ol>\n"
-   ;;:body-number-list-suffix	"</ol>\n"
-   ;;:body-number-list-format	"<li>%s</li>\n"
-   ;;:body-number-list-leave-number	t
-   :body-list-checkbox-todo	"[_] "
-   :body-list-checkbox-todo-end	""
-   :body-list-checkbox-done	"[X] "
-   :body-list-checkbox-done-end ""
-   :body-line-format	"%s"
-   body-line-wrap	85
-   :body-text-prefix	""
-   :body-text-suffix	""
-   ))
+  (require 'org-export-generic)
+  
+  (org-set-generic-type
+   "Markdown" 
+   '(:file-suffix ".markdown"
+     :key-binding ?M
+     :title-format "%s\n"
+     :title-suffix ?=
+     :body-header-section-numbers t
+     :body-header-section-number-format "%s) "
+     :body-section-header-prefix ("\n## " "\n### " "\n#### " "\n##### " "\n###### ")
+     :body-section-header-format  "%s"
+     :body-section-header-suffix  "\n\n"
+     :todo-keywords-export        t
+     :body-line-format            "  %s\n"
+     :body-tags-export            t
+     :body-tags-prefix            " <tags>"
+     :body-tags-suffix            "</tags>\n"
+     ;;:body-section-prefix       "<secprefix>\n"
+     ;;:body-section-suffix       "</secsuffix>\n"
+     :body-line-export-preformated        t
+     :body-line-fixed-prefix      "<pre>\n"
+     :body-line-fixed-suffix      "\n</pre>\n"
+     :body-line-fixed-format      "%s\n"
+     :body-list-prefix            "\n"
+     :body-list-suffix            "\n"
+     :body-list-format            "  * %s\n"
+     ;;:body-number-list-prefix   "<ol>\n"
+     ;;:body-number-list-suffix   "</ol>\n"
+     ;;:body-number-list-format   "<li>%s</li>\n"
+     ;;:body-number-list-leave-number     t
+     :body-list-checkbox-todo     "[_] "
+     :body-list-checkbox-todo-end ""
+     :body-list-checkbox-done     "[X] "
+     :body-list-checkbox-done-end ""
+     :body-line-format            "%s"
+     :body-line-wrap               79
+     :body-text-prefix            ""
+     :body-text-suffix            ""
+     ))
 #+END_SRC
 
 ** The Tower of Babel
@@ -909,41 +951,53 @@ organize it and take notes on all the complexity.
    Me like Clojure, and since it is a LISP, then Emacs likes it too.
 
 #+BEGIN_SRC elisp
-  (require 'clojure-mode)
-
-  (add-hook 'clojure-mode-hook
-            '(lambda ()
-               (yas/minor-mode-on)))
+  (if (autofeaturep 'clojure-mode)
+      (progn
+        (require 'clojure-mode)
+        (add-hook 'clojure-mode-hook
+                  '(lambda ()
+                     (yas/minor-mode-on)))
+  
+        ;; This makes Compojure macro calls look nicer.
+        ;; https://github.com/weavejester/compojure/wiki
+        (define-clojure-indent
+          (defroutes 'defun)
+          (GET 2)
+          (POST 2)
+          (PUT 2)
+          (DELETE 2)
+          (HEAD 2)
+          (ANY 2)
+          (context 2))))
 #+END_SRC
 
    Most LISP-based programming is better with rainbow ponies:
 
 #+BEGIN_SRC elisp
-  (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
-  (add-hook 'nrepl-mode-hook 'rainbow-delimiters-mode)
+  (if (autofeaturep 'rainbow-delimiters)
+      (progn
+        (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
+        (add-hook 'nrepl-mode-hook 'rainbow-delimiters-mode)))
 #+END_SRC
 
    With the =elein= project installed, it allows us to do things
    like: =M-x elein-run-cmd koan run=
 
-   The following makes [[https://github.com/weavejester/compojure/wiki][Compojure]] macro calls look better:
+   Really want to try out my new [[file:~/Dropbox/Clojure/clojuredocs-emacs/org/clojuredocs.org][ClojureDocs functions]]. Note: You
+   need to do the following steps:
 
-#+BEGIN_SRC elisp
-  (define-clojure-indent
-    (defroutes 'defun)
-    (GET 2)
-    (POST 2)
-    (PUT 2)
-    (DELETE 2)
-    (HEAD 2)
-    (ANY 2)
-    (context 2))
+#+BEGIN_SRC sh :tangle no
+  cd ~/Other/... # or whatever
+  git clone https://github.com/howardabrams/clojuredocs-emacs.git
+  cd ~/.emacs.d
+  ln -s ~/Other/clojuredocs-emacs/clojuredocs.el .
 #+END_SRC
 
-   Really want to try out my new [[file:~/Dropbox/Clojure/clojuredocs-emacs/org/clojuredocs.org][ClojureDocs functions]]:
+   Then the following code will work:
 
-#+BEGIN_SRC elisp
-  (load-library "clojuredocs")
+#+BEGIN_SRC emacs-lisp
+  (if (file-exists-p "~/.emacs.d/clojuredocs.el")
+      (load-library "clojuredocs"))
 #+END_SRC
 
 *** Paredit
@@ -1025,8 +1079,9 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
    We follow [[http://www.scala-lang.org/node/354][these instructions]] to hook it up with [[http://code.google.com/p/yasnippet/][Yasnippet]].
 
 #+BEGIN_SRC elisp
-  (require 'scala-mode)
-  
+  (autoload 'scala-mode "scala-mode"
+            "Programming mode for Scala." t nil)
+
   ;; Shouldn't this be done by default?
   (add-to-list 'auto-mode-alist '("\\.scala$" . scala-mode))
   
@@ -1041,9 +1096,12 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
    install it, so we need to add it to the =load-path=.
 
 #+BEGIN_SRC elisp
-  (add-to-list 'load-path "~/.emacs.d/ensime/elisp")
-  (require 'ensime)
-  (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+  (if (file-exists-p "~/.emacs.d/ensime")
+      (progn
+        (add-to-list 'load-path "~/.emacs.d/ensime/elisp")
+        (autoload 'ensime-mode "ensime-mode"
+          "Programming support mode for Scala." t nil)
+        (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)))
 #+END_SRC
 
 ** JavaScript
@@ -1098,8 +1156,10 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
   (setenv "PATH" (concat "/usr/local/bin:/opt/local/bin:" (getenv "PATH")))
   (setq exec-path '( "/usr/local/bin" "/usr/bin" "/opt/local/bin" "/bin"
                      (concat (getenv "HOME") "/bin")))
-  
-  (require 'flymake-jshint)
+
+  (autoload 'flymake-jshint "flymake-jshint"
+    "Error and linting support mode for JavaScript." t nil)
+
   (add-hook 'js-mode-hook
             (lambda () (flymake-mode 1)))
 #+END_SRC
@@ -1137,7 +1197,9 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
     We use [[http://js-comint-el.sourceforge.net][js-comint]], but hook it up with node.js:
 
 #+BEGIN_SRC elisp
-  (require 'js-comint)
+  (autoload 'js-comint "js-comint"
+    "Hooking JavaScript interpreter up to the JS Files." t nil)
+  
   (setenv "NODE_NO_READLINE" "1")   ;; Turn off fancy node prompt
   ;; Use node as our repl
   (setq inferior-js-program-command "node")
@@ -1203,8 +1265,10 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
    Git is [[http://emacswiki.org/emacs/Git][already part of Emacs]]. However, [[http://philjackson.github.com/magit/magit.html][Magit]] is sweet.
    
-#+BEGIN_SRC elisp :tangle no
-  (require 'magit)
+#+BEGIN_SRC elisp
+  (autoload 'magint "magit"
+    "Hooking Git up to supported files." t nil)
+
   (define-key global-map "\M-\C-g" 'magit-status)
 #+END_SRC
 
@@ -1241,7 +1305,8 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
    The instructions are contained in [[file:gnus.org][gnus.org]] file.
 
 #+BEGIN_SRC elisp
-  (load-library "gnus-config")
+  (if (file-exists-p "~/.emacs.d/gnus-config.el")
+    (load-library "gnus-config"))
 #+END_SRC
 
 ** Reading Mail?
