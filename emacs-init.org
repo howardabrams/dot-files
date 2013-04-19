@@ -54,7 +54,7 @@ This can be done after this file has been tangled: =C-c C-v t=
 #+BEGIN_SRC elisp
   (defvar my-packages '(
                         ac-nrepl
-                        auto-complete
+                        ;; auto-complete
                         clojure-mode
                         clojurescript-mode
                         coffee-mode
@@ -98,6 +98,18 @@ This can be done after this file has been tangled: =C-c C-v t=
     "A list of packages to ensure are installed at launch.")
 #+END_SRC
 
+*** Mac Key Mode and Undo Tree
+
+    The =redo+= module is now broken, and doesn't seem to be supported
+    much. The =undo-tree= seems to be a better approach, however,
+    =mac-key-mode= directly depends on it. Follow these commands to fix.
+
+    1. Load mac-key-mode.el and comment: =(require 'redo+)=
+    2. Comment out the key bindings (line 115) as we will reset Command-Z to =undo-tree= in the .emacs file.
+    3. Fix the menu items (line 198):
+       - Change ='redo= to ='undo-tree-redo=
+       - Change ='undo= to ='undo-tree-undo=
+
 ** Package Installation
 
    Installs all packages specified.
@@ -109,8 +121,8 @@ This can be done after this file has been tangled: =C-c C-v t=
     (package-refresh-contents))
   (dolist (package my-packages)
     (unless (package-installed-p package)
-      (catch 'result ;; condition-case nil
-          (package-install package))))
+      (ignore-errors
+        (package-install package))))
 #+END_SRC
 
 * External Dependencies
