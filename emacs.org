@@ -301,8 +301,8 @@ organize it and take notes on all the complexity.
   (global-undo-tree-mode 1)
   (defalias 'redo 'undo-tree-redo)
 
-  (define-key mac-key-mode-map [(alt z)] 'undo)
-  (define-key mac-key-mode-map [(alt S-z)] 'redo)
+  (define-key mac-key-mode-map [(alt z)] 'undo-tree-undo)
+  (define-key mac-key-mode-map [(alt S-z)] 'undo-tree-redo)
 
   (global-set-key (kbd "C-z") 'undo) ; Zap to character isn't helpful
   (global-set-key (kbd "C-S-z") 'redo)
