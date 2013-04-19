@@ -33,6 +33,18 @@ things here are for callable functions, aliases and the like.
   bindkey -s "\el" " 2>&1|less^M"
 #+END_SRC
 
+* Comp Initialization
+
+  I still wonder how important it is to start up the =compinstall=,
+  and auto load the =compinit=. I suppose it wouldn't hurt, eh?
+
+#+BEGIN_SRC sh
+zstyle :compinstall filename '/Users/howard.abrams/.zshrc'
+
+autoload -Uz compinit
+compinit
+#+END_SRC
+
 * Modules
 
   Using the modules from [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]]. 

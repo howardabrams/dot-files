@@ -100,12 +100,14 @@ between my other scripts, but so far I haven't thought of anything.
 #+BEGIN_SRC sh
   setopt NO_CASE_GLOB
   setopt NO_CASE_MATCH
+  setopt EXTENDEDGLOB
 #+END_SRC
 
   I don't like every tab on my terminal sharing the same history.
 
 #+BEGIN_SRC sh
   setopt NO_SHARE_HISTORY
+  setopt APPEND_HISTORY
 #+END_SRC
 
 * Technical Gunk
