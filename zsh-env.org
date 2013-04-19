@@ -110,6 +110,19 @@ between my other scripts, but so far I haven't thought of anything.
   setopt APPEND_HISTORY
 #+END_SRC
 
+* Call the Profile
+
+  Machine specific information (like environment variable
+  information) should be stored in the =~/.profile=. I thought that
+  Zshell automatically sourced that, but it appears not.
+
+#+BEGIN_SRC sh
+  if [[ -f $HOME/.profile ]]
+  then
+      source $HOME/.profile
+  fi
+#+END_SRC
+
 * Technical Gunk
 
   The following are the tangled settings. Type: =C-c C-v t=
