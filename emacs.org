@@ -1298,6 +1298,13 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
     (find-file file))
 #+END_SRC
 
+   Replacing the window with the new buffer may not be what I want.
+ 
+#+BEGIN_SRC elisp
+  (defun eshell/ee (file)
+    (find-file-other-window file))
+#+END_SRC
+
 ** Mail with Gnus
 
    I would like to hook up my [[http://www.emacswiki.org/emacs/GnusGmail][Gmail with GNUS mail reader]].
