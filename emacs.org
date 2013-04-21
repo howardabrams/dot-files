@@ -255,6 +255,8 @@ organize it and take notes on all the complexity.
 
 #+BEGIN_SRC elisp
   (when (eq system-type 'darwin)
+    (setq mac-option-modifier 'meta)
+
     ;; Aquamacs-specific code:
     (when (boundp 'aquamacs-version)
       (global-set-key [(alt k)] 'nlinum-mode))
@@ -272,7 +274,21 @@ organize it and take notes on all the complexity.
       (define-key mac-key-mode-map [(alt _)] 'text-scale-decrease)
       (define-key mac-key-mode-map [(alt l)] 'goto-line)
       (define-key mac-key-mode-map [(alt w)] 'delete-single-window)
+      (define-key mac-key-mode-map [(alt m)] 'toggle-meta-key)
       (define-key mac-key-mode-map [(alt k)] 'nlinum-mode)))
+#+END_SRC
+
+   I hate the default implementation of Command-M. Now,
+   pressing Command-M will toggle whether the Option key is a
+   standard Option key or a Meta key:
+
+#+BEGIN_SRC elisp
+  (defun toggle-meta-key ()
+    "Toggles whether the Mac option key is an option key or a meta key."
+    (interactive)
+    (if (eq mac-option-modifier 'meta)
+        (setq mac-option-modifier nil)
+      (setq mac-option-modifier 'meta)))
 #+END_SRC
 
    I would like Command-W to close a frame, but only if it only has a
