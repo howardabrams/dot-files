@@ -24,11 +24,9 @@ for $input (@ARGV) {
         if (! /^\s*\[.*\]: /) {
 
             ## Code Section
-            if (/^    /) {
-                if ($codeState == 0) {
-                    $newlines[$linenum++] = "#+BEGIN_SRC \n";
-                    $codeState = 1;
-                }
+            if (/^    / && $newlines[$linenum - 1] =~ /^\s*$/ && $codeState == 0) {
+                $newlines[$linenum++] = "#+BEGIN_SRC \n";
+                $codeState = 1;
             }
             elsif (!/^    / && !/^\s*$/ && $codeState == 1) {
                 $newlines[$linenum - 1] = "#+END_SRC \n";
@@ -55,6 +53,7 @@ for $input (@ARGV) {
             }
         }
     }
+    push $newlines, "#+END_SRC \n" if ($codeState == 1);
 
     for (@newlines) {
         ## Convert the links to the org-mode style:
