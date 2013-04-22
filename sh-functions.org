@@ -7,8 +7,8 @@ This file is written to =$HOME/.bash.all.rc= and should be called
 from =.bashrc= and/or =.zshrc=, via:
 
 #+BEGIN_SRC sh :tangle no
-  if [ -f "$HOME/.bash.all.sh" ]; then
-    source "$HOME/.bash.all.sh"
+  if [ -f "$HOME/.sh-funcs.sh" ]; then
+    source "$HOME/.sh-funcs.sh"
   fi
 #+END_SRC
 
