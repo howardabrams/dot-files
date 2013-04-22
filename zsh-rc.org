@@ -33,16 +33,28 @@ things here are for callable functions, aliases and the like.
   bindkey -s "\el" " 2>&1|less^M"
 #+END_SRC
 
-* Comp Initialization
+* Completion
 
   I still wonder how important it is to start up the =compinstall=,
   and auto load the =compinit=. I suppose it wouldn't hurt, eh?
 
 #+BEGIN_SRC sh
-zstyle :compinstall filename '/Users/howard.abrams/.zshrc'
+  zstyle :compinstall filename '/Users/howard.abrams/.zshrc'
+#+END_SRC
 
-autoload -Uz compinit
-compinit
+  Add my own custom completion scripts:
+
+#+BEGIN_SRC sh
+  fpath=(~/.zsh/completion $fpath) 
+  
+  autoload -Uz compinit
+  compinit
+#+END_SRC
+
+  Show completion menu when number of options is at least 2
+
+#+BEGIN_SRC sh
+  zstyle ':completion:*' menu select=2
 #+END_SRC
 
 * Modules
