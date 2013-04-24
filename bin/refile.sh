@@ -1,28 +1,60 @@
 #!/usr/bin/env zsh
+# -------------------------------------------------------------------------
+#  Loops through every file in the current directory to allow you to
+#  refile (move) it to some other directory. Each file displays a little
+#  menu of folders as well as options to view, edit, delete it.
+# -------------------------------------------------------------------------
+
+PARENT=".." # Looks for subdirectories in the parent directory
+
+while getopts "p:" o
+do
+    case "$o" in
+          p)  PARENT="$OPTARG";;
+        [?])  print >&2 "Usage: refile [-p parent-directory] dir1 dir2 ... dirn"
+            exit 1;;
+    esac
+done
+shift `expr $OPTIND - 1`
+
+DIRS=${*:-technical personal rpg other}   # My default directories
 
 for f in *
 do          
-    answer="v"
+    answer="V"
 
-    while [ "$answer" = "v" -o "$answer" = "e" ]
+    while [ "$answer" = "V" -o "$answer" = "E" ]
     do
-        echo ">>> $f"
-        echo -n "  [v]iew  [t]echnical  [p]ersonal  [o]ther  [e]dit  [d]elete ? "
+        echo    ">>> $f"
+        echo    "   [V]iew  [E]dit  [I]gnore  [D]elete"
+        echo -n "   "
+
+        for i in `echo $DIRS`
+        do
+            first=`echo $i | cut -c1`    
+            rest=`echo $i | cut -c2-`
+            echo -n "[$first]$rest  "
+        done
+
         read answer
-        if [ "$answer" = "v" ]
+        if [ "$answer" = "V" ]
         then
-            less ${f}
+            less -EFKM ${f}
         fi
-        if [ "$answer" = "e" ]
+        if [ "$answer" = "E" ]
         then
-            /Applications/Emacs.app/Contents/MacOS/bin/emacsclient ${f}
+            ${EDITOR:-/Applications/Emacs.app/Contents/MacOS/bin/emacsclient} ${f}
         fi
     done
 
     case $answer in
-        "t")    mv "$f" ../Tech-Notes;;
-        "p")    mv "$f" ../tmp-pers;;
-        "o")    mv "$f" ../tmp-other;;
-        "d")    rm "$f";;
+        "D")    rm "$f";;
+        "Q")    exit;;
+          *)    for i in `echo $DIRS`; do
+                    first=`echo $i | cut -c1`    
+                    if [ "$first" = "$answer" ]; then
+                        echo "mv $f $PARENT/$i"
+                    fi
+                done;;
     esac
 done
