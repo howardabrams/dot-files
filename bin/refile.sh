@@ -53,7 +53,8 @@ do
           *)    for i in `echo $DIRS`; do
                     first=`echo $i | cut -c1`    
                     if [ "$first" = "$answer" ]; then
-                        echo "mv $f $PARENT/$i"
+                        mkdir -p "$PARENT/$i"
+                        mv "$f" "$PARENT/$i"
                     fi
                 done;;
     esac
