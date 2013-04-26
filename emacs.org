@@ -1336,6 +1336,31 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
   (add-to-list 'auto-mode-alist '("\\.txt\\'" . markdown-mode))
 #+END_SRC   
 
+   Using the =org-text-wrapper= function, we create some wrapper
+   functions to make it easier to bold text in Markdown files:
+
+#+BEGIN_SRC elisp
+  (defun markdown-bold () "Wraps the region with double asterisks."
+    (interactive)
+    (org-text-wrapper "**"))
+  (defun markdown-italics () "Wraps the region with asterisks."
+    (interactive)
+    (org-text-wrapper "*"))
+  (defun markdown-code () "Wraps the region with equal signs."
+    (interactive)
+    (org-text-wrapper "`"))
+#+END_SRC
+
+   Now we can associate some keystrokes to =markdown-mode=:
+
+#+BEGIN_SRC elisp
+  (add-hook 'markdown-mode-hook
+        (lambda ()
+          (local-set-key (kbd "A-b") 'markdown-bold)
+          (local-set-key (kbd "A-i") 'markdown-italics)
+          (local-set-key (kbd "A-=") 'markdown-code)))
+#+END_SRC
+
 ** Eshell
 
    E-shell doesn't read the [[http://www.emacswiki.org/emacs/EshellAlias][standard shell resource]] files or allow
