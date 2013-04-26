@@ -39,7 +39,10 @@ do
         read answer
         if [ "$answer" = "V" ]
         then
-            less -EFKM ${f}
+            echo
+            echo "-=-=-=- $f -=-=-=-"
+            less -EFKMX "$f"
+            echo
         fi
         if [ "$answer" = "E" ]
         then
