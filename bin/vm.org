@@ -1,0 +1,188 @@
+#+TITLE:  CLI for Working with VMware Instances
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@workday.com
+#+DATE:   [2013-04-26 Fri]
+
+VMware offers a command line interface to the running guests, called
+[[http://www.vmware.com/support/ws5/doc/ws_learning_cli_vmrun.html][vmrun]]. Its interface, however, is just a little crufty, so this script
+creates a number of helper functions, including Zshell command line
+completion.
+
+To use, define the following environment variables:
+
+  - =VM= ... The fullpath to the VMX file
+  - =VMUSER= ... The user account to use to log into the guest OS
+  - =VMPASS= ... The password to use when logging into guest
+
+* vmcmd
+
+  Simple wrapper around the =vmrun= command that passes in the
+  assigned username and password.
+
+#+BEGIN_SRC sh
+  function vmcmd {
+      ACTION=$1
+      shift
+      # echo vmrun -T fusion -gu $VMUSER -gp $VMPASS $ACTION \"$VM\" $*
+      vmrun -T fusion -gu $VMUSER -gp $VMPASS $ACTION "$VM" $*
+  }
+#+END_SRC
+
+* vmexec
+
+  Simple function since I can never remember =runProgramInGuest=.
+  That, and it is too long to type without auto-completion.
+
+#+BEGIN_SRC sh
+  function vmexec {
+      vmcmd runProgramInGuest $*
+  }
+#+END_SRC
+
+* vmscript
+
+  Runs a script in the guest. *Note*: This doesn't call =vmcmd= since
+  it appears that we need to wrap up the /script/ in quotes to get it
+  to work.
+
+#+BEGIN_SRC sh
+  function vmscript {
+      vmrun -T fusion -gu $VMUSER -gp $VMPASS runScriptInGuest "$VM" "/bin/bash" "$*"
+  }
+#+END_SRC
+
+* vmout
+
+  Runs the command given, and then displays the results of the output.
+  Yeah, I'm not sure why this sort of feature wouldn't be built into
+  =vmrun= in the first place.
+
+#+BEGIN_SRC sh
+  output="/tmp/results.$$.txt"
+  
+  function vmoutfile {
+      vmout "$*"
+      cat $output
+      vmoutput_cleanup
+  }
+#+END_SRC
+
+  For some commands, we want to parse the output file instead of deal
+  with standard output, so this function leaves the output file
+  alone. Just make sure to call =vmoutput_cleanup= afterwards.
+
+#+BEGIN_SRC sh
+  function vmout {
+      vmscript "$* 2>&1 > $output"
+      vmcmd CopyFileFromGuestToHost $output $output
+  }
+#+END_SRC
+
+  Since we need to use files for all the output, we want to clean up
+  the results on both our host and on the guest.
+
+#+BEGIN_SRC sh
+  function vmoutput_cleanup {
+      rm -f $output
+      vmscript "rm -f $output"
+  }
+#+END_SRC
+
+* vmip
+
+  Retrieves the IP address of the =eth0= interface. This is helpful
+  when running the guest with a bridging interface.
+
+#+BEGIN_SRC sh
+  function vmip {
+      vmout ifconfig
+      perl -n -e '$state=0 if (/^[^\s]+/); $state=1 if (/^eth0\s+/); print "$1\n" if ($state==1 && /inet addr:\s*([0-9\.]+)\s/);' $output
+      vmoutput_cleanup
+  }
+#+END_SRC
+
+* vmssh
+
+  Logs into the guest using the SSH command.
+
+#+BEGIN_SRC sh
+  function vmssh {
+      IP=`vmip`
+      echo "ssh $VMUSER@$IP"
+      ssh $VMUSER@$IP
+  }
+#+END_SRC
+
+* vmrestart
+
+  Restarts a service, assuming your guest operating system supports it.
+
+#+BEGIN_SRC sh
+  function vmrestart {
+    vmoutfile sudo service $* restart
+  }
+#+END_SRC
+
+* vmnet
+
+  If your laptop goes to sleep and the VM should be given a new
+  network interface, this sometimes gets hung up. This function
+  basically restarts the networking interface on guest systems that
+  support the =service= feature.
+
+#+BEGIN_SRC sh
+  function vmnet {
+      vmrestart networking
+  }
+#+END_SRC
+
+* Usage and Interface
+
+  The first parameter to this script is the function to call.
+  The rest of the parameters are passed to that function.
+
+#+BEGIN_SRC sh
+  F=$1
+  shift
+  
+  case $F in
+      "cmd")      vmcmd      "$@";;
+      "exec")     vmexec     "$@";;
+      "out")      vmoutfile  "$@";;
+      "ip")       vmip       "$@";;
+      "ssh")      vmssh      "$@";;
+      "restart")  vmrestart  "$@";;
+      "net")      vmnet      "$@";;
+  esac
+#+END_SRC
+
+* Auto Completion
+
+  Assuming you've placed something like the following in your
+  =~/.zshrc= file:
+
+#+BEGIN_SRC sh :tangle no
+  fpath=(~/.zsh/completions $fpath)
+  
+  autoload -Uz compinit
+  compinit
+#+END_SRC
+
+  The following will set up a simplistic auto-completion for this
+  script:
+
+#+BEGIN_SRC sh :tangle ~/.zsh/completions/_vm :comments no :shebang
+  #compdef vm
+   
+  _arguments "1: :(cmd exec out ip ssh restart net)"
+#+END_SRC
+
+* Technical Gunk
+
+  This file originally came from an [[http://orgmode.org][org-mode]] file.
+  Create the script by tangling it with: =C-c C-v t=
+
+#+PROPERTY: tangle ~/bin/vm
+#+PROPERTY: comments org
+#+PROPERTY: shebang #!/bin/sh
+#+DESCRIPTION: Aliases and functions shareable between Bash and Zsh
