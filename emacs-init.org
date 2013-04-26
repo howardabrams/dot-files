@@ -137,12 +137,6 @@ This can be done after this file has been tangled: =C-c C-v t=
   curl -o ~/bin/plantuml.jar http://sourceforge.net/projects/plantuml/files/plantuml.jar/download
 #+END_EXAMPLE
 
-    We then need to reference this Jar file:
-
-#+BEGIN_SRC elisp
-  (setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
-#+END_SRC
-
 *** Org-Mode Installation
 
     The [[http://orgmode.org][org-mode]] program is so critical, that I want a version > 7.9.

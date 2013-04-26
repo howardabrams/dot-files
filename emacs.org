@@ -606,7 +606,7 @@ organize it and take notes on all the complexity.
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-07")
+  (setq current-sprint "2013-08")
   
   (defun get-current-sprint-file ()
     (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
@@ -1319,6 +1319,21 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 #+BEGIN_SRC elisp
   (defun eshell/ee (file)
     (find-file-other-window file))
+#+END_SRC
+
+** PlantUML
+
+   To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, we need to get the "mode"
+   working for editing the files:
+
+#+BEGIN_SRC elisp
+  (setq plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+#+END_SRC
+
+   Second, to get [[http://zhangweize.wordpress.com/2010/08/25/creating-uml-images-by-using-plantuml-and-org-babel-in-emacs/][PlantUML]] working in org-mode, we set a different variable:
+
+#+BEGIN_SRC elisp
+  (setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
 #+END_SRC
 
 ** Mail with Gnus
