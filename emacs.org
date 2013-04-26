@@ -674,7 +674,7 @@ organize it and take notes on all the complexity.
   (require 'ob-tangle)
 #+END_SRC
 
-** Global Key Bindings for Org-Mode
+** Global Key Bindings
 
    The =org-mode= has some useful keybindings that are helpful no
    matter what mode you are using currently.
@@ -683,6 +683,41 @@ organize it and take notes on all the complexity.
   (global-set-key "\C-cl" 'org-store-link)
   (global-set-key "\C-ca" 'org-agenda)
   (global-set-key "\C-cb" 'org-iswitchb)
+#+END_SRC
+
+** Local Key Bindings
+
+   A couple of short-cut keys to make it easier to edit text.
+
+#+BEGIN_SRC elisp
+  (defun org-text-wrapper (txt)
+    "Wraps the region with the text passed in as an argument."
+    (save-restriction
+      (narrow-to-region (region-beginning) (region-end))
+      (goto-char (point-min))
+      (insert txt)
+      (goto-char (point-max))
+      (insert txt)))
+
+  (defun org-text-bold () "Wraps the region with asterisks."
+    (interactive)
+    (org-text-wrapper "*"))
+  (defun org-text-italics () "Wraps the region with slashes."
+    (interactive)
+    (org-text-wrapper "/"))
+  (defun org-text-code () "Wraps the region with equal signs."
+    (interactive)
+    (org-text-wrapper "="))
+#+END_SRC
+
+   Now we can associate some keystrokes to the org-mode:
+
+#+BEGIN_SRC elisp
+  (add-hook 'org-mode-hook
+        (lambda ()
+          (local-set-key (kbd "A-b") 'org-text-bold)
+          (local-set-key (kbd "A-i") 'org-text-italics)
+          (local-set-key (kbd "A-=") 'org-text-code)))
 #+END_SRC
 
 ** Speed Keys
