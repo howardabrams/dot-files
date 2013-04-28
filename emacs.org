@@ -587,17 +587,29 @@ organize it and take notes on all the complexity.
                (yas/minor-mode-on)))
 #+END_SRC
 
-*** Recent and Heavily Used Files
+*** Load Diary File
 
-    We want both a recently seen files as well, as a top 10. This
-    /Top 10/ file list can just be an Org file, right?
+    A function to easily load today (and yesterday's) journal entry.
 
 #+BEGIN_SRC elisp
-  (defun find-file-current-sprint ()
+  (defun journal-file-today ()
+    "Creates and load a file based on today's date."
     (interactive)
-    (find-file current-sprint-file))
+    (let ((daily-name (format-time-string "%Y-%m-%d")))
+      (find-file (expand-file-name
+                  (concat "~/journal/" daily-name ".org")))))
+#+END_SRC
 
-  (define-key global-map "\C-x\C-u" 'find-file-current-sprint)
+    Since I sometimes (not often) forget to create 
+
+#+BEGIN_SRC elisp
+  (defun journal-file-yesterday ()
+    "Creates and load a file based on yesterday's date."
+    (interactive)
+    (let ((daily-name (format-time-string "%Y-%m-%d"
+       (time-subtract (current-time) (days-to-time 1)))))
+      (find-file (expand-file-name
+                  (concat "~/journal/" daily-name ".org")))))
 #+END_SRC
 
 *** Org-Mode Sprint Note Files
@@ -634,6 +646,19 @@ organize it and take notes on all the complexity.
       (with-temp-file current-sprint-file
         (insert template)
         (message (concat "Created " current-sprint-file)))))
+#+END_SRC
+
+*** Recent and Heavily Used Files
+
+    We want both a recently seen files as well, as a top 10. This
+    /Top 10/ file list can just be an Org file, right?
+
+#+BEGIN_SRC elisp
+  (defun find-file-current-sprint ()
+    (interactive)
+    (find-file current-sprint-file))
+
+  (define-key global-map "\C-x\C-u" 'find-file-current-sprint)
 #+END_SRC
 
 *** Org-Mode Colors
@@ -737,9 +762,7 @@ organize it and take notes on all the complexity.
 
 #+BEGIN_SRC elisp
 (setq org-agenda-files '("~/Dropbox/org/personal" 
-                         "~/Dropbox/org/gilt" 
-                         "~/Dropbox/org/lg" 
-                         "~/Dropbox/org/rpg" 
+                         "~/Google Drive/technical" 
                          "~/Dropbox/org/project"))
 #+END_SRC
 
