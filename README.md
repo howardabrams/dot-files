@@ -19,7 +19,7 @@ Startup scripts for [Emacs][3] and [Zsh][6]. Specifically:
 <th>Contents</th></tr></thead>
 <tbody>
 <tr><td>
-   <a href="http://howardabrams.com/projects/dot-files/dot-emacs.html"><code>dot-emacs.org</code></a>
+   <a href="http://howardabrams.com/projects/dot-files/emacs.html"><code>emacs.org</code></a>
 </td><td>
    <a href="results/emacs.el"><code>.emacs-ext.el</code></a>
 </td><td>
@@ -44,7 +44,7 @@ Startup scripts for [Emacs][3] and [Zsh][6]. Specifically:
   Zsh functions ... calls <code>sh-funcs.sh</code>
 </td></tr><tr><td>
 </td><td>
-  <code>.zprofile</code>
+  <code>.profile</code>
 </td><td>
   Machine-specific environment variables
 </td></tr><tr><td>
