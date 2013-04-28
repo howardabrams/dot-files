@@ -53,7 +53,7 @@ for $input (@ARGV) {
             }
         }
     }
-    push $newlines, "#+END_SRC \n" if ($codeState == 1);
+    push @newlines, "#+END_SRC \n" if ($codeState == 1);
 
     for (@newlines) {
         ## Convert the links to the org-mode style:
