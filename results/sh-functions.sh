@@ -6,13 +6,26 @@
 
 [ -z "$PS1" ] && return
 
+# Editor
+
+#   Wrapper around the standard =emacsclient= executable. This
+#   essentially replaces the standard =emacs= command, but this
+#   is asynchronous and *doesn't block*:
+
+alias emacs='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
+
+# Another wrapper around =emacsclient= but this is a blocking
+#   approach suitable for being set to the =EDITOR= variable.
+
+alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
+
 # Listing Files
 
 #   Using the GNU versions of =ls=, which can be installed by Homebrew
 #   or Ports, via: =port install coreutils=
 
 alias ls="gls --color"
-alias ll="gls --color -lhA"
+alias ll="gls --color -olhA"
 
 # f
 
@@ -210,6 +223,20 @@ function pull {
     git pull
     git stash pop
 }
+
+# Helper Aliases
+
+#    The following are shortcuts to some git commands that I use all
+#    the time. Most people prefix them with a 'g' character to keep
+#    them unique.
+
+alias gst='git status'
+alias gstatus='git status'
+alias gadd='git add --update'  # Use full 'git add' if haven't already added it
+alias gamend='git commit --amend --no-edit'
+alias gstash='git stash'
+alias gpop='git stash pop'
+alias gshow='git stash show -p stash@{0}'
 
 # Directory Bookmarks
 

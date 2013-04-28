@@ -15,7 +15,6 @@ ZSH_THEME="happiness"
 
 export ALTERNATE_EDITOR=/Applications/Emacs.app/Contents/MacOS/Emacs
 export EDITOR=/Applications/Emacs.app/Contents/MacOS/bin/emacsclient
-export VISUAL="$EDITOR -n"
 
 # Disable autosetting terminal title.
 
@@ -45,7 +44,7 @@ HISTSIZE=1000
 OLDPATH=$PATH
 PATH=$HOME/bin
 
-for DIR in /Applications/Emacs.app/Contents/MacOS/bin /web/tools/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/git/bin
+for DIR in /usr/local/git/bin /Applications/Emacs.app/Contents/MacOS/bin /opt/local/bin /opt/local/sbin /usr/local/bin 
 do
   if [[ -d $DIR ]]
   then
@@ -71,7 +70,20 @@ setopt AUTO_PUSHD
 
 setopt NO_CASE_GLOB
 setopt NO_CASE_MATCH
+setopt EXTENDEDGLOB
 
 # I don't like every tab on my terminal sharing the same history.
 
 setopt NO_SHARE_HISTORY
+setopt APPEND_HISTORY
+
+# Call the Profile
+
+#   Machine specific information (like environment variable
+#   information) should be stored in the =~/.profile=. I thought that
+#   Zshell automatically sourced that, but it appears not.
+
+if [[ -f $HOME/.profile ]]
+then
+    source $HOME/.profile
+fi

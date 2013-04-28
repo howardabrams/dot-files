@@ -20,6 +20,24 @@ bindkey -s '\ep' '^Upopd >/dev/null; dirs -v^M'
 
 bindkey -s "\el" " 2>&1|less^M"
 
+# Completion
+
+#   I still wonder how important it is to start up the =compinstall=,
+#   and auto load the =compinit=. I suppose it wouldn't hurt, eh?
+
+zstyle :compinstall filename '/Users/howard.abrams/.zshrc'
+
+# Add my own custom completion scripts:
+
+fpath=(~/.zsh/completion $fpath) 
+
+autoload -Uz compinit
+compinit
+
+# Show completion menu when number of options is at least 2
+
+zstyle ':completion:*' menu select=2
+
 # Modules
 
 #   Using the modules from [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]]. 

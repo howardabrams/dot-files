@@ -40,13 +40,34 @@
 
 (package-initialize)
 
+;; Package Loading
+
+;;    The =(require)= is a problem if the library isn't available, and if
+;;    it isn't available, then this file dies and doesn't complete.
+;;    Seems like it would be nice to wrap the configuration of a package
+;;    in a block that is ignored if the package isn't available.
+
+;;    This is what I found [[http://stackoverflow.com/questions/7790382/how-to-determine-whether-a-package-is-installed-in-elisp][in this discussion]].
+
+(defun autofeaturep (feature)
+  "For a feature symbol 'foo, return a result equivalent to:
+(or (featurep 'foo-autoloads) (featurep 'foo))
+Does not support subfeatures."
+  (catch 'result
+    (let ((feature-name (symbol-name feature)))
+      (unless (string-match "-autoloads$" feature-name)
+        (let ((feature-autoloads (intern-soft (concat feature-name "-autoloads"))))
+          (when (and feature-autoloads (featurep feature-autoloads))
+            (throw 'result t))))
+      (featurep feature))))
+
 ;; Variables
 
 ;;    General settings about me that other packages can use. The biggest
 ;;    problem is guessing my email address based on what computer I am using:
 
-(if (equal "habrams" user-login-name)
-    (setq user-mail-address "habrams@gilt.com")
+(if (equal "howard.abrams" user-login-name)
+    (setq user-mail-address "howard.abrams@workday.com")
   (setq user-mail-address "howard.abrams@gmail.com"))
 
 ;; Tabs vs Spaces
@@ -153,6 +174,8 @@
 ;;    into a more Macintosh-specific application. (See [[http://stackoverflow.com/questions/162896/emacs-on-mac-os-x-leopard-key-bindings][these online notes]])
 
 (when (eq system-type 'darwin)
+  (setq mac-option-modifier 'meta)
+
   ;; Aquamacs-specific code:
   (when (boundp 'aquamacs-version)
     (global-set-key [(alt k)] 'nlinum-mode))
@@ -170,7 +193,19 @@
     (define-key mac-key-mode-map [(alt _)] 'text-scale-decrease)
     (define-key mac-key-mode-map [(alt l)] 'goto-line)
     (define-key mac-key-mode-map [(alt w)] 'delete-single-window)
+    (define-key mac-key-mode-map [(alt m)] 'toggle-meta-key)
     (define-key mac-key-mode-map [(alt k)] 'nlinum-mode)))
+
+;; I hate the default implementation of Command-M. Now,
+;;    pressing Command-M will toggle whether the Option key is a
+;;    standard Option key or a Meta key:
+
+(defun toggle-meta-key ()
+  "Toggles whether the Mac option key is an option key or a meta key."
+  (interactive)
+  (if (eq mac-option-modifier 'meta)
+      (setq mac-option-modifier nil)
+    (setq mac-option-modifier 'meta)))
 
 ;; I would like Command-W to close a frame, but only if it only has a
 ;;    single window in it. I found this code on [[http://www.emacswiki.org/emacs/frame-cmds.el][this site]].
@@ -186,6 +221,21 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
     (if (one-window-p t) 
         (delete-frame) 
         (delete-window (selected-window)))))
+
+;; Undo and Redo
+
+;;     According to [[http://ergoemacs.org/emacs/emacs_best_redo_mode.html][this article]], I get better functionality than the
+;;     =redo+= plugin (which I can't seem to get working well).
+
+(require 'undo-tree)
+(global-undo-tree-mode 1)
+(defalias 'redo 'undo-tree-redo)
+
+(define-key mac-key-mode-map [(alt z)] 'undo-tree-undo)
+(define-key mac-key-mode-map [(alt S-z)] 'undo-tree-redo)
+
+(global-set-key (kbd "C-z") 'undo) ; Zap to character isn't helpful
+(global-set-key (kbd "C-S-z") 'redo)
 
 ;; More Key Definitions
 
@@ -213,15 +263,6 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 (require 'projectile)
 (projectile-global-mode) ;; to enable in all buffers
 
-;; Auto Complete
-
-;;    This feature scans the code and suggests completions for what you
-;;    are typing. Useful at times ... annoying at others.
-
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
-(ac-config-default)
-
 ;; Yas Snippet
 
 ;;    The [[https://github.com/capitaomorte/yasnippet][yasnippet project]] allows me to create snippets of code that
@@ -238,8 +279,7 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 
 (setq yas/root-directory
       '("~/.emacs.d/snippets"            ;; personal snippets
-        "~/.emacs.d/clojure-snippets"
-        "~/.emacs.d/yasnippet/snippets"))
+        "~/.emacs.d/clojure-snippets"))
 
 (yas/global-mode 1)
 (yas/initialize)
@@ -252,7 +292,6 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;    The [[http://kapeli.com/][Dash product]] looks interesting, and [[https://github.com/Kapeli/dash-at-point][this project]] allows Emacs
 ;;    to open Dash for documentation of anything with a =C-c d= keystroke:
 
-(add-to-list 'load-path "~/.emacs.d/dash-at-point")
 (autoload 'dash-at-point "dash-at-point"
           "Search the word at point with Dash." t nil)
 (global-set-key "\C-cd" 'dash-at-point)
@@ -361,26 +400,36 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
           '(lambda ()
              (yas/minor-mode-on)))
 
-;; Recent and Heavily Used Files
+;; Load Diary File
 
-;;     We want both a recently seen files as well, as a top 10. This
-;;     /Top 10/ file list can just be an Org file, right?
+;;     A function to easily load today (and yesterday's) journal entry.
 
-(defun find-file-current-sprint ()
+(defun journal-file-today ()
+  "Creates and load a file based on today's date."
   (interactive)
-  (find-file current-sprint-file))
+  (let ((daily-name (format-time-string "%Y-%m-%d")))
+    (find-file (expand-file-name
+                (concat "~/journal/" daily-name ".org")))))
 
-(define-key global-map "\C-x\C-u" 'find-file-current-sprint)
+;; Since I sometimes (not often) forget to create
+
+(defun journal-file-yesterday ()
+  "Creates and load a file based on yesterday's date."
+  (interactive)
+  (let ((daily-name (format-time-string "%Y-%m-%d"
+     (time-subtract (current-time) (days-to-time 1)))))
+    (find-file (expand-file-name
+                (concat "~/journal/" daily-name ".org")))))
 
 ;; Org-Mode Sprint Note Files
 
 ;;     At the beginning of each sprint, we need to set this to the new
 ;;     sprint file.
 
-(setq current-sprint "2013-POP24")
+(setq current-sprint "2013-08")
 
 (defun get-current-sprint-file ()
-  (expand-file-name (concat "~/Dropbox/org/gilt/Sprint-" current-sprint ".org")))
+  (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
 (defvar current-sprint-file 
   (get-current-sprint-file)
   "The name of an Org mode that stores information about the current sprint.")
@@ -396,13 +445,24 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
   (let (today (format-time-string "%Y-%m-%d %a"))
     (setq template (concat "#+TITLE:  Sprint " current-sprint "\n"
                   "#+AUTHOR: Howard Abrams\n"
-                  "#+EMAIL:  habrams@gilt.com\n"
+                  "#+EMAIL:  howard.abrams@workday.com\n"
                   "#+DATE:   " today "\n\n"
                   "* My Work Issues\n\n"
                   "* Sprint Retrospective\n\n"))
     (with-temp-file current-sprint-file
       (insert template)
       (message (concat "Created " current-sprint-file)))))
+
+;; Recent and Heavily Used Files
+
+;;     We want both a recently seen files as well, as a top 10. This
+;;     /Top 10/ file list can just be an Org file, right?
+
+(defun find-file-current-sprint ()
+  (interactive)
+  (find-file current-sprint-file))
+
+(define-key global-map "\C-x\C-u" 'find-file-current-sprint)
 
 ;; Org-Mode Colors
 
@@ -438,7 +498,7 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ; (require 'org-install)
 (require 'ob-tangle)
 
-;; Global Key Bindings for Org-Mode
+;; Global Key Bindings
 
 ;;    The =org-mode= has some useful keybindings that are helpful no
 ;;    matter what mode you are using currently.
@@ -446,6 +506,37 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 (global-set-key "\C-cl" 'org-store-link)
 (global-set-key "\C-ca" 'org-agenda)
 (global-set-key "\C-cb" 'org-iswitchb)
+
+;; Local Key Bindings
+
+;;    A couple of short-cut keys to make it easier to edit text.
+
+(defun org-text-wrapper (txt)
+  "Wraps the region with the text passed in as an argument."
+  (save-restriction
+    (narrow-to-region (region-beginning) (region-end))
+    (goto-char (point-min))
+    (insert txt)
+    (goto-char (point-max))
+    (insert txt)))
+
+(defun org-text-bold () "Wraps the region with asterisks."
+  (interactive)
+  (org-text-wrapper "*"))
+(defun org-text-italics () "Wraps the region with slashes."
+  (interactive)
+  (org-text-wrapper "/"))
+(defun org-text-code () "Wraps the region with equal signs."
+  (interactive)
+  (org-text-wrapper "="))
+
+;; Now we can associate some keystrokes to the org-mode:
+
+(add-hook 'org-mode-hook
+      (lambda ()
+        (local-set-key (kbd "A-b") 'org-text-bold)
+        (local-set-key (kbd "A-i") 'org-text-italics)
+        (local-set-key (kbd "A-=") 'org-text-code)))
 
 ;; Speed Keys
 
@@ -461,10 +552,24 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;    like them automatically searched when I generate agendas.
 
 (setq org-agenda-files '("~/Dropbox/org/personal" 
-                         "~/Dropbox/org/gilt" 
-                         "~/Dropbox/org/lg" 
-                         "~/Dropbox/org/rpg" 
+                         "~/Google Drive/technical" 
                          "~/Dropbox/org/project"))
+
+;; MobileOrg
+
+;;    I use [[http://mobileorg.ncogni.to/doc/getting-started/using-dropbox/][Dropbox with MobileOrg]] in order to read my notes on my iPad.
+
+;;    The "global" location of my Org files on my local system:
+
+(setq org-directory "~/Dropbox/org/personal")
+
+;; Set the name of the file where new notes will be stored
+
+(setq org-mobile-inbox-for-pull "~/Dropbox/org/flagged.org")
+
+;; Set to <your Dropbox root directory>/MobileOrg.
+
+(setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
 
 ;; Auto Note Capturing
 
@@ -601,7 +706,8 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;     Out of all [[http://orgmode.org/worg/org-tutorials/non-beamer-presentations.html][the ideas]] online, I prefer using [[http://meyerweb.com/eric/tools/s5/][S5]], and by loading
 ;;     [[https://github.com/eschulte/org-S5/blob/master/org-export-as-s5.el][this code]], we can issue =org-export-as-s5=:
 
-(load-library "org-export-as-s5")
+(autoload 'org-export-as-s5 "org-export-as-s5"
+          "Module extension for Presentations for Org-Mode." t nil)
 
 ;; And let's tie this to a keystroke to make it easier to use:
 
@@ -613,6 +719,7 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;     using =C-c C-e g M=:
 
 (require 'org-export-generic)
+
 (org-set-generic-type
  "Markdown" 
  '(:file-suffix ".markdown"
@@ -621,23 +728,23 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
    :title-suffix ?=
    :body-header-section-numbers t
    :body-header-section-number-format "%s) "
-   :body-section-header-prefix  ("\n## " "\n### " "\n#### " "\n##### " "\n###### ")
+   :body-section-header-prefix ("\n## " "\n### " "\n#### " "\n##### " "\n###### ")
    :body-section-header-format  "%s"
-   :body-section-header-suffix "\n\n"
-   :todo-keywords-export t
-   :body-line-format "  %s\n"
-   :body-tags-export    t
-   :body-tags-prefix    " <tags>"
-   :body-tags-suffix    "</tags>\n"
+   :body-section-header-suffix  "\n\n"
+   :todo-keywords-export        t
+   :body-line-format            "  %s\n"
+   :body-tags-export            t
+   :body-tags-prefix            " <tags>"
+   :body-tags-suffix            "</tags>\n"
    ;;:body-section-prefix       "<secprefix>\n"
    ;;:body-section-suffix       "</secsuffix>\n"
    :body-line-export-preformated        t
    :body-line-fixed-prefix      "<pre>\n"
    :body-line-fixed-suffix      "\n</pre>\n"
    :body-line-fixed-format      "%s\n"
-   :body-list-prefix    "\n"
-   :body-list-suffix    "\n"
-   :body-list-format    "  * %s\n"
+   :body-list-prefix            "\n"
+   :body-list-suffix            "\n"
+   :body-list-format            "  * %s\n"
    ;;:body-number-list-prefix   "<ol>\n"
    ;;:body-number-list-suffix   "</ol>\n"
    ;;:body-number-list-format   "<li>%s</li>\n"
@@ -646,10 +753,10 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
    :body-list-checkbox-todo-end ""
    :body-list-checkbox-done     "[X] "
    :body-list-checkbox-done-end ""
-   :body-line-format    "%s"
-   body-line-wrap       85
-   :body-text-prefix    ""
-   :body-text-suffix    ""
+   :body-line-format            "%s"
+   :body-line-wrap               79
+   :body-text-prefix            ""
+   :body-text-suffix            ""
    ))
 
 ;; The Tower of Babel
@@ -685,35 +792,31 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 
 ;;    Me like Clojure, and since it is a LISP, then Emacs likes it too.
 
-(require 'clojure-mode)
+(if (autofeaturep 'clojure-mode)
+    (progn
+      (require 'clojure-mode)
+      (add-hook 'clojure-mode-hook
+                '(lambda ()
+                   (yas/minor-mode-on)))
 
-(add-hook 'clojure-mode-hook
-          '(lambda ()
-             (yas/minor-mode-on)))
+      ;; This makes Compojure macro calls look nicer.
+      ;; https://github.com/weavejester/compojure/wiki
+      (define-clojure-indent
+        (defroutes 'defun)
+        (GET 2)
+        (POST 2)
+        (PUT 2)
+        (DELETE 2)
+        (HEAD 2)
+        (ANY 2)
+        (context 2))))
 
 ;; Most LISP-based programming is better with rainbow ponies:
 
-(add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
-(add-hook 'nrepl-mode-hook 'rainbow-delimiters-mode)
-
-;; With the =elein= project installed, it allows us to do things
-;;    like: =M-x elein-run-cmd koan run=
-
-;;    The following makes [[https://github.com/weavejester/compojure/wiki][Compojure]] macro calls look better:
-
-(define-clojure-indent
-  (defroutes 'defun)
-  (GET 2)
-  (POST 2)
-  (PUT 2)
-  (DELETE 2)
-  (HEAD 2)
-  (ANY 2)
-  (context 2))
-
-;; Really want to try out my new [[file:~/Dropbox/Clojure/clojuredocs-emacs/org/clojuredocs.org][ClojureDocs functions]]:
-
-(load-library "clojuredocs")
+(if (autofeaturep 'rainbow-delimiters)
+    (progn
+      (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
+      (add-hook 'nrepl-mode-hook 'rainbow-delimiters-mode)))
 
 ;; Paredit
 
@@ -773,7 +876,8 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;    We need to load the [[https://github.com/haxney/scala-mode][scala mode]].
 ;;    We follow [[http://www.scala-lang.org/node/354][these instructions]] to hook it up with [[http://code.google.com/p/yasnippet/][Yasnippet]].
 
-(require 'scala-mode)
+(autoload 'scala-mode "scala-mode"
+          "Programming mode for Scala." t nil)
 
 ;; Shouldn't this be done by default?
 (add-to-list 'auto-mode-alist '("\\.scala$" . scala-mode))
@@ -787,9 +891,12 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;    Ensime is not available as a package, so I had to download and
 ;;    install it, so we need to add it to the =load-path=.
 
-(add-to-list 'load-path "~/.emacs.d/ensime/elisp")
-(require 'ensime)
-(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+(if (file-exists-p "~/.emacs.d/ensime")
+    (progn
+      (add-to-list 'load-path "~/.emacs.d/ensime/elisp")
+      (autoload 'ensime-mode "ensime-mode"
+        "Programming support mode for Scala." t nil)
+      (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)))
 
 ;; JavaScript
 
@@ -837,7 +944,9 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 (setq exec-path '( "/usr/local/bin" "/usr/bin" "/opt/local/bin" "/bin"
                    (concat (getenv "HOME") "/bin")))
 
-(require 'flymake-jshint)
+(autoload 'flymake-jshint "flymake-jshint"
+  "Error and linting support mode for JavaScript." t nil)
+
 (add-hook 'js-mode-hook
           (lambda () (flymake-mode 1)))
 
@@ -845,7 +954,9 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 
 ;;     We use [[http://js-comint-el.sourceforge.net][js-comint]], but hook it up with node.js:
 
-(require 'js-comint)
+(autoload 'js-comint "js-comint"
+  "Hooking JavaScript interpreter up to the JS Files." t nil)
+
 (setenv "NODE_NO_READLINE" "1")   ;; Turn off fancy node prompt
 ;; Use node as our repl
 (setq inferior-js-program-command "node")
@@ -889,6 +1000,15 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ; Tell emacs to use jsp-mode for .jsp files
 (add-to-list 'auto-mode-alist '("\\.jsp\\'" . html-mode))
 
+;; Git
+
+;;    Git is [[http://emacswiki.org/emacs/Git][already part of Emacs]]. However, [[http://philjackson.github.com/magit/magit.html][Magit]] is sweet.
+
+(autoload 'magint "magit"
+  "Hooking Git up to supported files." t nil)
+
+(define-key global-map "\M-\C-g" 'magit-status)
+
 ;; Markdown
 
 ;;    Don't use Markdown nearly as much as I used to, but I'm surprised
@@ -900,13 +1020,62 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.txt\\'" . markdown-mode))
 
+;; Using the =org-text-wrapper= function, we create some wrapper
+;;    functions to make it easier to bold text in Markdown files:
+
+(defun markdown-bold () "Wraps the region with double asterisks."
+  (interactive)
+  (org-text-wrapper "**"))
+(defun markdown-italics () "Wraps the region with asterisks."
+  (interactive)
+  (org-text-wrapper "*"))
+(defun markdown-code () "Wraps the region with equal signs."
+  (interactive)
+  (org-text-wrapper "`"))
+
+;; Now we can associate some keystrokes to =markdown-mode=:
+
+(add-hook 'markdown-mode-hook
+      (lambda ()
+        (local-set-key (kbd "A-b") 'markdown-bold)
+        (local-set-key (kbd "A-i") 'markdown-italics)
+        (local-set-key (kbd "A-=") 'markdown-code)))
+
+;; Eshell
+
+;;    E-shell doesn't read the [[http://www.emacswiki.org/emacs/EshellAlias][standard shell resource]] files or allow
+;;    shell functions and aliases, so we need to create emacs-specific
+;;    ones:
+
+(defun eshell/e (file)
+  (find-file file))
+(defun eshell/emacs (file)
+  (find-file file))
+
+;; Replacing the window with the new buffer may not be what I want.
+
+(defun eshell/ee (file)
+  (find-file-other-window file))
+
+;; PlantUML
+
+;;    To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, we need to get the "mode"
+;;    working for editing the files:
+
+(setq plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+
+;; Second, to get [[http://zhangweize.wordpress.com/2010/08/25/creating-uml-images-by-using-plantuml-and-org-babel-in-emacs/][PlantUML]] working in org-mode, we set a different variable:
+
+(setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+
 ;; Mail with Gnus
 
 ;;    I would like to hook up my [[http://www.emacswiki.org/emacs/GnusGmail][Gmail with GNUS mail reader]].
 ;;    See these [[http://www.mostlymaths.net/2010/12/emacs-30-day-challenge-using-gnus-to.html][detailed instructions]] if we run into problems.
 ;;    The instructions are contained in [[file:gnus.org][gnus.org]] file.
 
-(load-library "gnus-config")
+(if (file-exists-p "~/.emacs.d/gnus-config.el")
+  (load-library "gnus-config"))
 
 ;; Overriding Keybindings
 
@@ -917,3 +1086,8 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;    Rebind =C-x C-y= to the Yas expand function:
 
 (define-key global-map "\C-x\C-y" 'yas/expand)
+
+;; Then the following code will work:
+
+(if (file-exists-p "~/.emacs.d/clojuredocs.el")
+    (load-library "clojuredocs"))
