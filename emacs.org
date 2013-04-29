@@ -715,15 +715,19 @@ organize it and take notes on all the complexity.
    A couple of short-cut keys to make it easier to edit text.
 
 #+BEGIN_SRC elisp
-  (defun org-text-wrapper (txt)
+  (defun org-text-wrapper (txt &optional endtxt)
     "Wraps the region with the text passed in as an argument."
+    (if (not (use-region-p))
+        (mark-word))
     (save-restriction
       (narrow-to-region (region-beginning) (region-end))
       (goto-char (point-min))
       (insert txt)
       (goto-char (point-max))
-      (insert txt)))
-
+      (if endtxt
+          (insert endtxt)
+        (insert txt))))
+  
   (defun org-text-bold () "Wraps the region with asterisks."
     (interactive)
     (org-text-wrapper "*"))
@@ -1382,6 +1386,43 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
           (local-set-key (kbd "A-b") 'markdown-bold)
           (local-set-key (kbd "A-i") 'markdown-italics)
           (local-set-key (kbd "A-=") 'markdown-code)))
+#+END_SRC
+
+** Wiki
+
+   Now that Atlassian changed this Wiki system so that [[https://code.google.com/p/confluence-el/][confluence.el]]
+   doesn't work anymore (yeah, not an improvement, Atlassian), I can
+   still use the =confluence-edit-mode= for anything with a =.wiki=
+   extension.
+
+#+BEGIN_SRC elisp
+  (autoload 'confluence-edit-mode "confluence-edit-mode.el"
+     "Major mode for editing Wiki documents" t)
+  (add-to-list 'auto-mode-alist '("\\.wiki\\'" . confluence-edit--mode))
+#+END_SRC
+
+   I would also like to create and use some formatting wrappers.
+
+#+BEGIN_SRC elisp
+  (defun wiki-bold () "Wraps the region with single asterisks."
+    (interactive)
+    (org-text-wrapper "*"))
+  (defun wiki-italics () "Wraps the region with underbars."
+    (interactive)
+    (org-text-wrapper "_"))
+  (defun wiki-code () "Wraps the region with curly brackets."
+    (interactive)
+    (org-text-wrapper "{{" "}}"))
+#+END_SRC
+
+   Now we can associate some keystrokes to =markdown-mode=:
+
+#+BEGIN_SRC elisp
+  (add-hook 'confluence-edit-mode-hook
+        (lambda ()
+          (local-set-key (kbd "A-b") 'wiki-bold)
+          (local-set-key (kbd "A-i") 'wiki-italics)
+          (local-set-key (kbd "A-=") 'wiki-code)))
 #+END_SRC
 
 ** Eshell
