@@ -618,34 +618,13 @@ organize it and take notes on all the complexity.
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-08")
+  (setq current-sprint "2013-09")
   
   (defun get-current-sprint-file ()
-    (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
-  (defvar current-sprint-file 
-    (get-current-sprint-file)
-    "The name of an Org mode that stores information about the current sprint.")
-  
-  ;; Changed the name of the sprint? Run:   (create-sprint-file)
-#+END_SRC
-
-    When we change to a new sprint, we need to create a new Sprint
-    Org File (from a template).
-
-#+BEGIN_SRC elisp
-  (defun create-sprint-file ()
-    "Creates a new Sprint file"
+    "Loads up the org-mode note associated with my current sprint."
     (interactive)
-    (let (today (format-time-string "%Y-%m-%d %a"))
-      (setq template (concat "#+TITLE:  Sprint " current-sprint "\n"
-                    "#+AUTHOR: Howard Abrams\n"
-                    "#+EMAIL:  howard.abrams@workday.com\n"
-                    "#+DATE:   " today "\n\n"
-                    "* My Work Issues\n\n"
-                    "* Sprint Retrospective\n\n"))
-      (with-temp-file current-sprint-file
-        (insert template)
-        (message (concat "Created " current-sprint-file)))))
+    (find-file
+      (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org"))))
 #+END_SRC
 
 *** Recent and Heavily Used Files
@@ -658,7 +637,7 @@ organize it and take notes on all the complexity.
     (interactive)
     (find-file current-sprint-file))
 
-  (define-key global-map "\C-x\C-u" 'find-file-current-sprint)
+  (define-key global-map "\C-x\C-u" 'get-current-sprint-file)
 #+END_SRC
 
 *** Org-Mode Colors
@@ -1000,6 +979,7 @@ organize it and take notes on all the complexity.
    (emacs-lisp . t)
    (scala      . t)
    (clojure    . t)
+   (python     . t)
    (dot        . t)
    (css        . t)
    (plantuml   . t)))
