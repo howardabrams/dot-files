@@ -731,14 +731,11 @@ organize it and take notes on all the complexity.
    I'm often typing Jira entries that match a particular link pattern.
 
 #+BEGIN_SRC elisp
-  (defun jira-link ()
+  (defun jira-link (b e)
     "Wraps the region with an org-mode link."
-    (interactive)
-    (if (not (use-region-p))
-        (backward-word)
-        (mark-word))
+    (interactive "r")
     (save-restriction
-      (narrow-to-region (region-beginning) (region-end))
+      (narrow-to-region b e)
       (let ((jiraid (buffer-substring (point-min) (point-max))))
         (goto-char (point-min))
         (insert "[[https://jira.workday.com/browse/" jiraid "][")
