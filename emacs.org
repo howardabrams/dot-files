@@ -728,6 +728,24 @@ organize it and take notes on all the complexity.
           (local-set-key (kbd "A-=") 'org-text-code)))
 #+END_SRC
 
+   I'm often typing Jira entries that match a particular link pattern.
+
+#+BEGIN_SRC elisp
+  (defun jira-link ()
+    "Wraps the region with an org-mode link."
+    (interactive)
+    (if (not (use-region-p))
+        (backward-word)
+        (mark-word))
+    (save-restriction
+      (narrow-to-region (region-beginning) (region-end))
+      (let ((jiraid (buffer-substring (point-min) (point-max))))
+        (goto-char (point-min))
+        (insert "[[https://jira.workday.com/browse/" jiraid "][")
+        (goto-char (point-max))
+        (insert "]]"))))
+#+END_SRC
+
 ** Speed Keys
 
    If point is at the beginning of a headline or code block in
@@ -1316,6 +1334,37 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
     ; Tell emacs to use jsp-mode for .jsp files
     (add-to-list 'auto-mode-alist '("\\.jsp\\'" . html-mode))
+#+END_SRC
+
+** Python
+
+   Must install a few new packages:
+
+   - jedi (Not working from ELPA)
+   - flymake-python
+   - nose
+
+#+BEGIN_SRC elisp
+(require 'nose)
+
+(add-hook 'python-mode-hook 'auto-complete-mode)
+;;; (add-hook 'python-mode-hook 'jedi:ac-setup)
+#+END_SRC
+
+     Include this line only for people with non-eco non-global test
+     runners... like the Python Koans:
+
+#+BEGIN_SRC elisp :tangle no
+(add-to-list 'nose-project-names "my/crazy/runner")
+#+END_SRC
+
+
+   Got iPython and EIN? Great!
+
+#+BEGIN_SRC elisp
+  (add-to-list 'load-path "~/.emacs.d/ipython-notebook/lisp/")
+  (require 'ein)
+  (setq ein:use-auto-complete t)
 #+END_SRC
 
 * Tools
