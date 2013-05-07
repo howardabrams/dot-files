@@ -43,21 +43,29 @@ and global variables are stored in =.profile= and =.zsh_profile=.
   is asynchronous and *doesn't block*:
 
 #+BEGIN_SRC sh
-  alias emacs='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
+  if [ -d /Applications/Emacs.app ]
+  then
+      alias emacs='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
+  fi
 #+END_SRC
 
   Another wrapper around =emacsclient= but this is a blocking
   approach suitable for being set to the =EDITOR= variable.
 
 #+BEGIN_SRC sh
-  alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
+  if [ -d /Applications/Emacs.app ]
+  then
+      alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
+  else
+      alias e='emacsclient -q -a emacs'
+  fi
 #+END_SRC
 
   It is unclear whether =e= is a good version for the =EDITOR=
   variable. According to the /info/ docs, we should do something like:
 
 #+BEGIN_EXAMPLE
-  EDITOR="emacsclient -a /Applications/Emacs.app/Contents/MacOS/Emacs +%d %s"
+  EDITOR="emacsclient"
 #+END_EXAMPLE
 
 * Listing Files
@@ -66,8 +74,14 @@ and global variables are stored in =.profile= and =.zsh_profile=.
   or Ports, via: =port install coreutils=
 
 #+BEGIN_SRC sh
-  alias ls="gls --color"
-  alias ll="gls --color -olhA"
+  if type gls 2>&1 >/dev/null
+  then
+      alias ls="gls --color"
+      alias ll="gls --color -olhA"
+  else
+      alias ls="ls --color"
+      alias ll="ls --color -olhA"
+  fi
 #+END_SRC
 
 * Finding Files
