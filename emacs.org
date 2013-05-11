@@ -766,6 +766,30 @@ organize it and take notes on all the complexity.
                          "~/Dropbox/org/project"))
 #+END_SRC
 
+** MobileOrg
+
+   I use [[http://mobileorg.ncogni.to/doc/getting-started/using-dropbox/][Dropbox with MobileOrg]] in order to read my notes on my iPad.
+
+   The "global" location of my Org files on my local system:
+
+#+BEGIN_SRC elisp
+  (setq org-directory "~/Dropbox/org/personal")
+#+END_SRC
+
+   Set the name of the file where new notes will be stored
+
+#+BEGIN_SRC elisp
+  (setq org-mobile-inbox-for-pull "~/Dropbox/org/flagged.org")
+#+END_SRC
+
+   Set to <your Dropbox root directory>/MobileOrg.
+
+#+BEGIN_SRC elisp
+  (setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
+#+END_SRC
+
+   To get this going, we just need to: =M-x org-mobile-push=
+
 ** Auto Note Capturing
 
    Let's say you were in the middle of something, but would like to
