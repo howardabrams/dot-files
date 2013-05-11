@@ -1,0 +1,138 @@
+#+TITLE:  Edit Bulk Configuration Files
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   [2013-05-10 Fri]
+
+Often, I'll be given a bunch of settings for a configuration file.
+While, I want to add the settings, I don't want to change any of the
+comments.
+
+This script allows me to specify a configuration file and a
+collection of entries to change.
+
+* Global Configuration Variables
+
+#+BEGIN_SRC python
+  import sys, getopt, re, pprint
+
+  me = "bulk-config"   # The name of this program
+  inputfile = ''       # The file we will read
+  out = sys.stdout     # Default to go to standard out
+  debug = False
+#+END_SRC
+
+  We accept /configuration section/ in square brackets.
+  The section we are in is our "state":
+
+#+BEGIN_SRC python
+  state = "0"
+#+END_SRC
+
+  The contents of what we want to change is stored in this variable:
+  The top-level keys in this dictionary is the "state". Each value
+  associated with the key will be an array entries to change.
+
+#+BEGIN_SRC python
+  body = {}
+  body[state] = []
+#+END_SRC
+
+  This regular expression pattern allows us to recognize
+  new states:
+
+#+BEGIN_SRC python
+  statePattern = re.compile('^\s*\[(.*?)\]\s*$')
+#+END_SRC
+
+* Command Line Options
+
+  The only command option we currently take is the input file.
+
+#+BEGIN_SRC python
+  try:
+     opts, args = getopt.getopt(sys.argv[1:], "hdi:o:", ["input=","output="])
+  except getopt.GetoptError:
+     print me, '-i <config-file>'
+     sys.exit(2)
+  for opt, arg in opts:
+     if opt in ("-i", "--input"):
+        inputfile = arg
+     elif opt in ("-o", "--output"):
+        out = open(arg, "wb")
+     elif opt in ("-d"):
+        debug = True
+     else:
+        print me, '-i <config-file>'
+        sys.exit()
+#+END_SRC
+
+* Getting the Configuration Values
+
+  Enter the configuration values, each on separate line.
+     e.g.   debug = True
+  These can be given via standard in or piped in.
+
+  We will split the line based on the equals character, and store the
+  two parts in the "body" under the correct state.
+
+#+BEGIN_SRC python
+  for line in sys.stdin:
+    r=statePattern.match(line)
+    if r:
+      state = r.group(1)
+      body[state] = []
+    elif "=" in line:
+      body[state].append( re.split("=", line) )
+    else:
+      print "Error: ", line
+
+  if debug:
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(body)
+#+END_SRC
+
+* Loading the File
+
+  Suck up all the lines in the input file.
+
+#+BEGIN_SRC python
+  with open(inputfile,'rb') as f:
+      configFile = f.readlines()
+#+END_SRC
+
+* Output the New Version
+
+  We will now loop over each line from out input file, and first off,
+  we keep track of the state.
+
+  Then for each line, we need to loop over the configuration entries
+  for that particular state to see if we need to change anything.
+  Otherwise, we just output the line.
+
+#+BEGIN_SRC python
+  state="0"
+  for line in configFile:
+      r=statePattern.match(line)
+      if r:
+          state = r.group(1)
+  
+      found = False
+      if state in body:
+          for part in body[state]:
+              if re.match('^(# *)?'+part[0], line):
+                  print >>out, part[0] + '=' + part[1],
+                  found = True
+  
+      if not found:
+          print >>out, line,
+#+END_SRC
+
+* Technical Aspects
+
+  This script is generated (tangled) from an =org-mode=
+  literate programming style.
+
+#+PROPERTY: tangle "~/bin/bulk-config"
+#+PROPERTY: comments org
+#+PROPERTY: shebang #!/usr/bin/env python
+#+PROPERTY: results no
