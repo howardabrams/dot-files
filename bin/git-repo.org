@@ -1,0 +1,133 @@
+#+TITLE:  Create a Git Repository
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@workday.com
+#+DATE:   [2013-05-02 Thu]
+
+* Variables and Options
+
+  - Get the name of the new repo.
+  - Get a one line description.
+  - Get a brief summary for the README
+
+#+BEGIN_SRC sh
+  WORKSPACE=${WORKSPACE:-"$HOME/Work"}
+#+END_SRC
+
+    Override any of the above defaults with command line options:
+
+#+BEGIN_SRC sh
+  while getopts "g:n:c:d:w:" o
+  do  case "$o" in
+          g)  GIT_URL="$OPTARG";;
+          n)  NAME="$OPTARG";;
+          c)  COMMENT="$OPTARG";;
+          d)  DESCRIPTION="$OPTARG";;
+          w)  WORKSPACE="$OPTARG";;
+        [?])  print >&2 "Usage: $0 -n name [-g URL] [-c comment] [-d description]"
+              exit 1;;
+      esac
+  done
+  shift `expr $OPTIND - 1`
+  # Note: This should work, but doesn't … shift $OPTIND-1
+#+END_SRC
+
+* Option Validation
+
+  Validate the name of the repository has been set. If not, we can
+  ask for it.
+
+#+BEGIN_SRC sh
+  if [ -z "$NAME" ]
+  then
+      echo -n "Name of the repository: "
+      read NAME
+  fi
+#+END_SRC
+
+  Validate the one line commentary has been set. We really should get
+  this from the gitosis/gitolite configuration file.
+
+#+BEGIN_SRC sh
+  if [ -z "$COMMENT" ]
+  then
+      echo -n "One line repo comment: "
+      read COMMENT
+  fi
+#+END_SRC
+
+  We can also prompt for the README.
+
+#+BEGIN_SRC sh
+  if [ -z "$DESCRIPTION" -a ! -f "$WORKSPACE/$NAME/README.md" ]
+  then
+      echo "Enter information that will go into the README.md file: "
+      echo "    (Hit Control-D when finished)"
+      echo
+      DESCRIPTION=$(cat)
+  fi
+#+END_SRC
+
+* Create a Blank Repository
+
+  If the directory doesn't exist, we create it.
+
+#+BEGIN_SRC sh
+  if [ ! -d "$WORKSPACE/$NAME" ]
+  then
+    mkdir -p "$WORKSPACE/$NAME"
+  fi
+#+END_SRC
+
+  If the README file doesn't exist, we create it.
+
+#+BEGIN_SRC sh
+   if [ ! -f "$WORKSPACE/$NAME/README.md" ]
+   then
+     (
+         echo "$NAME - $COMMENT"
+         echo
+         echo "$DESCRIPTION"
+     ) > "$WORKSPACE/$NAME/README.md"
+   fi
+#+END_SRC
+
+* Turn Directory into a Git Repository
+
+  We only want to do this work if a =.git= directory isn't already
+  there.
+
+#+BEGIN_SRC sh
+  cd "$WORKSPACE/$NAME"
+
+  if [ ! -d "$WORKSPACE/$NAME/.git" ]
+  then
+    git init
+  fi
+#+END_SRC
+
+  Add all the files that live in this directory.
+
+#+BEGIN_SRC sh
+  git add *
+  git commit -m "Initial repository creation and commit."
+  git remote add origin $GIT_URL/$NAME
+  git push origin master
+  git branch --set-upstream-to=origin/master master
+#+END_SRC
+
+* Final Message
+
+#+BEGIN_SRC sh
+  echo
+  echo "If all went well, you can tell your peeps they can clone:"
+  echo "    git clone $GIT_URL/$NAME"
+#+END_SRC
+* Technical Section
+  
+  This file originally came from an [[http://orgmode.org][org-mode]] file.
+  Create the script by tangling it with: =C-c C-v t=
+  
+#+PROPERTY: tangle ~/bin/git-repo
+#+PROPERTY: comments org
+#+PROPERTY: shebang #!/usr/bin/env bash
+#+DESCRIPTION: Simple script for creating and pushing a new git repository.

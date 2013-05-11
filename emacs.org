@@ -618,34 +618,13 @@ organize it and take notes on all the complexity.
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-08")
+  (setq current-sprint "2013-09")
   
   (defun get-current-sprint-file ()
-    (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
-  (defvar current-sprint-file 
-    (get-current-sprint-file)
-    "The name of an Org mode that stores information about the current sprint.")
-  
-  ;; Changed the name of the sprint? Run:   (create-sprint-file)
-#+END_SRC
-
-    When we change to a new sprint, we need to create a new Sprint
-    Org File (from a template).
-
-#+BEGIN_SRC elisp
-  (defun create-sprint-file ()
-    "Creates a new Sprint file"
+    "Loads up the org-mode note associated with my current sprint."
     (interactive)
-    (let (today (format-time-string "%Y-%m-%d %a"))
-      (setq template (concat "#+TITLE:  Sprint " current-sprint "\n"
-                    "#+AUTHOR: Howard Abrams\n"
-                    "#+EMAIL:  howard.abrams@workday.com\n"
-                    "#+DATE:   " today "\n\n"
-                    "* My Work Issues\n\n"
-                    "* Sprint Retrospective\n\n"))
-      (with-temp-file current-sprint-file
-        (insert template)
-        (message (concat "Created " current-sprint-file)))))
+    (find-file
+      (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org"))))
 #+END_SRC
 
 *** Recent and Heavily Used Files
@@ -658,7 +637,7 @@ organize it and take notes on all the complexity.
     (interactive)
     (find-file current-sprint-file))
 
-  (define-key global-map "\C-x\C-u" 'find-file-current-sprint)
+  (define-key global-map "\C-x\C-u" 'get-current-sprint-file)
 #+END_SRC
 
 *** Org-Mode Colors
@@ -715,15 +694,19 @@ organize it and take notes on all the complexity.
    A couple of short-cut keys to make it easier to edit text.
 
 #+BEGIN_SRC elisp
-  (defun org-text-wrapper (txt)
+  (defun org-text-wrapper (txt &optional endtxt)
     "Wraps the region with the text passed in as an argument."
+    (if (not (use-region-p))
+        (mark-word))
     (save-restriction
       (narrow-to-region (region-beginning) (region-end))
       (goto-char (point-min))
       (insert txt)
       (goto-char (point-max))
-      (insert txt)))
-
+      (if endtxt
+          (insert endtxt)
+        (insert txt))))
+  
   (defun org-text-bold () "Wraps the region with asterisks."
     (interactive)
     (org-text-wrapper "*"))
@@ -743,6 +726,21 @@ organize it and take notes on all the complexity.
           (local-set-key (kbd "A-b") 'org-text-bold)
           (local-set-key (kbd "A-i") 'org-text-italics)
           (local-set-key (kbd "A-=") 'org-text-code)))
+#+END_SRC
+
+   I'm often typing Jira entries that match a particular link pattern.
+
+#+BEGIN_SRC elisp
+  (defun jira-link (b e)
+    "Wraps the region with an org-mode link."
+    (interactive "r")
+    (save-restriction
+      (narrow-to-region b e)
+      (let ((jiraid (buffer-substring (point-min) (point-max))))
+        (goto-char (point-min))
+        (insert "[[https://jira.workday.com/browse/" jiraid "][")
+        (goto-char (point-max))
+        (insert "]]"))))
 #+END_SRC
 
 ** Speed Keys
@@ -1020,6 +1018,7 @@ organize it and take notes on all the complexity.
    (emacs-lisp . t)
    (scala      . t)
    (clojure    . t)
+   (python     . t)
    (dot        . t)
    (css        . t)
    (plantuml   . t)))
@@ -1358,6 +1357,37 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
     (add-to-list 'auto-mode-alist '("\\.jsp\\'" . html-mode))
 #+END_SRC
 
+** Python
+
+   Must install a few new packages:
+
+   - jedi (Not working from ELPA)
+   - flymake-python
+   - nose
+
+#+BEGIN_SRC elisp
+(require 'nose)
+
+(add-hook 'python-mode-hook 'auto-complete-mode)
+;;; (add-hook 'python-mode-hook 'jedi:ac-setup)
+#+END_SRC
+
+     Include this line only for people with non-eco non-global test
+     runners... like the Python Koans:
+
+#+BEGIN_SRC elisp :tangle no
+(add-to-list 'nose-project-names "my/crazy/runner")
+#+END_SRC
+
+
+   Got iPython and EIN? Great!
+
+#+BEGIN_SRC elisp
+  (add-to-list 'load-path "~/.emacs.d/ipython-notebook/lisp/")
+  (require 'ein)
+  (setq ein:use-auto-complete t)
+#+END_SRC
+
 * Tools
 ** Git
 
@@ -1406,6 +1436,43 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
           (local-set-key (kbd "A-b") 'markdown-bold)
           (local-set-key (kbd "A-i") 'markdown-italics)
           (local-set-key (kbd "A-=") 'markdown-code)))
+#+END_SRC
+
+** Wiki
+
+   Now that Atlassian changed this Wiki system so that [[https://code.google.com/p/confluence-el/][confluence.el]]
+   doesn't work anymore (yeah, not an improvement, Atlassian), I can
+   still use the =confluence-edit-mode= for anything with a =.wiki=
+   extension.
+
+#+BEGIN_SRC elisp
+  (autoload 'confluence-edit-mode "confluence-edit-mode.el"
+     "Major mode for editing Wiki documents" t)
+  (add-to-list 'auto-mode-alist '("\\.wiki\\'" . confluence-edit--mode))
+#+END_SRC
+
+   I would also like to create and use some formatting wrappers.
+
+#+BEGIN_SRC elisp
+  (defun wiki-bold () "Wraps the region with single asterisks."
+    (interactive)
+    (org-text-wrapper "*"))
+  (defun wiki-italics () "Wraps the region with underbars."
+    (interactive)
+    (org-text-wrapper "_"))
+  (defun wiki-code () "Wraps the region with curly brackets."
+    (interactive)
+    (org-text-wrapper "{{" "}}"))
+#+END_SRC
+
+   Now we can associate some keystrokes to =markdown-mode=:
+
+#+BEGIN_SRC elisp
+  (add-hook 'confluence-edit-mode-hook
+        (lambda ()
+          (local-set-key (kbd "A-b") 'wiki-bold)
+          (local-set-key (kbd "A-i") 'wiki-italics)
+          (local-set-key (kbd "A-=") 'wiki-code)))
 #+END_SRC
 
 ** Eshell
