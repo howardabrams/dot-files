@@ -117,7 +117,7 @@ collection of entries to change.
           # Dump all of the remaining values for this state.
           if state in body and len(body[state]) > 0:
               for part in body[state]:
-                  print >>out, part[0] + '=' + part[1] + "# ADDED!"
+                  print >>out, part[0] + '=' + part[1],
           # Store this as the new state
           state = r.group(1)
   
