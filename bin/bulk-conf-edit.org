@@ -13,7 +13,7 @@ collection of entries to change.
 * Global Configuration Variables
 
 #+BEGIN_SRC python
-  import sys, getopt, re, pprint
+  import sys, getopt, re, string, pprint
 
   me = "bulk-config"   # The name of this program
   inputfile = ''       # The file we will read
@@ -83,9 +83,9 @@ collection of entries to change.
       body[state] = []
     elif "=" in line:
       body[state].append( re.split("=", line) )
-    else:
+    elif not re.match("\s*", line):
       print "Error: ", line
-
+  
   if debug:
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(body)
@@ -114,17 +114,35 @@ collection of entries to change.
   for line in configFile:
       r=statePattern.match(line)
       if r:
+          # Dump all of the remaining values for this state.
+          if state in body and len(body[state]) > 0:
+              for part in body[state]:
+                  print >>out, part[0] + '=' + part[1] + "# ADDED!"
+          # Store this as the new state
           state = r.group(1)
   
       found = False
       if state in body:
-          for part in body[state]:
-              if re.match('^(# *)?'+part[0], line):
+          # Since we want to delete list elements, we need to iterate backwards
+          for i in xrange(len( body[state] ) - 1, -1, -1):
+              part = body[state][i]
+  
+              key = part[0]
+              if key.startswith("#"):
+                  key = string.split( part[0])[1]
+                  
+              if re.match('^(# *)?'+key, line):
                   print >>out, part[0] + '=' + part[1],
                   found = True
+                  # Since this key was written, time to remove it
+                  del body[state][i]
   
       if not found:
           print >>out, line,
+  
+  if state in body and len(body[state]) > 0:
+      for part in body[state]:
+          print >>out, part[0] + '=' + part[1]
 #+END_SRC
 
 * Technical Aspects
