@@ -342,7 +342,7 @@ organize it and take notes on all the complexity.
   (require 'recentf)
   (recentf-mode 1)
   (setq recentf-max-menu-items 25)
-  (global-set-key "\C-x\ \C-r" 'recentf-open-files)
+  (global-set-key (kbd "C-x C-r") 'recentf-open-files)
 #+END_SRC
 
 ** Project Management
@@ -414,7 +414,7 @@ organize it and take notes on all the complexity.
 #+BEGIN_SRC elisp
   (autoload 'dash-at-point "dash-at-point"
             "Search the word at point with Dash." t nil)
-  (global-set-key "\C-cd" 'dash-at-point)
+  (global-set-key (kbd "C-c d") 'dash-at-point)
 #+END_SRC
 
    Note: I checked out the code elsewhere, and created a symlink from
@@ -422,21 +422,29 @@ organize it and take notes on all the complexity.
 
 ** Note Grep
 
+   First, we need to have the =find-grep= ignore =.git= directories
+   and search for wholewords:
+
+#+BEGIN_SRC elisp
+  (setq grep-find-command 
+        "find . -type f '!' -wholename '*/.git/*' -print0 | xargs -0 -e grep -nHPi -e ")
+  (setq rep-highlight-matches t)
+#+END_SRC
    I use the standard [[http://emacswiki.org/emacs/GrepMode#toc1][grep package]] in Emacs and wrap it so that I
    can easily search through my notes.
 
 #+BEGIN_SRC elisp
   (defun ngrep (reg-exp)
     "Searches the Notes and ORG directory tree for an expression."
-    (interactive "sSearch note directory for: ")
+    (interactive "sSearch note directories: ")
     (let ((file-ext "*.org *.md *.txt *.markdown")
-          (search-dir "~/Dropbox/org"))
+          (search-dir "~/Notes ~/Technical"))
       (message "Searching in %s" search-dir)
-      (grep-compute-defaults)
-      (rgrep reg-exp file-ext search-dir)))
-
-  (define-key global-map "\C-x\C-n" 'ngrep)
-  (define-key global-map "\C-x\C-r" 'rgrep)
+      ;; (grep-compute-defaults)
+      (grep-find (concat "grep -nHPir -e " reg-exp " --include '*.org' --include '*.md' " search-dir))))
+  
+  (global-set-key (kbd "C-x C-n") 'ngrep)
+  ;; (global-set-key (kbd "C-x C-r") 'rgrep)
 #+END_SRC
 
    Don't forget that after doing a =C-x C-f= to find a file, you can
@@ -445,7 +453,7 @@ organize it and take notes on all the complexity.
    Also, you can do a full locate with =C-x C-l=:
 
 #+BEGIN_SRC elisp
-  (define-key global-map "\C-x\C-l" 'locate)
+  (global-set-key (kbd "C-x C-l") 'locate)
   (setq locate-command "mdfind")  ;; Use Mac OS X's Spotlight
 #+END_SRC
 
@@ -618,13 +626,15 @@ organize it and take notes on all the complexity.
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-09")
+  (setq current-sprint "2013-10")
+  
+  (defun current-sprint-file ()
+    (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
   
   (defun get-current-sprint-file ()
     "Loads up the org-mode note associated with my current sprint."
     (interactive)
-    (find-file
-      (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org"))))
+    (find-file (current-sprint-file)))
 #+END_SRC
 
 *** Recent and Heavily Used Files
@@ -633,11 +643,7 @@ organize it and take notes on all the complexity.
     /Top 10/ file list can just be an Org file, right?
 
 #+BEGIN_SRC elisp
-  (defun find-file-current-sprint ()
-    (interactive)
-    (find-file current-sprint-file))
-
-  (define-key global-map "\C-x\C-u" 'get-current-sprint-file)
+  (global-set-key (kbd "C-x C-u") 'get-current-sprint-file)
 #+END_SRC
 
 *** Org-Mode Colors
@@ -684,9 +690,11 @@ organize it and take notes on all the complexity.
    matter what mode you are using currently.
 
 #+BEGIN_SRC elisp
-  (global-set-key "\C-cl" 'org-store-link)
-  (global-set-key "\C-ca" 'org-agenda)
-  (global-set-key "\C-cb" 'org-iswitchb)
+  (global-set-key (kbd "C-c l") 'org-store-link)
+  (global-set-key (kbd "C-c a") 'org-agenda)
+  (global-set-key (kbd "C-c b") 'org-iswitchb)
+
+  (global-set-key (kbd "C-M-|") 'indent-rigidly)
 #+END_SRC
 
 ** Local Key Bindings
@@ -796,28 +804,30 @@ organize it and take notes on all the complexity.
    following key:
 
 #+BEGIN_SRC elisp
-  (define-key global-map "\C-cc" 'org-capture)
+  (global-set-key (kbd "C-c c") 'org-capture)
 #+END_SRC
 
    This will bring up a list of /note capturing templates/:
 
 #+BEGIN_SRC elisp
   (setq org-capture-templates
-        '(("t" "Thought or Note" plain (file "~/Dropbox/org/notes/GTD Thoughts.txt")
-           "  * %i%?\n    %a")
-          ("d" "General TODO Tasks" entry (file "~/Dropbox/org/notes/GTD Tasks.org")
-           "* TODO %?\n  %i\n  %a" :empty-lines 1)
-          ("g" "Interesting Gilt Link" entry (file+headline "~/Dropbox/org/gilt/General.org" "Links")
-           "* %i%? :gilt:\n  Captured: %t\n  Linked: %a" :empty-lines 1)
-          ("w" "Work Task" entry (file+headline "~/Dropbox/org/gilt/General.org" "Tasks")
-           "* TODO %?%i :gilt:" :empty-lines 1)
-          ("r" "Retrospective Note" entry (file+headline current-sprint-file "Sprint Retrospective")
-           "* (Good/Bad) %i%? :gilt:\n  Sprint: %t\n  Linked: %a" :empty-lines 1)
-          ("j" "Journal" entry (file+datetree "~/Dropbox/org/Journal Events.org")
-           "* %?\nEntered on %U\n  %i\n  %a")))
+        '(("n" "Thought or Note" entry (file "~/Technical/general-notes.org")
+           "* %i%?\n    %a" :empty-lines 1)
+  
+          ("r" "Retrospective Status" entry (file+headline (current-sprint-file) "Status/Accomplishments")
+           "*** %i%?\n  Linked: %a" :empty-lines 1)
+          ("g" "Retrospective Goodness" entry (file+headline (current-sprint-file) "Keep Doing (Good)")
+           "*** %i%?" :empty-lines 1)
+          ("b" "Retrospective Badness" entry (file+headline (current-sprint-file) "Stop Doing (Bad)")
+           "*** %i%?" :empty-lines 1)
+          ("i" "Retrospective Improvement" entry (file+headline (current-sprint-file) "Start Doing (Improvements)")
+           "*** %i%?" :empty-lines 1)
+  
+          ("p" "Personal Journal" entry (file+datetree "~/Technical/personal.org")
+           "* Projects\n\n  %i%?\n\n  %a" :empty-lines 1)))
   
   ;; General notes go into this file:
-  (setq org-default-notes-file "~/Dropbox/org/notes/GTD Tasks.org")
+  (setq org-default-notes-file "~/Technical/personal.org")
 #+END_SRC
 
    After you have selected the template, you type in your note and hit
@@ -825,24 +835,6 @@ organize it and take notes on all the complexity.
 
    Just remember, at some point to hit =C-c C-w= to /refile/ that note
    in the appropriate place.
-
-*** RSS Feeds to Notes
-
-    A cool feature allows me to automatically take the tasks assigned
-    to me during a Sprint, and create entries for me to add my
-    personal notes and comments.
-
-#+BEGIN_SRC elisp
-  (setq org-feed-alist
-        (list (list "Gilt Jira"
-          "https://jira.gilt.com/sr/jira.issueviews:searchrequest-xml/15717/SearchRequest-15717.xml"
-          (get-current-sprint-file) "My Work Issues")))
-  (setq org-feed-default-template "** %h\n   %a")
-  ;; We really want to change the %h to %( replace ... \"%h\" and \"%a\" )
-  ;; %(concat \"[[\%a][\" (substring \"%h\" 1) \"]\")
-#+END_SRC
-
-    To regen the list, hit: =C-c C-x g=
 
 ** Checking Things Off
 
@@ -1366,17 +1358,17 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
    - nose
 
 #+BEGIN_SRC elisp
-(require 'nose)
-
-(add-hook 'python-mode-hook 'auto-complete-mode)
-;;; (add-hook 'python-mode-hook 'jedi:ac-setup)
+  (require 'nose)
+  
+  (add-hook 'python-mode-hook 'auto-complete-mode)
+  ;;; (add-hook 'python-mode-hook 'jedi:ac-setup)
 #+END_SRC
 
      Include this line only for people with non-eco non-global test
      runners... like the Python Koans:
 
 #+BEGIN_SRC elisp :tangle no
-(add-to-list 'nose-project-names "my/crazy/runner")
+(add-to-list 'nose-project-names "~/Google\ Drive/python_koans/python2")
 #+END_SRC
 
 
@@ -1397,7 +1389,7 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
   (autoload 'magint "magit"
     "Hooking Git up to supported files." t nil)
 
-  (define-key global-map "\M-\C-g" 'magit-status)
+  (global-set-key (kbd "M-C-g") 'magit-status)
 #+END_SRC
 
 ** Markdown
@@ -1545,7 +1537,7 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
    Rebind =C-x C-y= to the Yas expand function:
 
 #+BEGIN_SRC elisp
-  (define-key global-map "\C-x\C-y" 'yas/expand)
+  (global-set-key (kbd "C-x C-y") 'yas/expand)
 #+END_SRC
 
 * Technical Artifacts
