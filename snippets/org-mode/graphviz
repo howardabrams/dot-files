@@ -2,11 +2,14 @@
 # name: Graphviz
 # key: graphviz
 # --
-#+srcname: $1 Diagram
-#+begin_src dot :file $2.png :cmdline -Kdot -Tpng
+#+SRCNAME: $1 Diagram
+#+BEGIN_SRC graphviz-dot :file img/$2.png :cmdline -Kdot -Tpng
   digraph G {
     node [shape=box]
 
     node [label=""] Base
   }
-#+end_src
+#+END_SRC
+
+Note: To evaluate the diagram and render a picture, change the
+      =graphviz-dot= language to just =dot=
