@@ -368,9 +368,8 @@ organize it and take notes on all the complexity.
    This feature scans the code and suggests completions for what you
    are typing. Useful at times ... annoying at others.
 
-#+BEGIN_SRC elisp :tangle no
-  (autoload 'auto-complete-config "auto-complete-config"
-            "Auto completion for general buffer types." t nil)
+#+BEGIN_SRC elisp
+  (require 'auto-complete-config)
   (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
   (ac-config-default)
 #+END_SRC
