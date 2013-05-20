@@ -12,11 +12,47 @@ collection of entries to change.
 
 * Global Configuration Variables
 
+  This script can convert an INI configuration file simply by
+  specifying the values you want to be set. The best way to explain
+  is with some examples.
+
+  If a file, blah.ini, has the following contents:
+
+        [default]
+        # This sets the port number, defaults to 8080
+        # port = 9000
+        host = localhost
+
+  And if you used this script via:
+
+        bulk-config -e blah.ini <<EOM
+        [default]
+        port = 8888
+        host = localhost
+        EOM
+
+  The end results would be:
+
+        [default]
+        # This sets the port number, defaults to 8080
+        port = 8888
+        host = localhost
+
+  Notice that the comments are kept intact, as well as existing
+  settings.
+
+  The =input= parameter specifies the file to read, and the =output=
+  parameter set the contents of the resulting change. If you want
+  them to be the same, use the `-e` (or --edit) option, and the
+  original file will be saved to a file of the same name with an
+  appending ~ character.
+
 #+BEGIN_SRC python
   import sys, getopt, re, string, pprint
 
   me = "bulk-config"   # The name of this program
   inputfile = ''       # The file we will read
+  outputfile = None
   out = sys.stdout     # Default to go to standard out
   debug = False
 #+END_SRC
@@ -50,20 +86,50 @@ collection of entries to change.
 
 #+BEGIN_SRC python
   try:
-     opts, args = getopt.getopt(sys.argv[1:], "hdi:o:", ["input=","output="])
+     opts, args = getopt.getopt(sys.argv[1:], "hdi:o:e:", ["input=","output=","edit="])
   except getopt.GetoptError:
-     print me, '-i <config-file>'
+     print me, '-e <config-file | -i <config-file> [ -o <config-file> ]'
      sys.exit(2)
   for opt, arg in opts:
      if opt in ("-i", "--input"):
         inputfile = arg
      elif opt in ("-o", "--output"):
-        out = open(arg, "wb")
+        outputfile = arg
+     elif opt in ("-e", "--edit"):
+        inputfile = outputfile = arg
      elif opt in ("-d"):
         debug = True
      else:
-        print me, '-i <config-file>'
+        print me, '-e <config-file | -i <config-file> [ -o <config-file> ]'
         sys.exit()
+#+END_SRC
+
+* No Input File?
+
+  What if the input file doesn't actually exist? That should be nasty
+  error.
+
+#+BEGIN_SRC python :results output :var inputfile = "blah.txt"
+  import os.path
+
+  if not os.path.exists(inputfile):
+      print "The input file specified doesn't exist.", inputfile
+      exit
+#+END_SRC
+
+#+RESULTS:
+: The input file specified doesn't exist. blah.txt
+
+* Specify the same file?
+
+  What if the input and output refer to the same file? That isn't
+  good, so we will take care of things.
+
+#+BEGIN_SRC python :results silent :var inputfile = "test.txt" outputfile = "test.txt"
+  if outputfile and inputfile == outputfile:
+      import shutil
+      shutil.copyfile(inputfile, inputfile+"~")
+      inputfile = inputfile+"~"
 #+END_SRC
 
 * Getting the Configuration Values
@@ -102,6 +168,13 @@ collection of entries to change.
 
 * Output the New Version
 
+  The output will be written to using the =out= file handle.
+
+#+BEGIN_SRC python
+  if outputfile:
+      out = open(outputfile, "wb")
+#+END_SRC
+
   We will now loop over each line from out input file, and first off,
   we keep track of the state.
 
@@ -118,6 +191,7 @@ collection of entries to change.
           if state in body and len(body[state]) > 0:
               for part in body[state]:
                   print >>out, part[0] + '=' + part[1],
+              print >>out, ""
           # Store this as the new state
           state = r.group(1)
   
@@ -154,3 +228,4 @@ collection of entries to change.
 #+PROPERTY: comments org
 #+PROPERTY: shebang #!/usr/bin/env python
 #+PROPERTY: results no
+#+PROPERTY: no-expand yes
