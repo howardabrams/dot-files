@@ -703,16 +703,25 @@ organize it and take notes on all the complexity.
 #+BEGIN_SRC elisp
   (defun org-text-wrapper (txt &optional endtxt)
     "Wraps the region with the text passed in as an argument."
-    (if (not (use-region-p))
-        (mark-word))
-    (save-restriction
-      (narrow-to-region (region-beginning) (region-end))
-      (goto-char (point-min))
-      (insert txt)
-      (goto-char (point-max))
-      (if endtxt
-          (insert endtxt)
-        (insert txt))))
+    (if (use-region-p)
+        (save-restriction
+          (narrow-to-region (region-beginning) (region-end))
+          (goto-char (point-min))
+          (insert txt)
+          (goto-char (point-max))
+          (if endtxt
+              (insert endtxt)
+            (insert txt)))
+      (if (looking-at "[A-z]")
+          (progn
+            (backward-word)
+            (mark-word)
+            (org-text-wrapper txt))
+        (progn
+          (insert txt)
+          (let ((spot (point)))
+            (insert txt)
+            (goto-char spot))))))
   
   (defun org-text-bold () "Wraps the region with asterisks."
     (interactive)
