@@ -718,10 +718,12 @@ organize it and take notes on all the complexity.
               (insert endtxt)
             (insert txt)))
       (if (looking-at "[A-z]")
-          (progn
-            (backward-word)
-            (mark-word)
-            (org-text-wrapper txt))
+          (save-excursion
+            (if (not (looking-back "[     ]"))
+                (backward-word))
+            (progn
+              (mark-word)
+              (org-text-wrapper txt endtxt)))
         (progn
           (insert txt)
           (let ((spot (point)))
