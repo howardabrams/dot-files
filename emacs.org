@@ -256,7 +256,7 @@ organize it and take notes on all the complexity.
 #+BEGIN_SRC elisp
   (when (eq system-type 'darwin)
     (setq mac-option-modifier 'meta)
-
+  
     ;; Aquamacs-specific code:
     (when (boundp 'aquamacs-version)
       (global-set-key [(alt k)] 'nlinum-mode))
@@ -270,6 +270,11 @@ organize it and take notes on all the complexity.
       (require 'mac-key-mode)
       (mac-key-mode 1)
       
+      ;; I'd rather selectively bind Meta-I to my italics function,
+      ;; instead of showing the file in the Finder.
+      (define-key mac-key-mode-map (kbd "A-i") nil)
+      (define-key mac-key-mode-map [(alt 2)] 'mac-key-show-in-finder)
+  
       (define-key mac-key-mode-map [(alt +)] 'text-scale-increase)
       (define-key mac-key-mode-map [(alt _)] 'text-scale-decrease)
       (define-key mac-key-mode-map [(alt l)] 'goto-line)
