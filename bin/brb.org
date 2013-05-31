@@ -1,0 +1,104 @@
+#+TITLE:  Be Right Back Script
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   [2013-05-29 Wed]
+
+* Introduction
+
+  If I need to extricate myself from a conversation, I figured I could
+  get away with something humorous. This script will read a file of
+  messages (one per line), and choose one at random.
+
+#+BEGIN_SRC python
+from random import randint
+#+END_SRC
+
+* Create the Messages Array
+
+  The point of this little script is to display one of the following
+  messages:
+
+#+NAME: messages
+#+BEGIN_EXAMPLE
+  My fridge is insulting the coffee maker. I need to go cheer it on.
+  My chihuahua got out of my backpack and is snuffling in the server room.
+  God has summoned me to the toilet.
+  I have had an idea and need to feed it.
+  My chair is on fire. Looking for water.
+  I've broken out of the padded room.
+  The window's melting.
+  My hair has internally combusting.
+  My brain has been sighted running across the road.
+  The hedgehog is skating in the sink again.
+  Time to heat my watch.
+  Must start the cat spin cycle.
+  Seems my walls need ironing.
+  Going to Tijuana writing bad checks along the road.
+  There seems to be a problem with my toenails.
+  Connecting my neural networking hair extensions.
+  More complaints about cement in the filing cabinet.
+  Having a one-on-one with the echo in the bottom of my coffee mug.
+  Just hacked into this mainframe. Oh. It's a VAX.
+  Gonna get some new shoes for my donkey.
+  Busy trying to cure my goldfish from its fear of water.
+  The FBI just called, I'm wanted for a special mission.
+  Busy planning how to take over the world.
+  The imaginary gnomes are knocking on the door.
+  Put another grape up my nostril...again.
+  Need to get more peanuts for my elephant.
+  Corresponding with the dead.
+  Gotta comb my back-hair.
+  The peacock wants to mud wrestle.
+  My penguin is giving birth.
+#+END_EXAMPLE
+
+  We take the messages from the block in the above section, and
+  create a Python array suitable for putting in our source code.
+
+#+BEGIN_SRC python :var messages=messages
+msgs = messages.split("\n")
+#+END_SRC
+
+* Create the Preambles Array 
+
+  A preamble is just the phrase before the strange message. Usually,
+  /be right back/ or something similar.
+
+#+NAME: preambles
+#+BEGIN_EXAMPLE
+  Be right back ...
+  Gotta go ...
+  BRB ...
+  I'll brb ...
+  I'll be right back ...
+#+END_EXAMPLE
+
+#+BEGIN_SRC python :var prefixes=preambles
+  preambles = prefixes.split("\n")
+#+END_SRC
+
+* Display a Random Message
+
+  Choosing and retrieve a random entry from an array.
+
+#+BEGIN_SRC python
+  def choose(ary):
+      return ary[ randint(0, len(ary)-1) ].strip()
+#+END_SRC
+  First, we need to pick the preamble and message, and write the
+  choice out to standard out:
+
+#+BEGIN_SRC python
+  print choose(preambles), choose(msgs)
+#+END_SRC
+
+* Technical Section
+  
+  This file originally came from an [[http://orgmode.org][org-mode]] file.
+  Create the script by tangling it with: =C-c C-v t=
+  
+#+PROPERTY: tangle yes
+#+PROPERTY: results none
+#+PROPERTY: comments org
+#+PROPERTY: shebang #!/usr/bin/env python
+
