@@ -189,6 +189,11 @@ Does not support subfeatures."
     (require 'mac-key-mode)
     (mac-key-mode 1)
     
+    ;; I'd rather selectively bind Meta-I to my italics function,
+    ;; instead of showing the file in the Finder.
+    (define-key mac-key-mode-map (kbd "A-i") nil)
+    (define-key mac-key-mode-map [(alt 2)] 'mac-key-show-in-finder)
+
     (define-key mac-key-mode-map [(alt +)] 'text-scale-increase)
     (define-key mac-key-mode-map [(alt _)] 'text-scale-decrease)
     (define-key mac-key-mode-map [(alt l)] 'goto-line)
@@ -252,7 +257,7 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 (require 'recentf)
 (recentf-mode 1)
 (setq recentf-max-menu-items 25)
-(global-set-key "\C-x\ \C-r" 'recentf-open-files)
+(global-set-key (kbd "C-x C-r") 'recentf-open-files)
 
 ;; Project Management
 
@@ -262,6 +267,15 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 
 (require 'projectile)
 (projectile-global-mode) ;; to enable in all buffers
+
+;; Auto Complete
+
+;;    This feature scans the code and suggests completions for what you
+;;    are typing. Useful at times ... annoying at others.
+
+(require 'auto-complete-config)
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+(ac-config-default)
 
 ;; Yas Snippet
 
@@ -294,31 +308,38 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 
 (autoload 'dash-at-point "dash-at-point"
           "Search the word at point with Dash." t nil)
-(global-set-key "\C-cd" 'dash-at-point)
+(global-set-key (kbd "C-c d") 'dash-at-point)
 
 ;; Note Grep
 
-;;    I use the standard [[http://emacswiki.org/emacs/GrepMode#toc1][grep package]] in Emacs and wrap it so that I
+;;    First, we need to have the =find-grep= ignore =.git= directories
+;;    and search for wholewords:
+
+(setq grep-find-command 
+      "find . -type f '!' -wholename '*/.git/*' -print0 | xargs -0 -e grep -nHPi -e ")
+(setq rep-highlight-matches t)
+
+;; I use the standard [[http://emacswiki.org/emacs/GrepMode#toc1][grep package]] in Emacs and wrap it so that I
 ;;    can easily search through my notes.
 
 (defun ngrep (reg-exp)
   "Searches the Notes and ORG directory tree for an expression."
-  (interactive "sSearch note directory for: ")
+  (interactive "sSearch note directories: ")
   (let ((file-ext "*.org *.md *.txt *.markdown")
-        (search-dir "~/Dropbox/org"))
+        (search-dir "~/Notes ~/Technical"))
     (message "Searching in %s" search-dir)
-    (grep-compute-defaults)
-    (rgrep reg-exp file-ext search-dir)))
+    ;; (grep-compute-defaults)
+    (grep-find (concat "grep -nHPir -e " reg-exp " --include '*.org' --include '*.md' " search-dir))))
 
-(define-key global-map "\C-x\C-n" 'ngrep)
-(define-key global-map "\C-x\C-r" 'rgrep)
+(global-set-key (kbd "C-x C-n") 'ngrep)
+;; (global-set-key (kbd "C-x C-r") 'rgrep)
 
 ;; Don't forget that after doing a =C-x C-f= to find a file, you can
 ;;    hit another =M-f= to do a find the given directory (and subs).
 
 ;;    Also, you can do a full locate with =C-x C-l=:
 
-(define-key global-map "\C-x\C-l" 'locate)
+(global-set-key (kbd "C-x C-l") 'locate)
 (setq locate-command "mdfind")  ;; Use Mac OS X's Spotlight
 
 ;; Then, we can use it like:
@@ -426,43 +447,22 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;     At the beginning of each sprint, we need to set this to the new
 ;;     sprint file.
 
-(setq current-sprint "2013-08")
+(setq current-sprint "2013-10")
+
+(defun current-sprint-file ()
+  (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
 
 (defun get-current-sprint-file ()
-  (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
-(defvar current-sprint-file 
-  (get-current-sprint-file)
-  "The name of an Org mode that stores information about the current sprint.")
-
-;; Changed the name of the sprint? Run:   (create-sprint-file)
-
-;; When we change to a new sprint, we need to create a new Sprint
-;;     Org File (from a template).
-
-(defun create-sprint-file ()
-  "Creates a new Sprint file"
+  "Loads up the org-mode note associated with my current sprint."
   (interactive)
-  (let (today (format-time-string "%Y-%m-%d %a"))
-    (setq template (concat "#+TITLE:  Sprint " current-sprint "\n"
-                  "#+AUTHOR: Howard Abrams\n"
-                  "#+EMAIL:  howard.abrams@workday.com\n"
-                  "#+DATE:   " today "\n\n"
-                  "* My Work Issues\n\n"
-                  "* Sprint Retrospective\n\n"))
-    (with-temp-file current-sprint-file
-      (insert template)
-      (message (concat "Created " current-sprint-file)))))
+  (find-file (current-sprint-file)))
 
 ;; Recent and Heavily Used Files
 
 ;;     We want both a recently seen files as well, as a top 10. This
 ;;     /Top 10/ file list can just be an Org file, right?
 
-(defun find-file-current-sprint ()
-  (interactive)
-  (find-file current-sprint-file))
-
-(define-key global-map "\C-x\C-u" 'find-file-current-sprint)
+(global-set-key (kbd "C-x C-u") 'get-current-sprint-file)
 
 ;; Org-Mode Colors
 
@@ -503,22 +503,37 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;    The =org-mode= has some useful keybindings that are helpful no
 ;;    matter what mode you are using currently.
 
-(global-set-key "\C-cl" 'org-store-link)
-(global-set-key "\C-ca" 'org-agenda)
-(global-set-key "\C-cb" 'org-iswitchb)
+(global-set-key (kbd "C-c l") 'org-store-link)
+(global-set-key (kbd "C-c a") 'org-agenda)
+(global-set-key (kbd "C-c b") 'org-iswitchb)
+
+(global-set-key (kbd "C-M-|") 'indent-rigidly)
 
 ;; Local Key Bindings
 
 ;;    A couple of short-cut keys to make it easier to edit text.
 
-(defun org-text-wrapper (txt)
+(defun org-text-wrapper (txt &optional endtxt)
   "Wraps the region with the text passed in as an argument."
-  (save-restriction
-    (narrow-to-region (region-beginning) (region-end))
-    (goto-char (point-min))
-    (insert txt)
-    (goto-char (point-max))
-    (insert txt)))
+  (if (use-region-p)
+      (save-restriction
+        (narrow-to-region (region-beginning) (region-end))
+        (goto-char (point-min))
+        (insert txt)
+        (goto-char (point-max))
+        (if endtxt
+            (insert endtxt)
+          (insert txt)))
+    (if (looking-at "[A-z]")
+        (progn
+          (backward-word)
+          (mark-word)
+          (org-text-wrapper txt))
+      (progn
+        (insert txt)
+        (let ((spot (point)))
+          (insert txt)
+          (goto-char spot))))))
 
 (defun org-text-bold () "Wraps the region with asterisks."
   (interactive)
@@ -537,6 +552,19 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
         (local-set-key (kbd "A-b") 'org-text-bold)
         (local-set-key (kbd "A-i") 'org-text-italics)
         (local-set-key (kbd "A-=") 'org-text-code)))
+
+;; I'm often typing Jira entries that match a particular link pattern.
+
+(defun jira-link (b e)
+  "Wraps the region with an org-mode link."
+  (interactive "r")
+  (save-restriction
+    (narrow-to-region b e)
+    (let ((jiraid (buffer-substring (point-min) (point-max))))
+      (goto-char (point-min))
+      (insert "[[https://jira.workday.com/browse/" jiraid "][")
+      (goto-char (point-max))
+      (insert "]]"))))
 
 ;; Speed Keys
 
@@ -578,40 +606,28 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;    working on. This is called a "capture", and is bound to the
 ;;    following key:
 
-(define-key global-map "\C-cc" 'org-capture)
+(global-set-key (kbd "C-c c") 'org-capture)
 
 ;; This will bring up a list of /note capturing templates/:
 
 (setq org-capture-templates
-      '(("t" "Thought or Note" plain (file "~/Dropbox/org/notes/GTD Thoughts.txt")
-         "  * %i%?\n    %a")
-        ("d" "General TODO Tasks" entry (file "~/Dropbox/org/notes/GTD Tasks.org")
-         "* TODO %?\n  %i\n  %a" :empty-lines 1)
-        ("g" "Interesting Gilt Link" entry (file+headline "~/Dropbox/org/gilt/General.org" "Links")
-         "* %i%? :gilt:\n  Captured: %t\n  Linked: %a" :empty-lines 1)
-        ("w" "Work Task" entry (file+headline "~/Dropbox/org/gilt/General.org" "Tasks")
-         "* TODO %?%i :gilt:" :empty-lines 1)
-        ("r" "Retrospective Note" entry (file+headline current-sprint-file "Sprint Retrospective")
-         "* (Good/Bad) %i%? :gilt:\n  Sprint: %t\n  Linked: %a" :empty-lines 1)
-        ("j" "Journal" entry (file+datetree "~/Dropbox/org/Journal Events.org")
-         "* %?\nEntered on %U\n  %i\n  %a")))
+      '(("n" "Thought or Note" entry (file "~/Technical/general-notes.org")
+         "* %i%?\n    %a" :empty-lines 1)
+
+        ("r" "Retrospective Status" entry (file+headline (current-sprint-file) "Status/Accomplishments")
+         "*** %i%?\n  Linked: %a" :empty-lines 1)
+        ("g" "Retrospective Goodness" entry (file+headline (current-sprint-file) "Keep Doing (Good)")
+         "*** %i%?" :empty-lines 1)
+        ("b" "Retrospective Badness" entry (file+headline (current-sprint-file) "Stop Doing (Bad)")
+         "*** %i%?" :empty-lines 1)
+        ("i" "Retrospective Improvement" entry (file+headline (current-sprint-file) "Start Doing (Improvements)")
+         "*** %i%?" :empty-lines 1)
+
+        ("p" "Personal Journal" entry (file+datetree "~/Technical/personal.org")
+         "* Projects\n\n  %i%?\n\n  %a" :empty-lines 1)))
 
 ;; General notes go into this file:
-(setq org-default-notes-file "~/Dropbox/org/notes/GTD Tasks.org")
-
-;; RSS Feeds to Notes
-
-;;     A cool feature allows me to automatically take the tasks assigned
-;;     to me during a Sprint, and create entries for me to add my
-;;     personal notes and comments.
-
-(setq org-feed-alist
-      (list (list "Gilt Jira"
-        "https://jira.gilt.com/sr/jira.issueviews:searchrequest-xml/15717/SearchRequest-15717.xml"
-        (get-current-sprint-file) "My Work Issues")))
-(setq org-feed-default-template "** %h\n   %a")
-;; We really want to change the %h to %( replace ... \"%h\" and \"%a\" )
-;; %(concat \"[[\%a][\" (substring \"%h\" 1) \"]\")
+(setq org-default-notes-file "~/Technical/personal.org")
 
 ;; Checking Things Off
 
@@ -772,9 +788,16 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
    (emacs-lisp . t)
    (scala      . t)
    (clojure    . t)
+   (python     . t)
    (dot        . t)
    (css        . t)
    (plantuml   . t)))
+
+;; Just Evaluate It
+
+;;     I'm normally fine with having my code automatically evaluated.
+
+(setq org-confirm-babel-evaluate nil)
 
 ;; Font Coloring in Code Blocks
     
@@ -1000,6 +1023,25 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ; Tell emacs to use jsp-mode for .jsp files
 (add-to-list 'auto-mode-alist '("\\.jsp\\'" . html-mode))
 
+;; Python
+
+;;    Must install a few new packages:
+
+;;    - jedi (Not working from ELPA)
+;;    - flymake-python
+;;    - nose
+
+(require 'nose)
+
+(add-hook 'python-mode-hook 'auto-complete-mode)
+;;; (add-hook 'python-mode-hook 'jedi:ac-setup)
+
+;; Got iPython and EIN? Great!
+
+(add-to-list 'load-path "~/.emacs.d/ipython-notebook/lisp/")
+(require 'ein)
+(setq ein:use-auto-complete t)
+
 ;; Git
 
 ;;    Git is [[http://emacswiki.org/emacs/Git][already part of Emacs]]. However, [[http://philjackson.github.com/magit/magit.html][Magit]] is sweet.
@@ -1007,7 +1049,7 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 (autoload 'magint "magit"
   "Hooking Git up to supported files." t nil)
 
-(define-key global-map "\M-\C-g" 'magit-status)
+(global-set-key (kbd "M-C-g") 'magit-status)
 
 ;; Markdown
 
@@ -1040,6 +1082,37 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
         (local-set-key (kbd "A-b") 'markdown-bold)
         (local-set-key (kbd "A-i") 'markdown-italics)
         (local-set-key (kbd "A-=") 'markdown-code)))
+
+;; Wiki
+
+;;    Now that Atlassian changed this Wiki system so that [[https://code.google.com/p/confluence-el/][confluence.el]]
+;;    doesn't work anymore (yeah, not an improvement, Atlassian), I can
+;;    still use the =confluence-edit-mode= for anything with a =.wiki=
+;;    extension.
+
+(autoload 'confluence-edit-mode "confluence-edit-mode.el"
+   "Major mode for editing Wiki documents" t)
+(add-to-list 'auto-mode-alist '("\\.wiki\\'" . confluence-edit--mode))
+
+;; I would also like to create and use some formatting wrappers.
+
+(defun wiki-bold () "Wraps the region with single asterisks."
+  (interactive)
+  (org-text-wrapper "*"))
+(defun wiki-italics () "Wraps the region with underbars."
+  (interactive)
+  (org-text-wrapper "_"))
+(defun wiki-code () "Wraps the region with curly brackets."
+  (interactive)
+  (org-text-wrapper "{{" "}}"))
+
+;; Now we can associate some keystrokes to =markdown-mode=:
+
+(add-hook 'confluence-edit-mode-hook
+      (lambda ()
+        (local-set-key (kbd "A-b") 'wiki-bold)
+        (local-set-key (kbd "A-i") 'wiki-italics)
+        (local-set-key (kbd "A-=") 'wiki-code)))
 
 ;; Eshell
 
@@ -1085,7 +1158,7 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 
 ;;    Rebind =C-x C-y= to the Yas expand function:
 
-(define-key global-map "\C-x\C-y" 'yas/expand)
+(global-set-key (kbd "C-x C-y") 'yas/expand)
 
 ;; Then the following code will work:
 

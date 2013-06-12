@@ -12,20 +12,34 @@
 #   essentially replaces the standard =emacs= command, but this
 #   is asynchronous and *doesn't block*:
 
-alias emacs='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
+if [ -d /Applications/Emacs.app ]
+then
+    alias emacs='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
+fi
 
 # Another wrapper around =emacsclient= but this is a blocking
 #   approach suitable for being set to the =EDITOR= variable.
 
-alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
+if [ -d /Applications/Emacs.app ]
+then
+    alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
+else
+    alias e='emacsclient -q -a emacs'
+fi
 
 # Listing Files
 
 #   Using the GNU versions of =ls=, which can be installed by Homebrew
 #   or Ports, via: =port install coreutils=
 
-alias ls="gls --color"
-alias ll="gls --color -olhA"
+if type gls 2>&1 >/dev/null
+then
+    alias ls="gls --color"
+    alias ll="gls --color -olhA"
+else
+    alias ls="ls --color"
+    alias ll="ls --color -olhA"
+fi
 
 # f
 
