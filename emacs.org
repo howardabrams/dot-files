@@ -1021,6 +1021,7 @@ organize it and take notes on all the complexity.
  '((sh         . t)
    (js         . t)
    (emacs-lisp . t)
+   (perl       . t)
    (scala      . t)
    (clojure    . t)
    (python     . t)
@@ -1033,6 +1034,14 @@ organize it and take notes on all the complexity.
    block, but if not, call =org-babel-lob-ingest= to add all the
    languages from the code block into the list that Babel supports.
    Keystroke: =C-c C-v i=.
+
+*** Just Evaluate It
+
+    I'm normally fine with having my code automatically evaluated.
+
+#+BEGIN_SRC elisp
+  (setq org-confirm-babel-evaluate nil)
+#+END_SRC
 
 *** Font Coloring in Code Blocks
     
