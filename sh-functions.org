@@ -282,6 +282,18 @@ fi
   }
 #+END_SRC
 
+* Source Highlighting in Less
+
+  From [[http://funkworks.blogspot.com/2013/01/syntax-highlighting-in-less-on-osx.html][this blog entry]], comes details how to install the
+  =source-highlight= program on the Mac in order to see various code
+  highlighted in pretty colors.
+
+#+BEGIN_SRC sh
+LESSPIPE=`which src-hilite-lesspipe.sh`
+export LESSOPEN="| ${LESSPIPE} %s"
+export LESS='-R'
+#+END_SRC
+
 * Git Helpers
 ** Tab Completion
 
