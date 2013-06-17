@@ -463,20 +463,20 @@ organize it and take notes on all the complexity.
 
 ** Spell Checking
 
-
    I like spell checking with [[http://www.emacswiki.org/emacs/FlySpell][FlySpell]], which uses =ispell=.
 
    To build a dictionary hash (seems important now), do this:
 
 #+BEGIN_SRC sh :tangle no
-  buildhash ~/Dropbox/dictionary-personal.txt /opt/local/lib/english.aff ~/Dropbox/dictionary-personal.txt.hash
+  touch ~/.dictionary.txt
+  buildhash ~/.dictionary.txt /usr/local/lib/english.aff ~/.dictionary.txt.hash
 #+END_SRC
 
    Then, we can use it like:
 
 #+BEGIN_SRC elisp
   (setq ispell-personal-dictionary
-      (concat (getenv "HOME") "/Dropbox/dictionary-personal.txt"))
+      (concat (getenv "HOME") "/.dictionary.txt"))
 
   (dolist (hook '(text-mode-hook org-mode-hook))
     (add-hook hook (lambda () (flyspell-mode 1))))
@@ -1388,13 +1388,12 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
   ;;; (add-hook 'python-mode-hook 'jedi:ac-setup)
 #+END_SRC
 
-     Include this line only for people with non-eco non-global test
-     runners... like the Python Koans:
+   Include this line only for people with non-eco non-global test
+   runners... like the Python Koans:
 
 #+BEGIN_SRC elisp :tangle no
-(add-to-list 'nose-project-names "~/Google\ Drive/python_koans/python2")
+  (add-to-list 'nose-project-names "~/Google\ Drive/python_koans/python2")
 #+END_SRC
-
 
    Got iPython and EIN? Great!
 
