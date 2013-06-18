@@ -1375,11 +1375,34 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
 ** Python
 
-   Must install a few new packages:
+   Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].
+   The question is whether I use Rope or Jedi for auto-completion.
+   Perhaps I can have both?
 
-   - jedi (Not working from ELPA)
-   - flymake-python
-   - nose
+*** Jedi
+
+    Auto-completion system for Python. See [[http://tkf.github.io/emacs-jedi/][these instructions]].
+
+#+BEGIN_SRC elisp
+  (add-hook 'python-mode-hook 'jedi:setup)
+  (setq jedi:setup-keys t)                      ; optional
+  (setq jedi:complete-on-dot t)                 ; optional
+#+END_SRC
+
+*** Flymake for Python
+
+    Lint-style syntax checking for Python builds on the regular
+    Flymake package.
+
+#+BEGIN_SRC elisp
+  (require 'flymake-python-pyflakes)
+  (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+#+END_SRC
+
+*** Nose
+
+    Unit test and code coverage tool for Python now comes to Emacs
+    with [[http://ivory.idyll.org/articles/nose-intro.html][Python Nose]].
 
 #+BEGIN_SRC elisp
   (require 'nose)
@@ -1394,6 +1417,8 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 #+BEGIN_SRC elisp :tangle no
   (add-to-list 'nose-project-names "~/Google\ Drive/python_koans/python2")
 #+END_SRC
+
+*** IPython
 
    Got iPython and EIN? Great!
 
