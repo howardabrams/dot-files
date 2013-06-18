@@ -1395,13 +1395,19 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
   (add-to-list 'nose-project-names "~/Google\ Drive/python_koans/python2")
 #+END_SRC
 
-   Got iPython and EIN? Great!
+   Got iPython? Great! Remember, pre-install the following packages:
+   - websocket
+   - request
+   - ein
 
 #+BEGIN_SRC elisp
   (add-to-list 'load-path "~/.emacs.d/ipython-notebook/lisp/")
   (require 'ein)
   (setq ein:use-auto-complete t)
 #+END_SRC
+
+   After starting the IPython notebook server,
+   type =M-x ein:notebooklist-open= to open notebook list.
 
 * Tools
 ** Git
