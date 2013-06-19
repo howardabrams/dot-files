@@ -85,13 +85,21 @@ between my other scripts, but so far I haven't thought of anything.
   Why would you type 'cd dir' if you could just type 'dir'?
 
 #+BEGIN_SRC sh
-  setopt AUTO_CD
+  setopt AUTOCD
 #+END_SRC
 
-  This makes cd = pushd
+  Of course, it is much more useful with settings for =$CD PATH=.
+  However, it takes the full path of the directory and that isn't
+  that helpful, so we'll leave cdpath pretty much alone:
 
 #+BEGIN_SRC sh
-  setopt AUTO_PUSHD
+  cdpath=( . ~ )
+#+END_SRC
+
+  The following makes cd = pushd
+
+#+BEGIN_SRC sh
+  setopt AUTOPUSHD
 #+END_SRC
 
   When you type in things, being case insensitive sounds like a good
