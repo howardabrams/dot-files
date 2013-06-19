@@ -55,6 +55,14 @@ things here are for callable functions, aliases and the like.
 
 #+BEGIN_SRC sh
   zstyle ':completion:*' menu select=2
+  zstyle ":completion:*:descriptions" format "%B%d%b"
+#+END_SRC
+
+  Only do completion for Git, as we don't use any other version
+  control system anymore.
+
+#+BEGIN_SRC sh
+  zstyle ":vcs_info:*" enable git  # svn
 #+END_SRC
 
 * Modules
