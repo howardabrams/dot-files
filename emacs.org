@@ -434,8 +434,17 @@ organize it and take notes on all the complexity.
         "find . -type f '!' -wholename '*/.git/*' -print0 | xargs -0 -e grep -nHPi -e ")
   (setq rep-highlight-matches t)
 #+END_SRC
+
    I use the standard [[http://emacswiki.org/emacs/GrepMode#toc1][grep package]] in Emacs and wrap it so that I
-   can easily search through my notes.
+   can easily search through my notes. However, I'm using a later
+   version of Gnu Grep. On Mac OS X, run these two commands:
+
+#+BEGIN_EXAMPLE
+brew tap homebrew/dupes
+brew install homebrew/dupes/grep
+#+END_EXAMPLE
+
+   Now we can call the =ggrep= command:
 
 #+BEGIN_SRC elisp
   (defun ngrep (reg-exp)
@@ -445,7 +454,7 @@ organize it and take notes on all the complexity.
           (search-dir "~/Notes ~/Technical"))
       (message "Searching in %s" search-dir)
       ;; (grep-compute-defaults)
-      (grep-find (concat "grep -nHPir -e " reg-exp " --include '*.org' --include '*.md' " search-dir))))
+      (grep-find (concat "ggrep -nHPir -e " reg-exp " --include '*.org' --include '*.md' " search-dir))))
   
   (global-set-key (kbd "C-x C-n") 'ngrep)
   ;; (global-set-key (kbd "C-x C-r") 'rgrep)
@@ -1375,11 +1384,34 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
 ** Python
 
-   Must install a few new packages:
+   Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].
+   The question is whether I use Rope or Jedi for auto-completion.
+   Perhaps I can have both?
 
-   - jedi (Not working from ELPA)
-   - flymake-python
-   - nose
+*** Jedi
+
+    Auto-completion system for Python. See [[http://tkf.github.io/emacs-jedi/][these instructions]].
+
+#+BEGIN_SRC elisp
+  (add-hook 'python-mode-hook 'jedi:setup)
+  (setq jedi:setup-keys t)                      ; optional
+  (setq jedi:complete-on-dot t)                 ; optional
+#+END_SRC
+
+*** Flymake for Python
+
+    Lint-style syntax checking for Python builds on the regular
+    Flymake package.
+
+#+BEGIN_SRC elisp
+  (require 'flymake-python-pyflakes)
+  (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+#+END_SRC
+
+*** Nose
+
+    Unit test and code coverage tool for Python now comes to Emacs
+    with [[http://ivory.idyll.org/articles/nose-intro.html][Python Nose]].
 
 #+BEGIN_SRC elisp
   (require 'nose)
@@ -1395,7 +1427,9 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
   (add-to-list 'nose-project-names "~/Google\ Drive/python_koans/python2")
 #+END_SRC
 
-   Got iPython? Great! Remember, pre-install the following packages:
+*** IPython
+
+   Got iPython and EIN? Great! Remember, pre-install the following packages:
    - websocket
    - request
    - ein
