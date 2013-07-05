@@ -92,6 +92,7 @@ This can be done after this file has been tangled: =C-c C-v t=
                         scala-mode
                         smex
                         undo-tree
+                        web-mode
                         yasnippet
                         yasnippet-bundle
                         )
