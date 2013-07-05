@@ -25,8 +25,8 @@ autoload -U colors && colors
 autoload -Uz promptinit
 promptinit
 
-PROMPT='%{%F{blue}%}$ %{%F%}%'
-RPROMPT='%{%F{yellow}%}%~%{%F%}%'
+PROMPT='%{%F{blue}%}$ %{%f%}%'
+RPROMPT='%{%F{yellow}%}%~%{%f%}%'
 
 setopt histignorealldups sharehistory
 
