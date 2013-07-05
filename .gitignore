@@ -7,3 +7,4 @@ snippets/js-mode
 snippets/clojure-mode
 docs
 install
+bin/brb.py
