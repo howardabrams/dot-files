@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: babel-shell
+# key: babel-sh
+# --
+* Technical Section
+
+  This file originally came from an [[http://orgmode.org][org-mode]] file.
+  Create the script by tangling it with: =C-c C-v t=
+
+#+PROPERTY: tangle ${1:~/bin/`(file-name-nondirectory (file-name-sans-extension (buffer-file-name)))`}
+#+PROPERTY: comments org
+#+PROPERTY: shebang #!/usr/bin/env ${2:sh}
+#+DESCRIPTION: $0
