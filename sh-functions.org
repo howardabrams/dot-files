@@ -199,29 +199,52 @@ and global variables are stored in =.profile= and =.zsh_profile=.
   }
 #+END_SRC
 
-* Note Aliases
+* Note Files
 
-  My Note scripts allow me to create and search my text files.
+  Created [[file:bin/tagging.org::*Tag%20Listing][tag listing]] and other shell scripts to deal with embedded
+  =org-mode= tags. Each of these take a list of files, so these are
+  some functions that give the files in the /default locations/.
 
 #+BEGIN_SRC sh
-alias work="note -g workday -t workday"
-alias clojure="note -g clojure -t clojure"
-alias conf="note -g conf -t clojure"
-alias diary="note -g personal -t personal -l entry -r $HOME/bin/note-skel-diary.sh"
-export LATEST="$HOME/Dropbox/org/latest"
-
-alias notes-find="notes -a find"
-alias notes-view="notes -a view"
-alias notes-list="notes -a list"
-alias notes-show="notes -a find -f"
-alias notes-export="notes -a export"
-
-if [ -f "$HOME/.notes/notes-tag-helper" ]
-then
-    source "$HOME/.notes/notes-tag-helper"
-fi
+  export NOTEPATH="$HOME/Notes"
+  for FILE in $HOME/Technical $HOME/Personal
+  do
+    if [ -e "$FILE" ]; then
+      NOTEPATH="$FILE:$NOTEPATH"
+    fi
+  done
 #+END_SRC
 
+  Based on the =$NOTEPATH= variable, we can get all possible notes.
+
+#+BEGIN_SRC sh
+  function all-note-dirs {
+    echo $NOTEPATH | sed 's/:/ /g'
+  }
+
+  function all-notes {
+    # echo find `all-note-dirs` -name '*.org'
+    find -L `all-note-dirs` -name '*.org'
+  }
+#+END_SRC
+
+  And then we can grep for text in just our notes:
+
+#+BEGIN_SRC sh
+function ngrep {
+  egrep -r --max-count=1 --context=3 --include='*.org' --ignore-case \
+          --no-messages --word-regexp $* $(all-note-dirs)
+}
+#+END_SRC
+
+  Notable =grep= options include: 
+
+  * --max-count=1 to only display the first match from file
+  * --context=3 for extra lines around the match.
+  * --include=*.org To only display org-mode files
+  * --no-messages to get rid of errors
+  * --word-regexp to match whole words
+  * --ignore-case to ignore case distinctions
 * Beep
 
   I can put this at the end of a long running command and have it
