@@ -62,6 +62,11 @@ organize it and take notes on all the complexity.
 
 #+BEGIN_SRC elisp
   (add-to-list 'load-path "~/.emacs.d/")
+
+  ;; Make sure that PATH can references our "special" directories:
+  (setenv "PATH" (concat (getenv "HOME") "/bin"
+                         ":/usr/local/bin:/opt/local/bin:"
+                         (getenv "PATH")))
 #+END_SRC
 
 ** Package Manager
@@ -639,7 +644,7 @@ brew install homebrew/dupes/grep
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-10")
+  (setq current-sprint "2013-14")
   
   (defun current-sprint-file ()
     (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
@@ -691,9 +696,7 @@ brew install homebrew/dupes/grep
    Org-mode is installed in the global directory.
 
 #+BEGIN_SRC elisp
-  (add-to-list 'load-path "~/.emacs.d/org/lisp")
   (require 'org)
-  ; (require 'org-install)
   (require 'ob-tangle)
 #+END_SRC
 
@@ -1031,6 +1034,7 @@ brew install homebrew/dupes/grep
  'org-babel-load-languages
  '((sh         . t)
    (js         . t)
+   (coffee     . t)
    (emacs-lisp . t)
    (perl       . t)
    (scala      . t)
@@ -1274,11 +1278,6 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
    This is done with [[http://www.emacswiki.org/emacs/FlymakeJavaScript][FlyMake]].
 
 #+BEGIN_SRC elisp
-  ;; Make sure that PATH can reference the 'jshint' executable:
-  (setenv "PATH" (concat "/usr/local/bin:/opt/local/bin:" (getenv "PATH")))
-  (setq exec-path '( "/usr/local/bin" "/usr/bin" "/opt/local/bin" "/bin"
-                     (concat (getenv "HOME") "/bin")))
-
   (autoload 'flymake-jshint "flymake-jshint"
     "Error and linting support mode for JavaScript." t nil)
 
@@ -1387,6 +1386,11 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
    Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].
    The question is whether I use Rope or Jedi for auto-completion.
    Perhaps I can have both?
+
+#+BEGIN_SRC elisp
+  ;; Make sure that PATH can reference the Python executables:
+  (setenv "PATH" (concat "/Library/Frameworks/Python.framework/Versions/2.7/bin:" (getenv "PATH")))
+#+END_SRC
 
 *** Jedi
 
@@ -1590,6 +1594,15 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
   Order sometimes matter, and this section is specially applied at
   the end of the file.
+
+** exec-path
+
+   The exec-path should be based on the value built up of the standard
+   =PATH= environment variable, but it doesn't seem to, so we'll do that.
+
+#+BEGIN_SRC elisp
+  (setq exec-path (split-string (getenv "PATH") ":"))
+#+END_SRC
 
 ** Overriding Keybindings
 
