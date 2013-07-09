@@ -30,6 +30,21 @@ RPROMPT='%{%F{yellow}%}%~%{%f%}%'
 
 setopt histignorealldups sharehistory
 
+# Source Code Highlighting ... if the following has been installed:
+#    apt-get install -y source-highlight
+
+LESSPIPE="/usr/share/source-highlight/src-hilite-lesspipe.sh"
+if which src-hilite-lesspipe.sh 2>/dev/null
+then
+  LESSPIPE=`which src-hilite-lesspipe.sh`
+fi
+
+if [ -f $LESSPIPE ]
+then
+    export LESSOPEN="| $LESSPIPE %s"
+    export LESS='-R'
+fi
+
 # Completion
 
 autoload -Uz compinit
