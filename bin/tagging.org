@@ -109,7 +109,7 @@ if (/^#\+TAGS:\s+(.*)\s*$/) {     # Tags, as a string, in $1
   This version of the script is more verbose, but more attractive.
   Perhaps it should have a different name than =tgrep=.
 
-#+BEGIN_SRC sh :noweb yes :tangle ~/bin/tgrep :shebang #!/bin/sh
+#+BEGIN_SRC sh :noweb yes :tangle ~/bin/tfind :shebang #!/bin/sh
   <<getopts-tag>>
   
   EXP="$*"
@@ -142,7 +142,7 @@ if (/^#\+TAGS:\s+(.*)\s*$/) {     # Tags, as a string, in $1
   
   for FILE in $(grep -r --files-with-matches --include='*.org' "#+TAGS: .*$tags" $DIRS)
   do
-    grep --max-count=1 --context=3 --no-messages --word-regexp \
+    grep --max-count=1 --context=0 --no-messages --word-regexp \
          --ignore-case --with-filename "$*" $FILE
   done
 #+END_SRC
