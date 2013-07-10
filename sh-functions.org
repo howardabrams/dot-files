@@ -152,6 +152,18 @@ and global variables are stored in =.profile= and =.zsh_profile=.
   }
 #+END_SRC
 
+* Dash Documentation
+
+  I like Dash for pulling up quick technical information, and while I
+  normally use it from Emacs, the following alias is nice from the
+  terminal:
+
+#+BEGIN_SRC sh
+function dash {
+  "open dash://$@"
+}
+#+END_SRC
+
 * Window Title
 
   Can we title the terminal window? Note, don't call this function
