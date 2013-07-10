@@ -457,13 +457,31 @@ brew install homebrew/dupes/grep
 
 #+BEGIN_SRC elisp
   (defun ngrep (reg-exp)
-    "Searches the Notes and ORG directory tree for an expression."
+    "Searches the Notes and ORG directory tree for an expression.
+  The pipe symbol separates an org-mode tag from the phrase to search,
+  e.g. jquery|appendTo searches only the files with a 'jquery' tag."
     (interactive "sSearch note directories: ")
-    (let ((file-ext "*.org *.md *.txt *.markdown")
-          (search-dir "~/Notes ~/Technical"))
-      (message "Searching in %s" search-dir)
-      ;; (grep-compute-defaults)
-      (grep-find (concat "ggrep -nHPir -e " reg-exp " --include '*.org' --include '*.md' " search-dir))))
+    (let ((search-dir "~/Notes ~/Technical")
+          (options "--line-number --with-filename --perl-regexp --word-regexp --ignore-case")
+          (the-args (split-string reg-exp "\|")))
+      (if (> (length the-args) 1)
+          (let* ((the-tag (car the-args))
+                 (reg-exp (combine-and-quote-strings (cdr the-args)))
+                 (files   (split-string (shell-command-to-string
+                               (concat
+                                "grep -r --files-with-matches '#+TAGS: .*"
+                                the-tag "' " search-dir)) "\n")))
+            (progn
+              (message "Searching for %s with tag of %s" reg-exp the-tag)
+              (grep-find (concat "grep " options " " reg-exp " "
+                                 (combine-and-quote-strings files)))))
+        (let* ((file-exts '( "*.org" "*.md" "*.txt" "*.markdown"))
+               (file-types (mapconcat (function (lambda (x) (concat "--include '" x "'")))  file-exts " ")))
+          (progn
+            (message "Searching in %s" search-dir)
+            (grep-compute-defaults)
+            (grep-find (concat "grep -r -e " reg-exp " " options " "
+                               file-types " " search-dir)))))))
   
   (global-set-key (kbd "C-x C-n") 'ngrep)
   ;; (global-set-key (kbd "C-x C-r") 'rgrep)
