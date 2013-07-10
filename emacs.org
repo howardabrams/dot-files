@@ -601,6 +601,24 @@ brew install homebrew/dupes/grep
 #+BEGIN_SRC elisp
   (load-library "smart-scan")
 #+END_SRC
+*** Dired Options
+
+    The associated group name isn't too useful when viewing the dired output.
+
+#+BEGIN_SRC elisp
+  (setq dired-listing-switches "-alGh")
+#+END_SRC
+
+    This enhancement to dired hides the ugly details until you hit
+    '(' and shows the details with ')'. I also change the [...] to a
+    simple asterisk.
+
+#+BEGIN_SRC elisp
+  (require 'dired-details)
+  (dired-details-install)
+  (setq dired-details-hidden-string "* ")
+#+END_SRC
+
 * Org Mode
 
   The [[http://orgmode.org][Org Mode]] feature was a big reason in my recent re-kindling of my

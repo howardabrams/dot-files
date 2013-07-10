@@ -54,12 +54,13 @@ This can be done after this file has been tangled: =C-c C-v t=
 #+BEGIN_SRC elisp
   (defvar my-packages '(
                         ac-nrepl
-                        ;; auto-complete
+                        auto-complete
                         clojure-mode
                         clojurescript-mode
                         coffee-mode
                         color-theme
                         color-theme-sanityinc-tomorrow
+                        dired-details
                         elein
                         flymake
                         flymake-jshint
