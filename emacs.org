@@ -154,7 +154,7 @@ organize it and take notes on all the complexity.
    be [[http://blogs.adobe.com/typblography/2012/09/source-code-pro.html][downloaded]] and installed.
 
 #+BEGIN_SRC elisp
-  (set-default-font "Source Code Pro")
+  (set-frame-font "Source Code Pro")
   (set-face-attribute 'default nil :font "Source Code Pro" :height 140)
   (set-face-font 'default "Source Code Pro")
 #+END_SRC
