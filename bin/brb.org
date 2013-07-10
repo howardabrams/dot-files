@@ -97,7 +97,7 @@ msgs = messages.split("\n")
   This file originally came from an [[http://orgmode.org][org-mode]] file.
   Create the script by tangling it with: =C-c C-v t=
   
-#+PROPERTY: tangle yes
+#+PROPERTY: tangle ~/bin/brb
 #+PROPERTY: results none
 #+PROPERTY: comments org
 #+PROPERTY: shebang #!/usr/bin/env python
