@@ -404,12 +404,11 @@ organize it and take notes on all the complexity.
    snippets for the current mode.
 
 #+BEGIN_SRC elisp
-  (setq yas/root-directory
-        '("~/.emacs.d/snippets"            ;; personal snippets
-          "~/.emacs.d/clojure-snippets"))
-
   (yas/global-mode 1)
   (yas/initialize)
+
+  (add-to-list 'yas/root-directory "~/.emacs.d/snippets")
+  (add-to-list 'yas/root-directory "~/.emacs.d/clojure-snippets")
 
   ;; The following command can be used if we change anything
   (yas/reload-all)
@@ -1387,8 +1386,9 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
    The question is whether I use Rope or Jedi for auto-completion.
    Perhaps I can have both?
 
+   Make sure that PATH can reference the Python executables:
+
 #+BEGIN_SRC elisp
-  ;; Make sure that PATH can reference the Python executables:
   (setenv "PATH" (concat "/Library/Frameworks/Python.framework/Versions/2.7/bin:" (getenv "PATH")))
 #+END_SRC
 

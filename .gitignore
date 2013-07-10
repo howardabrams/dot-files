@@ -8,3 +8,9 @@ snippets/clojure-mode
 docs
 install
 bin/brb.py
+/snippets/css-mode
+/snippets/emacs-lisp-mode
+/snippets/html-mode
+/snippets/markdown-mode
+/snippets/python-mode
+/snippets/snippet-mode
