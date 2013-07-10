@@ -394,7 +394,6 @@ organize it and take notes on all the complexity.
 
 #+BEGIN_SRC elisp
   (require 'yasnippet)
-  (require 'yasnippet-bundle)
 #+END_SRC
 
    We load the standard libraries, but load our *special* library
