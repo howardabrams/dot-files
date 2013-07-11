@@ -29,6 +29,7 @@ This can be done after this file has been tangled: =C-c C-v t=
    The packages I like come from many sources, and this lists these
    repository locations:
 
+#+NAME: repositories
 #+BEGIN_SRC elisp
   (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
                            ("gnu"       . "http://elpa.gnu.org/packages/")
@@ -40,6 +41,7 @@ This can be done after this file has been tangled: =C-c C-v t=
    Before we can load new packages, we need to get the list of
    available packages:
 
+#+NAME: initialize
 #+BEGIN_SRC elisp
   (package-initialize)
   
@@ -76,7 +78,6 @@ This can be done after this file has been tangled: =C-c C-v t=
                         json-mode
                         mac-key-mode
                         magit
-                        magit-simple-keys
                         markdown-mode
                         mustache-mode
                         nlinum
@@ -88,6 +89,13 @@ This can be done after this file has been tangled: =C-c C-v t=
                         paredit
                         plantuml-mode
                         projectile          ;; For dealing with projects
+
+                        ;; Python packages
+                        flymake-python-pyflakes
+                        nose
+                        jedi
+                        EPA
+
                         rainbow-delimiters  ;; Mode for alternating paren colors
                         ;; redo+            ;; If not installed, edit mac-key-mode
                         scala-mode
@@ -95,7 +103,6 @@ This can be done after this file has been tangled: =C-c C-v t=
                         undo-tree
                         web-mode
                         yasnippet
-                        yasnippet-bundle
                         )
     "A list of packages to ensure are installed at launch.")
 #+END_SRC
@@ -126,7 +133,7 @@ This can be done after this file has been tangled: =C-c C-v t=
       (ignore-errors
         (package-install package))))
 #+END_SRC
-
+   
 * External Dependencies
 
 *** PlantUML
@@ -172,7 +179,7 @@ This can be done after this file has been tangled: =C-c C-v t=
   ln -s ~/Other/ensime/dist_2.9.2/elisp ensime
 #+END_EXAMPLE
 
-*** JavaScript Lint
+*** JavaScript
 
     Assuming that you have [[http://nodejs.org][node.js]] installed, you should install
     [[http://www.jshint.com][jshint]] as a global command:
@@ -182,6 +189,21 @@ This can be done after this file has been tangled: =C-c C-v t=
 #+END_EXAMPLE
 
     Now you can customize the [[*JavaScript][JavaScript]] section.
+
+*** Python
+
+    The following should be installed globally (as opposed to within
+    a virtual environment):
+
+    - Real Python (from the [[http://python.org/download/][official website]])
+    - Use that to build =easy_install=:
+      wget https://bitbucket.org/pypa/setuptools/raw/0.8/ez_setup.py -O - | sudo python
+    - Use that =easy_install= to get =pip=:
+      sudo /Library/Frameworks/Python.framework/Versions/2.7/bin/easy_install pip
+    - Install the following modules:
+      - sudo pip install jedi
+      - sudo pip install epc
+      - sudo pip install pyflakes
 
 *** ISpell
 
@@ -205,6 +227,16 @@ This can be done after this file has been tangled: =C-c C-v t=
   brew install gnutls
 #+END_SRC
 
+* Later Updates
+
+  Evaluate the following code to install new packages quickly:
+
+#+BEGIN_SRC elisp :noweb yes :tangle no
+<<repositories>>
+<<initialize>>
+(package-refresh-contents)
+(package-list-packages)
+#+END_SRC
 * Technical Artifacts
 
   Before you can build this on a new system, make sure that you put

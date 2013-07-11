@@ -333,8 +333,10 @@ organize it and take notes on all the complexity.
   (global-undo-tree-mode 1)
   (defalias 'redo 'undo-tree-redo)
 
-  (define-key mac-key-mode-map [(alt z)] 'undo-tree-undo)
-  (define-key mac-key-mode-map [(alt S-z)] 'undo-tree-redo)
+  (when (eq system-type 'darwin)
+    (unless (boundp 'aquamacs-version)
+      (define-key mac-key-mode-map [(alt z)] 'undo-tree-undo)
+      (define-key mac-key-mode-map [(alt S-z)] 'undo-tree-redo)))
 
   (global-set-key (kbd "C-z") 'undo) ; Zap to character isn't helpful
   (global-set-key (kbd "C-S-z") 'redo)
@@ -1020,7 +1022,7 @@ brew install homebrew/dupes/grep
     Using the [[http://orgmode.org/worg/org-contrib/org-export-generic.php][org-export-generic]] feature, we can export to Markdown
     using =C-c C-e g M=:
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle no
   (require 'org-export-generic)
   
   (org-set-generic-type
