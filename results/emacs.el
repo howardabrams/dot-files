@@ -14,6 +14,11 @@
 
 (add-to-list 'load-path "~/.emacs.d/")
 
+;; Make sure that PATH can references our "special" directories:
+(setenv "PATH" (concat (getenv "HOME") "/bin"
+                       ":/usr/local/bin:/opt/local/bin:"
+                       (getenv "PATH")))
+
 ;; Package Manager
 
 ;;    Emacs has become like every other operating system, and now has a
@@ -87,7 +92,7 @@ Does not support subfeatures."
 ;; Specify the default font as =Source Code Pro=, which should already
 ;;    be [[http://blogs.adobe.com/typblography/2012/09/source-code-pro.html][downloaded]] and installed.
 
-(set-default-font "Source Code Pro")
+(set-frame-font "Source Code Pro")
 (set-face-attribute 'default nil :font "Source Code Pro" :height 140)
 (set-face-font 'default "Source Code Pro")
 
@@ -199,7 +204,13 @@ Does not support subfeatures."
     (define-key mac-key-mode-map [(alt l)] 'goto-line)
     (define-key mac-key-mode-map [(alt w)] 'delete-single-window)
     (define-key mac-key-mode-map [(alt m)] 'toggle-meta-key)
-    (define-key mac-key-mode-map [(alt k)] 'nlinum-mode)))
+    (define-key mac-key-mode-map [(alt k)] 'nlinum-mode))
+
+  ;; Since the default ls for the Mac isn't so good, I always have the
+  ;; GNU ls version available in /usr/local/bin/gls
+  (require 'ls-lisp)
+  (setq ls-lisp-use-insert-directory-program t)
+  (setq insert-directory-program "/usr/local/bin/gls"))
 
 ;; I hate the default implementation of Command-M. Now,
 ;;    pressing Command-M will toggle whether the Option key is a
@@ -283,7 +294,6 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;    can be brought into a file, based on the language.
 
 (require 'yasnippet)
-(require 'yasnippet-bundle)
 
 ;; We load the standard libraries, but load our *special* library
 ;;    first. Note: I also grab this collection of [[https://github.com/swannodette/clojure-snippets][Clojure Snippets]].
@@ -291,12 +301,11 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;    =clojure-mode= and =org-mode=. This tells it where to find
 ;;    snippets for the current mode.
 
-(setq yas/root-directory
-      '("~/.emacs.d/snippets"            ;; personal snippets
-        "~/.emacs.d/clojure-snippets"))
-
 (yas/global-mode 1)
 (yas/initialize)
+
+(add-to-list 'yas/root-directory "~/.emacs.d/snippets")
+(add-to-list 'yas/root-directory "~/.emacs.d/clojure-snippets")
 
 ;; The following command can be used if we change anything
 (yas/reload-all)
@@ -320,16 +329,42 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 (setq rep-highlight-matches t)
 
 ;; I use the standard [[http://emacswiki.org/emacs/GrepMode#toc1][grep package]] in Emacs and wrap it so that I
-;;    can easily search through my notes.
+;;    can easily search through my notes. However, I'm using a later
+;;    version of Gnu Grep. On Mac OS X, run these two commands:
+
+;; #+BEGIN_EXAMPLE
+;; brew tap homebrew/dupes
+;; brew install homebrew/dupes/grep
+;; #+END_EXAMPLE
+
+;;    Now we can call the =ggrep= command:
 
 (defun ngrep (reg-exp)
-  "Searches the Notes and ORG directory tree for an expression."
+  "Searches the Notes and ORG directory tree for an expression.
+The pipe symbol separates an org-mode tag from the phrase to search,
+e.g. jquery|appendTo searches only the files with a 'jquery' tag."
   (interactive "sSearch note directories: ")
-  (let ((file-ext "*.org *.md *.txt *.markdown")
-        (search-dir "~/Notes ~/Technical"))
-    (message "Searching in %s" search-dir)
-    ;; (grep-compute-defaults)
-    (grep-find (concat "grep -nHPir -e " reg-exp " --include '*.org' --include '*.md' " search-dir))))
+  (let ((search-dir "~/Notes ~/Technical")
+        (options "--line-number --with-filename --perl-regexp --word-regexp --ignore-case")
+        (the-args (split-string reg-exp "\|")))
+    (if (> (length the-args) 1)
+        (let* ((the-tag (car the-args))
+               (reg-exp (combine-and-quote-strings (cdr the-args)))
+               (files   (split-string (shell-command-to-string
+                             (concat
+                              "grep -r --files-with-matches '#+TAGS: .*"
+                              the-tag "' " search-dir)) "\n")))
+          (progn
+            (message "Searching for %s with tag of %s" reg-exp the-tag)
+            (grep-find (concat "grep " options " " reg-exp " "
+                               (combine-and-quote-strings files)))))
+      (let* ((file-exts '( "*.org" "*.md" "*.txt" "*.markdown"))
+             (file-types (mapconcat (function (lambda (x) (concat "--include '" x "'")))  file-exts " ")))
+        (progn
+          (message "Searching in %s" search-dir)
+          (grep-compute-defaults)
+          (grep-find (concat "grep -r -e " reg-exp " " options " "
+                             file-types " " search-dir)))))))
 
 (global-set-key (kbd "C-x C-n") 'ngrep)
 ;; (global-set-key (kbd "C-x C-r") 'rgrep)
@@ -345,7 +380,7 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;; Then, we can use it like:
 
 (setq ispell-personal-dictionary
-    (concat (getenv "HOME") "/Dropbox/dictionary-personal.txt"))
+    (concat (getenv "HOME") "/.dictionary.txt"))
 
 (dolist (hook '(text-mode-hook org-mode-hook))
   (add-hook hook (lambda () (flyspell-mode 1))))
@@ -412,6 +447,20 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 
 (load-library "smart-scan")
 
+;; Dired Options
+
+;;     The associated group name isn't too useful when viewing the dired output.
+
+(setq dired-listing-switches "-alGh")
+
+;; This enhancement to dired hides the ugly details until you hit
+;;     '(' and shows the details with ')'. I also change the [...] to a
+;;     simple asterisk.
+
+(require 'dired-details)
+(dired-details-install)
+(setq dired-details-hidden-string "* ")
+
 ;; Initial Settings
 
 ;;    Initialization of Org Mode by hooking it into YASnippets, which
@@ -447,7 +496,7 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;     At the beginning of each sprint, we need to set this to the new
 ;;     sprint file.
 
-(setq current-sprint "2013-10")
+(setq current-sprint "2013-14")
 
 (defun current-sprint-file ()
   (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
@@ -493,9 +542,7 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 
 ;;    Org-mode is installed in the global directory.
 
-(add-to-list 'load-path "~/.emacs.d/org/lisp")
 (require 'org)
-; (require 'org-install)
 (require 'ob-tangle)
 
 ;; Global Key Bindings
@@ -525,10 +572,12 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
             (insert endtxt)
           (insert txt)))
     (if (looking-at "[A-z]")
-        (progn
-          (backward-word)
-          (mark-word)
-          (org-text-wrapper txt))
+        (save-excursion
+          (if (not (looking-back "[     ]"))
+              (backward-word))
+          (progn
+            (mark-word)
+            (org-text-wrapper txt endtxt)))
       (progn
         (insert txt)
         (let ((spot (point)))
@@ -729,52 +778,6 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 
 (global-set-key (kbd "<f9> p") 'org-export-as-s5)
 
-;; Publish as Markdown
-
-;;     Using the [[http://orgmode.org/worg/org-contrib/org-export-generic.php][org-export-generic]] feature, we can export to Markdown
-;;     using =C-c C-e g M=:
-
-(require 'org-export-generic)
-
-(org-set-generic-type
- "Markdown" 
- '(:file-suffix ".markdown"
-   :key-binding ?M
-   :title-format "%s\n"
-   :title-suffix ?=
-   :body-header-section-numbers t
-   :body-header-section-number-format "%s) "
-   :body-section-header-prefix ("\n## " "\n### " "\n#### " "\n##### " "\n###### ")
-   :body-section-header-format  "%s"
-   :body-section-header-suffix  "\n\n"
-   :todo-keywords-export        t
-   :body-line-format            "  %s\n"
-   :body-tags-export            t
-   :body-tags-prefix            " <tags>"
-   :body-tags-suffix            "</tags>\n"
-   ;;:body-section-prefix       "<secprefix>\n"
-   ;;:body-section-suffix       "</secsuffix>\n"
-   :body-line-export-preformated        t
-   :body-line-fixed-prefix      "<pre>\n"
-   :body-line-fixed-suffix      "\n</pre>\n"
-   :body-line-fixed-format      "%s\n"
-   :body-list-prefix            "\n"
-   :body-list-suffix            "\n"
-   :body-list-format            "  * %s\n"
-   ;;:body-number-list-prefix   "<ol>\n"
-   ;;:body-number-list-suffix   "</ol>\n"
-   ;;:body-number-list-format   "<li>%s</li>\n"
-   ;;:body-number-list-leave-number     t
-   :body-list-checkbox-todo     "[_] "
-   :body-list-checkbox-todo-end ""
-   :body-list-checkbox-done     "[X] "
-   :body-list-checkbox-done-end ""
-   :body-line-format            "%s"
-   :body-line-wrap               79
-   :body-text-prefix            ""
-   :body-text-suffix            ""
-   ))
-
 ;; The Tower of Babel
 
 ;;    The trick to literate programming is in the [[http://orgmode.org/worg/org-contrib/babel/intro.html][Babel project]], which
@@ -785,7 +788,9 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
  'org-babel-load-languages
  '((sh         . t)
    (js         . t)
+   (coffee     . t)
    (emacs-lisp . t)
+   (perl       . t)
    (scala      . t)
    (clojure    . t)
    (python     . t)
@@ -962,11 +967,6 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;    have it give you red sections based on [[http://www.jshint.com/][jshint]].
 ;;    This is done with [[http://www.emacswiki.org/emacs/FlymakeJavaScript][FlyMake]].
 
-;; Make sure that PATH can reference the 'jshint' executable:
-(setenv "PATH" (concat "/usr/local/bin:/opt/local/bin:" (getenv "PATH")))
-(setq exec-path '( "/usr/local/bin" "/usr/bin" "/opt/local/bin" "/bin"
-                   (concat (getenv "HOME") "/bin")))
-
 (autoload 'flymake-jshint "flymake-jshint"
   "Error and linting support mode for JavaScript." t nil)
 
@@ -1025,18 +1025,46 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 
 ;; Python
 
-;;    Must install a few new packages:
+;;    Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].
+;;    The question is whether I use Rope or Jedi for auto-completion.
+;;    Perhaps I can have both?
 
-;;    - jedi (Not working from ELPA)
-;;    - flymake-python
-;;    - nose
+;;    Make sure that PATH can reference the Python executables:
+
+(setenv "PATH" (concat "/Library/Frameworks/Python.framework/Versions/2.7/bin:" (getenv "PATH")))
+
+;; Jedi
+
+;;     Auto-completion system for Python. See [[http://tkf.github.io/emacs-jedi/][these instructions]].
+
+(add-hook 'python-mode-hook 'jedi:setup)
+(setq jedi:setup-keys t)                      ; optional
+(setq jedi:complete-on-dot t)                 ; optional
+
+;; Flymake for Python
+
+;;     Lint-style syntax checking for Python builds on the regular
+;;     Flymake package.
+
+(require 'flymake-python-pyflakes)
+(add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+
+;; Nose
+
+;;     Unit test and code coverage tool for Python now comes to Emacs
+;;     with [[http://ivory.idyll.org/articles/nose-intro.html][Python Nose]].
 
 (require 'nose)
 
 (add-hook 'python-mode-hook 'auto-complete-mode)
 ;;; (add-hook 'python-mode-hook 'jedi:ac-setup)
 
-;; Got iPython and EIN? Great!
+;; IPython
+
+;;    Got iPython and EIN? Great! Remember, pre-install the following packages:
+;;    - websocket
+;;    - request
+;;    - ein
 
 (add-to-list 'load-path "~/.emacs.d/ipython-notebook/lisp/")
 (require 'ein)
@@ -1149,6 +1177,13 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 
 (if (file-exists-p "~/.emacs.d/gnus-config.el")
   (load-library "gnus-config"))
+
+;; exec-path
+
+;;    The exec-path should be based on the value built up of the standard
+;;    =PATH= environment variable, but it doesn't seem to, so we'll do that.
+
+(setq exec-path (split-string (getenv "PATH") ":"))
 
 ;; Overriding Keybindings
 

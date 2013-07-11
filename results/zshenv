@@ -59,11 +59,17 @@ PATH=$PATH:$OLDPATH
 #   See [[http://linux.die.net/man/1/zshoptions][this page]] for all options.
 #   Why would you type 'cd dir' if you could just type 'dir'?
 
-setopt AUTO_CD
+setopt AUTOCD
 
-# This makes cd = pushd
+# Of course, it is much more useful with settings for =$CD PATH=.
+#   However, it takes the full path of the directory and that isn't
+#   that helpful, so we'll leave cdpath pretty much alone:
 
-setopt AUTO_PUSHD
+cdpath=( . ~ )
+
+# The following makes cd = pushd
+
+setopt AUTOPUSHD
 
 # When you type in things, being case insensitive sounds like a good
 #   idea:

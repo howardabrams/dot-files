@@ -98,6 +98,16 @@ function ef {
     e $(f $*)
 }
 
+# Dash Documentation
+
+#   I like Dash for pulling up quick technical information, and while I
+#   normally use it from Emacs, the following alias is nice from the
+#   terminal:
+
+function dash {
+  "open dash://$@"
+}
+
 # Window Title
 
 #   Can we title the terminal window? Note, don't call this function
@@ -141,26 +151,37 @@ function xtab() {
 EOF
 }
 
-# Note Aliases
+# Note Files
 
-#   My Note scripts allow me to create and search my text files.
+#   Created [[file:bin/tagging.org::*Tag%20Listing][tag listing]] and other shell scripts to deal with embedded
+#   =org-mode= tags. Each of these take a list of files, so these are
+#   some functions that give the files in the /default locations/.
 
-alias work="note -g workday -t workday"
-alias clojure="note -g clojure -t clojure"
-alias conf="note -g conf -t clojure"
-alias diary="note -g personal -t personal -l entry -r $HOME/bin/note-skel-diary.sh"
-export LATEST="$HOME/Dropbox/org/latest"
+export NOTEPATH="$HOME/Notes"
+for FILE in $HOME/Technical $HOME/Personal
+do
+  if [ -e "$FILE" ]; then
+    NOTEPATH="$FILE:$NOTEPATH"
+  fi
+done
 
-alias notes-find="notes -a find"
-alias notes-view="notes -a view"
-alias notes-list="notes -a list"
-alias notes-show="notes -a find -f"
-alias notes-export="notes -a export"
+# Based on the =$NOTEPATH= variable, we can get all possible notes.
 
-if [ -f "$HOME/.notes/notes-tag-helper" ]
-then
-    source "$HOME/.notes/notes-tag-helper"
-fi
+function all-note-dirs {
+  echo $NOTEPATH | sed 's/:/ /g'
+}
+
+function all-notes {
+  # echo find `all-note-dirs` -name '*.org'
+  find -L `all-note-dirs` -name '*.org'
+}
+
+# And then we can grep for text in just our notes:
+
+function ngrep {
+  egrep -r --max-count=1 --context=3 --include='*.org' --ignore-case \
+          --no-messages --word-regexp $* $(all-note-dirs)
+}
 
 # Beep
 
@@ -218,6 +239,16 @@ function clip {
   perl -ne "\$s=1 if (/$FIRST/); \$s=0 if (/$ENDING/); print \"$PADDING\$_\" if (\$s==1);"
 }
 
+# Source Highlighting in Less
+
+#   From [[http://funkworks.blogspot.com/2013/01/syntax-highlighting-in-less-on-osx.html][this blog entry]], comes details how to install the
+#   =source-highlight= program on the Mac in order to see various code
+#   highlighted in pretty colors.
+
+LESSPIPE=`which src-hilite-lesspipe.sh`
+export LESSOPEN="| ${LESSPIPE} %s"
+export LESS='-R'
+
 # Whitespace Removers
 
 #    These alias remove trailing whitespace and lines containing
@@ -246,6 +277,8 @@ function pull {
 
 alias gst='git status'
 alias gstatus='git status'
+alias gd='git diff'
+alias gdc='git diff --cached'
 alias gadd='git add --update'  # Use full 'git add' if haven't already added it
 alias gamend='git commit --amend --no-edit'
 alias gstash='git stash'

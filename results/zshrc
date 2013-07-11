@@ -37,6 +37,12 @@ compinit
 # Show completion menu when number of options is at least 2
 
 zstyle ':completion:*' menu select=2
+zstyle ":completion:*:descriptions" format "%B%d%b"
+
+# Only do completion for Git, as we don't use any other version
+#   control system anymore.
+
+zstyle ":vcs_info:*" enable git  # svn
 
 # Modules
 
