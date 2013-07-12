@@ -34,7 +34,7 @@ setopt histignorealldups sharehistory
 #    apt-get install -y source-highlight
 
 LESSPIPE="/usr/share/source-highlight/src-hilite-lesspipe.sh"
-if which src-hilite-lesspipe.sh 2>/dev/null
+if which src-hilite-lesspipe.sh 2>&1 >/dev/null
 then
   LESSPIPE=`which src-hilite-lesspipe.sh`
 fi
