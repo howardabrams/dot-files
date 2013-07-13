@@ -73,9 +73,17 @@ This can be done after this file has been tangled: =C-c C-v t=
                         graphviz-dot-mode
                         handlebars-mode
                         htmlize
+
+                        ;; JavaScript
                         js-comint
                         js2-mode
+                        ac-js2
+                        js2-refactor
+                        dash
+                        multiple-cursors
+                        expand-region
                         json-mode
+
                         mac-key-mode
                         magit
                         markdown-mode

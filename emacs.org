@@ -1284,6 +1284,7 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
 #+BEGIN_SRC elisp
   (setq js-basic-indent 2)
+  (setq js2-basic-indent 2)
 
   (setq js2-basic-offset 2)
   (setq js2-cleanup-whitespace t)
@@ -1328,6 +1329,37 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 #+END_SRC
 
    Now load and edit a JavaScript file, like [[file:~/jshint-code-test.js][jshint-code-test.js]].
+
+*** Refactoring JavaScript
+
+    The [[https://github.com/magnars/js2-refactor.el][js2-refactor]] mode should start with `C-c C-m` and then a two-letter mnemonic shortcut.
+
+       * =ef= is =extract-function=: Extracts the marked expressions out into a new named function.
+       * =em= is =extract-method=: Extracts the marked expressions out into a new named method in an object literal.
+       * =ip= is =introduce-parameter=: Changes the marked expression to a parameter in a local function.
+       * =lp= is =localize-parameter=: Changes a parameter to a local var in a local function.
+       * =eo= is =expand-object=: Converts a one line object literal to multiline.
+       * =co= is =contract-object=: Converts a multiline object literal to one line.
+       * =eu= is =expand-function=: Converts a one line function to multiline (expecting semicolons as statement delimiters).
+       * =cu= is =contract-function=: Converts a multiline function to one line (expecting semicolons as statement delimiters).
+       * =ea= is =expand-array=: Converts a one line array to multiline.
+       * =ca= is =contract-array=: Converts a multiline array to one line.
+       * =wi= is =wrap-buffer-in-iife=: Wraps the entire buffer in an immediately invoked function expression
+       * =ig= is =inject-global-in-iife=: Creates a shortcut for a marked global by injecting it in the wrapping immediately invoked function expression
+       * =ag= is =add-to-globals-annotation=: Creates a =/*global */= annotation if it is missing, and adds the var at point to it.
+       * =ev= is =extract-var=: Takes a marked expression and replaces it with a var.
+       * =iv= is =inline-var=: Replaces all instances of a variable with its initial value.
+       * =rv= is =rename-var=: Renames the variable on point and all occurrences in its lexical scope.
+       * =vt= is =var-to-this=: Changes local =var a= to be =this.a= instead.
+       * =ao= is =arguments-to-object=: Replaces arguments to a function call with an object literal of named arguments. Requires yasnippets.
+       * =3i= is =ternary-to-if=: Converts ternary operator to if-statement.
+       * =sv= is =split-var-declaration=: Splits a =var= with multiple vars declared, into several =var= statements.
+       * =uw= is =unwrap=: Replaces the parent statement with the selected region.
+      
+#+BEGIN_SRC elisp
+  (require 'js2-refactor)
+  (js2r-add-keybindings-with-prefix "C-c C-m")
+#+END_SRC
 
 *** JavaScript REPL
 
@@ -1398,17 +1430,19 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 #+BEGIN_SRC elisp
   (add-hook 'js2-mode-hook
           (lambda () 
-            (local-set-key (kbd "C-x C-e") #'js-send-buffer-and-go)
-            (local-set-key (kbd "C-x r")   #'run-js)))
+            (local-set-key (kbd "C-c C-c") #'js-send-buffer)
+            (local-set-key (kbd "C-c C-r") #'js-send-region)
+            (local-set-key (kbd "C-c C-s") #'js-send-last-sexp)
+            (local-set-key (kbd "C-c C-z") #'run-js)))
 #+END_SRC
 
     Wanna try it all out?
 
-#+BEGIN_SRC js2 :tangle no
+#+BEGIN_SRC js :tangle no
   function factorial(n) { 
     return n == 0 ? 1 : n * factorial(n - 1);
   }
-  factorial(16);
+  return factorial(16);
 #+END_SRC
 
 ** Java
