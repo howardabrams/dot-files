@@ -247,8 +247,10 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 (global-undo-tree-mode 1)
 (defalias 'redo 'undo-tree-redo)
 
-(define-key mac-key-mode-map [(alt z)] 'undo-tree-undo)
-(define-key mac-key-mode-map [(alt S-z)] 'undo-tree-redo)
+(when (eq system-type 'darwin)
+  (unless (boundp 'aquamacs-version)
+    (define-key mac-key-mode-map [(alt z)] 'undo-tree-undo)
+    (define-key mac-key-mode-map [(alt S-z)] 'undo-tree-redo)))
 
 (global-set-key (kbd "C-z") 'undo) ; Zap to character isn't helpful
 (global-set-key (kbd "C-S-z") 'redo)
@@ -937,6 +939,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 ;;    indentation setting. Go below?
 
 (setq js-basic-indent 2)
+(setq js2-basic-indent 2)
 
 (setq js2-basic-offset 2)
 (setq js2-cleanup-whitespace t)
@@ -1011,8 +1014,10 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 (add-hook 'js2-mode-hook
         (lambda () 
-          (local-set-key (kbd "C-x C-e") #'js-send-buffer-and-go)
-          (local-set-key (kbd "C-x r")   #'run-js)))
+          (local-set-key (kbd "C-c C-c") #'js-send-buffer)
+          (local-set-key (kbd "C-c C-r") #'js-send-region)
+          (local-set-key (kbd "C-c C-s") #'js-send-last-sexp)
+          (local-set-key (kbd "C-c C-z") #'run-js)))
 
 ;; JSP
 
