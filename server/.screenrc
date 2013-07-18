@@ -1,0 +1,17 @@
+escape `e
+bind s
+
+bind  ! select 11
+bind  @ select 12
+bind \# select 13
+bind  $ select 14
+bind  % select 15
+bind \^ select 16
+bind  & select 17
+bind  * select 18
+bind  ( select 19
+bind  ) select 10
+
+hardstatus alwayslastline "%w"
+
+caption always "%{=b dw}:%{-b dw}:%{=b dk}[ %{-b dw}%{-b dg}$USER%{-b dw}@%{-b dg}%H %{=b dk}] [ %= %?%{-b dg}%-Lw%?%{+b dk}(%{+b dw}%n:%t%{+b dk})%?(%u)%?%{-b dw}%?%{-b dg}%+Lw%? %{=b dk}]%{-b dw}:%{+b dw}:"

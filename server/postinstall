@@ -1,12 +1,14 @@
 #!/bin/sh
 
+sudo apt-get update
 sudo apt-get install -y zsh
 sudo apt-get install -y tmux
-sudo apt-get install -y emacs24-nox
 sudo apt-get install -y source-highlight
 
-emacs -Q --batch \
-    --eval "(progn
+if sudo apt-get install -y emacs24-nox
+then
+    emacs -Q --batch \
+        --eval "(progn
      (require 'package)
      (setq package-archives '((\"org\"      . \"http://orgmode.org/elpa/\")
                              (\"gnu\"       . \"http://elpa.gnu.org/packages/\")
@@ -18,3 +20,8 @@ emacs -Q --batch \
       (package-refresh-contents))
 
     (package-install 'emamux))"
+else
+    # Can't get v24? :-(   I'll settle for v23...
+    sudo apt-get install -y emacs23-nox
+fi
+
