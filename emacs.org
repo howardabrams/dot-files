@@ -402,6 +402,7 @@ organize it and take notes on all the complexity.
 
 #+BEGIN_SRC elisp
   (require 'yasnippet)
+  (yas-global-mode 1)
 #+END_SRC
 
    We load the standard libraries, but load our *special* library
@@ -411,14 +412,23 @@ organize it and take notes on all the complexity.
    snippets for the current mode.
 
 #+BEGIN_SRC elisp
-  (yas/global-mode 1)
-  (yas/initialize)
+  (add-to-list 'yas-snippet-dirs "~/.emacs.d/clojure-snippets")
+  (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
+#+END_SRC
 
-  (add-to-list 'yas/root-directory "~/.emacs.d/snippets")
-  (add-to-list 'yas/root-directory "~/.emacs.d/clojure-snippets")
+   We have many different JavaScript modes to use, and from Yas'
+   point of view, they are all JavaScript, so this bit of magic
+   associates the 'javascript' snippets with each mode.
 
-  ;; The following command can be used if we change anything
-  (yas/reload-all)
+#+BEGIN_SRC elisp
+  (add-hook 'js2-mode-hook '(lambda ()
+                              (make-local-variable 'yas-extra-modes)
+                              (add-to-list 'yas-extra-modes 'javascript-mode)
+                              (yas-minor-mode 1)))
+  (add-hook 'js-mode-hook '(lambda ()
+                             (make-local-variable 'yas-extra-modes)
+                             (add-to-list 'yas-extra-modes 'javascript-mode)
+                             (yas-minor-mode 1)))
 #+END_SRC
 
 ** Dash
@@ -1467,6 +1477,14 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
 #+BEGIN_SRC elisp
   (setenv "PATH" (concat "/Library/Frameworks/Python.framework/Versions/2.7/bin:" (getenv "PATH")))
+#+END_SRC
+
+*** Debugging
+
+    Need the virtualenv world of goodness:
+
+#+BEGIN_SRC elisp
+(require 'virtualenv)
 #+END_SRC
 
 *** Jedi
