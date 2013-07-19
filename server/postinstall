@@ -1,11 +1,26 @@
 #!/bin/sh
 
-sudo apt-get update
-sudo apt-get install -y zsh
-sudo apt-get install -y tmux
-sudo apt-get install -y source-highlight
+# Make the assumption that we are almost always running on Ubuntu, but
+# if there is a RedHat file, then assume we should use yum instead...
 
-if sudo apt-get install -y emacs24-nox
+APTGET=apt-get
+if [ -f /etc/redhat-release ]
+then
+    APTGET=yum
+else
+    sudo apt-get update
+fi
+
+# I love meself my Zshell...
+sudo $APTGET install -y zsh
+sudo chsh -s `which zsh` $USER
+
+# Install the stuff to make my life easier...
+
+sudo $APTGET install -y tmux
+sudo $APTGET install -y source-highlight
+
+if sudo $APTGET install -y emacs24-nox
 then
     emacs -Q --batch \
         --eval "(progn
@@ -22,6 +37,14 @@ then
     (package-install 'emamux))"
 else
     # Can't get v24? :-(   I'll settle for v23...
-    sudo apt-get install -y emacs23-nox
+    sudo $APTGET install -y emacs23-nox
 fi
 
+# Now, copy all of the dot-files in this directory to the home
+# directory, and we're done.
+
+for FILE in `dirname $0`/.??*
+do
+    echo cp -r $FILE $HOME
+    cp -r $FILE $HOME
+done
