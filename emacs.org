@@ -30,7 +30,7 @@ organize it and take notes on all the complexity.
   </p>
 #+END_HTML
 
-  We begin this initialization script with a warning not to edit the
+  Begin this initialization script with a warning not to edit the
   generated file:
 
 #+NAME: Note
@@ -77,7 +77,7 @@ organize it and take notes on all the complexity.
    packages, we have to keep track of what packages live on what
    repos. This is [[http://batsov.com/articles/2012/02/19/package-management-in-emacs-the-good-the-bad-and-the-ugly/][an improvement]].
 
-   *NB:* We want to add the [[http://marmalade-repo.org/][Marmalade repository]].
+   Add more package archives, like the [[http://marmalade-repo.org/][Marmalade repository]].
 
 #+BEGIN_SRC elisp
   ; (load "~/.emacs.d/elpa/package.el") Needed for version 23 only!
@@ -142,6 +142,22 @@ organize it and take notes on all the complexity.
   (setq tab-width 2)
 #+END_SRC
 
+** Window Size
+
+   Hrm ... I'm always increasing the window size, so I might as well
+   just have it default to the size I want:
+
+#+BEGIN_SRC elisp
+(add-to-list 'default-frame-alist '(height . 46))
+(add-to-list 'default-frame-alist '(width . 80))
+#+END_SRC
+
+   The bell is pretty obnoxious when it dings during scrolling.
+
+#+BEGIN_SRC elisp
+(setq ring-bell-function 'ignore)
+#+END_SRC
+
 ** Font Settings
 
    I love syntax highlighting.
@@ -178,7 +194,7 @@ organize it and take notes on all the complexity.
 
 ** Color Theme
 
-   We use the color theme project and followed [[http://www.nongnu.org/color-theme/][these instructions]].
+   Use the color theme project by following [[http://www.nongnu.org/color-theme/][these instructions]].
    We now can do =M-x color-theme-<TAB> RET=
 
 #+BEGIN_SRC elisp
@@ -387,13 +403,64 @@ organize it and take notes on all the complexity.
    are typing. Useful at times ... annoying at others.
 
 #+BEGIN_SRC elisp
+  (autoload 'scala-mode "scala-mode"
+    "Programming mode for Scala." t nil)
+
   (require 'auto-complete-config)
   (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+
+  (set-default 'ac-sources
+               '(ac-source-abbrev
+                 ac-source-dictionary
+                 ac-source-yasnippet
+                 ac-source-words-in-buffer
+                 ac-source-words-in-same-mode-buffers
+                 ac-source-semantic))
+
   (ac-config-default)
+  (global-auto-complete-mode t)
 #+END_SRC
 
    Note that we specify where a dictionary lives for each specific
-   language.
+   language, and if for some reason, a mode isn't getting the "AC"
+   minor mode, you can add to it with this magic:
+
+#+BEGIN_SRC elisp :tangle off
+  (dolist (m '(python-mode js2-mode clojure-mode))
+    (add-to-list 'ac-modes m))
+#+END_SRC
+
+** Abbreviation Mode
+
+   Using the built-in [[http://www.emacswiki.org/emacs/AbbrevMode][Abbreviation Mode]], but setting it up only for
+   the text modes:
+
+#+BEGIN_SRC elisp
+(add-hook 'text-mode-hook (lambda () (abbrev-mode 1)))
+#+END_SRC
+
+   While you can make abbreviations in situ, I figured I should
+   /pre-load/ a bunch that I use:
+
+#+BEGIN_SRC elisp
+  (define-abbrev-table 'global-abbrev-table 
+    '(("ha" "Howard Abrams")
+      ("wd" "Workday")
+      ("btw" "by the way")
+      ("f" "function")
+      ("n" "*Note:*")
+      ("os" "OpenStack")
+      ("ng" "AngularJS")
+      ("js" "JavaScript")
+      ("cs" "CoffeeScript")))
+#+END_SRC
+
+   This allows me to write =os= as =OpenStack=, and if I want to write
+   =os=, I just don't put a space or some punctuation behind it. The
+   trick, however, is remembering what works.
+
+   *Note:* Capitalizing the first letter, i.e. =Btw=, expands the
+   abbreviation with an initial capital, i.e. =By the way= ... Sweet.
 
 ** Yas Snippet
 
@@ -405,36 +472,28 @@ organize it and take notes on all the complexity.
   (yas-global-mode 1)
 #+END_SRC
 
-   We load the standard libraries, but load our *special* library
-   first. Note: I also grab this collection of [[https://github.com/swannodette/clojure-snippets][Clojure Snippets]].
-   Inside each of these directories should be directories like
-   =clojure-mode= and =org-mode=. This tells it where to find
-   snippets for the current mode.
+   Inside the =snippets= directory should be directories for each
+   mode, e.g.  =clojure-mode= and =org-mode=. This connects the mode
+   with the snippets.
 
 #+BEGIN_SRC elisp
-  (add-to-list 'yas-snippet-dirs "~/.emacs.d/clojure-snippets")
   (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
 #+END_SRC
 
-   We have many different JavaScript modes to use, and from Yas'
-   point of view, they are all JavaScript, so this bit of magic
-   associates the 'javascript' snippets with each mode.
+   [[https://code.google.com/p/js2-mode/][js2-mode]] is good, but its name means that Yas' won't automatically
+   link it to its =js-mode=. This little bit of magic does the linking:
 
 #+BEGIN_SRC elisp
   (add-hook 'js2-mode-hook '(lambda ()
                               (make-local-variable 'yas-extra-modes)
-                              (add-to-list 'yas-extra-modes 'javascript-mode)
+                              (add-to-list 'yas-extra-modes 'js-mode)
                               (yas-minor-mode 1)))
-  (add-hook 'js-mode-hook '(lambda ()
-                             (make-local-variable 'yas-extra-modes)
-                             (add-to-list 'yas-extra-modes 'javascript-mode)
-                             (yas-minor-mode 1)))
 #+END_SRC
 
 ** Dash
 
-   The [[http://kapeli.com/][Dash product]] looks interesting, and [[https://github.com/Kapeli/dash-at-point][this project]] allows Emacs
-   to open Dash for documentation of anything with a =C-c d= keystroke:
+   The [[http://kapeli.com/][Dash product]] is nice, and [[https://github.com/Kapeli/dash-at-point][this project]] allows Emacs to open
+   Dash for documentation of anything with a =C-c d= keystroke:
 
 #+BEGIN_SRC elisp
   (autoload 'dash-at-point "dash-at-point"
@@ -613,14 +672,12 @@ brew install homebrew/dupes/grep
 
 *** Line Numbers
 
-    We can turn =nlinum-mode= on/off with
-    =Command-K= (see the [[*Macintosh][Macintosh]] section above).
-    However, we can turn this on automatically for certain modes?
+    Turn =nlinum-mode= on/off with =Command-K= (see the [[*Macintosh][Macintosh]]
+    section above).  However, turn this on automatically for
+    programming modes?
 
 #+BEGIN_SRC elisp
-  (add-hook 'clojure-mode-hook 'nlinum-mode)
-  (add-hook 'emacs-lisp-mode-hook 'nlinum-mode)
-  (add-hook 'js2-mode-hook 'nlinum-mode)
+  (add-hook 'prog-mode-hook 'nlinum-mode)
 #+END_SRC
 
 *** Smart Scan
@@ -696,7 +753,7 @@ brew install homebrew/dupes/grep
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-14")
+  (setq current-sprint "2013-15")
   
   (defun current-sprint-file ()
     (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
@@ -709,8 +766,8 @@ brew install homebrew/dupes/grep
 
 *** Recent and Heavily Used Files
 
-    We want both a recently seen files as well, as a top 10. This
-    /Top 10/ file list can just be an Org file, right?
+    Daily note-taking goes into my sprint file notes, so this makes a
+    global short-cut key.
 
 #+BEGIN_SRC elisp
   (global-set-key (kbd "C-x C-u") 'get-current-sprint-file)
@@ -893,6 +950,8 @@ brew install homebrew/dupes/grep
         '(("n" "Thought or Note" entry (file "~/Technical/general-notes.org")
            "* %i%?\n    %a" :empty-lines 1)
   
+          ("w" "General Sprint Note" entry (file+headline (current-sprint-file) "Work Issues")
+           "*** %i%?" :empty-lines 1)
           ("r" "Retrospective Status" entry (file+headline (current-sprint-file) "Status/Accomplishments")
            "*** %i%?\n  Linked: %a" :empty-lines 1)
           ("g" "Retrospective Goodness" entry (file+headline (current-sprint-file) "Keep Doing (Good)")
@@ -900,6 +959,8 @@ brew install homebrew/dupes/grep
           ("b" "Retrospective Badness" entry (file+headline (current-sprint-file) "Stop Doing (Bad)")
            "*** %i%?" :empty-lines 1)
           ("i" "Retrospective Improvement" entry (file+headline (current-sprint-file) "Start Doing (Improvements)")
+           "*** %i%?" :empty-lines 1)
+          ("x" "Note for Next Sprint" entry (file+headline (current-sprint-file) "Notes for Next Sprint")
            "*** %i%?" :empty-lines 1)
   
           ("p" "Personal Journal" entry (file+datetree "~/Technical/personal.org")
@@ -1002,7 +1063,7 @@ brew install homebrew/dupes/grep
   (setq org-export-with-toc nil)
   (setq org-export-skip-text-before-1st-heading nil)
 
-  (setq org-export-html-postamble nil) ;; We don't need any gunk at end
+  (setq org-export-html-postamble nil) ;; don't need any gunk at end
 
   ; (setq org-export-creator-info nil)
   ; (setq org-export-email-info nil)
@@ -1189,8 +1250,8 @@ brew install homebrew/dupes/grep
     "Minor mode for pseudo-structurally editing Lisp code." t)
 #+END_SRC
 
-    We need to associate specific language modes with ParEdit.
-    We first create a helper function:
+    To associate specific language modes with ParEdit, first create a
+    helper function:
 
 #+BEGIN_SRC elisp
   (defun turn-on-paredit () (paredit-mode 1))
@@ -1205,9 +1266,11 @@ brew install homebrew/dupes/grep
   (add-hook 'scheme-mode-hook           'turn-on-paredit)
   (add-hook 'clojure-mode-hook          'turn-on-paredit)
   (add-hook 'nrepl-mode-hook            'turn-on-paredit)
+  (add-hook 'sibiliant-mode-hook        'turn-on-paredit)
 #+END_SRC
 
-    Without the helpful functions, we would have to do something like:
+    Note, without the helpful =turn-on-paredit= function defined
+    above, I'd have to do something like:
 
 #+BEGIN_SRC elisp :tangle no
   (add-hook 'clojure-mode-hook          (lambda () (paredit-mode +1)))
@@ -1258,7 +1321,7 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
 #+BEGIN_SRC elisp
   (autoload 'scala-mode "scala-mode"
-            "Programming mode for Scala." t nil)
+    "Programming mode for Scala." t nil)
 
   ;; Shouldn't this be done by default?
   (add-to-list 'auto-mode-alist '("\\.scala$" . scala-mode))
@@ -1269,9 +1332,8 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
                (scala-mode-feature-electric-mode)))
 #+END_SRC
 
-   We follow [[http://jawher.net/2011/01/17/scala-development-environment-emacs-sbt-ensime/][these instructions]] to set it up with [[https://github.com/aemoncannon/ensime][Ensime]].
-   Ensime is not available as a package, so I had to download and
-   install it, so we need to add it to the =load-path=.
+   We follow [[http://jawher.net/2011/01/17/scala-development-environment-emacs-sbt-ensime/][these instructions]] to set it up with [[https://github.com/aemoncannon/ensime][Ensime]], since
+   it current is not available as a package.
 
 #+BEGIN_SRC elisp
   (if (file-exists-p "~/.emacs.d/ensime")
@@ -1367,8 +1429,10 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
        * =uw= is =unwrap=: Replaces the parent statement with the selected region.
       
 #+BEGIN_SRC elisp
-  (require 'js2-refactor)
-  (js2r-add-keybindings-with-prefix "C-c C-m")
+  (if (autofeaturep 'js2-refactor)
+      (progn
+        (require 'js2-refactor)
+        (js2r-add-keybindings-with-prefix "C-c C-m")))
 #+END_SRC
 
 *** JavaScript REPL
@@ -1399,7 +1463,7 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
 **** Server JS with Node.js
 
-    We use [[http://js-comint-el.sourceforge.net][js-comint]], but hook it up with node.js:
+     Use [[http://js-comint-el.sourceforge.net][js-comint]], but hook it up with node.js:
 
 #+BEGIN_SRC elisp
   (autoload 'js-comint "js-comint"
@@ -1426,15 +1490,10 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
            (lambda (output)
              (replace-regexp-in-string "\033\\[[0-9]+[GK]" "" output)
              (replace-regexp-in-string ".*1G.*3G" "&GT;" output)
-             (replace-regexp-in-string "&GT;" "> " output)
-  ))))
+             (replace-regexp-in-string "&GT;" "> " output)))))
 #+END_SRC
 
-    Now, we can start up a JavaScript node REPL: =run-js=
-
-    Let's test this out by loading this into a separate buffer (=C-c '=)
-    and then doing a =M-x send-buffer-and-go=.
-
+    Start the JavaScript node REPL with: =run-js=
     Set up some helpful keyboard instructions:
 
 #+BEGIN_SRC elisp
@@ -1456,17 +1515,6 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 #+END_SRC
 
 ** Java
-*** JSP
-
-    Dealing with [[http://www.emacswiki.org/emacs/JspMode][JSP files]] is bad. But we'll try the [[http://www.crossleys.org/~jim/work/jsp.el][jsp-mode]] first:
-
-#+BEGIN_SRC elisp
-    ; (autoload 'jsp-mode "jsp" "JSP" t)
-
-    ; Tell emacs to use jsp-mode for .jsp files
-    (add-to-list 'auto-mode-alist '("\\.jsp\\'" . html-mode))
-#+END_SRC
-
 ** Python
 
    Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].
@@ -1484,7 +1532,9 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
     Need the virtualenv world of goodness:
 
 #+BEGIN_SRC elisp
-(require 'virtualenv)
+  (if (autofeaturep 'virtualenv)
+      (progn
+          (require 'virtualenv)))
 #+END_SRC
 
 *** Jedi
@@ -1492,9 +1542,12 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
     Auto-completion system for Python. See [[http://tkf.github.io/emacs-jedi/][these instructions]].
 
 #+BEGIN_SRC elisp
-  (add-hook 'python-mode-hook 'jedi:setup)
-  (setq jedi:setup-keys t)                      ; optional
-  (setq jedi:complete-on-dot t)                 ; optional
+  (if (autofeaturep 'jedi-mode)
+      (progn
+        (add-hook 'python-mode-hook 'jedi:setup)
+        (add-hook 'python-mode-hook 'jedi:ac-setup)
+        (setq jedi:setup-keys t)                      ; optional
+        (setq jedi:complete--dot t)))                 ; optional
 #+END_SRC
 
 *** Flymake for Python
@@ -1503,8 +1556,10 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
     Flymake package.
 
 #+BEGIN_SRC elisp
-  (require 'flymake-python-pyflakes)
-  (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+  (if (autofeaturep 'flymake-python-pyflakes)
+      (progn
+        (require 'flymake-python-pyflakes)
+        (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)))
 #+END_SRC
 
 *** Nose
@@ -1513,17 +1568,14 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
     with [[http://ivory.idyll.org/articles/nose-intro.html][Python Nose]].
 
 #+BEGIN_SRC elisp
-  (require 'nose)
+  (if (autofeaturep 'nose)
+        (progn
+         (require 'nose)
   
-  (add-hook 'python-mode-hook 'auto-complete-mode)
-  ;;; (add-hook 'python-mode-hook 'jedi:ac-setup)
-#+END_SRC
-
-   Include this line only for people with non-eco non-global test
-   runners... like the Python Koans:
-
-#+BEGIN_SRC elisp :tangle no
-  (add-to-list 'nose-project-names "~/Google\ Drive/python_koans/python2")
+         ;;   Include this line only for people with non-eco non-global test
+         ;;   runners... like the Python Koans:
+         (add-to-list 'nose-project-names
+                      "~/Google\ Drive/python_koans/python2")))
 #+END_SRC
 
 *** IPython
@@ -1534,9 +1586,10 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
    - ein
 
 #+BEGIN_SRC elisp
-  (add-to-list 'load-path "~/.emacs.d/ipython-notebook/lisp/")
-  (require 'ein)
-  (setq ein:use-auto-complete t)
+  (if (autofeaturep 'ein)
+        (progn 
+          (require 'ein)
+          (setq ein:use-auto-complete t)))
 #+END_SRC
 
    After starting the IPython notebook server,
@@ -1567,7 +1620,7 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
   (add-to-list 'auto-mode-alist '("\\.txt\\'" . markdown-mode))
 #+END_SRC   
 
-   Using the =org-text-wrapper= function, we create some wrapper
+   Using the =org-text-wrapper= function, I create some wrapper
    functions to make it easier to bold text in Markdown files:
 
 #+BEGIN_SRC elisp
@@ -1582,7 +1635,7 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
     (org-text-wrapper "`"))
 #+END_SRC
 
-   Now we can associate some keystrokes to =markdown-mode=:
+   Now I can associate some keystrokes to =markdown-mode=:
 
 #+BEGIN_SRC elisp
   (add-hook 'markdown-mode-hook
@@ -1602,7 +1655,7 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 #+BEGIN_SRC elisp
   (autoload 'confluence-edit-mode "confluence-edit-mode.el"
      "Major mode for editing Wiki documents" t)
-  (add-to-list 'auto-mode-alist '("\\.wiki\\'" . confluence-edit--mode))
+  (add-to-list 'auto-mode-alist '("\\.wiki\\'" . confluence-edit-mode))
 #+END_SRC
 
    I would also like to create and use some formatting wrappers.
@@ -1619,7 +1672,7 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
     (org-text-wrapper "{{" "}}"))
 #+END_SRC
 
-   Now we can associate some keystrokes to =markdown-mode=:
+   Now I can associate some keystrokes to =markdown-mode=:
 
 #+BEGIN_SRC elisp
   (add-hook 'confluence-edit-mode-hook
@@ -1632,8 +1685,8 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 ** Eshell
 
    E-shell doesn't read the [[http://www.emacswiki.org/emacs/EshellAlias][standard shell resource]] files or allow
-   shell functions and aliases, so we need to create emacs-specific
-   ones:
+   shell functions and aliases, so I need to create emacs-specific
+   ones for =e= and =emacs= to simply call =find-file=:
 
 #+BEGIN_SRC elisp
   (defun eshell/e (file)
@@ -1651,40 +1704,19 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
 ** PlantUML
 
-   To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, we need to get the "mode"
-   working for editing the files:
+   To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, get the "mode" working for
+   editing the files:
 
 #+BEGIN_SRC elisp
   (setq plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
 #+END_SRC
 
-   Second, to get [[http://zhangweize.wordpress.com/2010/08/25/creating-uml-images-by-using-plantuml-and-org-babel-in-emacs/][PlantUML]] working in org-mode, we set a different variable:
+   Second, to get [[http://zhangweize.wordpress.com/2010/08/25/creating-uml-images-by-using-plantuml-and-org-babel-in-emacs/][PlantUML]] working in org-mode, set a different variable:
 
 #+BEGIN_SRC elisp
   (setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
 #+END_SRC
 
-** Mail with Gnus
-
-   I would like to hook up my [[http://www.emacswiki.org/emacs/GnusGmail][Gmail with GNUS mail reader]].
-   See these [[http://www.mostlymaths.net/2010/12/emacs-30-day-challenge-using-gnus-to.html][detailed instructions]] if we run into problems.
-   The instructions are contained in [[file:gnus.org][gnus.org]] file.
-
-#+BEGIN_SRC elisp
-  (if (file-exists-p "~/.emacs.d/gnus-config.el")
-    (load-library "gnus-config"))
-#+END_SRC
-
-** Reading Mail?
-
-   Well, Gnus is pretty gunky. It works, but ...
-
-#+BEGIN_SRC elisp :tangle no
-(autoload 'vm "~/vm" "Start VM on your primary inbox." t)
-(autoload 'vm-visit-folder "~/vm" "Start VM on an arbitrary folder." t)
-(autoload 'vm-mail "~/vm" "Send a mail message using VM." t)
-(autoload 'vm-submit-bug-report "~/vm" "Send a bug report about VM." t)
-#+END_SRC
 * Final Thoughts
 
   Order sometimes matter, and this section is specially applied at
@@ -1697,18 +1729,6 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
 #+BEGIN_SRC elisp
   (setq exec-path (split-string (getenv "PATH") ":"))
-#+END_SRC
-
-** Overriding Keybindings
-
-   You would think that you could just set the keybindings you want
-   at the top of your file, and be good, but since modules like to
-   add their own binding, I want to override some of them:
-
-   Rebind =C-x C-y= to the Yas expand function:
-
-#+BEGIN_SRC elisp
-  (global-set-key (kbd "C-x C-y") 'yas/expand)
 #+END_SRC
 
 * Technical Artifacts
