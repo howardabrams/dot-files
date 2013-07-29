@@ -721,8 +721,29 @@ brew install homebrew/dupes/grep
             '(lambda ()
                (yas/minor-mode-on)))
 #+END_SRC
+** Journaling
 
-*** Load Diary File
+   Didn't realize that [[http://www.emacswiki.org/emacs/OrgJournal][org-journal]] essentially does what I have been
+   doing by hand. With a little customization, I don't have to change
+   anything else:
+
+#+BEGIN_SRC elisp
+(require 'org-journal)
+(setq org-journal-dir "~/journal/")
+#+END_SRC
+
+   The date format is essentially, the top of the file.
+
+#+BEGIN_SRC elisp
+(setq org-journal-date-format "#+TITLE: Journal Entry- %Y-%m-%d, (%A)")
+#+END_SRC
+
+   The time format is the heading for each section. I will set it to a
+   blank since I really don't care about the time I add a section.
+
+#+BEGIN_SRC elisp
+(setq org-journal-time-format "")
+#+END_SRC
 
     A function to easily load today (and yesterday's) journal entry.
 
@@ -730,9 +751,9 @@ brew install homebrew/dupes/grep
   (defun journal-file-today ()
     "Creates and load a file based on today's date."
     (interactive)
-    (let ((daily-name (format-time-string "%Y-%m-%d")))
+    (let ((daily-name (format-time-string "%Y%m%d")))
       (find-file (expand-file-name
-                  (concat "~/journal/" daily-name ".org")))))
+                  (concat "~/journal/" daily-name)))))
 #+END_SRC
 
     Since I sometimes (not often) forget to create 
@@ -741,10 +762,10 @@ brew install homebrew/dupes/grep
   (defun journal-file-yesterday ()
     "Creates and load a file based on yesterday's date."
     (interactive)
-    (let ((daily-name (format-time-string "%Y-%m-%d"
+    (let ((daily-name (format-time-string "%Y%m%d"
        (time-subtract (current-time) (days-to-time 1)))))
       (find-file (expand-file-name
-                  (concat "~/journal/" daily-name ".org")))))
+                  (concat "~/journal/" daily-name)))))
 #+END_SRC
 
 *** Org-Mode Sprint Note Files
@@ -907,30 +928,6 @@ brew install homebrew/dupes/grep
                          "~/Google Drive/technical" 
                          "~/Dropbox/org/project"))
 #+END_SRC
-
-** MobileOrg
-
-   I use [[http://mobileorg.ncogni.to/doc/getting-started/using-dropbox/][Dropbox with MobileOrg]] in order to read my notes on my iPad.
-
-   The "global" location of my Org files on my local system:
-
-#+BEGIN_SRC elisp
-  (setq org-directory "~/Dropbox/org/personal")
-#+END_SRC
-
-   Set the name of the file where new notes will be stored
-
-#+BEGIN_SRC elisp
-  (setq org-mobile-inbox-for-pull "~/Dropbox/org/flagged.org")
-#+END_SRC
-
-   Set to <your Dropbox root directory>/MobileOrg.
-
-#+BEGIN_SRC elisp
-  (setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
-#+END_SRC
-
-   To get this going, we just need to: =M-x org-mobile-push=
 
 ** Auto Note Capturing
 
@@ -1135,6 +1132,30 @@ brew install homebrew/dupes/grep
      :body-text-suffix            ""
      ))
 #+END_SRC
+
+** MobileOrg
+
+   I use [[http://mobileorg.ncogni.to/doc/getting-started/using-dropbox/][Dropbox with MobileOrg]] in order to read my notes on my iPad.
+
+   The "global" location of my Org files on my local system:
+
+#+BEGIN_SRC elisp
+  (setq org-directory "~/Dropbox/org/personal")
+#+END_SRC
+
+   Set the name of the file where new notes will be stored
+
+#+BEGIN_SRC elisp
+  (setq org-mobile-inbox-for-pull "~/Dropbox/org/flagged.org")
+#+END_SRC
+
+   Set to <your Dropbox root directory>/MobileOrg.
+
+#+BEGIN_SRC elisp
+  (setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
+#+END_SRC
+
+   To get this going, we just need to: =M-x org-mobile-push=
 
 ** The Tower of Babel
 
