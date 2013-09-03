@@ -64,8 +64,8 @@ organize it and take notes on all the complexity.
   (add-to-list 'load-path "~/.emacs.d/")
 
   ;; Make sure that PATH can references our "special" directories:
-  (setenv "PATH" (concat (getenv "HOME") "/bin"
-                         ":/usr/local/bin:/opt/local/bin:"
+  (setenv "PATH" (concat (getenv "HOME") "/bin:/usr/bin"
+                         ":/usr/local/bin:/opt/local/bin:/Library/Frameworks/Python.framework/Versions/2.7/bin"
                          (getenv "PATH")))
 #+END_SRC
 
@@ -728,21 +728,23 @@ brew install homebrew/dupes/grep
    anything else:
 
 #+BEGIN_SRC elisp
-(require 'org-journal)
-(setq org-journal-dir "~/journal/")
+  (if (autofeaturep 'org-journal)
+        ((progn )
+         (require 'org-journal)
+         (setq org-journal-dir "~/journal/")))
 #+END_SRC
 
    The date format is essentially, the top of the file.
 
 #+BEGIN_SRC elisp
-(setq org-journal-date-format "#+TITLE: Journal Entry- %Y-%m-%d, (%A)")
+  (setq org-journal-date-format "#+TITLE: Journal Entry- %Y-%m-%d, (%A)")
 #+END_SRC
 
    The time format is the heading for each section. I will set it to a
    blank since I really don't care about the time I add a section.
 
 #+BEGIN_SRC elisp
-(setq org-journal-time-format "")
+  (setq org-journal-time-format "")
 #+END_SRC
 
     A function to easily load today (and yesterday's) journal entry.
@@ -774,7 +776,7 @@ brew install homebrew/dupes/grep
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-15")
+  (setq current-sprint "2013-17")
   
   (defun current-sprint-file ()
     (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
@@ -1548,6 +1550,12 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
   (setenv "PATH" (concat "/Library/Frameworks/Python.framework/Versions/2.7/bin:" (getenv "PATH")))
 #+END_SRC
 
+   Connect the WSGI files to use the Python environment:
+
+#+BEGIN_SRC elisp
+  (add-to-list 'auto-mode-alist '("\\.wsgi$" . python-mode))
+#+END_SRC
+
 *** Debugging
 
     Need the virtualenv world of goodness:
@@ -1615,6 +1623,66 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
    After starting the IPython notebook server,
    type =M-x ein:notebooklist-open= to open notebook list.
+
+*** Refactoring with Rope
+
+    After installing the following Python libraries using =pip= (in a
+    global environment):
+
+    - [[http://rope.sourceforge.net/index.html][Rope]]
+    - [[http://rope.sourceforge.net/ropemacs.html][Ropemacs]]
+    - [[https://pypi.python.org/pypi/ropemode][Ropemode]]
+
+    And have installed [[http://pymacs.progiciels-bpi.ca/pymacs.html][pymacs]], with both =package-install= as well as
+    by cloning [[https://github.com/pinard/Pymacs.git][this Git repo]] and issuing a =make install=.
+    According to [[http://stackoverflow.com/questions/2855378/ropemacs-usage-tutorial][this discusssion]], we just need to do:
+
+#+BEGIN_SRC elisp
+  ;; (require 'pymacs)
+    
+  (autoload 'pymacs-apply "pymacs")
+  (autoload 'pymacs-call "pymacs")
+  (autoload 'pymacs-eval "pymacs" nil t)
+  (autoload 'pymacs-exec "pymacs" nil t)
+  (autoload 'pymacs-load "pymacs" nil t)
+  (autoload 'pymacs-autoload "pymacs")
+  
+  ;;(eval-after-load "pymacs"
+  ;;  '(add-to-list 'pymacs-load-path YOUR-PYMACS-DIRECTORY"))
+  
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (pymacs-load "ropemacs" "rope-")
+              (setq ropemacs-enable-autoimport t)))
+  
+  (defun rope-before-save-actions () 
+    ;; Does nothing but save us from an error.
+    )
+  (defun rope-after-save-actions () 
+    ;; Does nothing but save us from an error.
+    )
+  (defun rope-exiting-actions () 
+    ;; Does nothing but save us from an error.
+    )
+#+END_SRC
+
+** HTML, CSS and Web Work
+
+   The basic web features of Emacs are often good enough, but
+   [[https://github.com/smihica/emmet-mode][Emmet-Mode]] looks pretty sweet.
+
+#+BEGIN_SRC elisp
+(add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+(add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
+(add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 2))) ;; indent 2 spaces.
+#+END_SRC
+
+   If you want the cursor to be positioned between first empty quotes
+   after expanding:
+
+#+BEGIN_SRC elisp :tangle no
+(setq emmet-move-cursor-between-quotes t) ;; default nil
+#+END_SRC
 
 * Tools
 ** Git

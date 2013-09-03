@@ -64,6 +64,7 @@ This can be done after this file has been tangled: =C-c C-v t=
                         color-theme-sanityinc-tomorrow
                         dired-details
                         elein
+                        emmet-mode
                         flymake
                         flymake-jshint
                         flyspell
