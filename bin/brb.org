@@ -44,12 +44,15 @@ from random import randint
   The FBI just called, I'm wanted for a special mission.
   Busy planning how to take over the world.
   The imaginary gnomes are knocking on the door.
-  Put another grape up my nostril...again.
+  Put a grape up my nostril...again.
   Need to get more peanuts for my elephant.
   Corresponding with the dead.
   Gotta comb my back-hair.
-  The peacock wants to mud wrestle.
-  My penguin is giving birth.
+  the peacock wants to mud wrestle.
+  my penguin is giving birth.
+  Buddha has commanded me to polish his shoes... er, sandals.
+  hrm... that bunny sure has sharp, pointy teeth.
+  my mustache demands a sacrifice.
 #+END_EXAMPLE
 
   We take the messages from the block in the above section, and
@@ -67,6 +70,7 @@ msgs = messages.split("\n")
 #+NAME: preambles
 #+BEGIN_EXAMPLE
   Be right back ...
+  Back in a second ...
   Gotta go ...
   BRB ...
   I'll brb ...
