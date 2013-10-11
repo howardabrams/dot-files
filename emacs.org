@@ -339,6 +339,31 @@ organize it and take notes on all the complexity.
           (delete-frame) 
           (delete-window (selected-window)))))
 #+END_SRC
+
+*** Skype
+
+    I normally mute Skype with some Alfred keystroke running some
+    AppleScript. However, Emacs will grab all keystrokes before
+    passing them on, so I need this function:
+
+#+BEGIN_SRC elisp
+   (defun mute-skype ()
+     "Mutes or unmutes Skype via an AppleScript call."
+     (interactive)
+     (let ((mute-script "tell application \"Skype\"
+    if \(send command \"GET MUTE\" script name \"MuteToggler\"\) is equal to \"MUTE ON\" then
+      send command \"SET MUTE OFF\" script name \"MuteToggler\"
+    else
+      send command \"SET MUTE ON\" script name \"MuteToggler\"
+    end if
+  end tell"))
+       (progn
+         (call-process "osascript" nil nil nil "-ss" "-e" mute-script)
+         (message "Skype (un)mute message has been sent."))))
+  
+  (global-set-key (kbd "C-M-A-m") 'mute-skype)
+#+END_SRC
+
 *** Undo and Redo
 
     According to [[http://ergoemacs.org/emacs/emacs_best_redo_mode.html][this article]], I get better functionality than the
@@ -366,6 +391,39 @@ organize it and take notes on all the complexity.
 #+BEGIN_SRC elisp
   (load-library "line-move")
 #+END_SRC
+
+** Key Chords
+
+   Key Chords allows you to use any two keys pressed at the same time
+   to trigger a function call. Interesting possibilities, but of
+   course, you don't want it to make any mistakes.
+
+   I like vi's =.= command, where it quickly repeats the last command
+   you did. Emacs has similar functionality, but I never remember
+   =C-x z=, so let's map it to something else.
+
+#+BEGIN_SRC elisp
+  (if (autofeaturep 'key-chord)
+      (progn
+        (require 'key-chord)
+        (key-chord-mode +1)
+  
+        (key-chord-define-global ",." 'repeat)
+        (key-chord-define-global "qw" 'query-replace)
+        (key-chord-define-global "xo" 'other-window)
+  
+        (if (autofeaturep 'iy-go-to-char)
+            (progn
+              (require 'iy-go-to-char)
+  
+              (key-chord-define-global "fg" 'iy-go-to-char)
+              (key-chord-define-global "df" 'iy-go-to-char-backward)))))
+#+END_SRC
+
+   The [[https://github.com/doitian/iy-go-to-char][iy-go-to-char]] project allows a quick search for a particular
+   character. In [[http://www.youtube.com/watch?v%3DNXTf8_Arl1w][Episode 6]] of [[http://www.emacsrocks.com][EmacsRocks]], [[http://twitter.com/emacsrocks][Magnar Sveen]] pulls it all
+   together and makes a compelling case for micro-optimizations.
+   We'll see if I can remember to use the feature.
 
 ** Recent File List
 
@@ -396,6 +454,24 @@ organize it and take notes on all the complexity.
    - =[C-c p g]= Find text matches in the project
 
    If indexing gets slow, you can cache the results.
+
+   *Note:* With [[http://www.emacswiki.org/emacs/InteractivelyDoThings][IDO]], I'm not really bothering with the concept of a
+   project anymore. I may just take this section out.
+
+** Multiple Cursors
+
+   While I'm not sure how often I will use [[https://github.com/emacsmirror/multiple-cursors][multiple-cursors]] project,
+   I'm going to try to remember it is there. It doesn't have any
+   default keybindings, so I set up the suggested:
+
+#+BEGIN_SRC elisp
+  (if (autofeaturep 'multiple-cursors)
+        (progn
+          (require 'multiple-cursors)
+          (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+          (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+          (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)))
+#+END_SRC
 
 ** Auto Complete
 
@@ -444,15 +520,15 @@ organize it and take notes on all the complexity.
 
 #+BEGIN_SRC elisp
   (define-abbrev-table 'global-abbrev-table 
-    '(("ha" "Howard Abrams")
-      ("wd" "Workday")
+    '(("HA" "Howard Abrams")
+      ("WD" "Workday")
       ("btw" "by the way")
-      ("f" "function")
-      ("n" "*Note:*")
-      ("os" "OpenStack")
-      ("ng" "AngularJS")
-      ("js" "JavaScript")
-      ("cs" "CoffeeScript")))
+      ("func" "function")
+      ("note" "*Note:*")
+      ("OS" "OpenStack")
+      ("NG" "AngularJS")
+      ("JS" "JavaScript")
+      ("CS" "CoffeeScript")))
 #+END_SRC
 
    This allows me to write =os= as =OpenStack=, and if I want to write
@@ -533,7 +609,7 @@ brew install homebrew/dupes/grep
   e.g. jquery|appendTo searches only the files with a 'jquery' tag."
     (interactive "sSearch note directories: ")
     (let ((search-dir "~/Notes ~/Technical")
-          (options "--line-number --with-filename --perl-regexp --word-regexp --ignore-case")
+          (options "--line-number --with-filename --word-regexp --ignore-case")
           (the-args (split-string reg-exp "\|")))
       (if (> (length the-args) 1)
           (let* ((the-tag (car the-args))
@@ -706,6 +782,18 @@ brew install homebrew/dupes/grep
   (setq dired-details-hidden-string "* ")
 #+END_SRC
 
+*** Expand Region
+
+    Wherever you are in a file, and whatever the type of file, you
+    can slowly increase a region selection by logical segments.
+
+#+BEGIN_SRC elisp
+  (if (autofeaturep 'expand-region)
+      (progn
+        (require 'expand-region)
+        (global-set-key (kbd "C-=") 'er/expand-region)))
+#+END_SRC
+
 * Org Mode
 
   The [[http://orgmode.org][Org Mode]] feature was a big reason in my recent re-kindling of my
@@ -776,7 +864,7 @@ brew install homebrew/dupes/grep
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-17")
+  (setq current-sprint "2013-20")
   
   (defun current-sprint-file ()
     (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
@@ -1133,6 +1221,19 @@ brew install homebrew/dupes/grep
      :body-text-prefix            ""
      :body-text-suffix            ""
      ))
+#+END_SRC
+
+** Presentations
+
+   Currently generating presentations from my org-mode files using
+   [[https://github.com/hakimel/reveal.js/][reveal.js]] and [[https://github.com/yjwen/org-reveal][org-reveal]].
+
+#+BEGIN_SRC elisp
+  (require 'ox-reveal)
+  
+  (setq org-reveal-root (concat "file://" (getenv "HOME") "/Other/reveal.js"))
+  
+  (setq org-reveal-postamble "Howard Abrams")
 #+END_SRC
 
 ** MobileOrg
@@ -1538,19 +1639,24 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 #+END_SRC
 
 ** Java
+
+   Eh ... why use Java anymore?
+
 ** Python
 
-   Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].
-   The question is whether I use Rope or Jedi for auto-completion.
-   Perhaps I can have both?
+   Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].  The
+   question is whether I use Rope or Jedi for auto-completion.  Seems
+   like Rope is better, so I will use it instead of Jedi... for now.
 
-   Make sure that PATH can reference the Python executables:
+   Make sure that PATH can reference the Python executables, and
+   since I am installing a updated Python...
 
 #+BEGIN_SRC elisp
   (setenv "PATH" (concat "/Library/Frameworks/Python.framework/Versions/2.7/bin:" (getenv "PATH")))
 #+END_SRC
 
-   Connect the WSGI files to use the Python environment:
+   WSGI files are just Python files in disguise, so tell them to use
+   the Python environment:
 
 #+BEGIN_SRC elisp
   (add-to-list 'auto-mode-alist '("\\.wsgi$" . python-mode))
@@ -1558,7 +1664,9 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
 *** Debugging
 
-    Need the virtualenv world of goodness:
+    Use the [[https://pypi.python.org/pypi/virtualenv][virtualenv]] world of goodness, but only if it is installed.
+    This allows me to =M-x virtualenv-workon= and specify the virtual
+    environment to run all the Python gunk from within Emacs.
 
 #+BEGIN_SRC elisp
   (if (autofeaturep 'virtualenv)
@@ -1568,9 +1676,15 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
 *** Jedi
 
-    Auto-completion system for Python. See [[http://tkf.github.io/emacs-jedi/][these instructions]].
+    Auto-completion system for Python. This code hooks Jedi into the
+    standard Python mode. See [[http://tkf.github.io/emacs-jedi/][these instructions]] for details. New
+    keys:
 
-#+BEGIN_SRC elisp
+    - =C-Tab= for auto complete.
+    - =C-.= to jump to definition.
+    - =C-c d= to show the function documentation
+
+#+BEGIN_SRC elisp :tangle no
   (if (autofeaturep 'jedi-mode)
       (progn
         (add-hook 'python-mode-hook 'jedi:setup)
@@ -1624,7 +1738,7 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
    After starting the IPython notebook server,
    type =M-x ein:notebooklist-open= to open notebook list.
 
-*** Refactoring with Rope
+*** Rope
 
     After installing the following Python libraries using =pip= (in a
     global environment):
@@ -1635,7 +1749,7 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
     And have installed [[http://pymacs.progiciels-bpi.ca/pymacs.html][pymacs]], with both =package-install= as well as
     by cloning [[https://github.com/pinard/Pymacs.git][this Git repo]] and issuing a =make install=.
-    According to [[http://stackoverflow.com/questions/2855378/ropemacs-usage-tutorial][this discusssion]], we just need to do:
+    According to [[http://stackoverflow.com/questions/2855378/ropemacs-usage-tutorial][this discusssion]], we /just/ need to:
 
 #+BEGIN_SRC elisp
   ;; (require 'pymacs)
@@ -1665,6 +1779,10 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
     ;; Does nothing but save us from an error.
     )
 #+END_SRC
+
+    A helluva lot of work, but it is worth it. As long as the Rope
+    instance stays alive and doesn't die. Then it becomes pretty
+    annoying.
 
 ** HTML, CSS and Web Work
 
