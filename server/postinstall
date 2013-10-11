@@ -8,6 +8,7 @@ if [ -f /etc/redhat-release ]
 then
     APTGET=yum
 else
+    echo "deb http://archive.ubuntu.com/ubuntu quantal main restricted multiverse universe" | sudo tee -a /etc/apt/sources.list
     sudo apt-get update
 fi
 
