@@ -68,7 +68,7 @@ between my other scripts, but so far I haven't thought of anything.
   OLDPATH=$PATH
   PATH=$HOME/bin
 
-  for DIR in /usr/local/git/bin /Applications/Emacs.app/Contents/MacOS/bin /opt/local/bin /opt/local/sbin /usr/local/bin 
+  for DIR in /usr/local/git/bin /Applications/Emacs.app/Contents/MacOS/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/sbin
   do
     if [[ -d $DIR ]]
     then

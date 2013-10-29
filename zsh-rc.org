@@ -45,7 +45,7 @@ things here are for callable functions, aliases and the like.
   Add my own custom completion scripts:
 
 #+BEGIN_SRC sh
-  fpath=(~/.zsh/completion $fpath) 
+  fpath=(~/.zsh/completion /usr/local/share/zsh-completions $fpath)
   
   autoload -Uz compinit
   compinit
