@@ -864,7 +864,7 @@ brew install homebrew/dupes/grep
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-20")
+  (setq current-sprint "2013-22")
   
   (defun current-sprint-file ()
     (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
@@ -981,6 +981,20 @@ brew install homebrew/dupes/grep
           (local-set-key (kbd "A-b") 'org-text-bold)
           (local-set-key (kbd "A-i") 'org-text-italics)
           (local-set-key (kbd "A-=") 'org-text-code)))
+#+END_SRC
+
+   When pasting certain kinds of links, the "text" may be obvious.
+
+#+BEGIN_SRC elisp
+  (defun org-generate-link-description (url description)
+    (cond
+     ((string-match "jira.workday" url)
+      (replace-regexp-in-string "https://jira.+/browse/" "" url))
+     ((string-match "crucible.workday" url)
+      (replace-regexp-in-string "https://crucible.+/cru/" "" url))
+     (t description)))
+
+  (setq org-make-link-description-function 'org-generate-link-description)
 #+END_SRC
 
    I'm often typing Jira entries that match a particular link pattern.
@@ -1340,7 +1354,7 @@ brew install homebrew/dupes/grep
   (if (autofeaturep 'rainbow-delimiters)
       (progn
         (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
-        (add-hook 'nrepl-mode-hook 'rainbow-delimiters-mode)))
+        (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)))
 #+END_SRC
 
    With the =elein= project installed, it allows us to do things
@@ -1362,6 +1376,9 @@ brew install homebrew/dupes/grep
   (if (file-exists-p "~/.emacs.d/clojuredocs.el")
       (load-library "clojuredocs"))
 #+END_SRC
+
+   Finally, if you are just learning Clojure, check out [[http://www.4clojure.com/][4Clojure]] and then
+   install [[https://github.com/joshuarh/4clojure.el][4clojure-mode]].
 
 *** Paredit
 
@@ -1389,7 +1406,7 @@ brew install homebrew/dupes/grep
   (add-hook 'lisp-interaction-mode-hook 'turn-on-paredit)
   (add-hook 'scheme-mode-hook           'turn-on-paredit)
   (add-hook 'clojure-mode-hook          'turn-on-paredit)
-  (add-hook 'nrepl-mode-hook            'turn-on-paredit)
+  (add-hook 'cider-repl-mode-hook       'turn-on-paredit)
   (add-hook 'sibiliant-mode-hook        'turn-on-paredit)
 #+END_SRC
 
@@ -1408,17 +1425,16 @@ brew install homebrew/dupes/grep
 #+BEGIN_SRC elisp
   (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
   (add-hook 'clojure-mode-hook 'turn-on-eldoc-mode)
-  (add-hook 'nrepl-interaction-mode-hook 'nrepl-turn-on-eldoc-mode)
+  (add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
 #+END_SRC
 
-*** nREPL and Ritz
+*** Cider
 
-  The [[https://github.com/kingtim/nrepl.el][nRepl project]] is da bomb. Usage:
+  The [[https://github.com/clojure-emacs/cider][Cider project]] is da bomb. Usage:
 
-   - =nrepl-jack-in= - For executing regular expressions with nREPL
-   - =nrepl-ritz-jack-in= - For debugging expressions with Ritz
-   - =nrepl-enable-on-existing-clojure-buffers= for Clojure buffers
-     opened prior to starting up the nREPL interface.
+   - =cider-jack-in= - For starting an nREPL server and setting
+     everything up. Keyboard: =C-c M-j=
+   - =cider= to connect to an existing nREPL server.
 
   Don't care much for the extra buffers that show up when you start:
 
@@ -1429,14 +1445,9 @@ brew install homebrew/dupes/grep
 Stop the error buffer from popping up while working in buffers other than the REPL:
 
 #+BEGIN_SRC elisp
-  (setq nrepl-popup-stacktraces nil)
+  (setq cider-popup-stacktraces nil)
 #+END_SRC
 
-Make C-c C-z switch to the *nrepl* buffer in the current window:
-
-#+BEGIN_SRC elisp
-  (add-to-list 'same-window-buffer-names "*nrepl*")
-#+END_SRC
 
 ** Scala
 
@@ -1480,14 +1491,20 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
 
 #+BEGIN_SRC elisp
   (setq js-basic-indent 2)
-  (setq js2-basic-indent 2)
+  (setq-default js2-basic-indent 2)
 
-  (setq js2-basic-offset 2)
-  (setq js2-cleanup-whitespace t)
-  (setq js2-enter-indents-newline t)
-  (setq js2-global-externs "jQuery $")
-  (setq js2-indent-on-enter-key t)
-  (setq js2-mode-indent-ignore-first-tab t)
+  (setq-default js2-basic-offset 2)
+  (setq-default js2-auto-indent-p t)
+  (setq-default js2-cleanup-whitespace t)
+  (setq-default js2-enter-indents-newline t)
+  (setq-default js2-global-externs "jQuery $")
+  (setq-default js2-indent-on-enter-key t)
+  (setq-default js2-mode-indent-ignore-first-tab t)
+
+  (setq-default js2-global-externs '("module" "require" "buster" "sinon" "assert" "refute" "setTimeout" "clearTimeout" "setInterval" "clearInterval" "location" "__dirname" "console" "JSON"))
+
+  ;; We'll let fly do the error parsing...
+  (setq-default js2-show-parse-errors nil)
 
   (autoload 'js2-mode "js2-mode" nil t)
   (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
@@ -1636,6 +1653,27 @@ Make C-c C-z switch to the *nrepl* buffer in the current window:
     return n == 0 ? 1 : n * factorial(n - 1);
   }
   return factorial(16);
+#+END_SRC
+
+**** Slime-JS
+
+     Slime seems a lot better for REPL work than js-comint.
+
+#+BEGIN_SRC elisp
+(add-hook 'after-init-hook
+  #'(lambda ()
+    (when (locate-library "slime-js")
+      (require 'setup-slime-js))))
+#+END_SRC
+
+*** Coffee
+
+    Gotta load up CoffeeScript files.
+
+#+BEGIN_SRC elisp
+  (setq coffee-command
+        (concat (getenv "HOME")
+                "/Google Drive/euler-xp/repl"))
 #+END_SRC
 
 ** Java
