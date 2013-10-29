@@ -44,7 +44,7 @@ HISTSIZE=1000
 OLDPATH=$PATH
 PATH=$HOME/bin
 
-for DIR in /usr/local/git/bin /Applications/Emacs.app/Contents/MacOS/bin /opt/local/bin /opt/local/sbin /usr/local/bin 
+for DIR in /usr/local/bin /opt/local/bin /opt/local/sbin /usr/local/git/bin /Applications/Emacs.app/Contents/MacOS/bin
 do
   if [[ -d $DIR ]]
   then
@@ -53,6 +53,8 @@ do
 done
 
 PATH=$PATH:$OLDPATH
+
+echo "PATH: $PATH"
 
 # Options
 

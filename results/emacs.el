@@ -27,7 +27,7 @@
 ;;    packages, we have to keep track of what packages live on what
 ;;    repos. This is [[http://batsov.com/articles/2012/02/19/package-management-in-emacs-the-good-the-bad-and-the-ugly/][an improvement]].
 
-;;    *NB:* We want to add the [[http://marmalade-repo.org/][Marmalade repository]].
+;;    Add more package archives, like the [[http://marmalade-repo.org/][Marmalade repository]].
 
 ; (load "~/.emacs.d/elpa/package.el") Needed for version 23 only!
 (require 'package)
@@ -83,6 +83,18 @@ Does not support subfeatures."
 (setq-default indent-tabs-mode nil)
 (setq tab-width 2)
 
+;; Window Size
+
+;;    Hrm ... I'm always increasing the window size, so I might as well
+;;    just have it default to the size I want:
+
+(add-to-list 'default-frame-alist '(height . 46))
+(add-to-list 'default-frame-alist '(width . 80))
+
+;; The bell is pretty obnoxious when it dings during scrolling.
+
+(setq ring-bell-function 'ignore)
+
 ;; Font Settings
 
 ;;    I love syntax highlighting.
@@ -104,7 +116,7 @@ Does not support subfeatures."
 
 ;; Color Theme
 
-;;    We use the color theme project and followed [[http://www.nongnu.org/color-theme/][these instructions]].
+;;    Use the color theme project by following [[http://www.nongnu.org/color-theme/][these instructions]].
 ;;    We now can do =M-x color-theme-<TAB> RET=
 
 (require 'color-theme)
@@ -286,9 +298,43 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;    This feature scans the code and suggests completions for what you
 ;;    are typing. Useful at times ... annoying at others.
 
+(autoload 'scala-mode "scala-mode"
+  "Programming mode for Scala." t nil)
+
 (require 'auto-complete-config)
 (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+
+(set-default 'ac-sources
+             '(ac-source-abbrev
+               ac-source-dictionary
+               ac-source-yasnippet
+               ac-source-words-in-buffer
+               ac-source-words-in-same-mode-buffers
+               ac-source-semantic))
+
 (ac-config-default)
+(global-auto-complete-mode t)
+
+;; Abbreviation Mode
+
+;;    Using the built-in [[http://www.emacswiki.org/emacs/AbbrevMode][Abbreviation Mode]], but setting it up only for
+;;    the text modes:
+
+(add-hook 'text-mode-hook (lambda () (abbrev-mode 1)))
+
+;; While you can make abbreviations in situ, I figured I should
+;;    /pre-load/ a bunch that I use:
+
+(define-abbrev-table 'global-abbrev-table 
+  '(("ha" "Howard Abrams")
+    ("wd" "Workday")
+    ("btw" "by the way")
+    ("f" "function")
+    ("n" "*Note:*")
+    ("os" "OpenStack")
+    ("ng" "AngularJS")
+    ("js" "JavaScript")
+    ("cs" "CoffeeScript")))
 
 ;; Yas Snippet
 
@@ -296,26 +342,26 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;    can be brought into a file, based on the language.
 
 (require 'yasnippet)
+(yas-global-mode 1)
 
-;; We load the standard libraries, but load our *special* library
-;;    first. Note: I also grab this collection of [[https://github.com/swannodette/clojure-snippets][Clojure Snippets]].
-;;    Inside each of these directories should be directories like
-;;    =clojure-mode= and =org-mode=. This tells it where to find
-;;    snippets for the current mode.
+;; Inside the =snippets= directory should be directories for each
+;;    mode, e.g.  =clojure-mode= and =org-mode=. This connects the mode
+;;    with the snippets.
 
-(yas/global-mode 1)
-(yas/initialize)
+(add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
 
-(add-to-list 'yas/root-directory "~/.emacs.d/snippets")
-(add-to-list 'yas/root-directory "~/.emacs.d/clojure-snippets")
+;; [[https://code.google.com/p/js2-mode/][js2-mode]] is good, but its name means that Yas' won't automatically
+;;    link it to its =js-mode=. This little bit of magic does the linking:
 
-;; The following command can be used if we change anything
-(yas/reload-all)
+(add-hook 'js2-mode-hook '(lambda ()
+                            (make-local-variable 'yas-extra-modes)
+                            (add-to-list 'yas-extra-modes 'js-mode)
+                            (yas-minor-mode 1)))
 
 ;; Dash
 
-;;    The [[http://kapeli.com/][Dash product]] looks interesting, and [[https://github.com/Kapeli/dash-at-point][this project]] allows Emacs
-;;    to open Dash for documentation of anything with a =C-c d= keystroke:
+;;    The [[http://kapeli.com/][Dash product]] is nice, and [[https://github.com/Kapeli/dash-at-point][this project]] allows Emacs to open
+;;    Dash for documentation of anything with a =C-c d= keystroke:
 
 (autoload 'dash-at-point "dash-at-point"
           "Search the word at point with Dash." t nil)
@@ -347,7 +393,7 @@ The pipe symbol separates an org-mode tag from the phrase to search,
 e.g. jquery|appendTo searches only the files with a 'jquery' tag."
   (interactive "sSearch note directories: ")
   (let ((search-dir "~/Notes ~/Technical")
-        (options "--line-number --with-filename --perl-regexp --word-regexp --ignore-case")
+        (options "--line-number --with-filename --word-regexp --ignore-case")
         (the-args (split-string reg-exp "\|")))
     (if (> (length the-args) 1)
         (let* ((the-tag (car the-args))
@@ -434,13 +480,11 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 ;; Line Numbers
 
-;;     We can turn =nlinum-mode= on/off with
-;;     =Command-K= (see the [[*Macintosh][Macintosh]] section above).
-;;     However, we can turn this on automatically for certain modes?
+;;     Turn =nlinum-mode= on/off with =Command-K= (see the [[*Macintosh][Macintosh]]
+;;     section above).  However, turn this on automatically for
+;;     programming modes?
 
-(add-hook 'clojure-mode-hook 'nlinum-mode)
-(add-hook 'emacs-lisp-mode-hook 'nlinum-mode)
-(add-hook 'js2-mode-hook 'nlinum-mode)
+(add-hook 'prog-mode-hook 'nlinum-mode)
 
 ;; Smart Scan
 
@@ -472,33 +516,49 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
           '(lambda ()
              (yas/minor-mode-on)))
 
-;; Load Diary File
+;; Journaling
 
-;;     A function to easily load today (and yesterday's) journal entry.
+;;    Didn't realize that [[http://www.emacswiki.org/emacs/OrgJournal][org-journal]] essentially does what I have been
+;;    doing by hand. With a little customization, I don't have to change
+;;    anything else:
+
+(require 'org-journal)
+(setq org-journal-dir "~/journal/")
+
+;; The date format is essentially, the top of the file.
+
+(setq org-journal-date-format "#+TITLE: Journal Entry- %Y-%m-%d, (%A)")
+
+;; The time format is the heading for each section. I will set it to a
+;;    blank since I really don't care about the time I add a section.
+
+(setq org-journal-time-format "")
+
+;; A function to easily load today (and yesterday's) journal entry.
 
 (defun journal-file-today ()
   "Creates and load a file based on today's date."
   (interactive)
-  (let ((daily-name (format-time-string "%Y-%m-%d")))
+  (let ((daily-name (format-time-string "%Y%m%d")))
     (find-file (expand-file-name
-                (concat "~/journal/" daily-name ".org")))))
+                (concat "~/journal/" daily-name)))))
 
 ;; Since I sometimes (not often) forget to create
 
 (defun journal-file-yesterday ()
   "Creates and load a file based on yesterday's date."
   (interactive)
-  (let ((daily-name (format-time-string "%Y-%m-%d"
+  (let ((daily-name (format-time-string "%Y%m%d"
      (time-subtract (current-time) (days-to-time 1)))))
     (find-file (expand-file-name
-                (concat "~/journal/" daily-name ".org")))))
+                (concat "~/journal/" daily-name)))))
 
 ;; Org-Mode Sprint Note Files
 
 ;;     At the beginning of each sprint, we need to set this to the new
 ;;     sprint file.
 
-(setq current-sprint "2013-14")
+(setq current-sprint "2013-15")
 
 (defun current-sprint-file ()
   (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
@@ -510,8 +570,8 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 ;; Recent and Heavily Used Files
 
-;;     We want both a recently seen files as well, as a top 10. This
-;;     /Top 10/ file list can just be an Org file, right?
+;;     Daily note-taking goes into my sprint file notes, so this makes a
+;;     global short-cut key.
 
 (global-set-key (kbd "C-x C-u") 'get-current-sprint-file)
 
@@ -634,22 +694,6 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
                          "~/Google Drive/technical" 
                          "~/Dropbox/org/project"))
 
-;; MobileOrg
-
-;;    I use [[http://mobileorg.ncogni.to/doc/getting-started/using-dropbox/][Dropbox with MobileOrg]] in order to read my notes on my iPad.
-
-;;    The "global" location of my Org files on my local system:
-
-(setq org-directory "~/Dropbox/org/personal")
-
-;; Set the name of the file where new notes will be stored
-
-(setq org-mobile-inbox-for-pull "~/Dropbox/org/flagged.org")
-
-;; Set to <your Dropbox root directory>/MobileOrg.
-
-(setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
-
 ;; Auto Note Capturing
 
 ;;    Let's say you were in the middle of something, but would like to
@@ -665,6 +709,8 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
       '(("n" "Thought or Note" entry (file "~/Technical/general-notes.org")
          "* %i%?\n    %a" :empty-lines 1)
 
+        ("w" "General Sprint Note" entry (file+headline (current-sprint-file) "Work Issues")
+         "*** %i%?" :empty-lines 1)
         ("r" "Retrospective Status" entry (file+headline (current-sprint-file) "Status/Accomplishments")
          "*** %i%?\n  Linked: %a" :empty-lines 1)
         ("g" "Retrospective Goodness" entry (file+headline (current-sprint-file) "Keep Doing (Good)")
@@ -672,6 +718,8 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
         ("b" "Retrospective Badness" entry (file+headline (current-sprint-file) "Stop Doing (Bad)")
          "*** %i%?" :empty-lines 1)
         ("i" "Retrospective Improvement" entry (file+headline (current-sprint-file) "Start Doing (Improvements)")
+         "*** %i%?" :empty-lines 1)
+        ("x" "Note for Next Sprint" entry (file+headline (current-sprint-file) "Notes for Next Sprint")
          "*** %i%?" :empty-lines 1)
 
         ("p" "Personal Journal" entry (file+datetree "~/Technical/personal.org")
@@ -760,7 +808,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 (setq org-export-with-toc nil)
 (setq org-export-skip-text-before-1st-heading nil)
 
-(setq org-export-html-postamble nil) ;; We don't need any gunk at end
+(setq org-export-html-postamble nil) ;; don't need any gunk at end
 
 ; (setq org-export-creator-info nil)
 ; (setq org-export-email-info nil)
@@ -779,6 +827,22 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 ;; And let's tie this to a keystroke to make it easier to use:
 
 (global-set-key (kbd "<f9> p") 'org-export-as-s5)
+
+;; MobileOrg
+
+;;    I use [[http://mobileorg.ncogni.to/doc/getting-started/using-dropbox/][Dropbox with MobileOrg]] in order to read my notes on my iPad.
+
+;;    The "global" location of my Org files on my local system:
+
+(setq org-directory "~/Dropbox/org/personal")
+
+;; Set the name of the file where new notes will be stored
+
+(setq org-mobile-inbox-for-pull "~/Dropbox/org/flagged.org")
+
+;; Set to <your Dropbox root directory>/MobileOrg.
+
+(setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
 
 ;; The Tower of Babel
 
@@ -857,8 +921,8 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 (autoload 'paredit-mode "paredit"
   "Minor mode for pseudo-structurally editing Lisp code." t)
 
-;; We need to associate specific language modes with ParEdit.
-;;     We first create a helper function:
+;; To associate specific language modes with ParEdit, first create a
+;;     helper function:
 
 (defun turn-on-paredit () (paredit-mode 1))
 
@@ -870,6 +934,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 (add-hook 'scheme-mode-hook           'turn-on-paredit)
 (add-hook 'clojure-mode-hook          'turn-on-paredit)
 (add-hook 'nrepl-mode-hook            'turn-on-paredit)
+(add-hook 'sibiliant-mode-hook        'turn-on-paredit)
 
 ;; ElDoc
 
@@ -907,7 +972,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 ;;    We follow [[http://www.scala-lang.org/node/354][these instructions]] to hook it up with [[http://code.google.com/p/yasnippet/][Yasnippet]].
 
 (autoload 'scala-mode "scala-mode"
-          "Programming mode for Scala." t nil)
+  "Programming mode for Scala." t nil)
 
 ;; Shouldn't this be done by default?
 (add-to-list 'auto-mode-alist '("\\.scala$" . scala-mode))
@@ -917,9 +982,8 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
              (yas/minor-mode-on)
              (scala-mode-feature-electric-mode)))
 
-;; We follow [[http://jawher.net/2011/01/17/scala-development-environment-emacs-sbt-ensime/][these instructions]] to set it up with [[https://github.com/aemoncannon/ensime][Ensime]].
-;;    Ensime is not available as a package, so I had to download and
-;;    install it, so we need to add it to the =load-path=.
+;; We follow [[http://jawher.net/2011/01/17/scala-development-environment-emacs-sbt-ensime/][these instructions]] to set it up with [[https://github.com/aemoncannon/ensime][Ensime]], since
+;;    it current is not available as a package.
 
 (if (file-exists-p "~/.emacs.d/ensime")
     (progn
@@ -976,9 +1040,40 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 (add-hook 'js-mode-hook
           (lambda () (flymake-mode 1)))
 
+;; Refactoring JavaScript
+
+;;     The [[https://github.com/magnars/js2-refactor.el][js2-refactor]] mode should start with `C-c C-m` and then a two-letter mnemonic shortcut.
+
+;;        * =ef= is =extract-function=: Extracts the marked expressions out into a new named function.
+;;        * =em= is =extract-method=: Extracts the marked expressions out into a new named method in an object literal.
+;;        * =ip= is =introduce-parameter=: Changes the marked expression to a parameter in a local function.
+;;        * =lp= is =localize-parameter=: Changes a parameter to a local var in a local function.
+;;        * =eo= is =expand-object=: Converts a one line object literal to multiline.
+;;        * =co= is =contract-object=: Converts a multiline object literal to one line.
+;;        * =eu= is =expand-function=: Converts a one line function to multiline (expecting semicolons as statement delimiters).
+;;        * =cu= is =contract-function=: Converts a multiline function to one line (expecting semicolons as statement delimiters).
+;;        * =ea= is =expand-array=: Converts a one line array to multiline.
+;;        * =ca= is =contract-array=: Converts a multiline array to one line.
+;;        * =wi= is =wrap-buffer-in-iife=: Wraps the entire buffer in an immediately invoked function expression
+;;        * =ig= is =inject-global-in-iife=: Creates a shortcut for a marked global by injecting it in the wrapping immediately invoked function expression
+;;        * =ag= is =add-to-globals-annotation=: Creates a =/*global */= annotation if it is missing, and adds the var at point to it.
+;;        * =ev= is =extract-var=: Takes a marked expression and replaces it with a var.
+;;        * =iv= is =inline-var=: Replaces all instances of a variable with its initial value.
+;;        * =rv= is =rename-var=: Renames the variable on point and all occurrences in its lexical scope.
+;;        * =vt= is =var-to-this=: Changes local =var a= to be =this.a= instead.
+;;        * =ao= is =arguments-to-object=: Replaces arguments to a function call with an object literal of named arguments. Requires yasnippets.
+;;        * =3i= is =ternary-to-if=: Converts ternary operator to if-statement.
+;;        * =sv= is =split-var-declaration=: Splits a =var= with multiple vars declared, into several =var= statements.
+;;        * =uw= is =unwrap=: Replaces the parent statement with the selected region.
+
+(if (autofeaturep 'js2-refactor)
+    (progn
+      (require 'js2-refactor)
+      (js2r-add-keybindings-with-prefix "C-c C-m")))
+
 ;; Server JS with Node.js
 
-;;     We use [[http://js-comint-el.sourceforge.net][js-comint]], but hook it up with node.js:
+;;      Use [[http://js-comint-el.sourceforge.net][js-comint]], but hook it up with node.js:
 
 (autoload 'js-comint "js-comint"
   "Hooking JavaScript interpreter up to the JS Files." t nil)
@@ -1002,14 +1097,9 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
          (lambda (output)
            (replace-regexp-in-string "\033\\[[0-9]+[GK]" "" output)
            (replace-regexp-in-string ".*1G.*3G" "&GT;" output)
-           (replace-regexp-in-string "&GT;" "> " output)
-))))
+           (replace-regexp-in-string "&GT;" "> " output)))))
 
-;; Now, we can start up a JavaScript node REPL: =run-js=
-
-;;     Let's test this out by loading this into a separate buffer (=C-c '=)
-;;     and then doing a =M-x send-buffer-and-go=.
-
+;; Start the JavaScript node REPL with: =run-js=
 ;;     Set up some helpful keyboard instructions:
 
 (add-hook 'js2-mode-hook
@@ -1018,15 +1108,6 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
           (local-set-key (kbd "C-c C-r") #'js-send-region)
           (local-set-key (kbd "C-c C-s") #'js-send-last-sexp)
           (local-set-key (kbd "C-c C-z") #'run-js)))
-
-;; JSP
-
-;;     Dealing with [[http://www.emacswiki.org/emacs/JspMode][JSP files]] is bad. But we'll try the [[http://www.crossleys.org/~jim/work/jsp.el][jsp-mode]] first:
-
-; (autoload 'jsp-mode "jsp" "JSP" t)
-
-; Tell emacs to use jsp-mode for .jsp files
-(add-to-list 'auto-mode-alist '("\\.jsp\\'" . html-mode))
 
 ;; Python
 
@@ -1038,31 +1119,48 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 (setenv "PATH" (concat "/Library/Frameworks/Python.framework/Versions/2.7/bin:" (getenv "PATH")))
 
+;; Debugging
+
+;;     Need the virtualenv world of goodness:
+
+(if (autofeaturep 'virtualenv)
+    (progn
+        (require 'virtualenv)))
+
 ;; Jedi
 
 ;;     Auto-completion system for Python. See [[http://tkf.github.io/emacs-jedi/][these instructions]].
 
-(add-hook 'python-mode-hook 'jedi:setup)
-(setq jedi:setup-keys t)                      ; optional
-(setq jedi:complete-on-dot t)                 ; optional
+(if (autofeaturep 'jedi-mode)
+    (progn
+      (add-hook 'python-mode-hook 'jedi:setup)
+      (add-hook 'python-mode-hook 'jedi:ac-setup)
+      (setq jedi:setup-keys t)                      ; optional
+      (setq jedi:complete--dot t)))                 ; optional
 
 ;; Flymake for Python
 
 ;;     Lint-style syntax checking for Python builds on the regular
 ;;     Flymake package.
 
-(require 'flymake-python-pyflakes)
-(add-hook 'python-mode-hook 'flymake-python-pyflakes-load)
+(if (autofeaturep 'flymake-python-pyflakes)
+    (progn
+      (require 'flymake-python-pyflakes)
+      (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)))
 
 ;; Nose
 
 ;;     Unit test and code coverage tool for Python now comes to Emacs
 ;;     with [[http://ivory.idyll.org/articles/nose-intro.html][Python Nose]].
 
-(require 'nose)
+(if (autofeaturep 'nose)
+      (progn
+       (require 'nose)
 
-(add-hook 'python-mode-hook 'auto-complete-mode)
-;;; (add-hook 'python-mode-hook 'jedi:ac-setup)
+       ;;   Include this line only for people with non-eco non-global test
+       ;;   runners... like the Python Koans:
+       (add-to-list 'nose-project-names
+                    "~/Google\ Drive/python_koans/python2")))
 
 ;; IPython
 
@@ -1071,9 +1169,10 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 ;;    - request
 ;;    - ein
 
-(add-to-list 'load-path "~/.emacs.d/ipython-notebook/lisp/")
-(require 'ein)
-(setq ein:use-auto-complete t)
+(if (autofeaturep 'ein)
+      (progn 
+        (require 'ein)
+        (setq ein:use-auto-complete t)))
 
 ;; Git
 
@@ -1095,7 +1194,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.txt\\'" . markdown-mode))
 
-;; Using the =org-text-wrapper= function, we create some wrapper
+;; Using the =org-text-wrapper= function, I create some wrapper
 ;;    functions to make it easier to bold text in Markdown files:
 
 (defun markdown-bold () "Wraps the region with double asterisks."
@@ -1108,7 +1207,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
   (interactive)
   (org-text-wrapper "`"))
 
-;; Now we can associate some keystrokes to =markdown-mode=:
+;; Now I can associate some keystrokes to =markdown-mode=:
 
 (add-hook 'markdown-mode-hook
       (lambda ()
@@ -1125,7 +1224,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 (autoload 'confluence-edit-mode "confluence-edit-mode.el"
    "Major mode for editing Wiki documents" t)
-(add-to-list 'auto-mode-alist '("\\.wiki\\'" . confluence-edit--mode))
+(add-to-list 'auto-mode-alist '("\\.wiki\\'" . confluence-edit-mode))
 
 ;; I would also like to create and use some formatting wrappers.
 
@@ -1139,7 +1238,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
   (interactive)
   (org-text-wrapper "{{" "}}"))
 
-;; Now we can associate some keystrokes to =markdown-mode=:
+;; Now I can associate some keystrokes to =markdown-mode=:
 
 (add-hook 'confluence-edit-mode-hook
       (lambda ()
@@ -1150,8 +1249,8 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 ;; Eshell
 
 ;;    E-shell doesn't read the [[http://www.emacswiki.org/emacs/EshellAlias][standard shell resource]] files or allow
-;;    shell functions and aliases, so we need to create emacs-specific
-;;    ones:
+;;    shell functions and aliases, so I need to create emacs-specific
+;;    ones for =e= and =emacs= to simply call =find-file=:
 
 (defun eshell/e (file)
   (find-file file))
@@ -1165,23 +1264,14 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 ;; PlantUML
 
-;;    To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, we need to get the "mode"
-;;    working for editing the files:
+;;    To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, get the "mode" working for
+;;    editing the files:
 
 (setq plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
 
-;; Second, to get [[http://zhangweize.wordpress.com/2010/08/25/creating-uml-images-by-using-plantuml-and-org-babel-in-emacs/][PlantUML]] working in org-mode, we set a different variable:
+;; Second, to get [[http://zhangweize.wordpress.com/2010/08/25/creating-uml-images-by-using-plantuml-and-org-babel-in-emacs/][PlantUML]] working in org-mode, set a different variable:
 
 (setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
-
-;; Mail with Gnus
-
-;;    I would like to hook up my [[http://www.emacswiki.org/emacs/GnusGmail][Gmail with GNUS mail reader]].
-;;    See these [[http://www.mostlymaths.net/2010/12/emacs-30-day-challenge-using-gnus-to.html][detailed instructions]] if we run into problems.
-;;    The instructions are contained in [[file:gnus.org][gnus.org]] file.
-
-(if (file-exists-p "~/.emacs.d/gnus-config.el")
-  (load-library "gnus-config"))
 
 ;; exec-path
 
@@ -1189,16 +1279,6 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 ;;    =PATH= environment variable, but it doesn't seem to, so we'll do that.
 
 (setq exec-path (split-string (getenv "PATH") ":"))
-
-;; Overriding Keybindings
-
-;;    You would think that you could just set the keybindings you want
-;;    at the top of your file, and be good, but since modules like to
-;;    add their own binding, I want to override some of them:
-
-;;    Rebind =C-x C-y= to the Yas expand function:
-
-(global-set-key (kbd "C-x C-y") 'yas/expand)
 
 ;; Then the following code will work:
 
