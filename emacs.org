@@ -817,9 +817,9 @@ brew install homebrew/dupes/grep
 
 #+BEGIN_SRC elisp
   (if (autofeaturep 'org-journal)
-        ((progn )
-         (require 'org-journal)
-         (setq org-journal-dir "~/journal/")))
+      (progn
+        (require 'org-journal)
+        (setq org-journal-dir "~/journal/")))
 #+END_SRC
 
    The date format is essentially, the top of the file.
