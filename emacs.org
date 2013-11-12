@@ -437,27 +437,6 @@ organize it and take notes on all the complexity.
   (global-set-key (kbd "C-x C-r") 'recentf-open-files)
 #+END_SRC
 
-** Project Management
-
-   Let's assume that every git repo was a project, wouldn't it be
-   nice to do finds and greps limited to such a project.
-   This is what [[https://github.com/bbatsov/projectile][Projectile]] attempts to do (see [[http://wikemacs.org/wiki/Projectile][this wiki page]]).
-
-#+BEGIN_SRC elisp
-  (require 'projectile)
-  (projectile-global-mode) ;; to enable in all buffers
-#+END_SRC
-
-   Useful Keybindings:
-
-   - =[C-c p f]= Find a file in the project.
-   - =[C-c p g]= Find text matches in the project
-
-   If indexing gets slow, you can cache the results.
-
-   *Note:* With [[http://www.emacswiki.org/emacs/InteractivelyDoThings][IDO]], I'm not really bothering with the concept of a
-   project anymore. I may just take this section out.
-
 ** Multiple Cursors
 
    While I'm not sure how often I will use [[https://github.com/emacsmirror/multiple-cursors][multiple-cursors]] project,
@@ -792,6 +771,22 @@ brew install homebrew/dupes/grep
       (progn
         (require 'expand-region)
         (global-set-key (kbd "C-=") 'er/expand-region)))
+#+END_SRC
+
+*** Smart Mode Line
+
+    I like the cleanliness of the [[https://github.com/Bruce-Connor/smart-mode-line][Smart Mode Line]]:
+
+#+BEGIN_SRC elisp
+  (if (autofeaturep 'smart-mode-line)
+      (progn
+        (require 'smart-mode-line)
+        (custom-set-variables '(sml/active-background-color "dark blue"))
+  
+        (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" ":Goo:"))
+        (add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-api/server/" ":API:"))
+        (add-to-list 'sml/hidden-modes " Undo-Tree")
+        (sml/setup)))
 #+END_SRC
 
 * Org Mode
@@ -1850,6 +1845,19 @@ Stop the error buffer from popping up while working in buffers other than the RE
     "Hooking Git up to supported files." t nil)
 
   (global-set-key (kbd "M-C-g") 'magit-status)
+#+END_SRC
+
+   I install and use the [[https://github.com/syohex/emacs-git-gutter-fringe][Git Gutter Fringe]] as it works better with
+   windowing versions of Emacs.
+
+#+BEGIN_SRC elisp
+  (if (autofeaturep 'git-gutter-fringe)
+      (progn
+        (when (window-system)
+          (require 'git-gutter-fringe)
+          (global-git-gutter-mode +1)
+          (setq-default indicate-buffer-boundaries 'left)
+          (setq-default indicate-empty-lines +1))))
 #+END_SRC
 
 ** Markdown
