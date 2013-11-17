@@ -804,6 +804,7 @@ brew install homebrew/dupes/grep
             '(lambda ()
                (yas/minor-mode-on)))
 #+END_SRC
+
 ** Journaling
 
    Didn't realize that [[http://www.emacswiki.org/emacs/OrgJournal][org-journal]] essentially does what I have been
@@ -817,10 +818,16 @@ brew install homebrew/dupes/grep
         (setq org-journal-dir "~/journal/")))
 #+END_SRC
 
+   All my journal entries will be formatted using org-mode:
+
+#+BEGIN_SRC elisp
+  (add-to-list 'auto-mode-alist '("[0-9]*$" . org-mode))
+#+END_SRC
+
    The date format is essentially, the top of the file.
 
 #+BEGIN_SRC elisp
-  (setq org-journal-date-format "#+TITLE: Journal Entry- %Y-%m-%d, (%A)")
+  (setq org-journal-date-format "#+TITLE: Journal Entry- %Y-%m-%d (%A)")
 #+END_SRC
 
    The time format is the heading for each section. I will set it to a
@@ -853,6 +860,34 @@ brew install homebrew/dupes/grep
                   (concat "~/journal/" daily-name)))))
 #+END_SRC
 
+I really would really like to read what I did last year "at this
+time", and by that, I mean, 365 days ago, plus or minus a few to get
+to the same day of the week.
+
+#+BEGIN_SRC elisp
+  (defun journal-last-year-file ()
+    "Returns the string corresponding to the journal entry that
+  happened 'last year' at this same time (meaning on the same day
+  of the week)."
+  (let* ((last-year-seconds (- (float-time) (* 365 24 60 60)))
+         (last-year (seconds-to-time last-year-seconds))
+         (last-year-dow (nth 6 (decode-time last-year)))
+         (this-year-dow (nth 6 (decode-time)))
+         (difference (if (> this-year-dow last-year-dow)
+                         (- this-year-dow last-year-dow)
+                       (- last-year-dow this-year-dow)))
+         (target-date-seconds (+ last-year-seconds (* difference 24 60 60)))
+         (target-date (seconds-to-time target-date-seconds)))
+    (format-time-string "%Y%m%d" target-date)))
+  
+  (defun journal-last-year ()
+    "Loads last year's journal entry, which is not necessary the
+  same day of the month, but will be the same day of the week."
+    (interactive)
+    (let ((journal-file (concat org-journal-dir (journal-last-year-file))))
+      (find-file journal-file)))
+  #+END_SRC
+    
 *** Org-Mode Sprint Note Files
 
     At the beginning of each sprint, we need to set this to the new
