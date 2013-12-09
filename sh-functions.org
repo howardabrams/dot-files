@@ -68,6 +68,23 @@ and global variables are stored in =.profile= and =.zsh_profile=.
   EDITOR="emacsclient"
 #+END_EXAMPLE
 
+* Diff Files
+
+  My favorite diff tool is the =ediff= tool in Emacs, and little
+  function (taken from [[http://defunitive.wordpress.com/2011/07/23/invoking-emacs-ediff-from-the-command-line/][this blog post]]) allows me to use it from the
+  command line.
+
+#+BEGIN_SRC sh
+  function ediff() {
+      if [ "X${2}" = "X" ]; then
+          echo "USAGE: ediff <FILE 1> <FILE 2>"
+      else
+          # The --eval flag takes lisp code and evaluates it with EMACS
+          /Applications/Emacs.app/Contents/MacOS/bin/emacsclient -c --eval "(ediff-files \"$1\" \"$2\")"
+        fi
+  }
+#+END_SRC
+
 * Listing Files
 
   Using the GNU versions of =ls=, which can be installed by Homebrew
@@ -459,15 +476,4 @@ alias gshow='git stash show -p stash@{0}'
   then
       source ~/.bash.d/bashmarks.sh
   fi
-#+END_SRC
-* Language Support
-
-  Certainly languages and frameworks could use a bit of help.
-
-** Scala Helpers
-
-   SBT requires more memory than it deserves.
-
-#+BEGIN_SRC sh
-  alias bigsbt='java -Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=384M -jar /opt/local/share/sbt/sbt-launch.jar'
 #+END_SRC
