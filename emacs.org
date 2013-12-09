@@ -142,7 +142,7 @@ organize it and take notes on all the complexity.
   (setq tab-width 2)
 #+END_SRC
 
-** Window Size
+*** Window Size
 
    Hrm ... I'm always increasing the window size, so I might as well
    just have it default to the size I want:
@@ -291,6 +291,8 @@ organize it and take notes on all the complexity.
       (require 'mac-key-mode)
       (mac-key-mode 1)
       
+      (define-key mac-key-mode-map [(alt o)] 'ido-find-file)
+
       ;; I'd rather selectively bind Meta-I to my italics function,
       ;; instead of showing the file in the Finder.
       (define-key mac-key-mode-map (kbd "A-i") nil)
@@ -385,6 +387,16 @@ organize it and take notes on all the complexity.
 
 ** More Key Definitions
 
+   Change window configuration and then return to the old
+   configuration with [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]].  Use =Control-C Arrow= keys to
+   cycle through window/frame configurations.
+
+#+BEGIN_SRC elisp
+  (if (autofeaturep 'winner-mode)
+      (progn
+        (winner-mode 1)))
+#+END_SRC
+
    I like the ability to move the current line up or down by just
    doing =S-M-up= and =S-M-down= (just like in Eclipse):
 
@@ -411,6 +423,8 @@ organize it and take notes on all the complexity.
         (key-chord-define-global ",." 'repeat)
         (key-chord-define-global "qw" 'query-replace)
         (key-chord-define-global "xo" 'other-window)
+        (key-chord-define-global "xb" 'ido-switch-buffer)
+        (key-chord-define-global "xf" 'ido-find-file)
   
         (if (autofeaturep 'iy-go-to-char)
             (progn
@@ -761,6 +775,25 @@ brew install homebrew/dupes/grep
   (setq dired-details-hidden-string "* ")
 #+END_SRC
 
+*** Save Place
+
+    The [[http://www.emacswiki.org/emacs/SavePlace][Save Place]] mode will... well, save your place in between
+    Emacs sessions.
+
+#+BEGIN_SRC elisp
+  (require 'saveplace)
+  (setq-default save-place t)
+#+END_SRC
+
+*** Uniquify
+
+    Get rid of silly <1> and <2> to buffers with the same file name,
+    using [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Uniquify.html][uniquify]].
+
+#+BEGIN_SRC elisp
+  (require 'uniquify)
+#+END_SRC
+
 *** Expand Region
 
     Wherever you are in a file, and whatever the type of file, you
@@ -894,7 +927,7 @@ to the same day of the week.
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-22")
+  (setq current-sprint "2013-24")
   
   (defun current-sprint-file ()
     (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
@@ -1697,14 +1730,13 @@ Stop the error buffer from popping up while working in buffers other than the RE
 #+END_SRC
 
 *** Coffee
-
-    Gotta load up CoffeeScript files.
-
-#+BEGIN_SRC elisp
-  (setq coffee-command
-        (concat (getenv "HOME")
-                "/Google Drive/euler-xp/repl"))
-#+END_SRC
+ 
+    Gotta load up CoffeeScript files, but I use a special shell
+    script that loads up my special 'coughy' environment
+ 
+ #+BEGIN_SRC elisp
+  (setq coffee-command (concat (getenv "HOME") "/bin/coughy"))
+ #+END_SRC
 
 ** Java
 
