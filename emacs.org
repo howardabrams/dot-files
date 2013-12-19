@@ -387,6 +387,26 @@ organize it and take notes on all the complexity.
 
 ** More Key Definitions
 
+   Clearly, the most important keybindings are the function keys,
+   right? Here is my list of needs:
+
+   - *F1* - Help? Isn't Control-H good enough?
+   - *F2* - Standard alternate meta key with lots of bindings
+   - *F3* - Define a keyboard macro
+   - *F4* - Replay a keyboard macro
+   - *F5* - Slime-JS REPL
+   - *F6* - Find file ... surely I can solve a bigger problem, eh?
+   - *F7* - Switch to another window
+   - *F8* - Switch to buffer
+   - *F9* - My other meta key for changing colors and other odd
+     bindings that I actually don't use that often
+
+#+BEGIN_SRC elisp
+  (global-set-key (kbd "<f6>") 'ido-find-file)
+  (global-set-key (kbd "<f7>") 'other-window)
+  (global-set-key (kbd "<f8>") 'ido-switch-buffer)
+#+END_SRC
+
    Change window configuration and then return to the old
    configuration with [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]].  Use =Control-C Arrow= keys to
    cycle through window/frame configurations.
@@ -410,6 +430,9 @@ organize it and take notes on all the complexity.
    to trigger a function call. Interesting possibilities, but of
    course, you don't want it to make any mistakes.
 
+   Like 'xo' seemed good for 'other-window' until I needed to type
+   the word, 'ox'.
+
    I like vi's =.= command, where it quickly repeats the last command
    you did. Emacs has similar functionality, but I never remember
    =C-x z=, so let's map it to something else.
@@ -422,7 +445,6 @@ organize it and take notes on all the complexity.
   
         (key-chord-define-global ",." 'repeat)
         (key-chord-define-global "qw" 'query-replace)
-        (key-chord-define-global "xo" 'other-window)
         (key-chord-define-global "xb" 'ido-switch-buffer)
         (key-chord-define-global "xf" 'ido-find-file)
   
@@ -854,7 +876,7 @@ brew install homebrew/dupes/grep
    All my journal entries will be formatted using org-mode:
 
 #+BEGIN_SRC elisp
-  (add-to-list 'auto-mode-alist '("[0-9]*$" . org-mode))
+  (add-to-list 'auto-mode-alist '("^[0-9]*$" . org-mode))
 #+END_SRC
 
    The date format is essentially, the top of the file.
@@ -927,7 +949,7 @@ to the same day of the week.
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-24")
+  (setq current-sprint "2013-25")
   
   (defun current-sprint-file ()
     (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
@@ -2002,6 +2024,22 @@ Stop the error buffer from popping up while working in buffers other than the RE
           (local-set-key (kbd "A-=") 'wiki-code)))
 #+END_SRC
 
+** PlantUML
+
+   To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, get the "mode" working for
+   editing the files:
+
+#+BEGIN_SRC elisp
+  (setq plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+#+END_SRC
+
+   Second, to get [[http://zhangweize.wordpress.com/2010/08/25/creating-uml-images-by-using-plantuml-and-org-babel-in-emacs/][PlantUML]] working in org-mode, set a different variable:
+
+#+BEGIN_SRC elisp
+  (setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+#+END_SRC
+
+* Applications
 ** Eshell
 
    E-shell doesn't read the [[http://www.emacswiki.org/emacs/EshellAlias][standard shell resource]] files or allow
@@ -2022,19 +2060,83 @@ Stop the error buffer from popping up while working in buffers other than the RE
     (find-file-other-window file))
 #+END_SRC
 
-** PlantUML
+** Twitter
 
-   To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, get the "mode" working for
-   editing the files:
+   I know, I know, reading my [[http://www.emacswiki.org/emacs-en/TwitteringMode][twitter feed in Emacs]] is pretty geeking
+   awesome. And I can filter out tweets that match a pattern that annoys me:
 
 #+BEGIN_SRC elisp
-  (setq plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+  (setq twittering-tweet-filters '("kickstart" "#burritowatch"))
+
+  (defun twittering-filter-tweets ()
+    (setq non-matching-statuses '())
+    (dolist (status twittering-new-tweets-statuses)
+      (setq matched-tweets 0)
+      (dolist (pat twittering-tweet-filters)
+        (if (string-match pat (cdr (assoc 'text status)))
+            (setq matched-tweets (+ 1 matched-tweets))))
+      (if (= 0 matched-tweets)
+          (setq non-matching-statuses (append non-matching-statuses `(,status)))))
+    (setq new-statuses non-matching-statuses))
+
+  (add-hook 'twittering-new-tweets-hook 'twittering-filter-tweets)
 #+END_SRC
 
-   Second, to get [[http://zhangweize.wordpress.com/2010/08/25/creating-uml-images-by-using-plantuml-and-org-babel-in-emacs/][PlantUML]] working in org-mode, set a different variable:
+   Need to enable spell-checking for the Twitter mode.
 
 #+BEGIN_SRC elisp
-  (setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+(add-hook 'twittering-edit-mode-hook (lambda () (ispell-minor-mode) (flyspell-mode)))
+#+END_SRC
+
+** Circe
+
+   I find reading Twitter and IRC in Emacs a good idea. Really. Small
+   bits of the Emacs window are accessible and whatnot. Currently,
+   however, [[https://github.com/jorgenschaefer/circe/wiki][Circe]] isn't available in the standard locations, so I have
+   it downloaded and installed, and need the following configuration:
+
+#+BEGIN_SRC elisp
+  (add-to-list 'load-path "~/.emacs.d/lisp/circe/lisp")
+  (require 'circe)
+
+  (setq circe-network-options
+        `(("Ciphermonkeys"
+           :host "irc.ciphermonkeys.org"
+           :nick "ha"
+           :channels ("#1101"))))
+#+END_SRC
+
+   Perhaps we want to join other channels ... you know, just for
+   fun to see if there is something else to waste time.
+
+#+BEGIN_SRC elisp
+  (defun irc ()
+    "Connect to all my IRC servers... well, just this one."
+    (interactive)
+    (circe "Ciphermonkeys"))
+#+END_SRC
+
+   Let's hide all the JOIN, PART and other messages that I don't care
+   about:
+
+#+BEGIN_SRC elisp
+  (circe-set-display-handler "JOIN" (lambda (&rest ignored) nil))
+  (circe-set-display-handler "PART" (lambda (&rest ignored) nil))
+  (circe-set-display-handler "QUIT" (lambda (&rest ignored) nil))
+#+END_SRC
+
+   Circe (actually, lui) has the ability to intercept long pastes if
+   it is done in a single input. Lui will then ask if the user would
+   prefer to use a paste service.
+
+#+BEGIN_SRC elisp
+  (require 'lui-autopaste)
+  (add-hook 'circe-channel-mode-hook 'enable-lui-autopaste)
+#+END_SRC
+
+#+BEGIN_SRC elisp
+  (setq lui-flyspell-p t
+        lui-flyspell-alist '((".*" "american")))
 #+END_SRC
 
 * Final Thoughts
