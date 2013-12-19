@@ -15,8 +15,8 @@
 (add-to-list 'load-path "~/.emacs.d/")
 
 ;; Make sure that PATH can references our "special" directories:
-(setenv "PATH" (concat (getenv "HOME") "/bin"
-                       ":/usr/local/bin:/opt/local/bin:"
+(setenv "PATH" (concat (getenv "HOME") "/bin:/usr/bin"
+                       ":/usr/local/bin:/opt/local/bin:/Library/Frameworks/Python.framework/Versions/2.7/bin"
                        (getenv "PATH")))
 
 ;; Package Manager
@@ -206,6 +206,8 @@ Does not support subfeatures."
     (require 'mac-key-mode)
     (mac-key-mode 1)
     
+    (define-key mac-key-mode-map [(alt o)] 'ido-find-file)
+
     ;; I'd rather selectively bind Meta-I to my italics function,
     ;; instead of showing the file in the Finder.
     (define-key mac-key-mode-map (kbd "A-i") nil)
@@ -250,6 +252,28 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
         (delete-frame) 
         (delete-window (selected-window)))))
 
+;; Skype
+
+;;     I normally mute Skype with some Alfred keystroke running some
+;;     AppleScript. However, Emacs will grab all keystrokes before
+;;     passing them on, so I need this function:
+
+(defun mute-skype ()
+   "Mutes or unmutes Skype via an AppleScript call."
+   (interactive)
+   (let ((mute-script "tell application \"Skype\"
+  if \(send command \"GET MUTE\" script name \"MuteToggler\"\) is equal to \"MUTE ON\" then
+    send command \"SET MUTE OFF\" script name \"MuteToggler\"
+  else
+    send command \"SET MUTE ON\" script name \"MuteToggler\"
+  end if
+end tell"))
+     (progn
+       (call-process "osascript" nil nil nil "-ss" "-e" mute-script)
+       (message "Skype (un)mute message has been sent."))))
+
+(global-set-key (kbd "C-M-A-m") 'mute-skype)
+
 ;; Undo and Redo
 
 ;;     According to [[http://ergoemacs.org/emacs/emacs_best_redo_mode.html][this article]], I get better functionality than the
@@ -269,10 +293,46 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 
 ;; More Key Definitions
 
-;;    I like the ability to move the current line up or down by just
+;;    Change window configuration and then return to the old
+;;    configuration with [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]].  Use =Control-C Arrow= keys to
+;;    cycle through window/frame configurations.
+
+(if (autofeaturep 'winner-mode)
+    (progn
+      (winner-mode 1)))
+
+;; I like the ability to move the current line up or down by just
 ;;    doing =S-M-up= and =S-M-down= (just like in Eclipse):
 
 (load-library "line-move")
+
+;; Key Chords
+
+;;    Key Chords allows you to use any two keys pressed at the same time
+;;    to trigger a function call. Interesting possibilities, but of
+;;    course, you don't want it to make any mistakes.
+
+;;    I like vi's =.= command, where it quickly repeats the last command
+;;    you did. Emacs has similar functionality, but I never remember
+;;    =C-x z=, so let's map it to something else.
+
+(if (autofeaturep 'key-chord)
+    (progn
+      (require 'key-chord)
+      (key-chord-mode +1)
+
+      (key-chord-define-global ",." 'repeat)
+      (key-chord-define-global "qw" 'query-replace)
+      (key-chord-define-global "xo" 'other-window)
+      (key-chord-define-global "xb" 'ido-switch-buffer)
+      (key-chord-define-global "xf" 'ido-find-file)
+
+      (if (autofeaturep 'iy-go-to-char)
+          (progn
+            (require 'iy-go-to-char)
+
+            (key-chord-define-global "fg" 'iy-go-to-char)
+            (key-chord-define-global "df" 'iy-go-to-char-backward)))))
 
 ;; Recent File List
 
@@ -284,14 +344,18 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 (setq recentf-max-menu-items 25)
 (global-set-key (kbd "C-x C-r") 'recentf-open-files)
 
-;; Project Management
+;; Multiple Cursors
 
-;;    Let's assume that every git repo was a project, wouldn't it be
-;;    nice to do finds and greps limited to such a project.
-;;    This is what [[https://github.com/bbatsov/projectile][Projectile]] attempts to do (see [[http://wikemacs.org/wiki/Projectile][this wiki page]]).
+;;    While I'm not sure how often I will use [[https://github.com/emacsmirror/multiple-cursors][multiple-cursors]] project,
+;;    I'm going to try to remember it is there. It doesn't have any
+;;    default keybindings, so I set up the suggested:
 
-(require 'projectile)
-(projectile-global-mode) ;; to enable in all buffers
+(if (autofeaturep 'multiple-cursors)
+      (progn
+        (require 'multiple-cursors)
+        (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+        (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+        (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)))
 
 ;; Auto Complete
 
@@ -326,15 +390,15 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
 ;;    /pre-load/ a bunch that I use:
 
 (define-abbrev-table 'global-abbrev-table 
-  '(("ha" "Howard Abrams")
-    ("wd" "Workday")
+  '(("HA" "Howard Abrams")
+    ("WD" "Workday")
     ("btw" "by the way")
-    ("f" "function")
-    ("n" "*Note:*")
-    ("os" "OpenStack")
-    ("ng" "AngularJS")
-    ("js" "JavaScript")
-    ("cs" "CoffeeScript")))
+    ("func" "function")
+    ("note" "*Note:*")
+    ("OS" "OpenStack")
+    ("NG" "AngularJS")
+    ("JS" "JavaScript")
+    ("CS" "CoffeeScript")))
 
 ;; Yas Snippet
 
@@ -507,6 +571,45 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 (dired-details-install)
 (setq dired-details-hidden-string "* ")
 
+;; Save Place
+
+;;     The [[http://www.emacswiki.org/emacs/SavePlace][Save Place]] mode will... well, save your place in between
+;;     Emacs sessions.
+
+(require 'saveplace)
+(setq-default save-place t)
+
+;; Uniquify
+
+;;     Get rid of silly <1> and <2> to buffers with the same file name,
+;;     using [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Uniquify.html][uniquify]].
+
+(require 'uniquify)
+
+;; Expand Region
+
+;;     Wherever you are in a file, and whatever the type of file, you
+;;     can slowly increase a region selection by logical segments.
+
+(if (autofeaturep 'expand-region)
+    (progn
+      (require 'expand-region)
+      (global-set-key (kbd "C-=") 'er/expand-region)))
+
+;; Smart Mode Line
+
+;;     I like the cleanliness of the [[https://github.com/Bruce-Connor/smart-mode-line][Smart Mode Line]]:
+
+(if (autofeaturep 'smart-mode-line)
+    (progn
+      (require 'smart-mode-line)
+      (custom-set-variables '(sml/active-background-color "dark blue"))
+
+      (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" ":Goo:"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-api/server/" ":API:"))
+      (add-to-list 'sml/hidden-modes " Undo-Tree")
+      (sml/setup)))
+
 ;; Initial Settings
 
 ;;    Initialization of Org Mode by hooking it into YASnippets, which
@@ -522,12 +625,18 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 ;;    doing by hand. With a little customization, I don't have to change
 ;;    anything else:
 
-(require 'org-journal)
-(setq org-journal-dir "~/journal/")
+(if (autofeaturep 'org-journal)
+    (progn
+      (require 'org-journal)
+      (setq org-journal-dir "~/journal/")))
+
+;; All my journal entries will be formatted using org-mode:
+
+(add-to-list 'auto-mode-alist '("[0-9]*$" . org-mode))
 
 ;; The date format is essentially, the top of the file.
 
-(setq org-journal-date-format "#+TITLE: Journal Entry- %Y-%m-%d, (%A)")
+(setq org-journal-date-format "#+TITLE: Journal Entry- %Y-%m-%d (%A)")
 
 ;; The time format is the heading for each section. I will set it to a
 ;;    blank since I really don't care about the time I add a section.
@@ -553,12 +662,38 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
     (find-file (expand-file-name
                 (concat "~/journal/" daily-name)))))
 
+;; I really would really like to read what I did last year "at this
+;; time", and by that, I mean, 365 days ago, plus or minus a few to get
+;; to the same day of the week.
+
+(defun journal-last-year-file ()
+  "Returns the string corresponding to the journal entry that
+happened 'last year' at this same time (meaning on the same day
+of the week)."
+(let* ((last-year-seconds (- (float-time) (* 365 24 60 60)))
+       (last-year (seconds-to-time last-year-seconds))
+       (last-year-dow (nth 6 (decode-time last-year)))
+       (this-year-dow (nth 6 (decode-time)))
+       (difference (if (> this-year-dow last-year-dow)
+                       (- this-year-dow last-year-dow)
+                     (- last-year-dow this-year-dow)))
+       (target-date-seconds (+ last-year-seconds (* difference 24 60 60)))
+       (target-date (seconds-to-time target-date-seconds)))
+  (format-time-string "%Y%m%d" target-date)))
+
+(defun journal-last-year ()
+  "Loads last year's journal entry, which is not necessary the
+same day of the month, but will be the same day of the week."
+  (interactive)
+  (let ((journal-file (concat org-journal-dir (journal-last-year-file))))
+    (find-file journal-file)))
+
 ;; Org-Mode Sprint Note Files
 
 ;;     At the beginning of each sprint, we need to set this to the new
 ;;     sprint file.
 
-(setq current-sprint "2013-15")
+(setq current-sprint "2013-24")
 
 (defun current-sprint-file ()
   (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
@@ -663,6 +798,18 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
         (local-set-key (kbd "A-b") 'org-text-bold)
         (local-set-key (kbd "A-i") 'org-text-italics)
         (local-set-key (kbd "A-=") 'org-text-code)))
+
+;; When pasting certain kinds of links, the "text" may be obvious.
+
+(defun org-generate-link-description (url description)
+  (cond
+   ((string-match "jira.workday" url)
+    (replace-regexp-in-string "https://jira.+/browse/" "" url))
+   ((string-match "crucible.workday" url)
+    (replace-regexp-in-string "https://crucible.+/cru/" "" url))
+   (t description)))
+
+(setq org-make-link-description-function 'org-generate-link-description)
 
 ;; I'm often typing Jira entries that match a particular link pattern.
 
@@ -828,6 +975,17 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 (global-set-key (kbd "<f9> p") 'org-export-as-s5)
 
+;; Presentations
+
+;;    Currently generating presentations from my org-mode files using
+;;    [[https://github.com/hakimel/reveal.js/][reveal.js]] and [[https://github.com/yjwen/org-reveal][org-reveal]].
+
+(require 'ox-reveal)
+
+(setq org-reveal-root (concat "file://" (getenv "HOME") "/Other/reveal.js"))
+
+(setq org-reveal-postamble "Howard Abrams")
+
 ;; MobileOrg
 
 ;;    I use [[http://mobileorg.ncogni.to/doc/getting-started/using-dropbox/][Dropbox with MobileOrg]] in order to read my notes on my iPad.
@@ -910,7 +1068,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 (if (autofeaturep 'rainbow-delimiters)
     (progn
       (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
-      (add-hook 'nrepl-mode-hook 'rainbow-delimiters-mode)))
+      (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)))
 
 ;; Paredit
 
@@ -933,7 +1091,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 (add-hook 'lisp-interaction-mode-hook 'turn-on-paredit)
 (add-hook 'scheme-mode-hook           'turn-on-paredit)
 (add-hook 'clojure-mode-hook          'turn-on-paredit)
-(add-hook 'nrepl-mode-hook            'turn-on-paredit)
+(add-hook 'cider-repl-mode-hook       'turn-on-paredit)
 (add-hook 'sibiliant-mode-hook        'turn-on-paredit)
 
 ;; ElDoc
@@ -943,16 +1101,15 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'clojure-mode-hook 'turn-on-eldoc-mode)
-(add-hook 'nrepl-interaction-mode-hook 'nrepl-turn-on-eldoc-mode)
+(add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
 
-;; nREPL and Ritz
+;; Cider
 
-;;   The [[https://github.com/kingtim/nrepl.el][nRepl project]] is da bomb. Usage:
+;;   The [[https://github.com/clojure-emacs/cider][Cider project]] is da bomb. Usage:
 
-;;    - =nrepl-jack-in= - For executing regular expressions with nREPL
-;;    - =nrepl-ritz-jack-in= - For debugging expressions with Ritz
-;;    - =nrepl-enable-on-existing-clojure-buffers= for Clojure buffers
-;;      opened prior to starting up the nREPL interface.
+;;    - =cider-jack-in= - For starting an nREPL server and setting
+;;      everything up. Keyboard: =C-c M-j=
+;;    - =cider= to connect to an existing nREPL server.
 
 ;;   Don't care much for the extra buffers that show up when you start:
 
@@ -960,11 +1117,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 ;; Stop the error buffer from popping up while working in buffers other than the REPL:
 
-(setq nrepl-popup-stacktraces nil)
-
-;; Make C-c C-z switch to the *nrepl* buffer in the current window:
-
-(add-to-list 'same-window-buffer-names "*nrepl*")
+(setq cider-popup-stacktraces nil)
 
 ;; Scala
 
@@ -1003,14 +1156,20 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 ;;    indentation setting. Go below?
 
 (setq js-basic-indent 2)
-(setq js2-basic-indent 2)
+(setq-default js2-basic-indent 2)
 
-(setq js2-basic-offset 2)
-(setq js2-cleanup-whitespace t)
-(setq js2-enter-indents-newline t)
-(setq js2-global-externs "jQuery $")
-(setq js2-indent-on-enter-key t)
-(setq js2-mode-indent-ignore-first-tab t)
+(setq-default js2-basic-offset 2)
+(setq-default js2-auto-indent-p t)
+(setq-default js2-cleanup-whitespace t)
+(setq-default js2-enter-indents-newline t)
+(setq-default js2-global-externs "jQuery $")
+(setq-default js2-indent-on-enter-key t)
+(setq-default js2-mode-indent-ignore-first-tab t)
+
+(setq-default js2-global-externs '("module" "require" "buster" "sinon" "assert" "refute" "setTimeout" "clearTimeout" "setInterval" "clearInterval" "location" "__dirname" "console" "JSON"))
+
+;; We'll let fly do the error parsing...
+(setq-default js2-show-parse-errors nil)
 
 (autoload 'js2-mode "js2-mode" nil t)
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
@@ -1109,34 +1268,47 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
           (local-set-key (kbd "C-c C-s") #'js-send-last-sexp)
           (local-set-key (kbd "C-c C-z") #'run-js)))
 
+;; Slime-JS
+
+;;      Slime seems a lot better for REPL work than js-comint.
+
+(add-hook 'after-init-hook
+  #'(lambda ()
+    (when (locate-library "slime-js")
+      (require 'setup-slime-js))))
+
+;; Coffee
+ 
+;;     Gotta load up CoffeeScript files, but I use a special shell
+;;     script that loads up my special 'coughy' environment
+
+(setq coffee-command (concat (getenv "HOME") "/bin/coughy"))
+
 ;; Python
 
-;;    Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].
-;;    The question is whether I use Rope or Jedi for auto-completion.
-;;    Perhaps I can have both?
+;;    Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].  The
+;;    question is whether I use Rope or Jedi for auto-completion.  Seems
+;;    like Rope is better, so I will use it instead of Jedi... for now.
 
-;;    Make sure that PATH can reference the Python executables:
+;;    Make sure that PATH can reference the Python executables, and
+;;    since I am installing a updated Python...
 
 (setenv "PATH" (concat "/Library/Frameworks/Python.framework/Versions/2.7/bin:" (getenv "PATH")))
 
+;; WSGI files are just Python files in disguise, so tell them to use
+;;    the Python environment:
+
+(add-to-list 'auto-mode-alist '("\\.wsgi$" . python-mode))
+
 ;; Debugging
 
-;;     Need the virtualenv world of goodness:
+;;     Use the [[https://pypi.python.org/pypi/virtualenv][virtualenv]] world of goodness, but only if it is installed.
+;;     This allows me to =M-x virtualenv-workon= and specify the virtual
+;;     environment to run all the Python gunk from within Emacs.
 
 (if (autofeaturep 'virtualenv)
     (progn
         (require 'virtualenv)))
-
-;; Jedi
-
-;;     Auto-completion system for Python. See [[http://tkf.github.io/emacs-jedi/][these instructions]].
-
-(if (autofeaturep 'jedi-mode)
-    (progn
-      (add-hook 'python-mode-hook 'jedi:setup)
-      (add-hook 'python-mode-hook 'jedi:ac-setup)
-      (setq jedi:setup-keys t)                      ; optional
-      (setq jedi:complete--dot t)))                 ; optional
 
 ;; Flymake for Python
 
@@ -1174,6 +1346,55 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
         (require 'ein)
         (setq ein:use-auto-complete t)))
 
+;; Rope
+
+;;     After installing the following Python libraries using =pip= (in a
+;;     global environment):
+
+;;     - [[http://rope.sourceforge.net/index.html][Rope]]
+;;     - [[http://rope.sourceforge.net/ropemacs.html][Ropemacs]]
+;;     - [[https://pypi.python.org/pypi/ropemode][Ropemode]]
+
+;;     And have installed [[http://pymacs.progiciels-bpi.ca/pymacs.html][pymacs]], with both =package-install= as well as
+;;     by cloning [[https://github.com/pinard/Pymacs.git][this Git repo]] and issuing a =make install=.
+;;     According to [[http://stackoverflow.com/questions/2855378/ropemacs-usage-tutorial][this discusssion]], we /just/ need to:
+
+;; (require 'pymacs)
+  
+(autoload 'pymacs-apply "pymacs")
+(autoload 'pymacs-call "pymacs")
+(autoload 'pymacs-eval "pymacs" nil t)
+(autoload 'pymacs-exec "pymacs" nil t)
+(autoload 'pymacs-load "pymacs" nil t)
+(autoload 'pymacs-autoload "pymacs")
+
+;;(eval-after-load "pymacs"
+;;  '(add-to-list 'pymacs-load-path YOUR-PYMACS-DIRECTORY"))
+
+(add-hook 'python-mode-hook
+          (lambda ()
+            (pymacs-load "ropemacs" "rope-")
+            (setq ropemacs-enable-autoimport t)))
+
+(defun rope-before-save-actions () 
+  ;; Does nothing but save us from an error.
+  )
+(defun rope-after-save-actions () 
+  ;; Does nothing but save us from an error.
+  )
+(defun rope-exiting-actions () 
+  ;; Does nothing but save us from an error.
+  )
+
+;; HTML, CSS and Web Work
+
+;;    The basic web features of Emacs are often good enough, but
+;;    [[https://github.com/smihica/emmet-mode][Emmet-Mode]] looks pretty sweet.
+
+(add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+(add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
+(add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 2))) ;; indent 2 spaces.
+
 ;; Git
 
 ;;    Git is [[http://emacswiki.org/emacs/Git][already part of Emacs]]. However, [[http://philjackson.github.com/magit/magit.html][Magit]] is sweet.
@@ -1182,6 +1403,17 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
   "Hooking Git up to supported files." t nil)
 
 (global-set-key (kbd "M-C-g") 'magit-status)
+
+;; I install and use the [[https://github.com/syohex/emacs-git-gutter-fringe][Git Gutter Fringe]] as it works better with
+;;    windowing versions of Emacs.
+
+(if (autofeaturep 'git-gutter-fringe)
+    (progn
+      (when (window-system)
+        (require 'git-gutter-fringe)
+        (global-git-gutter-mode +1)
+        (setq-default indicate-buffer-boundaries 'left)
+        (setq-default indicate-empty-lines +1))))
 
 ;; Markdown
 

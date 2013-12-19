@@ -11,11 +11,6 @@ ZSH=$HOME/.oh-my-zsh
 
 ZSH_THEME="happiness"
 
-# Set =EDITOR= to start up an =emacsclient=:
-
-export ALTERNATE_EDITOR=/Applications/Emacs.app/Contents/MacOS/Emacs
-export EDITOR=/Applications/Emacs.app/Contents/MacOS/bin/emacsclient
-
 # Disable autosetting terminal title.
 
 DISABLE_AUTO_TITLE="true"
@@ -35,26 +30,6 @@ DISABLE_AUTO_UPDATE="true"
 
 SAVEHIST=1000
 HISTSIZE=1000
-
-# Path
-
-#    We want to add these directories, but only if they exist. This
-#    makes this more portable between my computers.
-
-OLDPATH=$PATH
-PATH=$HOME/bin
-
-for DIR in /usr/local/bin /opt/local/bin /opt/local/sbin /usr/local/git/bin /Applications/Emacs.app/Contents/MacOS/bin
-do
-  if [[ -d $DIR ]]
-  then
-      PATH=$PATH:$DIR
-  fi
-done
-
-PATH=$PATH:$OLDPATH
-
-echo "PATH: $PATH"
 
 # Options
 

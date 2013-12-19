@@ -29,7 +29,7 @@ zstyle :compinstall filename '/Users/howard.abrams/.zshrc'
 
 # Add my own custom completion scripts:
 
-fpath=(~/.zsh/completion $fpath) 
+fpath=(~/.zsh/completion /usr/local/share/zsh-completions $fpath)
 
 autoload -Uz compinit
 compinit

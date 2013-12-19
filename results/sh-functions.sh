@@ -27,6 +27,21 @@ else
     alias e='emacsclient -q -a emacs'
 fi
 
+# Diff Files
+
+#   My favorite diff tool is the =ediff= tool in Emacs, and little
+#   function (taken from [[http://defunitive.wordpress.com/2011/07/23/invoking-emacs-ediff-from-the-command-line/][this blog post]]) allows me to use it from the
+#   command line.
+
+function ediff() {
+    if [ "X${2}" = "X" ]; then
+        echo "USAGE: ediff <FILE 1> <FILE 2>"
+    else
+        # The --eval flag takes lisp code and evaluates it with EMACS
+        /Applications/Emacs.app/Contents/MacOS/bin/emacsclient -c --eval "(ediff-files \"$1\" \"$2\")"
+      fi
+}
+
 # Listing Files
 
 #   Using the GNU versions of =ls=, which can be installed by Homebrew
@@ -186,32 +201,79 @@ function ngrep {
 # Beep
 
 #   I can put this at the end of a long running command and have it
-#   tell me when it is complete.
+#   tell me when it is complete. The "name" of the command is given as
+#   an optional parameter, which is spoken when it completes.
+
+#   Options:
+#   - -c The name of the command
+#   - -b The name of the audio file to use in =/System/Library/Sounds=
+#   - -m The message. Don't use this as a message including whether the
+#        command successfully completed or not is generated.
 
 function beep {
-    if [ $? -eq 0 ]
+    # We first need to capture the status of the previous command
+    ERROR=$?
+    COMMAND="The command"
+    unset MESSAGE
+
+    # Default value for the audio depends on the success or failure
+    # of the previous command... and do we have Failure wave file.
+    if [ $ERROR -eq 0 ]
     then
-        echo $1
-        MSG="The background process has completed."
-        SAY="I am done."
-        if [ -n "$1" ]; then
-            MSG="$1 has completed."
-            SAY="$1 is done."
-        fi
-        terminal-notifier -message "$MSG" -title "Process Complete"
-        say "$SAY"
+        AUDIO=/System/Library/Sounds/Ping.aiff
     else
-        MSG="The background process has failed."
-        SAY="I have failed."
-        if [ -n "$1" ]; then
-            MSG="$1 has failed."
-            SAY="$1 has failed."
+        AUDIO=~/.sh-funcs-error.wav
+        if [ ! -f "$AUDIO" ]
+        then
+            AUDIO=/System/Library/Sounds/Glass.aiff
         fi
-        terminal-notifier -message "$MSG" -title "Process Failed"
-        say "$SAY"
+    fi
+
+    while getopts "b:c:m:" o $*
+    do
+        case "$o" in
+        b)  AUDIO=/System/Library/Sounds/$OPTARG.aiff;;
+        c)  COMMAND="$OPTARG";;
+        m)  MESSAGE="$OPTARG";;
+        [?])    print >&2 "Usage: $0 [-b audio] [-m message] [-c] command-name"
+            exit 1;;
+        esac
+      done
+    shift `expr $OPTIND - 1`
+
+    # I would like the -c argument to be truly optional, so that if words
+    # are just given, they are automatically assumed to have a -c in front.
+    if [ $# -gt 0 ]
+    then
+        COMMAND="$@"
+    fi
+
+    if [ -z "$MESSAGE" ]
+    then
+        if [ $ERROR -eq 0 ]
+        then
+            MESSAGE="$COMMAND has completed."
+        else
+            MESSAGE="$COMMAND has failed."
+        fi
+    fi
+
+    echo $MESSAGE
+    afplay $AUDIO
+    say $MESSAGE
+
+    if type terminal-notifier >/dev/null
+    then
+        terminal-notifier -message "$MESSAGE" -title "Process Complete"
+    fi
+
+    # In case we are still using && on the command line, we need to
+    # pass on the failure... and since we really can't assign $?
+    if [ $ERROR -ne 0 ]
+    then
         /bin/ls /no-file 2>/dev/null   # Make next process know previous failed
     fi
-}
+  }
 
 # Clip
 
@@ -312,9 +374,3 @@ if [ -e ~/.bash.d/bashmarks.sh ]
 then
     source ~/.bash.d/bashmarks.sh
 fi
-
-# Scala Helpers
-
-#    SBT requires more memory than it deserves.
-
-alias bigsbt='java -Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=384M -jar /opt/local/share/sbt/sbt-launch.jar'
