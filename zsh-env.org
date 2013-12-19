@@ -24,13 +24,6 @@ between my other scripts, but so far I haven't thought of anything.
   ZSH_THEME="happiness"
 #+END_SRC
 
-  Set =EDITOR= to start up an =emacsclient=:
-
-#+BEGIN_SRC sh
-  export ALTERNATE_EDITOR=/Applications/Emacs.app/Contents/MacOS/Emacs
-  export EDITOR=/Applications/Emacs.app/Contents/MacOS/bin/emacsclient
-#+END_SRC
-
   Disable autosetting terminal title.
 
 #+BEGIN_SRC sh
@@ -57,26 +50,6 @@ between my other scripts, but so far I haven't thought of anything.
 #+BEGIN_SRC sh
   SAVEHIST=1000
   HISTSIZE=1000
-#+END_SRC
-
-** Path
-
-   We want to add these directories, but only if they exist. This
-   makes this more portable between my computers.
-
-#+BEGIN_SRC sh
-  OLDPATH=$PATH
-  PATH=$HOME/bin
-
-  for DIR in /usr/local/git/bin /Applications/Emacs.app/Contents/MacOS/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/sbin
-  do
-    if [[ -d $DIR ]]
-    then
-        PATH=$PATH:$DIR
-    fi
-  done
-  
-  PATH=$PATH:$OLDPATH
 #+END_SRC
 
 * Options

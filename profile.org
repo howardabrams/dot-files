@@ -1,0 +1,93 @@
+#+TITLE:  Shell Dot Profile
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   [2013-12-06 Fri]
+#+TAGS:   zsh shell
+
+This generates my =.profile= that contains environment variables and
+similar settings applicable to all my shells. Yeah, I'm some-what of
+a shell-slut, and dabble between Zshell and Fish.
+
+* Homebrew
+
+  Make sure that [[http://brew.sh/][Homebrew]] is both installed and configured correctly.
+
+#+BEGIN_SRC sh
+  if [ ! -d /usr/local/Cellar ]
+  then
+    echo "ZOMG! No Homebrew installed! Installing now..."
+    ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go/install)"
+  fi
+#+END_SRC
+
+* Path
+
+   We want to add these directories, but only if they exist. This
+   makes this more portable between my computers.
+
+#+BEGIN_SRC sh
+  OLDPATH=$PATH
+  PATH=$HOME/bin
+
+  for DIR in /usr/local/git/bin /Applications/Emacs.app/Contents/MacOS/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/sbin
+  do
+    if [[ -d $DIR ]]
+    then
+        PATH=$PATH:$DIR
+    fi
+  done
+  
+  PATH=$PATH:$OLDPATH
+#+END_SRC
+
+* Emacs
+
+  Set =EDITOR= to start up an =emacsclient=:
+
+#+BEGIN_SRC sh
+  export ALTERNATE_EDITOR=/Applications/Emacs.app/Contents/MacOS/Emacs
+  export EDITOR=/Applications/Emacs.app/Contents/MacOS/bin/emacsclient
+#+END_SRC
+
+  I like Cask.
+
+#+BEGIN_SRC sh
+  if [ ! -d $HOME/.cask ]
+  then
+    curl -fsSkL https://raw.github.com/cask/cask/master/go | python
+  fi
+
+  export PATH="$HOME/.cask/bin:$PATH"
+#+END_SRC
+
+* Global Aliases
+
+  I dislike =more=, especially since =less= is now really sweet.
+
+#+BEGIN_SRC sh
+alias more=less
+#+END_SRC
+
+* System-Specific Variables
+
+  Host-specific values, are stored in a separate profile.
+
+#+BEGIN_SRC sh
+if [ -x $HOME/.profile-local ]
+then
+  . $HOME/.profile-local
+fi
+#+END_SRC
+
+* Technical Gunk
+
+  Anything else that is interesting, will be set up in more
+  either more shell-specific files, or in [[file:sh-functions.org][Shell Functions]] file.
+  The following are the tangled settings. Type: =C-c C-v t=
+  to create the script file.
+
+#+PROPERTY: tangle ~/.profile
+#+PROPERTY: comments org
+#+PROPERTY: shebang #!/bin/sh
+#+DESCRIPTION: Global environment variables for all shells
+
