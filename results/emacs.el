@@ -4,7 +4,7 @@
 ;;; been generated, as a tangled file, by the
 ;;; fandifluous org-mode.
 ;;;
-;;; Source: ~/Dropbox/dot-files/emacs.org
+;;; Source: ~/Work/dot-files/emacs.org
 ;;; ------------------------------------------
 
 ;; Extra Packages
@@ -12,9 +12,11 @@
 ;;    Extra packages not available via the package manager go in my
 ;;    personal stash at: =$HOME/.emacs.d=
 
-(add-to-list 'load-path "~/.emacs.d/")
+(add-to-list 'load-path (concat (getenv "HOME") "/.emacs.d"))
 
-;; Make sure that PATH can references our "special" directories:
+;; Make sure that =PATH= variable for finding binary files can
+;;    references my "special" directories:
+
 (setenv "PATH" (concat (getenv "HOME") "/bin:/usr/bin"
                        ":/usr/local/bin:/opt/local/bin:/Library/Frameworks/Python.framework/Versions/2.7/bin"
                        (getenv "PATH")))
@@ -22,12 +24,9 @@
 ;; Package Manager
 
 ;;    Emacs has become like every other operating system, and now has a
-;;    [[http://tromey.com/elpa/][package manager]] with its own collection of repositories. Of
-;;    course, now, instead of trying to figure out and maintain
-;;    packages, we have to keep track of what packages live on what
-;;    repos. This is [[http://batsov.com/articles/2012/02/19/package-management-in-emacs-the-good-the-bad-and-the-ugly/][an improvement]].
-
-;;    Add more package archives, like the [[http://marmalade-repo.org/][Marmalade repository]].
+;;    [[http://tromey.com/elpa/][package manager]] with its own collection repository, but since it is
+;;    so conservative, we need to add more repositories to get all the
+;;    sweet goodness, I demand.
 
 ; (load "~/.emacs.d/elpa/package.el") Needed for version 23 only!
 (require 'package)
@@ -47,12 +46,103 @@
 
 ;; Package Loading
 
+;;    Not sure why the package management system doesn't come with a
+;;    programmatic way to specify what packages should be installed. Oh
+;;    yeah, this is pretty new. Looks like everyone just rolls there own,
+;;    so this is mine.
+
+(defun packages-install (packages)
+  (dolist (it packages)
+    (when (not (package-installed-p it))
+      (if (y-or-n-p (format "Package '%s' not found on system. Install?" it))
+          (package-install it))))
+  (delete-other-windows))
+
+;; This means that at any point in my configuration file, I can
+;;    specify a list of packages to make sure they are installed.
+
+(packages-install
+               '(auto-complete
+                 circe
+                 color-theme
+                 color-theme-sanityinc-tomorrow
+                 dired-details
+                 emmet-mode
+                 epl
+                 expand-region
+                 flycheck
+                 flycheck-color-mode-line
+                 flymake
+                 flyspell
+                 git-commit-mode
+                 git-gutter-fringe
+                 gitconfig-mode
+                 gitignore-mode
+                 graphviz-dot-mode
+                 iy-go-to-char
+                 key-chord
+                 mac-key-mode
+                 magit
+                 markdown-mode
+                 multiple-cursors
+                 nlinum
+                 smart-mode-line
+                 ;; redo+             ;; If not installed, edit mac-key-mode
+                 ;; scala-mode
+                 smex
+                 undo-tree
+                 yasnippet
+
+            ;; Web Related Stuff
+                 web-mode
+                 mustache-mode
+                 handlebars-mode
+                 htmlize    ;; I use this more for org-mode
+
+            ;; JavaScript
+                 js-comint
+                 js2-mode
+                 flymake-jshint
+                 ac-js2
+                 js2-refactor
+                 json-mode
+                 coffee-mode
+                 flymake-coffee
+
+            ;; Clojure
+                 ac-nrepl
+                 clojure-mode
+                 clojurescript-mode
+                 elein
+                 nrepl
+                 nrepl-ritz
+                 paredit
+                 rainbow-delimiters  ;; Mode for alternating paren colors
+
+            ;; The Wonderful World of Org-Mode
+                 org
+                 org-mime
+                 org-presie
+                 plantuml-mode
+                 ox-reveal
+
+            ;; Python packages
+                 flymake-python-pyflakes
+                 nose
+                 jedi
+                 ein
+                 virtualenv))
+
+;; Package Verification
+
 ;;    The =(require)= is a problem if the library isn't available, and if
 ;;    it isn't available, then this file dies and doesn't complete.
 ;;    Seems like it would be nice to wrap the configuration of a package
 ;;    in a block that is ignored if the package isn't available.
 
-;;    This is what I found [[http://stackoverflow.com/questions/7790382/how-to-determine-whether-a-package-is-installed-in-elisp][in this discussion]].
+;;    The following code was found [[http://stackoverflow.com/questions/7790382/how-to-determine-whether-a-package-is-installed-in-elisp][in this discussion]], but I believe
+;;    I'll be phasing this out now that I can simply install a long list
+;;    of packages when I start.
 
 (defun autofeaturep (feature)
   "For a feature symbol 'foo, return a result equivalent to:
@@ -293,24 +383,38 @@ end tell"))
 
 ;; More Key Definitions
 
-;;    Change window configuration and then return to the old
+;;    Clearly, the most important keybindings are the function keys,
+;;    right? Here is my list of needs:
+
+;;    - *F1* - Help? Isn't Control-H good enough?
+;;    - *F2* - Standard alternate meta key with lots of bindings
+;;    - *F3* - Define a keyboard macro
+;;    - *F4* - Replay a keyboard macro
+;;    - *F5* - Slime-JS REPL
+;;    - *F6* - Find file ... surely I can solve a bigger problem, eh?
+;;    - *F7* - Switch to another window
+;;    - *F8* - Switch to buffer
+;;    - *F9* - My other meta key for changing colors and other odd
+;;      bindings that I actually don't use that often
+
+(global-set-key (kbd "<f6>") 'ido-find-file)
+(global-set-key (kbd "<f7>") 'other-window)
+(global-set-key (kbd "<f8>") 'ido-switch-buffer)
+
+;; Change window configuration and then return to the old
 ;;    configuration with [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]].  Use =Control-C Arrow= keys to
 ;;    cycle through window/frame configurations.
 
-(if (autofeaturep 'winner-mode)
-    (progn
-      (winner-mode 1)))
-
-;; I like the ability to move the current line up or down by just
-;;    doing =S-M-up= and =S-M-down= (just like in Eclipse):
-
-(load-library "line-move")
+(winner-mode 1)
 
 ;; Key Chords
 
 ;;    Key Chords allows you to use any two keys pressed at the same time
 ;;    to trigger a function call. Interesting possibilities, but of
 ;;    course, you don't want it to make any mistakes.
+
+;;    Like 'xo' seemed good for 'other-window' until I needed to type
+;;    the word, 'ox'.
 
 ;;    I like vi's =.= command, where it quickly repeats the last command
 ;;    you did. Emacs has similar functionality, but I never remember
@@ -323,7 +427,6 @@ end tell"))
 
       (key-chord-define-global ",." 'repeat)
       (key-chord-define-global "qw" 'query-replace)
-      (key-chord-define-global "xo" 'other-window)
       (key-chord-define-global "xb" 'ido-switch-buffer)
       (key-chord-define-global "xf" 'ido-find-file)
 
@@ -361,9 +464,6 @@ end tell"))
 
 ;;    This feature scans the code and suggests completions for what you
 ;;    are typing. Useful at times ... annoying at others.
-
-(autoload 'scala-mode "scala-mode"
-  "Programming mode for Scala." t nil)
 
 (require 'auto-complete-config)
 (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
@@ -632,7 +732,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 ;; All my journal entries will be formatted using org-mode:
 
-(add-to-list 'auto-mode-alist '("[0-9]*$" . org-mode))
+(add-to-list 'auto-mode-alist '("^[0-9]*$" . org-mode))
 
 ;; The date format is essentially, the top of the file.
 
@@ -693,7 +793,7 @@ same day of the month, but will be the same day of the week."
 ;;     At the beginning of each sprint, we need to set this to the new
 ;;     sprint file.
 
-(setq current-sprint "2013-24")
+(setq current-sprint "2013-25")
 
 (defun current-sprint-file ()
   (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
@@ -914,9 +1014,9 @@ same day of the month, but will be the same day of the week."
    )
 
   ("dot-files"
-   :base-directory       "~/Dropbox/dot-files/"
+   :base-directory       "~/Work/dot-files/"
    :base-extension       "org"
-   :publishing-directory "~/Dropbox/dot-files/docs"
+   :publishing-directory "~/Work/dot-files/docs"
    :recursive            f
    :publishing-function   org-publish-org-to-html
    :auto-preamble         t
@@ -1478,6 +1578,17 @@ same day of the month, but will be the same day of the week."
         (local-set-key (kbd "A-i") 'wiki-italics)
         (local-set-key (kbd "A-=") 'wiki-code)))
 
+;; PlantUML
+
+;;    To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, get the "mode" working for
+;;    editing the files:
+
+(setq plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+
+;; Second, to get [[http://zhangweize.wordpress.com/2010/08/25/creating-uml-images-by-using-plantuml-and-org-babel-in-emacs/][PlantUML]] working in org-mode, set a different variable:
+
+(setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+
 ;; Eshell
 
 ;;    E-shell doesn't read the [[http://www.emacswiki.org/emacs/EshellAlias][standard shell resource]] files or allow
@@ -1494,16 +1605,70 @@ same day of the month, but will be the same day of the week."
 (defun eshell/ee (file)
   (find-file-other-window file))
 
-;; PlantUML
+;; Twitter
 
-;;    To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, get the "mode" working for
-;;    editing the files:
+;;    I know, I know, reading my [[http://www.emacswiki.org/emacs-en/TwitteringMode][twitter feed in Emacs]] is pretty geeking
+;;    awesome. And I can filter out tweets that match a pattern that annoys me:
 
-(setq plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+(setq twittering-tweet-filters '("kickstart" "#burritowatch"))
 
-;; Second, to get [[http://zhangweize.wordpress.com/2010/08/25/creating-uml-images-by-using-plantuml-and-org-babel-in-emacs/][PlantUML]] working in org-mode, set a different variable:
+(defun twittering-filter-tweets ()
+  (setq non-matching-statuses '())
+  (dolist (status twittering-new-tweets-statuses)
+    (setq matched-tweets 0)
+    (dolist (pat twittering-tweet-filters)
+      (if (string-match pat (cdr (assoc 'text status)))
+          (setq matched-tweets (+ 1 matched-tweets))))
+    (if (= 0 matched-tweets)
+        (setq non-matching-statuses (append non-matching-statuses `(,status)))))
+  (setq new-statuses non-matching-statuses))
 
-(setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+(add-hook 'twittering-new-tweets-hook 'twittering-filter-tweets)
+
+;; Need to enable spell-checking for the Twitter mode.
+
+(add-hook 'twittering-edit-mode-hook (lambda () (ispell-minor-mode) (flyspell-mode)))
+
+;; Circe
+
+;;    I find reading Twitter and IRC in Emacs a good idea. Really. Small
+;;    bits of the Emacs window are accessible and whatnot. Currently,
+;;    however, [[https://github.com/jorgenschaefer/circe/wiki][Circe]] isn't available in the standard locations, so I have
+;;    it downloaded and installed, and need the following configuration:
+
+(add-to-list 'load-path "~/.emacs.d/lisp/circe/lisp")
+(require 'circe)
+
+(setq circe-network-options
+      `(("Ciphermonkeys"
+         :host "irc.ciphermonkeys.org"
+         :nick "ha"
+         :channels ("#1101"))))
+
+;; Perhaps we want to join other channels ... you know, just for
+;;    fun to see if there is something else to waste time.
+
+(defun irc ()
+  "Connect to all my IRC servers... well, just this one."
+  (interactive)
+  (circe "Ciphermonkeys"))
+
+;; Let's hide all the JOIN, PART and other messages that I don't care
+;;    about:
+
+(circe-set-display-handler "JOIN" (lambda (&rest ignored) nil))
+(circe-set-display-handler "PART" (lambda (&rest ignored) nil))
+(circe-set-display-handler "QUIT" (lambda (&rest ignored) nil))
+
+;; Circe (actually, lui) has the ability to intercept long pastes if
+;;    it is done in a single input. Lui will then ask if the user would
+;;    prefer to use a paste service.
+
+(require 'lui-autopaste)
+(add-hook 'circe-channel-mode-hook 'enable-lui-autopaste)
+
+(setq lui-flyspell-p t
+      lui-flyspell-alist '((".*" "american")))
 
 ;; exec-path
 
