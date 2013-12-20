@@ -160,16 +160,6 @@ organize it and take notes on all the complexity.
                    coffee-mode
                    flymake-coffee
   
-              ;; Clojure
-                   ac-nrepl
-                   clojure-mode
-                   clojurescript-mode
-                   elein
-                   nrepl
-                   nrepl-ritz
-                   paredit
-                   rainbow-delimiters  ;; Mode for alternating paren colors
-  
               ;; The Wonderful World of Org-Mode
                    org
                    org-mime
@@ -1514,36 +1504,53 @@ to the same day of the week.
 * Programming Languages
 ** Clojure
 
-   Me like Clojure, and since it is a LISP, then Emacs likes it too.
+   Me like [[http://clojure.org][Clojure]], and since it is a LISP, then [[https://github.com/clojure-emacs][Emacs likes it]] too.
+   Here are all the packages related to Clojure that I use. Note
+   my migration from [[https://github.com/clojure-emacs/nrepl.el][nrepl]] to [[https://github.com/clojure-emacs/cider][Cider]].
 
 #+BEGIN_SRC elisp
-  (if (autofeaturep 'clojure-mode)
-      (progn
-        (require 'clojure-mode)
-        (add-hook 'clojure-mode-hook
-                  '(lambda ()
-                     (yas/minor-mode-on)))
+  (packages-install '( ac-nrepl
+                       clojure-mode
+                       clojurescript-mode
+                       cider
+                       elein
+                       ;; nrepl
+                       ;; nrepl-ritz
+                       paredit
+                       rainbow-delimiters  ;; Mode for alternating paren colors
+                       ))
+#+END_SRC
+
+   Need to add Yasnippets to Clojure mode:
+
+#+BEGIN_SRC elisp
+  (require 'clojure-mode)
   
-        ;; This makes Compojure macro calls look nicer.
-        ;; https://github.com/weavejester/compojure/wiki
-        (define-clojure-indent
-          (defroutes 'defun)
-          (GET 2)
-          (POST 2)
-          (PUT 2)
-          (DELETE 2)
-          (HEAD 2)
-          (ANY 2)
-          (context 2))))
+  (add-hook 'clojure-mode-hook
+            '(lambda ()
+               (yas/minor-mode-on)))
+#+END_SRC
+
+   According to the [[https://github.com/weavejester/compojure/wiki][Compojure Wiki]], the following code makes their
+   macros look prettier:
+
+#+BEGIN_SRC elisp
+  (define-clojure-indent
+    (defroutes 'defun)
+    (GET 2)
+    (POST 2)
+    (PUT 2)
+    (DELETE 2)
+    (HEAD 2)
+    (ANY 2)
+    (context 2))
 #+END_SRC
 
    Most LISP-based programming is better with rainbow ponies:
 
 #+BEGIN_SRC elisp
-  (if (autofeaturep 'rainbow-delimiters)
-      (progn
-        (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
-        (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)))
+  (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
+  (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
 #+END_SRC
 
    With the =elein= project installed, it allows us to do things
@@ -1636,7 +1643,6 @@ Stop the error buffer from popping up while working in buffers other than the RE
 #+BEGIN_SRC elisp
   (setq cider-popup-stacktraces nil)
 #+END_SRC
-
 
 ** Scala
 
