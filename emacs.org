@@ -91,7 +91,7 @@ organize it and take notes on all the complexity.
   (package-initialize)
 #+END_SRC
 
-** Package Loading
+** Installing Extra Packages
 
    Not sure why the package management system doesn't come with a
    programmatic way to specify what packages should be installed. Oh
@@ -141,6 +141,7 @@ organize it and take notes on all the complexity.
                    ;; scala-mode
                    smex
                    undo-tree
+                   visual-regexp
                    yasnippet
   
               ;; Web Related Stuff
@@ -776,7 +777,7 @@ brew install homebrew/dupes/grep
 #+END_SRC
 
     According to [[https://gist.github.com/rkneufeld/5126926][Ryan Kneufeld]], we could make IDO work
-    vertically. Not sure if I like this, but we'll try.
+    vertically, which is much easier to read.
 
 #+BEGIN_SRC elisp
 (setq ido-decorations                                                      ; Make ido-mode display vertically
@@ -917,6 +918,34 @@ brew install homebrew/dupes/grep
         (add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-api/server/" ":API:"))
         (add-to-list 'sml/hidden-modes " Undo-Tree")
         (sml/setup)))
+#+END_SRC
+
+*** Better Searching and Visual Regular Expressions
+
+    Only after you've started an =isearch-forward= do you wish you had
+    regular expressions available, so why not just switch those defaults?
+
+#+BEGIN_SRC elisp
+  (global-set-key (kbd "C-s") 'isearch-forward-regexp)
+  (global-set-key (kbd "C-r") 'isearch-backward-regexp)
+  (global-set-key (kbd "C-M-s") 'isearch-forward)
+  (global-set-key (kbd "C-M-r") 'isearch-backward)
+#+END_SRC
+
+    The [[https://github.com/benma/visual-regexp.el][Visual Regular Expressions]] project highlights the matches
+    while you try to remember the differences between Perl's regular
+    expressions and Emacs'...
+
+    Begin with =C-c r= then type the regexp. To see the highlighted
+    matches, type =C-c a= before you hit 'Return' to accept it.
+
+#+BEGIN_SRC elisp
+  (require 'visual-regexp)
+  (define-key global-map (kbd "C-c r") 'vr/replace)
+  (define-key global-map (kbd "C-c q") 'vr/query-replace)
+  
+  ;; if you use multiple-cursors, this is for you:
+  (define-key global-map (kbd "C-c m") 'vr/mc-mark)
 #+END_SRC
 
 * Org Mode
