@@ -1644,6 +1644,16 @@ Stop the error buffer from popping up while working in buffers other than the RE
   (setq cider-popup-stacktraces nil)
 #+END_SRC
 
+*** TODO Pull Clojure section into a separate file
+
+    This section is completely self-contained, i.e. doesn't depend on
+    other parts in this file, so I can pull this into a separate file
+    and load it up like:
+
+#+BEGIN_SRC elisp :tangle no
+(eval-after-load 'clojure-mode '(require 'my-clojure-setup))
+#+END_SRC
+
 ** Scala
 
    We need to load the [[https://github.com/haxney/scala-mode][scala mode]].
