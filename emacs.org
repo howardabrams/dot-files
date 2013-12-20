@@ -13,7 +13,7 @@ organize it and take notes on all the complexity.
 
 #+BEGIN_EXAMPLE
   ;; Load our Literate Programming version of our Dot Emacs
-  ;; file, from file: ~/Dropbox/emacs.d/dot-emacs.org
+  ;; file, from file: ~/Work/dot-files/emacs.org
   (load-file "~/.emacs-ext.el")
 #+END_EXAMPLE
 
@@ -21,7 +21,7 @@ organize it and take notes on all the complexity.
 
   This file is really a /script/ that generates my Emacs configuration
   file. For all of this to work, you need version 24 (or at least,
-  version 23, like [[http://aquamacs.org/][Aquamacs]]). Pick [[https://github.com/railwaycat/emacs-mac-port][Yamamoto Mitsuharu's version]]!
+  version 23, like [[http://aquamacs.org/][Aquamacs]]). Download from [[http://emacsformacosx.com/builds][Emacs for Mac]].
 
 #+BEGIN_HTML
   <p>
@@ -40,18 +40,9 @@ organize it and take notes on all the complexity.
   ;;; been generated, as a tangled file, by the
   ;;; fandifluous org-mode.
   ;;;
-  ;;; Source: ~/Dropbox/dot-files/emacs.org
+  ;;; Source: ~/Work/dot-files/emacs.org
   ;;; ------------------------------------------
 #+END_SRC
-
-** Initializing a New Emacs
-
-   Emacs already comes bundled to edit most files, like Java and Ruby.
-   However, some of the new stuff that I use isn't bundled, yet.
-
-   Before this startup file can run, we need to initialize a clean
-   Emacs instance by: =load-file ~/.emacs.d/init.el=
-   This file is created by [[file:emacs-init.org][emacs-init.org]].
 
 * General Settings
 
@@ -61,9 +52,13 @@ organize it and take notes on all the complexity.
    personal stash at: =$HOME/.emacs.d=
 
 #+BEGIN_SRC elisp
-  (add-to-list 'load-path "~/.emacs.d/")
+  (add-to-list 'load-path (concat (getenv "HOME") "/.emacs.d"))
+#+END_SRC
 
-  ;; Make sure that PATH can references our "special" directories:
+   Make sure that =PATH= variable for finding binary files can
+   references my "special" directories:
+
+#+BEGIN_SRC elisp
   (setenv "PATH" (concat (getenv "HOME") "/bin:/usr/bin"
                          ":/usr/local/bin:/opt/local/bin:/Library/Frameworks/Python.framework/Versions/2.7/bin"
                          (getenv "PATH")))
@@ -72,12 +67,9 @@ organize it and take notes on all the complexity.
 ** Package Manager
 
    Emacs has become like every other operating system, and now has a
-   [[http://tromey.com/elpa/][package manager]] with its own collection of repositories. Of
-   course, now, instead of trying to figure out and maintain
-   packages, we have to keep track of what packages live on what
-   repos. This is [[http://batsov.com/articles/2012/02/19/package-management-in-emacs-the-good-the-bad-and-the-ugly/][an improvement]].
-
-   Add more package archives, like the [[http://marmalade-repo.org/][Marmalade repository]].
+   [[http://tromey.com/elpa/][package manager]] with its own collection repository, but since it is
+   so conservative, we need to add more repositories to get all the
+   sweet goodness, I demand.
 
 #+BEGIN_SRC elisp
   ; (load "~/.emacs.d/elpa/package.el") Needed for version 23 only!
@@ -101,12 +93,107 @@ organize it and take notes on all the complexity.
 
 ** Package Loading
 
+   Not sure why the package management system doesn't come with a
+   programmatic way to specify what packages should be installed. Oh
+   yeah, this is pretty new. Looks like everyone just rolls there own,
+   so this is mine.
+
+#+BEGIN_SRC elisp
+  (defun packages-install (packages)
+    (dolist (it packages)
+      (when (not (package-installed-p it))
+        (if (y-or-n-p (format "Package '%s' not found on system. Install?" it))
+            (package-install it))))
+    (delete-other-windows))
+#+END_SRC
+
+   This means that at any point in my configuration file, I can
+   specify a list of packages to make sure they are installed.
+
+#+BEGIN_SRC elisp
+  (packages-install
+                 '(auto-complete
+                   circe
+                   color-theme
+                   color-theme-sanityinc-tomorrow
+                   dired-details
+                   emmet-mode
+                   epl
+                   expand-region
+                   flycheck
+                   flycheck-color-mode-line
+                   flymake
+                   flyspell
+                   git-commit-mode
+                   git-gutter-fringe
+                   gitconfig-mode
+                   gitignore-mode
+                   graphviz-dot-mode
+                   iy-go-to-char
+                   key-chord
+                   mac-key-mode
+                   magit
+                   markdown-mode
+                   multiple-cursors
+                   nlinum
+                   smart-mode-line
+                   ;; redo+             ;; If not installed, edit mac-key-mode
+                   ;; scala-mode
+                   smex
+                   undo-tree
+                   yasnippet
+  
+              ;; Web Related Stuff
+                   web-mode
+                   mustache-mode
+                   handlebars-mode
+                   htmlize    ;; I use this more for org-mode
+  
+              ;; JavaScript
+                   js-comint
+                   js2-mode
+                   flymake-jshint
+                   ac-js2
+                   js2-refactor
+                   json-mode
+                   coffee-mode
+                   flymake-coffee
+  
+              ;; Clojure
+                   ac-nrepl
+                   clojure-mode
+                   clojurescript-mode
+                   elein
+                   nrepl
+                   nrepl-ritz
+                   paredit
+                   rainbow-delimiters  ;; Mode for alternating paren colors
+  
+              ;; The Wonderful World of Org-Mode
+                   org
+                   org-mime
+                   org-presie
+                   plantuml-mode
+                   ox-reveal
+  
+              ;; Python packages
+                   flymake-python-pyflakes
+                   nose
+                   jedi
+                   ein
+                   virtualenv))
+#+END_SRC
+
+** Package Verification
+
    The =(require)= is a problem if the library isn't available, and if
    it isn't available, then this file dies and doesn't complete.
    Seems like it would be nice to wrap the configuration of a package
    in a block that is ignored if the package isn't available.
 
-   This is what I found [[http://stackoverflow.com/questions/7790382/how-to-determine-whether-a-package-is-installed-in-elisp][in this discussion]].
+   The following code was found [[http://stackoverflow.com/questions/7790382/how-to-determine-whether-a-package-is-installed-in-elisp][in this discussion]], but I believe
+   I'll be phasing this out now that I can simply install a long list
+   of packages when I start.
 
 #+BEGIN_SRC elisp
   (defun autofeaturep (feature)
@@ -412,16 +499,7 @@ organize it and take notes on all the complexity.
    cycle through window/frame configurations.
 
 #+BEGIN_SRC elisp
-  (if (autofeaturep 'winner-mode)
-      (progn
-        (winner-mode 1)))
-#+END_SRC
-
-   I like the ability to move the current line up or down by just
-   doing =S-M-up= and =S-M-down= (just like in Eclipse):
-
-#+BEGIN_SRC elisp
-  (load-library "line-move")
+  (winner-mode 1)
 #+END_SRC
 
 ** Key Chords
@@ -494,9 +572,6 @@ organize it and take notes on all the complexity.
    are typing. Useful at times ... annoying at others.
 
 #+BEGIN_SRC elisp
-  (autoload 'scala-mode "scala-mode"
-    "Programming mode for Scala." t nil)
-
   (require 'auto-complete-config)
   (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
 
@@ -1204,9 +1279,9 @@ to the same day of the week.
      )
   
     ("dot-files"
-     :base-directory       "~/Dropbox/dot-files/"
+     :base-directory       "~/Work/dot-files/"
      :base-extension       "org"
-     :publishing-directory "~/Dropbox/dot-files/docs"
+     :publishing-directory "~/Work/dot-files/docs"
      :recursive            f
      :publishing-function   org-publish-org-to-html
      :auto-preamble         t
