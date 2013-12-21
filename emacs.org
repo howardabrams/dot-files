@@ -117,7 +117,6 @@ organize it and take notes on all the complexity.
                    color-theme
                    color-theme-sanityinc-tomorrow
                    dired-details
-                   emmet-mode
                    epl
                    expand-region
                    flycheck
@@ -138,41 +137,10 @@ organize it and take notes on all the complexity.
                    nlinum
                    smart-mode-line
                    ;; redo+             ;; If not installed, edit mac-key-mode
-                   ;; scala-mode
                    smex
                    undo-tree
                    visual-regexp
-                   yasnippet
-  
-              ;; Web Related Stuff
-                   web-mode
-                   mustache-mode
-                   handlebars-mode
-                   htmlize    ;; I use this more for org-mode
-  
-              ;; JavaScript
-                   js-comint
-                   js2-mode
-                   flymake-jshint
-                   ac-js2
-                   js2-refactor
-                   json-mode
-                   coffee-mode
-                   flymake-coffee
-  
-              ;; The Wonderful World of Org-Mode
-                   org
-                   org-mime
-                   org-presie
-                   plantuml-mode
-                   ox-reveal
-  
-              ;; Python packages
-                   flymake-python-pyflakes
-                   nose
-                   jedi
-                   ein
-                   virtualenv))
+                   yasnippet))
 #+END_SRC
 
 ** Package Verification
@@ -941,7 +909,15 @@ brew install homebrew/dupes/grep
 * Org Mode
 
   The [[http://orgmode.org][Org Mode]] feature was a big reason in my recent re-kindling of my
-  Emacs love affair.
+  Emacs love affair. Make sure the latest packages are installed:
+
+#+BEGIN_SRC elisp
+  (packages-install '( org
+                       org-mime
+                       org-presie
+                       plantuml-mode
+                       ox-reveal ))
+#+END_SRC
 
 ** Initial Settings
 
@@ -1691,6 +1667,19 @@ Stop the error buffer from popping up while working in buffers other than the RE
    - Syntax verification (with flymake-jshint)
    - Interactive REPL
 
+   We use the following packages based on =js2-mode=:
+
+#+BEGIN_SRC elisp
+  (packages-install '( js-comint
+                       js2-mode
+                       flymake-jshint
+                       ac-js2
+                       js2-refactor
+                       json-mode
+                       coffee-mode
+                       flymake-coffee ))
+#+END_SRC
+
    Why yes, it seems that the JavaScript mode has a special
    indentation setting. Go below?
 
@@ -1890,6 +1879,14 @@ Stop the error buffer from popping up while working in buffers other than the RE
    question is whether I use Rope or Jedi for auto-completion.  Seems
    like Rope is better, so I will use it instead of Jedi... for now.
 
+#+BEGIN_SRC elisp
+  (packages-install '( flymake-python-pyflakes
+                       nose
+                       jedi
+                       ein
+                       virtualenv ))
+#+END_SRC
+
    Make sure that PATH can reference the Python executables, and
    since I am installing a updated Python...
 
@@ -2027,21 +2024,37 @@ Stop the error buffer from popping up while working in buffers other than the RE
     annoying.
 
 ** HTML, CSS and Web Work
-
+   
    The basic web features of Emacs are often good enough, but
    [[https://github.com/smihica/emmet-mode][Emmet-Mode]] looks pretty sweet.
 
 #+BEGIN_SRC elisp
-(add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
-(add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
-(add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 2))) ;; indent 2 spaces.
+  (packages-install '( emmet-mode
+                       web-mode
+                       mustache-mode
+                       handlebars-mode
+                       htmlize ))    ;; I use this more for org-mode
+#+END_SRC
+
+   Now, hook emmet up to SGML and all the other modes:
+
+#+BEGIN_SRC elisp
+  (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+  (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.  
+#+END_SRC
+
+   Set emmet to only use 2 spaces:
+
+#+BEGIN_SRC elisp
+  (add-hook 'emmet-mode-hook (lambda () 
+                               (setq emmet-indentation 2))) ;; indent 2 spaces.
 #+END_SRC
 
    If you want the cursor to be positioned between first empty quotes
    after expanding:
 
 #+BEGIN_SRC elisp :tangle no
-(setq emmet-move-cursor-between-quotes t) ;; default nil
+  (setq emmet-move-cursor-between-quotes t) ;; default nil
 #+END_SRC
 
 * Tools
