@@ -121,7 +121,6 @@ organize it and take notes on all the complexity.
                    expand-region
                    flycheck
                    flycheck-color-mode-line
-                   flymake
                    flyspell
                    git-commit-mode
                    git-gutter-fringe
@@ -167,6 +166,7 @@ organize it and take notes on all the complexity.
               (throw 'result t))))
         (featurep feature))))
 #+END_SRC
+
 ** Variables
 
    General settings about me that other packages can use. The biggest
@@ -906,6 +906,18 @@ brew install homebrew/dupes/grep
   (define-key global-map (kbd "C-c m") 'vr/mc-mark)
 #+END_SRC
 
+*** Flycheck
+
+    [[https://github.com/flycheck/flycheck][Flycheck]] seems to be quite superior to good ol' Flymake.
+
+#+BEGIN_SRC elisp
+(require 'flycheck)
+
+(add-hook 'after-init-hook #'global-flycheck-mode)
+#+END_SRC
+
+    The most interesting aspect is that it doesn't support Clojure.
+
 * Org Mode
 
   The [[http://orgmode.org][Org Mode]] feature was a big reason in my recent re-kindling of my
@@ -914,6 +926,7 @@ brew install homebrew/dupes/grep
 #+BEGIN_SRC elisp
   (packages-install '( org
                        org-mime
+                       org-journal
                        org-presie
                        plantuml-mode
                        ox-reveal ))
@@ -946,7 +959,7 @@ brew install homebrew/dupes/grep
    All my journal entries will be formatted using org-mode:
 
 #+BEGIN_SRC elisp
-  (add-to-list 'auto-mode-alist '("^[0-9]*$" . org-mode))
+  (add-to-list 'auto-mode-alist '(".*/[0-9]*$" . org-mode))
 #+END_SRC
 
    The date format is essentially, the top of the file.
@@ -1487,6 +1500,8 @@ to the same day of the week.
 #+BEGIN_SRC elisp
   (packages-install '( ac-nrepl
                        clojure-mode
+                       clojure-cheatsheet
+                       clojure-snippets
                        clojurescript-mode
                        cider
                        elein
@@ -1664,7 +1679,7 @@ Stop the error buffer from popping up while working in buffers other than the RE
 
    JavaScript should have three parts:
    - Syntax highlight (already included)
-   - Syntax verification (with flymake-jshint)
+   - Syntax verification (with flycheck)
    - Interactive REPL
 
    We use the following packages based on =js2-mode=:
@@ -1672,12 +1687,10 @@ Stop the error buffer from popping up while working in buffers other than the RE
 #+BEGIN_SRC elisp
   (packages-install '( js-comint
                        js2-mode
-                       flymake-jshint
                        ac-js2
                        js2-refactor
                        json-mode
-                       coffee-mode
-                       flymake-coffee ))
+                       coffee-mode ))
 #+END_SRC
 
    Why yes, it seems that the JavaScript mode has a special
@@ -1725,9 +1738,9 @@ Stop the error buffer from popping up while working in buffers other than the RE
 
    While editing JavaScript is baked into Emacs, it is kinda cool to
    have it give you red sections based on [[http://www.jshint.com/][jshint]].
-   This is done with [[http://www.emacswiki.org/emacs/FlymakeJavaScript][FlyMake]].
+   This is now done with Flycheck, and we now don't use [[http://www.emacswiki.org/emacs/FlymakeJavaScript][FlyMake]].
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle no
   (autoload 'flymake-jshint "flymake-jshint"
     "Error and linting support mode for JavaScript." t nil)
 
@@ -1880,8 +1893,7 @@ Stop the error buffer from popping up while working in buffers other than the RE
    like Rope is better, so I will use it instead of Jedi... for now.
 
 #+BEGIN_SRC elisp
-  (packages-install '( flymake-python-pyflakes
-                       nose
+  (packages-install '( nose
                        jedi
                        ein
                        virtualenv ))
@@ -1935,9 +1947,9 @@ Stop the error buffer from popping up while working in buffers other than the RE
 *** Flymake for Python
 
     Lint-style syntax checking for Python builds on the regular
-    Flymake package.
+    Flymake package, however, I am now using Flycheck for that.
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle no
   (if (autofeaturep 'flymake-python-pyflakes)
       (progn
         (require 'flymake-python-pyflakes)
