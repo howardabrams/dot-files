@@ -867,15 +867,29 @@ brew install homebrew/dupes/grep
     I like the cleanliness of the [[https://github.com/Bruce-Connor/smart-mode-line][Smart Mode Line]]:
 
 #+BEGIN_SRC elisp
-  (if (autofeaturep 'smart-mode-line)
-      (progn
-        (require 'smart-mode-line)
-        (custom-set-variables '(sml/active-background-color "dark blue"))
-  
-        (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" ":Goo:"))
-        (add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-api/server/" ":API:"))
-        (add-to-list 'sml/hidden-modes " Undo-Tree")
-        (sml/setup)))
+  (require 'smart-mode-line)
+  (if after-init-time (sml/setup)
+    (add-hook 'after-init-hook 'sml/setup))
+
+  (custom-set-variables '(sml/active-background-color "dark blue"))
+#+END_SRC
+
+    Especially since you can limit the pathname of the displayed
+    filename.
+
+#+BEGIN_SRC elisp
+  (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" ":Goo:"))
+  (add-to-list 'sml/replacer-regexp-list '("^~/Other/dot-files" ":.:"))
+  (add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-api/server/" ":API:"))
+  (add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-fai/ci/" ":CI:"))
+#+END_SRC
+
+    Hiding some Minor modes in the mode line is real swell. This
+    leaves the mode-line with only important stuff.
+
+#+BEGIN_SRC elisp
+  (add-to-list 'sml/hidden-modes " GitGutter")
+  (add-to-list 'sml/hidden-modes " Undo-Tree")
 #+END_SRC
 
 *** Better Searching and Visual Regular Expressions
