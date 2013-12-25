@@ -44,7 +44,7 @@
 
 (package-initialize)
 
-;; Package Loading
+;; Installing Extra Packages
 
 ;;    Not sure why the package management system doesn't come with a
 ;;    programmatic way to specify what packages should be installed. Oh
@@ -67,12 +67,10 @@
                  color-theme
                  color-theme-sanityinc-tomorrow
                  dired-details
-                 emmet-mode
                  epl
                  expand-region
                  flycheck
                  flycheck-color-mode-line
-                 flymake
                  flyspell
                  git-commit-mode
                  git-gutter-fringe
@@ -88,50 +86,10 @@
                  nlinum
                  smart-mode-line
                  ;; redo+             ;; If not installed, edit mac-key-mode
-                 ;; scala-mode
                  smex
                  undo-tree
-                 yasnippet
-
-            ;; Web Related Stuff
-                 web-mode
-                 mustache-mode
-                 handlebars-mode
-                 htmlize    ;; I use this more for org-mode
-
-            ;; JavaScript
-                 js-comint
-                 js2-mode
-                 flymake-jshint
-                 ac-js2
-                 js2-refactor
-                 json-mode
-                 coffee-mode
-                 flymake-coffee
-
-            ;; Clojure
-                 ac-nrepl
-                 clojure-mode
-                 clojurescript-mode
-                 elein
-                 nrepl
-                 nrepl-ritz
-                 paredit
-                 rainbow-delimiters  ;; Mode for alternating paren colors
-
-            ;; The Wonderful World of Org-Mode
-                 org
-                 org-mime
-                 org-presie
-                 plantuml-mode
-                 ox-reveal
-
-            ;; Python packages
-                 flymake-python-pyflakes
-                 nose
-                 jedi
-                 ein
-                 virtualenv))
+                 visual-regexp
+                 yasnippet))
 
 ;; Package Verification
 
@@ -606,7 +564,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 (ido-mode 1)
 
 ;; According to [[https://gist.github.com/rkneufeld/5126926][Ryan Kneufeld]], we could make IDO work
-;;     vertically. Not sure if I like this, but we'll try.
+;;     vertically, which is much easier to read.
 
 (setq ido-decorations                                                      ; Make ido-mode display vertically
       (quote
@@ -710,6 +668,50 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
       (add-to-list 'sml/hidden-modes " Undo-Tree")
       (sml/setup)))
 
+;; Better Searching and Visual Regular Expressions
+
+;;     Only after you've started an =isearch-forward= do you wish you had
+;;     regular expressions available, so why not just switch those defaults?
+
+(global-set-key (kbd "C-s") 'isearch-forward-regexp)
+(global-set-key (kbd "C-r") 'isearch-backward-regexp)
+(global-set-key (kbd "C-M-s") 'isearch-forward)
+(global-set-key (kbd "C-M-r") 'isearch-backward)
+
+;; The [[https://github.com/benma/visual-regexp.el][Visual Regular Expressions]] project highlights the matches
+;;     while you try to remember the differences between Perl's regular
+;;     expressions and Emacs'...
+
+;;     Begin with =C-c r= then type the regexp. To see the highlighted
+;;     matches, type =C-c a= before you hit 'Return' to accept it.
+
+(require 'visual-regexp)
+(define-key global-map (kbd "C-c r") 'vr/replace)
+(define-key global-map (kbd "C-c q") 'vr/query-replace)
+
+;; if you use multiple-cursors, this is for you:
+(define-key global-map (kbd "C-c m") 'vr/mc-mark)
+
+;; Flycheck
+
+;;     [[https://github.com/flycheck/flycheck][Flycheck]] seems to be quite superior to good ol' Flymake.
+
+(require 'flycheck)
+
+(add-hook 'after-init-hook #'global-flycheck-mode)
+
+;; Org Mode
+
+;;   The [[http://orgmode.org][Org Mode]] feature was a big reason in my recent re-kindling of my
+;;   Emacs love affair. Make sure the latest packages are installed:
+
+(packages-install '( org
+                     org-mime
+                     org-journal
+                     org-presie
+                     plantuml-mode
+                     ox-reveal ))
+
 ;; Initial Settings
 
 ;;    Initialization of Org Mode by hooking it into YASnippets, which
@@ -732,7 +734,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 ;; All my journal entries will be formatted using org-mode:
 
-(add-to-list 'auto-mode-alist '("^[0-9]*$" . org-mode))
+(add-to-list 'auto-mode-alist '(".*/[0-9]*$" . org-mode))
 
 ;; The date format is essentially, the top of the file.
 
@@ -1142,33 +1144,48 @@ same day of the month, but will be the same day of the week."
 
 ;; Clojure
 
-;;    Me like Clojure, and since it is a LISP, then Emacs likes it too.
+;;    Me like [[http://clojure.org][Clojure]], and since it is a LISP, then [[https://github.com/clojure-emacs][Emacs likes it]] too.
+;;    Here are all the packages related to Clojure that I use. Note
+;;    my migration from [[https://github.com/clojure-emacs/nrepl.el][nrepl]] to [[https://github.com/clojure-emacs/cider][Cider]].
 
-(if (autofeaturep 'clojure-mode)
-    (progn
-      (require 'clojure-mode)
-      (add-hook 'clojure-mode-hook
-                '(lambda ()
-                   (yas/minor-mode-on)))
+(packages-install '( ac-nrepl
+                     clojure-mode
+                     clojure-cheatsheet
+                     clojure-snippets
+                     clojurescript-mode
+                     cider
+                     elein
+                     ;; nrepl
+                     ;; nrepl-ritz
+                     paredit
+                     rainbow-delimiters  ;; Mode for alternating paren colors
+                     ))
 
-      ;; This makes Compojure macro calls look nicer.
-      ;; https://github.com/weavejester/compojure/wiki
-      (define-clojure-indent
-        (defroutes 'defun)
-        (GET 2)
-        (POST 2)
-        (PUT 2)
-        (DELETE 2)
-        (HEAD 2)
-        (ANY 2)
-        (context 2))))
+;; Need to add Yasnippets to Clojure mode:
+
+(require 'clojure-mode)
+
+(add-hook 'clojure-mode-hook
+          '(lambda ()
+             (yas/minor-mode-on)))
+
+;; According to the [[https://github.com/weavejester/compojure/wiki][Compojure Wiki]], the following code makes their
+;;    macros look prettier:
+
+(define-clojure-indent
+  (defroutes 'defun)
+  (GET 2)
+  (POST 2)
+  (PUT 2)
+  (DELETE 2)
+  (HEAD 2)
+  (ANY 2)
+  (context 2))
 
 ;; Most LISP-based programming is better with rainbow ponies:
 
-(if (autofeaturep 'rainbow-delimiters)
-    (progn
-      (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
-      (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)))
+(add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
+(add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
 
 ;; Paredit
 
@@ -1249,10 +1266,19 @@ same day of the month, but will be the same day of the week."
 
 ;;    JavaScript should have three parts:
 ;;    - Syntax highlight (already included)
-;;    - Syntax verification (with flymake-jshint)
+;;    - Syntax verification (with flycheck)
 ;;    - Interactive REPL
 
-;;    Why yes, it seems that the JavaScript mode has a special
+;;    We use the following packages based on =js2-mode=:
+
+(packages-install '( js-comint
+                     js2-mode
+                     ac-js2
+                     js2-refactor
+                     json-mode
+                     coffee-mode ))
+
+;; Why yes, it seems that the JavaScript mode has a special
 ;;    indentation setting. Go below?
 
 (setq js-basic-indent 2)
@@ -1286,18 +1312,6 @@ same day of the month, but will be the same day of the week."
 (font-lock-add-keywords 'js2-mode
                         '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
                            1 font-lock-warning-face t)))
-
-;; FlyMake and JSHint
-
-;;    While editing JavaScript is baked into Emacs, it is kinda cool to
-;;    have it give you red sections based on [[http://www.jshint.com/][jshint]].
-;;    This is done with [[http://www.emacswiki.org/emacs/FlymakeJavaScript][FlyMake]].
-
-(autoload 'flymake-jshint "flymake-jshint"
-  "Error and linting support mode for JavaScript." t nil)
-
-(add-hook 'js-mode-hook
-          (lambda () (flymake-mode 1)))
 
 ;; Refactoring JavaScript
 
@@ -1390,7 +1404,12 @@ same day of the month, but will be the same day of the week."
 ;;    question is whether I use Rope or Jedi for auto-completion.  Seems
 ;;    like Rope is better, so I will use it instead of Jedi... for now.
 
-;;    Make sure that PATH can reference the Python executables, and
+(packages-install '( nose
+                     jedi
+                     ein
+                     virtualenv ))
+
+;; Make sure that PATH can reference the Python executables, and
 ;;    since I am installing a updated Python...
 
 (setenv "PATH" (concat "/Library/Frameworks/Python.framework/Versions/2.7/bin:" (getenv "PATH")))
@@ -1409,16 +1428,6 @@ same day of the month, but will be the same day of the week."
 (if (autofeaturep 'virtualenv)
     (progn
         (require 'virtualenv)))
-
-;; Flymake for Python
-
-;;     Lint-style syntax checking for Python builds on the regular
-;;     Flymake package.
-
-(if (autofeaturep 'flymake-python-pyflakes)
-    (progn
-      (require 'flymake-python-pyflakes)
-      (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)))
 
 ;; Nose
 
@@ -1487,13 +1496,25 @@ same day of the month, but will be the same day of the week."
   )
 
 ;; HTML, CSS and Web Work
-
+   
 ;;    The basic web features of Emacs are often good enough, but
 ;;    [[https://github.com/smihica/emmet-mode][Emmet-Mode]] looks pretty sweet.
 
+(packages-install '( emmet-mode
+                     web-mode
+                     mustache-mode
+                     handlebars-mode
+                     htmlize ))    ;; I use this more for org-mode
+
+;; Now, hook emmet up to SGML and all the other modes:
+
 (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
 (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
-(add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 2))) ;; indent 2 spaces.
+
+;; Set emmet to only use 2 spaces:
+
+(add-hook 'emmet-mode-hook (lambda () 
+                             (setq emmet-indentation 2))) ;; indent 2 spaces.
 
 ;; Git
 
