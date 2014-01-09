@@ -10,16 +10,18 @@
 ;; Extra Packages
 
 ;;    Extra packages not available via the package manager go in my
-;;    personal stash at: =$HOME/.emacs.d=
+;;    personal stash at: =$HOME/.emacs.d/elisp=
 
-(add-to-list 'load-path (concat (getenv "HOME") "/.emacs.d"))
+(add-to-list 'load-path (concat (getenv "HOME") "/.emacs.d/elisp"))
 
 ;; Make sure that =PATH= variable for finding binary files can
-;;    references my "special" directories:
+;;    is the same as what Emacs will look for binary files...but only if
+;;    we are running from the =Applications= directory.
 
-(setenv "PATH" (concat (getenv "HOME") "/bin:/usr/bin"
-                       ":/usr/local/bin:/opt/local/bin:/Library/Frameworks/Python.framework/Versions/2.7/bin"
-                       (getenv "PATH")))
+(when window-system 
+  (let ((path-from-shell (shell-command-to-string "bash -i -c 'echo $PATH'")))
+    (setenv "PATH" path-from-shell)
+    (setq exec-path (split-string path-from-shell path-separator))))
 
 ;; Package Manager
 
@@ -268,11 +270,12 @@ Does not support subfeatures."
     (define-key mac-key-mode-map [(alt m)] 'toggle-meta-key)
     (define-key mac-key-mode-map [(alt k)] 'nlinum-mode))
 
-  ;; Since the default ls for the Mac isn't so good, I always have the
-  ;; GNU ls version available in /usr/local/bin/gls
-  (require 'ls-lisp)
-  (setq ls-lisp-use-insert-directory-program t)
-  (setq insert-directory-program "/usr/local/bin/gls"))
+;; Since the default ls for the Mac isn't so good, I always have the
+;;    GNU ls version available in =/usr/local/bin/gls=.
+
+(require 'ls-lisp)
+(setq ls-lisp-use-insert-directory-program t)
+(setq insert-directory-program "/usr/local/bin/gls"))
 
 ;; I hate the default implementation of Command-M. Now,
 ;;    pressing Command-M will toggle whether the Option key is a
@@ -658,15 +661,25 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 ;;     I like the cleanliness of the [[https://github.com/Bruce-Connor/smart-mode-line][Smart Mode Line]]:
 
-(if (autofeaturep 'smart-mode-line)
-    (progn
-      (require 'smart-mode-line)
-      (custom-set-variables '(sml/active-background-color "dark blue"))
+(require 'smart-mode-line)
+(if after-init-time (sml/setup)
+  (add-hook 'after-init-hook 'sml/setup))
 
-      (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" ":Goo:"))
-      (add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-api/server/" ":API:"))
-      (add-to-list 'sml/hidden-modes " Undo-Tree")
-      (sml/setup)))
+(custom-set-variables '(sml/active-background-color "dark blue"))
+
+;; Especially since you can limit the pathname of the displayed
+;;     filename.
+
+(add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" ":Goo:"))
+(add-to-list 'sml/replacer-regexp-list '("^~/Other/dot-files" ":.:"))
+(add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-api/server/" ":API:"))
+(add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-fai/ci/" ":CI:"))
+
+;; Hiding some Minor modes in the mode line is real swell. This
+;;     leaves the mode-line with only important stuff.
+
+(add-to-list 'sml/hidden-modes " GitGutter")
+(add-to-list 'sml/hidden-modes " Undo-Tree")
 
 ;; Better Searching and Visual Regular Expressions
 
@@ -997,7 +1010,7 @@ same day of the month, but will be the same day of the week."
 ;;    The brilliance of =org-mode= is the ability to publish your notes
 ;;    as HTML files into a web server. See [[http://orgmode.org/worg/org-tutorials/org-publish-html-tutorial.html][these instructions]].
 
-(require 'org-publish)
+;; (require 'org-publish)
 
 (setq org-publish-project-alist  '(
   ("org-notes"
@@ -1612,19 +1625,55 @@ same day of the month, but will be the same day of the week."
 
 ;; Eshell
 
-;;    E-shell doesn't read the [[http://www.emacswiki.org/emacs/EshellAlias][standard shell resource]] files or allow
-;;    shell functions and aliases, so I need to create emacs-specific
-;;    ones for =e= and =emacs= to simply call =find-file=:
+;;    Great shell with some good tweaks taken from [[https://github.com/eschulte/emacs24-starter-kit/blob/master/starter-kit-eshell.org][the Starter Kit]]
+;;    project. Ignoring the =.git= directories seem like a good idea.
 
-(defun eshell/e (file)
-  (find-file file))
-(defun eshell/emacs (file)
-  (find-file file))
+(setq eshell-cmpl-cycle-completions nil
+      eshell-save-history-on-exit t
+      eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
+
+;; Eshell would get somewhat confused if I ran the following commands
+;;    directly through the normal Elisp library, as these need the better
+;;    handling of ansiterm:
+
+(add-hook 'eshell-mode-hook
+   '(lambda nil
+      (add-to-list 'eshell-visual-commands "ssh")
+      (add-to-list 'eshell-visual-commands "tail")))
+
+;; Need the correct PATH even if we start Emacs from the GUI:
+
+(setenv "PATH"
+        (concat
+         "/usr/local/bin:/usr/local/sbin:"
+         (getenv "PATH")))
+
+;; If any program wants to pause the output through the =$PAGER=
+;;    variable, well, we don't really need that:
+
+(setenv "PAGER" "cat")
+
+;; Gotta have some [[http://www.emacswiki.org/emacs/EshellAlias][shell aliases]], right?
+
+(defalias 'e 'find-file)
+(defalias 'emacs 'find-file)
 
 ;; Replacing the window with the new buffer may not be what I want.
 
-(defun eshell/ee (file)
-  (find-file-other-window file))
+(defalias 'ee 'find-file-other-window)
+
+;; Some of my favorite bash aliases, can be even more helpful in
+;;    Eshell.
+
+;;    However, my =gst= command should be an alias to =magit-status=, but
+;;    using the =alias= doesn't pull in the current working directory, so
+;;    I make it a function, instead:
+
+(defun eshell/gst (&rest args)
+    (magit-status (pop args) nil))
+
+(defun eshell/l (&rest args)
+    (dired (pop args) nil))
 
 ;; Twitter
 
@@ -1657,7 +1706,6 @@ same day of the month, but will be the same day of the week."
 ;;    however, [[https://github.com/jorgenschaefer/circe/wiki][Circe]] isn't available in the standard locations, so I have
 ;;    it downloaded and installed, and need the following configuration:
 
-(add-to-list 'load-path "~/.emacs.d/lisp/circe/lisp")
 (require 'circe)
 
 (setq circe-network-options
@@ -1690,13 +1738,6 @@ same day of the month, but will be the same day of the week."
 
 (setq lui-flyspell-p t
       lui-flyspell-alist '((".*" "american")))
-
-;; exec-path
-
-;;    The exec-path should be based on the value built up of the standard
-;;    =PATH= environment variable, but it doesn't seem to, so we'll do that.
-
-(setq exec-path (split-string (getenv "PATH") ":"))
 
 ;; Then the following code will work:
 
