@@ -49,10 +49,10 @@ organize it and take notes on all the complexity.
 ** Extra Packages
 
    Extra packages not available via the package manager go in my
-   personal stash at: =$HOME/.emacs.d=
+   personal stash at: =$HOME/.emacs.d/elisp=
 
 #+BEGIN_SRC elisp
-  (add-to-list 'load-path (concat (getenv "HOME") "/.emacs.d"))
+  (add-to-list 'load-path (concat (getenv "HOME") "/.emacs.d/elisp"))
 #+END_SRC
 
    Make sure that =PATH= variable for finding binary files can
@@ -60,12 +60,10 @@ organize it and take notes on all the complexity.
    we are running from the =Applications= directory.
 
 #+BEGIN_SRC elisp
-  (defun set-exec-path-from-shell-PATH ()
-    (let ((path-from-shell (shell-command-to-string "$SHELL -i -c 'echo $PATH'")))
+  (when window-system 
+    (let ((path-from-shell (shell-command-to-string "bash -i -c 'echo $PATH'")))
       (setenv "PATH" path-from-shell)
       (setq exec-path (split-string path-from-shell path-separator))))
-
-  (when window-system (set-exec-path-from-shell-PATH))
 #+END_SRC
 
 ** Package Manager
@@ -354,9 +352,12 @@ organize it and take notes on all the complexity.
       (define-key mac-key-mode-map [(alt w)] 'delete-single-window)
       (define-key mac-key-mode-map [(alt m)] 'toggle-meta-key)
       (define-key mac-key-mode-map [(alt k)] 'nlinum-mode))
-  
-    ;; Since the default ls for the Mac isn't so good, I always have the
-    ;; GNU ls version available in /usr/local/bin/gls
+#+END_SRC
+
+   Since the default ls for the Mac isn't so good, I always have the
+   GNU ls version available in =/usr/local/bin/gls=.
+
+#+BEGIN_SRC elisp
     (require 'ls-lisp)
     (setq ls-lisp-use-insert-directory-program t)
     (setq insert-directory-program "/usr/local/bin/gls"))
@@ -1286,7 +1287,7 @@ to the same day of the week.
    as HTML files into a web server. See [[http://orgmode.org/worg/org-tutorials/org-publish-html-tutorial.html][these instructions]].
 
 #+BEGIN_SRC elisp
-  (require 'org-publish)
+  ;; (require 'org-publish)
   
   (setq org-publish-project-alist  '(
     ("org-notes"
@@ -2209,9 +2210,9 @@ Stop the error buffer from popping up while working in buffers other than the RE
    project. Ignoring the =.git= directories seem like a good idea.
 
 #+BEGIN_SRC elisp
-(setq eshell-cmpl-cycle-completions nil
-      eshell-save-history-on-exit t
-      eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
+  (setq eshell-cmpl-cycle-completions nil
+        eshell-save-history-on-exit t
+        eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
 #+END_SRC
 
    Eshell would get somewhat confused if I ran the following commands
@@ -2219,8 +2220,19 @@ Stop the error buffer from popping up while working in buffers other than the RE
    handling of ansiterm:
 
 #+BEGIN_SRC elisp
-  (add-to-list 'eshell-visual-commands "ssh")
-  (add-to-list 'eshell-visual-commands "tail")
+  (add-hook 'eshell-mode-hook
+     '(lambda nil
+        (add-to-list 'eshell-visual-commands "ssh")
+        (add-to-list 'eshell-visual-commands "tail")))
+#+END_SRC
+
+   Need the correct PATH even if we start Emacs from the GUI:
+
+#+BEGIN_SRC elisp
+  (setenv "PATH"
+          (concat
+           "/usr/local/bin:/usr/local/sbin:"
+           (getenv "PATH")))
 #+END_SRC
 
    If any program wants to pause the output through the =$PAGER=
@@ -2230,22 +2242,32 @@ Stop the error buffer from popping up while working in buffers other than the RE
   (setenv "PAGER" "cat")
 #+END_SRC
 
-   E-shell doesn't read the [[http://www.emacswiki.org/emacs/EshellAlias][standard shell resource]] files or allow
-   shell functions and aliases, so I need to create emacs-specific
-   ones for =e= and =emacs= to simply call =find-file=:
+   Gotta have some [[http://www.emacswiki.org/emacs/EshellAlias][shell aliases]], right?
 
 #+BEGIN_SRC elisp
-  (defun eshell/e (file)
-    (find-file file))
-  (defun eshell/emacs (file)
-    (find-file file))
+  (defalias 'e 'find-file)
+  (defalias 'emacs 'find-file)
 #+END_SRC
 
    Replacing the window with the new buffer may not be what I want.
  
 #+BEGIN_SRC elisp
-  (defun eshell/ee (file)
-    (find-file-other-window file))
+  (defalias 'ee 'find-file-other-window)
+#+END_SRC
+
+   Some of my favorite bash aliases, can be even more helpful in
+   Eshell.
+
+   However, my =gst= command should be an alias to =magit-status=, but
+   using the =alias= doesn't pull in the current working directory, so
+   I make it a function, instead:
+
+#+BEGIN_SRC elisp
+  (defun eshell/gst (&rest args)
+      (magit-status (pop args) nil))
+
+  (defun eshell/l (&rest args)
+      (dired (pop args) nil))
 #+END_SRC
 
 ** Twitter
@@ -2284,7 +2306,6 @@ Stop the error buffer from popping up while working in buffers other than the RE
    it downloaded and installed, and need the following configuration:
 
 #+BEGIN_SRC elisp
-  (add-to-list 'load-path "~/.emacs.d/lisp/circe/lisp")
   (require 'circe)
 
   (setq circe-network-options
@@ -2325,20 +2346,6 @@ Stop the error buffer from popping up while working in buffers other than the RE
 #+BEGIN_SRC elisp
   (setq lui-flyspell-p t
         lui-flyspell-alist '((".*" "american")))
-#+END_SRC
-
-* Final Thoughts
-
-  Order sometimes matter, and this section is specially applied at
-  the end of the file.
-
-** exec-path
-
-   The exec-path should be based on the value built up of the standard
-   =PATH= environment variable, but it doesn't seem to, so we'll do that.
-
-#+BEGIN_SRC elisp
-  (setq exec-path (split-string (getenv "PATH") ":"))
 #+END_SRC
 
 * Technical Artifacts
