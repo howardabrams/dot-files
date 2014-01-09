@@ -38,27 +38,11 @@ and global variables are stored in =.profile= and =.zsh_profile=.
 
 * Editor
 
-  Wrapper around the standard =emacsclient= executable. This
-  essentially replaces the standard =emacs= command, but this
-  is asynchronous and *doesn't block*:
-
-#+BEGIN_SRC sh
-  if [ -d /Applications/Emacs.app ]
-  then
-      alias emacs='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
-  fi
-#+END_SRC
-
   Another wrapper around =emacsclient= but this is a blocking
   approach suitable for being set to the =EDITOR= variable.
 
 #+BEGIN_SRC sh
-  if [ -d /Applications/Emacs.app ]
-  then
-      alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
-  else
-      alias e='emacsclient -q -a emacs'
-  fi
+  alias e='emacsclient -q -a emacs'
 #+END_SRC
 
   It is unclear whether =e= is a good version for the =EDITOR=
