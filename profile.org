@@ -29,7 +29,7 @@ a shell-slut, and dabble between Zshell and Fish.
   OLDPATH=$PATH
   PATH=$HOME/bin
 
-  for DIR in /usr/local/git/bin /Applications/Emacs.app/Contents/MacOS/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/sbin
+  for DIR in /usr/local/git/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/sbin
   do
     if [[ -d $DIR ]]
     then
@@ -42,11 +42,12 @@ a shell-slut, and dabble between Zshell and Fish.
 
 * Emacs
 
-  Set =EDITOR= to start up an =emacsclient=:
+  Set =EDITOR= to start up an =emacsclient=, but do that from the one
+  I built from Homebrew:
 
 #+BEGIN_SRC sh
-  export ALTERNATE_EDITOR=/Applications/Emacs.app/Contents/MacOS/Emacs
-  export EDITOR=/Applications/Emacs.app/Contents/MacOS/bin/emacsclient
+  export ALTERNATE_EDITOR=/usr/local/bin/emacs
+  export EDITOR=/usr/local/bin/emacsclient
 #+END_SRC
 
   I like Cask.

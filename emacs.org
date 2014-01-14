@@ -1051,7 +1051,7 @@ to the same day of the week.
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2013-25")
+  (setq current-sprint "2014-01")
   
   (defun current-sprint-file ()
     (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
