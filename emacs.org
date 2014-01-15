@@ -2,26 +2,10 @@
 #+AUTHOR: Howard Abrams
 #+EMAIL:  howard.abrams@gmail.com
 
-This is my =.emacs= file, written using [[http://www.orgmode.org][org-mode]], so that I can
-organize it and take notes on all the complexity.
-
-  - The =tab= key opens/close a particular section
-  - Shift + =tab= cycles between the outline and full text
-  - Render it with:  =C-c C-v t=
-  - Creates a file:  =~/.emacs-ext.el=
-  - Load it during from the =.emacs= file, like:
-
-#+BEGIN_EXAMPLE
-  ;; Load our Literate Programming version of our Dot Emacs
-  ;; file, from file: ~/Work/dot-files/emacs.org
-  (load-file "~/.emacs-ext.el")
-#+END_EXAMPLE
-
 * Introduction
 
-  This file is really a /script/ that generates my Emacs configuration
-  file. For all of this to work, you need version 24 (or at least,
-  version 23, like [[http://aquamacs.org/][Aquamacs]]). Download from [[http://emacsformacosx.com/builds][Emacs for Mac]].
+  This is my =.emacs= file, written using [[http://www.orgmode.org][org-mode]], so that I can
+  organize it and take notes on all the complexity.
 
 #+BEGIN_HTML
   <p>
@@ -29,6 +13,45 @@ organize it and take notes on all the complexity.
     file</a> or view the <a href="dot-emacs.el">tangled end results</a>.
   </p>
 #+END_HTML
+
+  If you are playing around with the =org-mode= version, note:
+
+  - The =tab= key opens/close a particular section
+  - Shift + =tab= cycles between the outline and full text
+  - Render it with:  =C-c C-v t=
+  - Creates a file:  =~/.emacs-ext.el=
+
+** Emacs Executable
+
+   This file is really a /script/ that requires version 24 of Emacs.
+   While I often use [[http://emacsformacosx.com/builds][Emacs for Mac]], lately, I've been building from
+   [[http://brew.sh/][Homebrew]] with the following:
+
+#+BEGIN_SRC sh :tangle no
+brew install emacs --HEAD --cocoa --srgb
+brew linkapps
+#+END_SRC
+
+   Not only does this install the latest version of Emacs in
+   =/usr/local/bin/emacs=, but it also links a GUI version in
+   =/Application/Emacs.app=. Goody.
+
+** Loading this File
+
+   To "load" the contents of this file, add the following to =$HOME/.emacs=:
+
+#+BEGIN_EXAMPLE
+  ;; Load our Literate Programming version of our Dot Emacs
+  ;; file, from file: ~/Work/dot-files/emacs.org
+  (unless (boundp 'aquamacs-version)
+    (load-file "~/.emacs-ext.el"))
+#+END_EXAMPLE
+
+   *Note:* I only load this from a "normal" Emacs distribution, which allows
+   me to play around with [[http://aquamacs.org/][Aquamacs]] and [[http://eschulte.github.io/emacs-starter-kit/][Starter Kits]] for recommendation
+   to people new to Emacs.
+
+** Editing Warning
 
   Begin this initialization script with a warning not to edit the
   generated file:
