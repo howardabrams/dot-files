@@ -446,14 +446,14 @@ organize it and take notes on all the complexity.
    - *F3* - Define a keyboard macro
    - *F4* - Replay a keyboard macro
    - *F5* - Slime-JS REPL
-   - *F6* - Find file ... surely I can solve a bigger problem, eh?
+   - *F6* - Setup window or move forward with demonstration.
    - *F7* - Switch to another window
    - *F8* - Switch to buffer
    - *F9* - My other meta key for changing colors and other odd
      bindings that I actually don't use that often
 
 #+BEGIN_SRC elisp
-  (global-set-key (kbd "<f6>") 'ido-find-file)
+  (global-set-key (kbd "<f6>") 'setup-windows)
   (global-set-key (kbd "<f7>") 'other-window)
   (global-set-key (kbd "<f8>") 'ido-switch-buffer)
 #+END_SRC
