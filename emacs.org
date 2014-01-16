@@ -241,18 +241,20 @@ brew linkapps
    be [[http://blogs.adobe.com/typblography/2012/09/source-code-pro.html][downloaded]] and installed.
 
 #+BEGIN_SRC elisp
-  (set-frame-font "Source Code Pro")
-  (set-face-attribute 'default nil :font "Source Code Pro" :height 140)
-  (set-face-font 'default "Source Code Pro")
+  (when (window-system)
+    (set-frame-font "Source Code Pro")
+    (set-face-attribute 'default nil :font "Source Code Pro" :height 140)
+    (set-face-font 'default "Source Code Pro"))
 #+END_SRC
 
    While I do like the =Anonymous Pro= font (and usually have it download and
    installed), I don't like it as much.
 
 #+BEGIN_SRC elisp :tangle no
-  (set-default-font "Anonymous Pro")
-  (set-face-attribute 'default nil :font "Anonymous Pro" :height 140)
-  (set-face-font 'default "Anonymous Pro")
+  (when (window-system)
+    (set-default-font "Anonymous Pro")
+    (set-face-attribute 'default nil :font "Anonymous Pro" :height 140)
+    (set-face-font 'default "Anonymous Pro"))
 #+END_SRC
 
 ** Line Numbers
