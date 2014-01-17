@@ -154,9 +154,10 @@ Does not support subfeatures."
 ;; Specify the default font as =Source Code Pro=, which should already
 ;;    be [[http://blogs.adobe.com/typblography/2012/09/source-code-pro.html][downloaded]] and installed.
 
-(set-frame-font "Source Code Pro")
-(set-face-attribute 'default nil :font "Source Code Pro" :height 140)
-(set-face-font 'default "Source Code Pro")
+(when (window-system)
+  (set-frame-font "Source Code Pro")
+  (set-face-attribute 'default nil :font "Source Code Pro" :height 140)
+  (set-face-font 'default "Source Code Pro"))
 
 ;; Line Numbers
 
@@ -352,13 +353,13 @@ end tell"))
 ;;    - *F3* - Define a keyboard macro
 ;;    - *F4* - Replay a keyboard macro
 ;;    - *F5* - Slime-JS REPL
-;;    - *F6* - Find file ... surely I can solve a bigger problem, eh?
+;;    - *F6* - Setup window or move forward with demonstration.
 ;;    - *F7* - Switch to another window
 ;;    - *F8* - Switch to buffer
 ;;    - *F9* - My other meta key for changing colors and other odd
 ;;      bindings that I actually don't use that often
 
-(global-set-key (kbd "<f6>") 'ido-find-file)
+(global-set-key (kbd "<f6>") 'setup-windows)
 (global-set-key (kbd "<f7>") 'other-window)
 (global-set-key (kbd "<f8>") 'ido-switch-buffer)
 
@@ -808,7 +809,7 @@ same day of the month, but will be the same day of the week."
 ;;     At the beginning of each sprint, we need to set this to the new
 ;;     sprint file.
 
-(setq current-sprint "2013-25")
+(setq current-sprint "2014-01")
 
 (defun current-sprint-file ()
   (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))

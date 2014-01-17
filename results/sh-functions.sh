@@ -8,24 +8,10 @@
 
 # Editor
 
-#   Wrapper around the standard =emacsclient= executable. This
-#   essentially replaces the standard =emacs= command, but this
-#   is asynchronous and *doesn't block*:
-
-if [ -d /Applications/Emacs.app ]
-then
-    alias emacs='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -n -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
-fi
-
-# Another wrapper around =emacsclient= but this is a blocking
+#   Another wrapper around =emacsclient= but this is a blocking
 #   approach suitable for being set to the =EDITOR= variable.
 
-if [ -d /Applications/Emacs.app ]
-then
-    alias e='/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -q -a /Applications/Emacs.app/Contents/MacOS/Emacs'
-else
-    alias e='emacsclient -q -a emacs'
-fi
+alias e='emacsclient -q -a emacs'
 
 # Diff Files
 
