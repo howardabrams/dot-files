@@ -1309,14 +1309,15 @@ to the same day of the week.
 ** Org Publishing
 
    The brilliance of =org-mode= is the ability to publish your notes
-   as HTML files into a web server. See [[http://orgmode.org/worg/org-tutorials/org-publish-html-tutorial.html][these instructions]].
+   as HTML files into a web server. See [[http://orgmode.org/worg/org-tutorials/org-publish-html-tutorial.html][these instructions]]. I've
+   transitioned over to the new =ox= exporter, see [[http://orgmode.org/worg/org-8.0.html][these instructions]].
 
 #+BEGIN_SRC elisp
-  ;; (require 'org-publish)
+  (require 'ox-html)
   
   (setq org-publish-project-alist  '(
     ("org-notes"
-     :base-directory        "~/Dropbox/org/"
+     :base-directory        "~/Technical/"
      :base-extension        "org"
      :publishing-directory  "~/Sites/"
      :recursive             t
@@ -1358,7 +1359,7 @@ to the same day of the week.
    exported/published HTML files to make them /prettier/.
 
 #+BEGIN_SRC elisp
-  (setq org-export-html-style "<link rel='stylesheet' href='http://www.howardism.org/styles/org-export-html-style.css' type='text/css'/>
+  (setq org-html-style "<link rel='stylesheet' href='http://www.howardism.org/styles/org-export-html-style.css' type='text/css'/>
   <script src='http://use.edgefonts.net/source-sans-pro.js'></script>
   <script src='http://use.edgefonts.net/source-code-pro.js'></script>")
 #+END_SRC
@@ -1378,11 +1379,11 @@ to the same day of the week.
 
   (setq org-export-html-postamble nil) ;; don't need any gunk at end
 
-  ; (setq org-export-creator-info nil)
-  ; (setq org-export-email-info nil)
-  ; (setq org-export-author-info nil)
-  ; (setq org-export-time-stamp-file nil)
-  ; (setq org-export-html-with-timestamp nil)
+  (setq org-export-creator-info nil)
+  (setq org-export-email-info nil)
+  (setq org-export-author-info nil)
+  (setq org-export-time-stamp-file nil)
+  (setq org-export-html-with-timestamp nil)
 #+END_SRC
 
 *** Publishing as Presentation
