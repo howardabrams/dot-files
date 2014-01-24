@@ -809,7 +809,7 @@ same day of the month, but will be the same day of the week."
 ;;     At the beginning of each sprint, we need to set this to the new
 ;;     sprint file.
 
-(setq current-sprint "2014-01")
+(setq current-sprint "2014-02")
 
 (defun current-sprint-file ()
   (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
@@ -818,6 +818,34 @@ same day of the month, but will be the same day of the week."
   "Loads up the org-mode note associated with my current sprint."
   (interactive)
   (find-file (current-sprint-file)))
+
+;; Taking Meeting Notes
+
+;;     I've notice that while I really like taking notes in a meeting, I
+;;     don't always like the multiple windows I have opened, so I created
+;;     this function that I can easily call to eliminate distractions
+;;     during a meeting.
+
+(defun meeting-notes ()
+  "Call this after creating an org-mode heading for where the notes for the meeting
+should be. After calling this function, call 'meeting-done' to reset the environment."
+  (interactive)
+  (outline-mark-subtree)
+  (narrow-to-region (region-beginning) (region-end))
+  (deactivate-mark)
+  (delete-other-windows)
+  (text-scale-set 2)
+  (global-set-key (kbd "<f6>") 'meeting-done)
+  (message "When finished taking your notes, press <F6>"))
+
+;; Of course, I need an 'undo' feature when the meeting is over...
+
+(defun meeting-done ()
+  "Attempt to 'undo' the effects of taking meeting notes."
+  (interactive)
+  (widen)
+  (text-scale-set 0)
+  (winner-undo))
 
 ;; Recent and Heavily Used Files
 
@@ -1009,17 +1037,18 @@ same day of the month, but will be the same day of the week."
 ;; Org Publishing
 
 ;;    The brilliance of =org-mode= is the ability to publish your notes
-;;    as HTML files into a web server. See [[http://orgmode.org/worg/org-tutorials/org-publish-html-tutorial.html][these instructions]].
+;;    as HTML files into a web server. See [[http://orgmode.org/worg/org-tutorials/org-publish-html-tutorial.html][these instructions]]. I've
+;;    transitioned over to the new =ox= exporter, see [[http://orgmode.org/worg/org-8.0.html][these instructions]].
 
-;; (require 'org-publish)
+(require 'ox-html)
 
 (setq org-publish-project-alist  '(
   ("org-notes"
-   :base-directory        "~/Dropbox/org/"
+   :base-directory        "~/Technical/"
    :base-extension        "org"
    :publishing-directory  "~/Sites/"
    :recursive             t
-   :publishing-function   org-publish-org-to-html
+   :publishing-function org-html-publish-to-html
    :headline-levels       4             ; Just the default for this project.
    :auto-preamble         t
    :auto-sitemap          t             ; Generate sitemap.org automagically...
@@ -1034,7 +1063,7 @@ same day of the month, but will be the same day of the week."
    :base-extension       "org"
    :publishing-directory "~/Work/dot-files/docs"
    :recursive            f
-   :publishing-function   org-publish-org-to-html
+   :publishing-function org-html-publish-to-html
    :auto-preamble         t
    :auto-sitemap          t             ; Generate sitemap.org automagically...
    :makeindex             f
@@ -1055,7 +1084,7 @@ same day of the month, but will be the same day of the week."
 ;; I really, really would like to affect the output of the
 ;;    exported/published HTML files to make them /prettier/.
 
-(setq org-export-html-style "<link rel='stylesheet' href='http://www.howardism.org/styles/org-export-html-style.css' type='text/css'/>
+(setq org-html-style "<link rel='stylesheet' href='http://www.howardism.org/styles/org-export-html-style.css' type='text/css'/>
 <script src='http://use.edgefonts.net/source-sans-pro.js'></script>
 <script src='http://use.edgefonts.net/source-code-pro.js'></script>")
 
@@ -1073,11 +1102,11 @@ same day of the month, but will be the same day of the week."
 
 (setq org-export-html-postamble nil) ;; don't need any gunk at end
 
-; (setq org-export-creator-info nil)
-; (setq org-export-email-info nil)
-; (setq org-export-author-info nil)
-; (setq org-export-time-stamp-file nil)
-; (setq org-export-html-with-timestamp nil)
+(setq org-export-creator-info nil)
+(setq org-export-email-info nil)
+(setq org-export-author-info nil)
+(setq org-export-time-stamp-file nil)
+(setq org-export-html-with-timestamp nil)
 
 ;; Publishing as Presentation
 
