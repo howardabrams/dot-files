@@ -145,6 +145,18 @@ Does not support subfeatures."
 
 (setq ring-bell-function 'ignore)
 
+;; Display Settings
+
+;;    I've been using Emacs for many years, and appreciate a certain
+;;    minimalist approach to its display. While you can turn these off
+;;    with the menu items now, it is just as easy to set them here.
+
+(setq initial-scratch-message "") ;; Uh, I know what Scratch is for
+(setq visible-bell t)             ;; Get rid of the beeps
+(scroll-bar-mode 0)               ;; Scrollbars are wasted screen estate
+(tool-bar-mode 0)                 ;; Toolbars were only cool with XEmacs
+(menu-bar-mode 0)                 ;; No menus... especially in text mode
+
 ;; Font Settings
 
 ;;    I love syntax highlighting.
@@ -830,11 +842,11 @@ same day of the month, but will be the same day of the week."
   "Call this after creating an org-mode heading for where the notes for the meeting
 should be. After calling this function, call 'meeting-done' to reset the environment."
   (interactive)
-  (outline-mark-subtree)
-  (narrow-to-region (region-beginning) (region-end))
+  (outline-mark-subtree)                              ;; Select org-mode section
+  (narrow-to-region (region-beginning) (region-end))  ;; Only show that region
   (deactivate-mark)
-  (delete-other-windows)
-  (text-scale-set 2)
+  (delete-other-windows)                              ;; Get rid of other windows
+  (text-scale-set 2)                                  ;; Text is now readable by others
   (global-set-key (kbd "<f6>") 'meeting-done)
   (message "When finished taking your notes, press <F6>"))
 
@@ -843,9 +855,9 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 (defun meeting-done ()
   "Attempt to 'undo' the effects of taking meeting notes."
   (interactive)
-  (widen)
-  (text-scale-set 0)
-  (winner-undo))
+  (widen)                                       ;; Opposite of narrow-to-region
+  (text-scale-set 0)                            ;; Reset the font size increase
+  (winner-undo))                                ;; Put the windows back in place
 
 ;; Recent and Heavily Used Files
 
@@ -1451,11 +1463,6 @@ should be. After calling this function, call 'meeting-done' to reset the environ
                      jedi
                      ein
                      virtualenv ))
-
-;; Make sure that PATH can reference the Python executables, and
-;;    since I am installing a updated Python...
-
-(setenv "PATH" (concat "/Library/Frameworks/Python.framework/Versions/2.7/bin:" (getenv "PATH")))
 
 ;; WSGI files are just Python files in disguise, so tell them to use
 ;;    the Python environment:
