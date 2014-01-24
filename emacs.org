@@ -1099,11 +1099,11 @@ to the same day of the week.
   "Call this after creating an org-mode heading for where the notes for the meeting
 should be. After calling this function, call 'meeting-done' to reset the environment."
   (interactive)
-  (outline-mark-subtree)
-  (narrow-to-region (region-beginning) (region-end))
+  (outline-mark-subtree)                              ;; Select org-mode select
+  (narrow-to-region (region-beginning) (region-end))  ;; Only show that region
   (deactivate-mark)
-  (delete-other-windows)
-  (text-scale-set 2)
+  (delete-other-windows)                              ;; Get rid of other windows
+  (text-scale-set 2)                                  ;; Text is now readable by others
   (global-set-key (kbd "<f6>") 'meeting-done)
   (message "When finished taking your notes, press <F6>"))
 #+END_SRC
@@ -1114,9 +1114,9 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 (defun meeting-done ()
   "Attempt to 'undo' the effects of taking meeting notes."
   (interactive)
-  (widen)
-  (text-scale-set 0)
-  (winner-undo))
+  (widen)                                       ;; Opposite of narrow-to-region
+  (text-scale-set 0)                            ;; Reset the font size increase
+  (winner-undo))                                ;; Put the windows back in place
 #+END_SRC
 
 *** Recent and Heavily Used Files
@@ -1353,7 +1353,7 @@ should be. After calling this function, call 'meeting-done' to reset the environ
      :base-extension        "org"
      :publishing-directory  "~/Sites/"
      :recursive             t
-     :publishing-function   org-publish-org-to-html
+     :publishing-function org-html-publish-to-html
      :headline-levels       4             ; Just the default for this project.
      :auto-preamble         t
      :auto-sitemap          t             ; Generate sitemap.org automagically...
@@ -1368,7 +1368,7 @@ should be. After calling this function, call 'meeting-done' to reset the environ
      :base-extension       "org"
      :publishing-directory "~/Work/dot-files/docs"
      :recursive            f
-     :publishing-function   org-publish-org-to-html
+     :publishing-function org-html-publish-to-html
      :auto-preamble         t
      :auto-sitemap          t             ; Generate sitemap.org automagically...
      :makeindex             f
@@ -1979,8 +1979,8 @@ Stop the error buffer from popping up while working in buffers other than the RE
    Make sure that PATH can reference the Python executables, and
    since I am installing a updated Python...
 
-#+BEGIN_SRC elisp
-  (setenv "PATH" (concat "/Library/Frameworks/Python.framework/Versions/2.7/bin:" (getenv "PATH")))
+#+BEGIN_SRC elisp :tangle no
+  (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
 #+END_SRC
 
    WSGI files are just Python files in disguise, so tell them to use
