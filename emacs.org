@@ -1076,7 +1076,7 @@ to the same day of the week.
     sprint file.
 
 #+BEGIN_SRC elisp
-  (setq current-sprint "2014-01")
+  (setq current-sprint "2014-02")
   
   (defun current-sprint-file ()
     (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
@@ -1085,6 +1085,38 @@ to the same day of the week.
     "Loads up the org-mode note associated with my current sprint."
     (interactive)
     (find-file (current-sprint-file)))
+#+END_SRC
+
+*** Taking Meeting Notes
+
+    I've notice that while I really like taking notes in a meeting, I
+    don't always like the multiple windows I have opened, so I created
+    this function that I can easily call to eliminate distractions
+    during a meeting.
+
+#+BEGIN_SRC elisp
+(defun meeting-notes ()
+  "Call this after creating an org-mode heading for where the notes for the meeting
+should be. After calling this function, call 'meeting-done' to reset the environment."
+  (interactive)
+  (outline-mark-subtree)
+  (narrow-to-region (region-beginning) (region-end))
+  (deactivate-mark)
+  (delete-other-windows)
+  (text-scale-set 2)
+  (global-set-key (kbd "<f6>") 'meeting-done)
+  (message "When finished taking your notes, press <F6>"))
+#+END_SRC
+
+    Of course, I need an 'undo' feature when the meeting is over...
+
+#+BEGIN_SRC elisp
+(defun meeting-done ()
+  "Attempt to 'undo' the effects of taking meeting notes."
+  (interactive)
+  (widen)
+  (text-scale-set 0)
+  (winner-undo))
 #+END_SRC
 
 *** Recent and Heavily Used Files
