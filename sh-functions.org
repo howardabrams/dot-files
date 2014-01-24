@@ -425,11 +425,18 @@ alias gst='git status'
 alias gstatus='git status'
 alias gd='git diff'
 alias gdc='git diff --cached'
+
 alias gaa='git add --update :/'  # Use full 'git add' if haven't already added it
 alias gamend='git commit --amend --no-edit'
+
 alias gstash='git stash'
 alias gpop='git stash pop'
 alias gshow='git stash show -p stash@{0}'
+
+alias gf='git status --porcelain | cut -c4-'
+alias gf-new='git status --porcelain | grep "^??" | cut -c4-'
+alias gf-changed='git status --porcelain | grep "^ M" | cut -c4-'
+alias gf='git status --porcelain | cut -c4-'
 #+END_SRC
 
 * Directory Bookmarks
