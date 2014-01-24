@@ -228,6 +228,25 @@ brew linkapps
 #+BEGIN_SRC elisp
 (setq ring-bell-function 'ignore)
 #+END_SRC
+** Display Settings
+
+   I've been using Emacs for many years, and appreciate a certain
+   minimalist approach to its display. While you can turn these off
+   with the menu items now, it is just as easy to set them here.
+
+#+BEGIN_SRC elisp
+  (setq initial-scratch-message "") ;; Uh, I know what Scratch is for
+  (setq visible-bell t)             ;; Get rid of the beeps
+  (scroll-bar-mode 0)               ;; Scrollbars are wasted screen estate
+  (tool-bar-mode 0)                 ;; Toolbars were only cool with XEmacs
+  (menu-bar-mode 0)                 ;; No menus... especially in text mode
+#+END_SRC
+
+   Note: I often want Emacs in fullscreen, and this is the way:
+
+#+BEGIN_SRC elisp :tangle no
+  toggle-frame-fullscreen)
+#+END_SRC
 
 ** Font Settings
 
@@ -1099,7 +1118,7 @@ to the same day of the week.
   "Call this after creating an org-mode heading for where the notes for the meeting
 should be. After calling this function, call 'meeting-done' to reset the environment."
   (interactive)
-  (outline-mark-subtree)                              ;; Select org-mode select
+  (outline-mark-subtree)                              ;; Select org-mode section
   (narrow-to-region (region-beginning) (region-end))  ;; Only show that region
   (deactivate-mark)
   (delete-other-windows)                              ;; Get rid of other windows
