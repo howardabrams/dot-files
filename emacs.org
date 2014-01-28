@@ -1318,6 +1318,8 @@ should be. After calling this function, call 'meeting-done' to reset the environ
   
           ("w" "General Sprint Note" entry (file+headline (current-sprint-file) "Work Issues")
            "*** %i%?" :empty-lines 1)
+          ("m" "Meeting Notes" entry (file+headline (current-sprint-file) "Meeting Notes")
+           "** %i%?\n\n   Met on %t: \n\n" :empty-lines 1)
           ("r" "Retrospective Status" entry (file+headline (current-sprint-file) "Status/Accomplishments")
            "*** %i%?\n  Linked: %a" :empty-lines 1)
           ("g" "Retrospective Goodness" entry (file+headline (current-sprint-file) "Keep Doing (Good)")
