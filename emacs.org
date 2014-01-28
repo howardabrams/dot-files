@@ -239,7 +239,9 @@ brew linkapps
   (setq visible-bell t)             ;; Get rid of the beeps
   (scroll-bar-mode 0)               ;; Scrollbars are wasted screen estate
   (tool-bar-mode 0)                 ;; Toolbars were only cool with XEmacs
-  (menu-bar-mode 0)                 ;; No menus... especially in text mode
+
+  (unless (window-system)
+    (menu-bar-mode 0))              ;; No menus... but only in text mode
 #+END_SRC
 
    Note: I often want Emacs in fullscreen, and this is the way:
