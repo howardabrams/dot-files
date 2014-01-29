@@ -512,6 +512,26 @@ brew linkapps
   (winner-mode 1)
 #+END_SRC
 
+** Better Newline
+
+   Since =paredit= and other modes automatically insert final
+   characters like semi-colons and parenthesis, what I really want is
+   to hit return from the /end of the line/. Pretty simple function.
+
+#+BEGIN_SRC elisp
+  (defun newline-for-code ()
+    "Inserts a newline character, but from the end of the current line."
+    (interactive)
+    (move-end-of-line 1)
+    (newline-and-indent))
+#+END_SRC
+
+   And we can bind that to the free, /Meta-Return/:
+
+#+BEGIN_SRC elisp
+  (global-set-key (kbd "M-RET") 'newline-for-code)
+#+END_SRC
+
 ** Key Chords
 
    Key Chords allows you to use any two keys pressed at the same time
