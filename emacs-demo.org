@@ -11,35 +11,49 @@
   town". However, I don't want to fat-finger, mentally burp, or even
   delay the gratification while I type, so welcome to my "demo" mode.
 
-  This is a really just a /library/ of functions that must be read
-  in by another file that does the actual work, for instance:
+  Using the library is a three step process:
+
+  1. Load the library in your own Elisp source code file
+  2. Create a collection of functions that "do things".
+  3. Call the =demo-start= function with the ordered list of
+     functions.
+
+  For instance:
 
 #+BEGIN_EXAMPLE
   (load-library "demo")   ;; Load this library of functions
 
-  ;; Define the first step, as this must have the name: demo/step-1
-  (defun demo/step-1 ()
+  ;; Define the first of many steps that do things.
+  (defun my-demo/step-1 ()
     (delete-other-windows)
     (find-file "~/technical/emacs-demo/emacs-demo-start.org")
     (org-tree-slide-mode)
     (text-scale-set 2))
+
+  (defun my-demo/step-2 ()
+    (demo/org-presentation-return))
+  
+  ;; Wrap the collection of functions in another function...
+  (defun my-demo ()
+     "My fabulous demonstration."
+     (interactive)
+     (demo-start (list
+                     'my-demo/step-1
+                     'my-demo/step-2
+                     ;; ...
+                   )))
+
+  (my-demo) ;; Optionally start the demo when file is loaded.
 #+END_EXAMPLE
 
-  Just create a series of Elisp functions that "do things". Each
-  function begins with the name, =demo/step-= and follows with the
-  "step number", e.g. =demo/step-2= is executed the second step.
-
-  Favorite functions, include:
+  Each "step" is a series of Elisp functions that "do things".
+  For instance:
 
   - =find-file=
   - =text-scale-set=
   - =split-window-horizontally= (or vertically)
   - =eshell= ... followed by =(insert "some command")= and
     =(eshell-send-input)=
-
-  When I want to actually start the demonstration, I run the function:
-  =demo-start= and then with each press of =F6= (which calls the
-  =demo-step= function), the each =demo/step-#= function is called.
 
   Pretty simple, actually.
 
@@ -49,23 +63,25 @@
   the current state of the demonstration.
 
 #+BEGIN_SRC elisp
-  (defvar demo/step 0)
+  (defvar demo/step 0  "Stores the current demo 'step' function.")
+#+END_SRC
+
+#+BEGIN_SRC elisp
+  (defvar demo/steps '() "The list of functions to be executed in order.")
 #+END_SRC
 
 * Starting a Demonstration
 
-  Eventually we want to be able to start one of many different
-  demonstrations, but right now, I assume I have one, and that
-  everything is in the global state.
+  When we start a demonstration, we would pass in a list of functions
+  to call for each step, and then call =demo-step= to execute the
+  first one on the list.
 
 #+BEGIN_SRC elisp
-  (defun demo-start ()  ;; demo
+  (defun demo-start (steps)
      "Start (or restart) the current demonstration and kick off the first step."
-     (interactive)      ;; "sDemonstration: "
-     (progn
-       (setq demo/step 0)  ;; Reset the step to the beginning
-       (message "Beginning Demonstration")
-       (demo-step)))
+     (setq demo/step 0)          ;; Reset the step to the beginning
+     (setq demo/steps steps)     ;; Store the steps.
+     (demo-step))
 #+END_SRC
 
 * Next Step
@@ -75,20 +91,20 @@
 
 #+BEGIN_SRC elisp
   (defun demo-step (&optional step)
-    "Execute the next step in the demonstration."
+    "Execute the next step in the current demonstration."
     (interactive "P")
-    (progn
       (if step
           (setq demo/step step)    ;; Changing Global state, yay!
         (setq demo/step (1+ demo/step)))
-      (let*
-          ((f-name (format "demo/step-%d" demo/step))
-           (f-step (intern-soft f-name)))
+      (let
+          ;; At this point, step is 1-based, and I need it 0-based
+          ;; and f-step is the function to call for this step...
+          ((f-step (nth (1- demo/step) demo/steps)))
         (if f-step
             (progn
               (funcall f-step)
               (message "Finished step %d" demo/step))
-          (message "Finished the entire demonstration.")))))  
+          (message "Finished the entire demonstration."))))
 #+END_SRC
 
   Bind the =demo-step= function to the F6 key:
@@ -108,29 +124,29 @@
    wanting to be bothered by the sight of the mode.
 
 #+BEGIN_SRC elisp
-;; See http://bzg.fr/emacs-hide-mode-line.html
-(defvar-local hidden-mode-line-mode nil)
-(defvar-local hide-mode-line nil)
-
-(define-minor-mode hidden-mode-line-mode
-  "Minor mode to hide the mode-line in the current buffer."
-  :init-value nil
-  :global nil
-  :variable hidden-mode-line-mode
-  :group 'editing-basics
-  (if hidden-mode-line-mode
-      (setq hide-mode-line mode-line-format
-            mode-line-format nil)
-    (setq mode-line-format hide-mode-line
-          hide-mode-line nil))
-  (force-mode-line-update)
-  (set-window-buffer nil (current-buffer))
-  (when (and (called-interactively-p 'interactive)
-             hidden-mode-line-mode)
-    (run-with-idle-timer
-     0 nil 'message
-     (concat "Hidden Mode Line Mode enabled.  "
-             "Use M-x hidden-mode-line-mode RET to make the mode-line appear."))))
+  ;; See http://bzg.fr/emacs-hide-mode-line.html
+  (defvar-local hidden-mode-line-mode nil)
+  (defvar-local hide-mode-line nil)
+  
+  (define-minor-mode hidden-mode-line-mode
+    "Minor mode to hide the mode-line in the current buffer."
+    :init-value nil
+    :global nil
+    :variable hidden-mode-line-mode
+    :group 'editing-basics
+    (if hidden-mode-line-mode
+        (setq hide-mode-line mode-line-format
+              mode-line-format nil)
+      (setq mode-line-format hide-mode-line
+            hide-mode-line nil))
+    (force-mode-line-update)
+    (set-window-buffer nil (current-buffer))
+    (when (and (called-interactively-p 'interactive)
+               hidden-mode-line-mode)
+      (run-with-idle-timer
+       0 nil 'message
+       (concat "Hidden Mode Line Mode enabled.  "
+               "Use M-x hidden-mode-line-mode RET to make the mode-line appear."))))
 #+END_SRC
 
 ** Making a Side Window
@@ -156,7 +172,7 @@
     (find-file file))
 #+END_SRC
 
-** TODO Starting an ORG Presentation
+** Starting an ORG Presentation
 
    Since I often have an org-mode file on the side of the screen to
    demonstrate an outline of what I will be demoing, I made it a
@@ -188,6 +204,19 @@
     (switch-to-buffer demo/org-presentation-buffer)
     (delete-other-windows)
     (org-tree-slide-move-next-tree))
+#+END_SRC
+
+** Advance Presentation without Changing Focus
+
+   We can advance the presentation, but return to the window where
+   our focus was initially.
+
+#+BEGIN_SRC elisp
+  (defun demo/org-presentation-advance ()
+    (let ((orig-window (current-buffer)))
+      (switch-to-buffer demo/org-presentation-buffer)
+      (org-tree-slide-move-next-tree)
+      (switch-to-buffer orig-window)))
 #+END_SRC
 
 * Technical Section
