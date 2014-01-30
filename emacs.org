@@ -69,13 +69,27 @@ brew linkapps
 
 * General Settings
 
+** Directory Structure
+
+   In case this is the first time running this on a computer, we need
+   to make sure the following directories have been created.
+
+#+BEGIN_SRC elisp
+  (let* ((subdirs '("elisp" "backups" "snippets" "ac-dict"))
+         (fulldirs (mapcar (lambda (d) (concat user-emacs-directory d)) subdirs)))
+    (dolist (dir fulldirs)
+      (when (not (f-exists? dir))
+        (message "Make directory: %s" dir)
+        (make-directory dir))))
+#+END_SRC
+
 ** Extra Packages
 
    Extra packages not available via the package manager go in my
    personal stash at: =$HOME/.emacs.d/elisp=
 
 #+BEGIN_SRC elisp
-  (add-to-list 'load-path (concat (getenv "HOME") "/.emacs.d/elisp"))
+  (add-to-list 'load-path (concat user-emacs-directory "elisp"))
 #+END_SRC
 
    Make sure that =PATH= variable for finding binary files can
@@ -97,7 +111,6 @@ brew linkapps
    sweet goodness, I demand.
 
 #+BEGIN_SRC elisp
-  ; (load "~/.emacs.d/elpa/package.el") Needed for version 23 only!
   (require 'package)
 
   (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
@@ -603,7 +616,7 @@ brew linkapps
 
 #+BEGIN_SRC elisp
   (require 'auto-complete-config)
-  (add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+  (add-to-list 'ac-dictionary-directories (concat user-emacs-directory "ac-dict"))
 
   (set-default 'ac-sources
                '(ac-source-abbrev
@@ -673,7 +686,7 @@ brew linkapps
    with the snippets.
 
 #+BEGIN_SRC elisp
-  (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
+  (add-to-list 'yas-snippet-dirs (concat user-emacs-directory "snippets"))
 #+END_SRC
 
    [[https://code.google.com/p/js2-mode/][js2-mode]] is good, but its name means that Yas' won't automatically
@@ -698,7 +711,7 @@ brew linkapps
 #+END_SRC
 
    Note: I checked out the code elsewhere, and created a symlink from
-   my =~/.emacs.d= directory to the =dash-as-point.el= file.
+   my =~/.emacs.d/elisp= directory to the =dash-as-point.el= file.
 
 ** Note Grep
 
@@ -1340,6 +1353,8 @@ should be. After calling this function, call 'meeting-done' to reset the environ
            "*** %i%?" :empty-lines 1)
           ("m" "Meeting Notes" entry (file+headline (current-sprint-file) "Meeting Notes")
            "** %i%?\n\n   Met on %t: \n\n" :empty-lines 1)
+          ("s" "Scrum Status" entry (file+headline (current-sprint-file) "Scrum Status")
+           "** %t\n\n   - Howard:\n   - Jeff:\n   - Hotta:\n   - Sachin:\n\n" :empty-lines 1)
           ("r" "Retrospective Status" entry (file+headline (current-sprint-file) "Status/Accomplishments")
            "*** %i%?\n  Linked: %a" :empty-lines 1)
           ("g" "Retrospective Goodness" entry (file+headline (current-sprint-file) "Keep Doing (Good)")
@@ -1573,7 +1588,6 @@ should be. After calling this function, call 'meeting-done' to reset the environ
  'org-babel-load-languages
  '((sh         . t)
    (js         . t)
-   (coffee     . t)
    (emacs-lisp . t)
    (perl       . t)
    (scala      . t)
@@ -1582,6 +1596,14 @@ should be. After calling this function, call 'meeting-done' to reset the environ
    (dot        . t)
    (css        . t)
    (plantuml   . t)))
+#+END_SRC
+
+   I want CoffeeScript to be supported in org-mode, but I need to do
+   it myself at the moment.
+
+#+BEGIN_SRC elisp
+  (when (locate-library "ob-coffee")
+      (require 'ob-coffee))
 #+END_SRC
 
    It seems to automatically recognize the language used in a source
@@ -1679,8 +1701,8 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 
    Then the following code will work:
 
-#+BEGIN_SRC emacs-lisp
-  (if (file-exists-p "~/.emacs.d/clojuredocs.el")
+#+Begin_SRC emacs-lisp
+  (if (locate-library "clojuredocs")
       (load-library "clojuredocs"))
 #+END_SRC
 
@@ -1787,12 +1809,11 @@ Stop the error buffer from popping up while working in buffers other than the RE
    it current is not available as a package.
 
 #+BEGIN_SRC elisp
-  (if (file-exists-p "~/.emacs.d/ensime")
-      (progn
-        (add-to-list 'load-path "~/.emacs.d/ensime/elisp")
-        (autoload 'ensime-mode "ensime-mode"
-          "Programming support mode for Scala." t nil)
-        (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)))
+  (when (file-exists-p (concat user-emacs-directory "ensime"))
+    (add-to-list 'load-path (concat user-emacs-directory "ensime/elisp"))
+    (autoload 'ensime-mode "ensime-mode"
+      "Programming support mode for Scala." t nil)
+    (add-hook 'scala-mode-hook 'ensime-scala-mode-hook))
 #+END_SRC
 
 ** JavaScript
