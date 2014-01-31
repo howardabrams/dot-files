@@ -101,9 +101,7 @@
           ;; and f-step is the function to call for this step...
           ((f-step (nth (1- demo/step) demo/steps)))
         (if f-step
-            (progn
               (funcall f-step)
-              (message "Finished step %d" demo/step))
           (message "Finished the entire demonstration."))))
 #+END_SRC
 
