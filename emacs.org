@@ -78,7 +78,7 @@ brew linkapps
   (let* ((subdirs '("elisp" "backups" "snippets" "ac-dict"))
          (fulldirs (mapcar (lambda (d) (concat user-emacs-directory d)) subdirs)))
     (dolist (dir fulldirs)
-      (when (not (f-exists? dir))
+      (when (not (file-exists-p dir))
         (message "Make directory: %s" dir)
         (make-directory dir))))
 #+END_SRC
@@ -654,6 +654,7 @@ brew linkapps
 #+BEGIN_SRC elisp
   (define-abbrev-table 'global-abbrev-table 
     '(("HA" "Howard Abrams")
+      ("CCB" "CI x CD x BP")
       ("WD" "Workday")
       ("btw" "by the way")
       ("func" "function")
@@ -2310,9 +2311,18 @@ Stop the error buffer from popping up while working in buffers other than the RE
           (local-set-key (kbd "A-=") 'wiki-code)))
 #+END_SRC
 
-** PlantUML
+** PlantUML and Graphviz
 
-   To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, get the "mode" working for
+   Install the Graphviz project using Homebrew:
+
+#+BEGIN_SRC sh :tangle no
+  brew install graphviz
+  brew link graphviz
+  brew install plantuml
+#+END_SRC
+
+   To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, download the Jar and place
+   in the =~/bin= directory. We then set the "mode" working for
    editing the files:
 
 #+BEGIN_SRC elisp
