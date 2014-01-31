@@ -157,7 +157,7 @@ brew linkapps
         (package-refresh-contents)
         (dolist (it to-install)
             (package-install it)
-        (delete-other-windows))))
+        (delete-other-windows)))))
 #+END_SRC
 
 
@@ -170,7 +170,8 @@ brew linkapps
                    circe
                    color-theme
                    color-theme-sanityinc-tomorrow
-                   color-identifiers-mode
+                   color-identifiers-mode  ;; Color variables differently
+                   highlight-tail          ;; Used only sporadically
                    dired-details
                    epl
                    expand-region
@@ -1902,6 +1903,12 @@ Stop the error buffer from popping up while working in buffers other than the RE
                              1 font-lock-warning-face t)))
 #+END_SRC
 
+   Finally, color any /defined/ variables with [[https://github.com/ankurdave/color-identifiers-mode][color-identifiers-mode]].
+
+#+BEGIN_SRC elisp
+  (add-hook 'js2-mode-hook 'color-identifiers-mode)
+#+END_SRC
+
 *** FlyMake and JSHint
 
    While editing JavaScript is baked into Emacs, it is kinda cool to
@@ -2081,6 +2088,12 @@ Stop the error buffer from popping up while working in buffers other than the RE
   (add-to-list 'auto-mode-alist '("\\.wsgi$" . python-mode))
 #+END_SRC
 
+   Need to color the defined variables:
+
+#+BEGIN_SRC elisp
+  (add-hook 'python-mode-hook 'color-identifiers-mode)
+#+END_SRC
+
 *** Debugging
 
     Use the [[https://pypi.python.org/pypi/virtualenv][virtualenv]] world of goodness, but only if it is installed.
@@ -2235,6 +2248,25 @@ Stop the error buffer from popping up while working in buffers other than the RE
 
 #+BEGIN_SRC elisp :tangle no
   (setq emmet-move-cursor-between-quotes t) ;; default nil
+#+END_SRC
+
+** Emacs Lisp
+
+   The most important change to Emacs Lisp is colorizing the
+   variables:
+
+#+BEGIN_SRC elisp
+  (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode)
+#+END_SRC
+
+   Might as well pretty up the lambdas, because, we can!
+
+#+BEGIN_SRC elisp
+  (font-lock-add-keywords 'emacs-lisp-mode
+                          '(("(\\(lambda\\)\\>" (0 (prog1 ()
+                                                     (compose-region (match-beginning 1)
+                                                                     (match-end 1)
+                                                                     ?λ))))))
 #+END_SRC
 
 * Tools
