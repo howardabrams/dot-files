@@ -97,7 +97,7 @@ brew linkapps
    we are running from the =Applications= directory.
 
 #+BEGIN_SRC elisp
-  (when window-system 
+  (when window-system
     (let ((path-from-shell (shell-command-to-string "bash -i -c 'echo $PATH'")))
       (setenv "PATH" path-from-shell)
       (setq exec-path (split-string path-from-shell path-separator))))
@@ -137,13 +137,29 @@ brew linkapps
    so this is mine.
 
 #+BEGIN_SRC elisp
+  (defun filter (condp lst)
+    "Emacs Lisp doesn’t come with a ‘filter’ function to keep elements that satisfy
+  a conditional and excise the elements that do not satisfy it. One can use ‘mapcar’
+  to iterate over a list with a conditional, and then use ‘delq’ to remove the ‘nil’
+  values."
+    (delq nil
+          (mapcar (lambda (x) (and (funcall condp x) x)) lst)))
+
+  (defun inverse-filter (condp lst)
+    "A filter function, but returns a list of the entries that don't match the predicate."
+    (delq nil
+          (mapcar (lambda (x) (and (not (funcall condp x)) x)) lst)))
+
   (defun packages-install (packages)
-    (dolist (it packages)
-      (when (not (package-installed-p it))
-        (if (y-or-n-p (format "Package '%s' not found on system. Install?" it))
-            (package-install it))))
-    (delete-other-windows))
+    "Given a list of packages, this will install them from the standard locations."
+    (let ((to-install (inverse-filter 'package-installed-p packages)))
+      (when to-install
+        (package-refresh-contents)
+        (dolist (it to-install)
+            (package-install it)
+        (delete-other-windows))))
 #+END_SRC
+
 
    This means that at any point in my configuration file, I can
    specify a list of packages to make sure they are installed.
@@ -154,6 +170,7 @@ brew linkapps
                    circe
                    color-theme
                    color-theme-sanityinc-tomorrow
+                   color-identifiers-mode
                    dired-details
                    epl
                    expand-region
@@ -317,7 +334,7 @@ brew linkapps
     "Colors the block headers and footers to make them stand out more for lighter themes"
     (interactive)
     (custom-set-faces
-     '(org-block-begin-line 
+     '(org-block-begin-line
       ((t (:underline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF"))))
      '(org-block-background
        ((t (:background "#FFFFEA"))))
@@ -328,18 +345,18 @@ brew linkapps
      ; (set-face-foreground 'minibuffer "black")
      ; (set-face-foreground 'minibuffer-prompt "red")
   )
-  
+
   (defun org-src-color-blocks-dark ()
     "Colors the block headers and footers to make them stand out more for dark themes"
     (interactive)
     (custom-set-faces
-     '(org-block-begin-line 
+     '(org-block-begin-line
        ((t (:foreground "#008ED1" :background "#002E41"))))
      '(org-block-background
        ((t (:background "#111111"))))
      '(org-block-end-line
        ((t (:foreground "#008ED1" :background "#002E41")))))
-  
+
      ;; Looks like the minibuffer issues are only for v23
      ; (set-face-foreground 'minibuffer "white")
      ; (set-face-foreground 'minibuffer-prompt "white")
@@ -356,20 +373,20 @@ brew linkapps
     (interactive)
     (color-theme-sanityinc-tomorrow-day)
     (org-src-color-blocks-light))
-  
+
   ;; During the day, we use the "standard" theme:
   (global-set-key (kbd "<f9> d") 'color-theme-my-default)
-  
+
   ;; A good late-night scheme that isn't too harsh
   (global-set-key (kbd "<f9> l") (lambda () (interactive)
                                    (color-theme-sanityinc-tomorrow-eighties)
                                    (org-src-color-blocks-dark)))
-  
+
   ;; Programming late into the night
   (global-set-key (kbd "<f9> m") (lambda () (interactive)
                                    (color-theme-sanityinc-tomorrow-bright)
                                    (org-src-color-blocks-dark)))
-  
+
   ;; Too harsh? Use the late night theme
   (global-set-key (kbd "<f9> n") (lambda () (interactive)
                                    (color-theme-sanityinc-tomorrow-night)
@@ -384,27 +401,27 @@ brew linkapps
 #+BEGIN_SRC elisp
   (when (eq system-type 'darwin)
     (setq mac-option-modifier 'meta)
-  
+
     ;; Aquamacs-specific code:
     (when (boundp 'aquamacs-version)
       (global-set-key [(alt k)] 'nlinum-mode))
-    
+
     ;; Emacs on Mac specific code:
     (unless (boundp 'aquamacs-version)
       ;; Since I already have Command-V for pasting, I
       ;; don't need Ctrl-V to do that, so disable CUA:
       (cua-mode -1)
-      
+
       (require 'mac-key-mode)
       (mac-key-mode 1)
-      
+
       (define-key mac-key-mode-map [(alt o)] 'ido-find-file)
 
       ;; I'd rather selectively bind Meta-I to my italics function,
       ;; instead of showing the file in the Finder.
       (define-key mac-key-mode-map (kbd "A-i") nil)
       (define-key mac-key-mode-map [(alt 2)] 'mac-key-show-in-finder)
-  
+
       (define-key mac-key-mode-map [(alt +)] 'text-scale-increase)
       (define-key mac-key-mode-map [(alt _)] 'text-scale-decrease)
       (define-key mac-key-mode-map [(alt l)] 'goto-line)
@@ -447,8 +464,8 @@ brew linkapps
       (setq window (or window (selected-window)))
       (select-window window)
       (kill-buffer)
-      (if (one-window-p t) 
-          (delete-frame) 
+      (if (one-window-p t)
+          (delete-frame)
           (delete-window (selected-window)))))
 #+END_SRC
 
@@ -472,7 +489,7 @@ brew linkapps
        (progn
          (call-process "osascript" nil nil nil "-ss" "-e" mute-script)
          (message "Skype (un)mute message has been sent."))))
-  
+
   (global-set-key (kbd "C-M-A-m") 'mute-skype)
 #+END_SRC
 
@@ -563,16 +580,16 @@ brew linkapps
       (progn
         (require 'key-chord)
         (key-chord-mode +1)
-  
+
         (key-chord-define-global ",." 'repeat)
         (key-chord-define-global "qw" 'query-replace)
         (key-chord-define-global "xb" 'ido-switch-buffer)
         (key-chord-define-global "xf" 'ido-find-file)
-  
+
         (if (autofeaturep 'iy-go-to-char)
             (progn
               (require 'iy-go-to-char)
-  
+
               (key-chord-define-global "fg" 'iy-go-to-char)
               (key-chord-define-global "df" 'iy-go-to-char-backward)))))
 #+END_SRC
@@ -652,7 +669,7 @@ brew linkapps
    /pre-load/ a bunch that I use:
 
 #+BEGIN_SRC elisp
-  (define-abbrev-table 'global-abbrev-table 
+  (define-abbrev-table 'global-abbrev-table
     '(("HA" "Howard Abrams")
       ("CCB" "CI x CD x BP")
       ("WD" "Workday")
@@ -675,7 +692,7 @@ brew linkapps
 ** Yas Snippet
 
    The [[https://github.com/capitaomorte/yasnippet][yasnippet project]] allows me to create snippets of code that
-   can be brought into a file, based on the language. 
+   can be brought into a file, based on the language.
 
 #+BEGIN_SRC elisp
   (require 'yasnippet)
@@ -720,7 +737,7 @@ brew linkapps
    and search for wholewords:
 
 #+BEGIN_SRC elisp
-  (setq grep-find-command 
+  (setq grep-find-command
         "find . -type f '!' -wholename '*/.git/*' -print0 | xargs -0 -e grep -nHPi -e ")
   (setq rep-highlight-matches t)
 #+END_SRC
@@ -763,7 +780,7 @@ brew install homebrew/dupes/grep
             (grep-compute-defaults)
             (grep-find (concat "grep -r -e " reg-exp " " options " "
                                file-types " " search-dir)))))))
-  
+
   (global-set-key (kbd "C-x C-n") 'ngrep)
   ;; (global-set-key (kbd "C-x C-r") 'rgrep)
 #+END_SRC
@@ -836,7 +853,7 @@ brew install homebrew/dupes/grep
         " [Not readable]" ; current diretory is not readable
         " [Too big]"      ; directory too big
         " [Confirm]")))   ; confirm creation of new file or buffer
- 
+
 (add-hook 'ido-setup-hook                                                  ; Navigate ido-mode vertically
           (lambda ()
             (define-key ido-completion-map [down] 'ido-next-match)
@@ -926,6 +943,15 @@ brew install homebrew/dupes/grep
   (setq-default save-place t)
 #+END_SRC
 
+*** Strip Whitespace on Save
+
+    When I save, I want to always, and I do mean always strip all
+    trailing whitespace from the file.
+
+#+BEGIN_SRC elisp
+  (add-hook 'before-save-hook 'delete-trailing-whitespace)
+#+END_SRC
+
 *** Uniquify
 
     Get rid of silly <1> and <2> to buffers with the same file name,
@@ -1000,7 +1026,7 @@ brew install homebrew/dupes/grep
   (require 'visual-regexp)
   (define-key global-map (kbd "C-c r") 'vr/replace)
   (define-key global-map (kbd "C-c q") 'vr/query-replace)
-  
+
   ;; if you use multiple-cursors, this is for you:
   (define-key global-map (kbd "C-c m") 'vr/mc-mark)
 #+END_SRC
@@ -1085,7 +1111,7 @@ brew install homebrew/dupes/grep
                   (concat "~/journal/" daily-name)))))
 #+END_SRC
 
-    Since I sometimes (not often) forget to create 
+    Since I sometimes (not often) forget to create
 
 #+BEGIN_SRC elisp
   (defun journal-file-yesterday ()
@@ -1116,7 +1142,7 @@ to the same day of the week.
          (target-date-seconds (+ last-year-seconds (* difference 24 60 60)))
          (target-date (seconds-to-time target-date-seconds)))
     (format-time-string "%Y%m%d" target-date)))
-  
+
   (defun journal-last-year ()
     "Loads last year's journal entry, which is not necessary the
   same day of the month, but will be the same day of the week."
@@ -1124,7 +1150,7 @@ to the same day of the week.
     (let ((journal-file (concat org-journal-dir (journal-last-year-file))))
       (find-file journal-file)))
   #+END_SRC
-    
+
 *** Org-Mode Sprint Note Files
 
     At the beginning of each sprint, we need to set this to the new
@@ -1132,10 +1158,10 @@ to the same day of the week.
 
 #+BEGIN_SRC elisp
   (setq current-sprint "2014-02")
-  
+
   (defun current-sprint-file ()
     (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
-  
+
   (defun get-current-sprint-file ()
     "Loads up the org-mode note associated with my current sprint."
     (interactive)
@@ -1196,11 +1222,11 @@ should be. After calling this function, call 'meeting-done' to reset the environ
   (defface org-block-begin-line
     '((t (:underline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))
     "Face used for the line delimiting the begin of source blocks.")
-  
+
   (defface org-block-background
     '((t (:background "#FFFFEA")))
     "Face used for the source block background.")
-  
+
   (defface org-block-end-line
     '((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))
     "Face used for the line delimiting the end of source blocks.")
@@ -1260,7 +1286,7 @@ should be. After calling this function, call 'meeting-done' to reset the environ
           (let ((spot (point)))
             (insert txt)
             (goto-char spot))))))
-  
+
   (defun org-text-bold () "Wraps the region with asterisks."
     (interactive)
     (org-text-wrapper "*"))
@@ -1327,8 +1353,8 @@ should be. After calling this function, call 'meeting-done' to reset the environ
    like them automatically searched when I generate agendas.
 
 #+BEGIN_SRC elisp
-(setq org-agenda-files '("~/Dropbox/org/personal" 
-                         "~/Google Drive/technical" 
+(setq org-agenda-files '("~/Dropbox/org/personal"
+                         "~/Google Drive/technical"
                          "~/Dropbox/org/project"))
 #+END_SRC
 
@@ -1349,7 +1375,7 @@ should be. After calling this function, call 'meeting-done' to reset the environ
   (setq org-capture-templates
         '(("n" "Thought or Note" entry (file "~/Technical/general-notes.org")
            "* %i%?\n    %a" :empty-lines 1)
-  
+
           ("w" "General Sprint Note" entry (file+headline (current-sprint-file) "Work Issues")
            "*** %i%?" :empty-lines 1)
           ("m" "Meeting Notes" entry (file+headline (current-sprint-file) "Meeting Notes")
@@ -1366,10 +1392,10 @@ should be. After calling this function, call 'meeting-done' to reset the environ
            "*** %i%?" :empty-lines 1)
           ("x" "Note for Next Sprint" entry (file+headline (current-sprint-file) "Notes for Next Sprint")
            "*** %i%?" :empty-lines 1)
-  
+
           ("p" "Personal Journal" entry (file+datetree "~/Technical/personal.org")
            "* Projects\n\n  %i%?\n\n  %a" :empty-lines 1)))
-  
+
   ;; General notes go into this file:
   (setq org-default-notes-file "~/Technical/personal.org")
 #+END_SRC
@@ -1384,7 +1410,7 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 
    When I check off an item as done, sometimes I want to add some
    details about the completion (this is really only helpful when I'm
-   consulting). 
+   consulting).
 
    With this setting, each time you turn an entry from a TODO state
    into the DONE state, a line 'CLOSED: [timestamp]' will be inserted
@@ -1405,7 +1431,7 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 
 #+BEGIN_SRC elisp
   (require 'ox-html)
-  
+
   (setq org-publish-project-alist  '(
     ("org-notes"
      :base-directory        "~/Technical/"
@@ -1421,7 +1447,7 @@ should be. After calling this function, call 'meeting-done' to reset the environ
      :table-of-contents     nil
      :style "<link rel=\"stylesheet\" href=\"../css/styles.css\" type=\"text/css\"/><link rel=\"stylesheet\" href=\"css/styles.css\" type=\"text/css\"/> <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js\" type=\"text/javascript\"></script> <link href=\"http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/smoothness/jquery-ui.css\" type=\"text/css\" rel=\"Stylesheet\" />    <script src=\"https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js\" type=\"text/javascript\"></script> <script =\"text/jacascript\" src=\"js/script.js\"></script>"
      )
-  
+
     ("dot-files"
      :base-directory       "~/Work/dot-files/"
      :base-extension       "org"
@@ -1442,7 +1468,7 @@ should be. After calling this function, call 'meeting-done' to reset the environ
      :recursive            t
      :publishing-function  org-publish-attachment
      )
-  
+
     ("all" :components ("org-notes" "org-static" "dot-files"))))
 #+END_SRC
 
@@ -1500,9 +1526,9 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 
 #+BEGIN_SRC elisp :tangle no
   (require 'org-export-generic)
-  
+
   (org-set-generic-type
-   "Markdown" 
+   "Markdown"
    '(:file-suffix ".markdown"
      :key-binding ?M
      :title-format "%s\n"
@@ -1548,9 +1574,9 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 
 #+BEGIN_SRC elisp
   (require 'ox-reveal)
-  
+
   (setq org-reveal-root (concat "file://" (getenv "HOME") "/Other/reveal.js"))
-  
+
   (setq org-reveal-postamble "Howard Abrams")
 #+END_SRC
 
@@ -1621,7 +1647,7 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 #+END_SRC
 
 *** Font Coloring in Code Blocks
-    
+
     Normally, fontifying the individual code blocks makes it
     impossible to work with, so instead of turning it on at the global
     level for all blocks, I created a couple of keystrokes to
@@ -1629,7 +1655,7 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 
 #+BEGIN_SRC elisp
   ; (setq org-src-fontify-natively t)
-  
+
   (global-set-key (kbd "<f9> g") 'org-src-fontify-buffer)
   (global-set-key (kbd "<f9> f") 'org-src-fontify-block)
 #+END_SRC
@@ -1659,7 +1685,7 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 
 #+BEGIN_SRC elisp
   (require 'clojure-mode)
-  
+
   (add-hook 'clojure-mode-hook
             '(lambda ()
                (yas/minor-mode-on)))
@@ -1799,7 +1825,7 @@ Stop the error buffer from popping up while working in buffers other than the RE
 
   ;; Shouldn't this be done by default?
   (add-to-list 'auto-mode-alist '("\\.scala$" . scala-mode))
-  
+
   (add-hook 'scala-mode-hook
             '(lambda ()
                (yas/minor-mode-on)
@@ -1917,7 +1943,7 @@ Stop the error buffer from popping up while working in buffers other than the RE
        * =3i= is =ternary-to-if=: Converts ternary operator to if-statement.
        * =sv= is =split-var-declaration=: Splits a =var= with multiple vars declared, into several =var= statements.
        * =uw= is =unwrap=: Replaces the parent statement with the selected region.
-      
+
 #+BEGIN_SRC elisp
   (if (autofeaturep 'js2-refactor)
       (progn
@@ -1937,7 +1963,7 @@ Stop the error buffer from popping up while working in buffers other than the RE
 
 #+BEGIN_SRC elisp :tangle no
   (autoload 'moz-minor-mode "moz" "Mozilla Minor and Inferior Mozilla Modes" t)
-  
+
   (add-hook 'js-mode-hook 'javascript-custom-setup)
   (defun javascript-custom-setup ()
     (moz-minor-mode 1))
@@ -1958,7 +1984,7 @@ Stop the error buffer from popping up while working in buffers other than the RE
 #+BEGIN_SRC elisp
   (autoload 'js-comint "js-comint"
     "Hooking JavaScript interpreter up to the JS Files." t nil)
-  
+
   (setenv "NODE_NO_READLINE" "1")   ;; Turn off fancy node prompt
   ;; Use node as our repl
   (setq inferior-js-program-command "node")
@@ -1988,7 +2014,7 @@ Stop the error buffer from popping up while working in buffers other than the RE
 
 #+BEGIN_SRC elisp
   (add-hook 'js2-mode-hook
-          (lambda () 
+          (lambda ()
             (local-set-key (kbd "C-c C-c") #'js-send-buffer)
             (local-set-key (kbd "C-c C-r") #'js-send-region)
             (local-set-key (kbd "C-c C-s") #'js-send-last-sexp)
@@ -1998,7 +2024,7 @@ Stop the error buffer from popping up while working in buffers other than the RE
     Wanna try it all out?
 
 #+BEGIN_SRC js :tangle no
-  function factorial(n) { 
+  function factorial(n) {
     return n == 0 ? 1 : n * factorial(n - 1);
   }
   return factorial(16);
@@ -2016,10 +2042,10 @@ Stop the error buffer from popping up while working in buffers other than the RE
 #+END_SRC
 
 *** Coffee
- 
+
     Gotta load up CoffeeScript files, but I use a special shell
     script that loads up my special 'coughy' environment
- 
+
  #+BEGIN_SRC elisp
   (setq coffee-command (concat (getenv "HOME") "/bin/coughy"))
  #+END_SRC
@@ -2107,7 +2133,7 @@ Stop the error buffer from popping up while working in buffers other than the RE
   (if (autofeaturep 'nose)
         (progn
          (require 'nose)
-  
+
          ;;   Include this line only for people with non-eco non-global test
          ;;   runners... like the Python Koans:
          (add-to-list 'nose-project-names
@@ -2123,7 +2149,7 @@ Stop the error buffer from popping up while working in buffers other than the RE
 
 #+BEGIN_SRC elisp
   (if (autofeaturep 'ein)
-        (progn 
+        (progn
           (require 'ein)
           (setq ein:use-auto-complete t)))
 #+END_SRC
@@ -2146,29 +2172,29 @@ Stop the error buffer from popping up while working in buffers other than the RE
 
 #+BEGIN_SRC elisp
   ;; (require 'pymacs)
-    
+
   (autoload 'pymacs-apply "pymacs")
   (autoload 'pymacs-call "pymacs")
   (autoload 'pymacs-eval "pymacs" nil t)
   (autoload 'pymacs-exec "pymacs" nil t)
   (autoload 'pymacs-load "pymacs" nil t)
   (autoload 'pymacs-autoload "pymacs")
-  
+
   ;;(eval-after-load "pymacs"
   ;;  '(add-to-list 'pymacs-load-path YOUR-PYMACS-DIRECTORY"))
-  
+
   (add-hook 'python-mode-hook
             (lambda ()
               (pymacs-load "ropemacs" "rope-")
               (setq ropemacs-enable-autoimport t)))
-  
-  (defun rope-before-save-actions () 
+
+  (defun rope-before-save-actions ()
     ;; Does nothing but save us from an error.
     )
-  (defun rope-after-save-actions () 
+  (defun rope-after-save-actions ()
     ;; Does nothing but save us from an error.
     )
-  (defun rope-exiting-actions () 
+  (defun rope-exiting-actions ()
     ;; Does nothing but save us from an error.
     )
 #+END_SRC
@@ -2178,7 +2204,7 @@ Stop the error buffer from popping up while working in buffers other than the RE
     annoying.
 
 ** HTML, CSS and Web Work
-   
+
    The basic web features of Emacs are often good enough, but
    [[https://github.com/smihica/emmet-mode][Emmet-Mode]] looks pretty sweet.
 
@@ -2194,13 +2220,13 @@ Stop the error buffer from popping up while working in buffers other than the RE
 
 #+BEGIN_SRC elisp
   (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
-  (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.  
+  (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
 #+END_SRC
 
    Set emmet to only use 2 spaces:
 
 #+BEGIN_SRC elisp
-  (add-hook 'emmet-mode-hook (lambda () 
+  (add-hook 'emmet-mode-hook (lambda ()
                                (setq emmet-indentation 2))) ;; indent 2 spaces.
 #+END_SRC
 
@@ -2215,7 +2241,7 @@ Stop the error buffer from popping up while working in buffers other than the RE
 ** Git
 
    Git is [[http://emacswiki.org/emacs/Git][already part of Emacs]]. However, [[http://philjackson.github.com/magit/magit.html][Magit]] is sweet.
-   
+
 #+BEGIN_SRC elisp
   (autoload 'magint "magit"
     "Hooking Git up to supported files." t nil)
@@ -2247,7 +2273,7 @@ Stop the error buffer from popping up while working in buffers other than the RE
   (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
   (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
   (add-to-list 'auto-mode-alist '("\\.txt\\'" . markdown-mode))
-#+END_SRC   
+#+END_SRC
 
    Using the =org-text-wrapper= function, I create some wrapper
    functions to make it easier to bold text in Markdown files:
@@ -2382,7 +2408,7 @@ Stop the error buffer from popping up while working in buffers other than the RE
 #+END_SRC
 
    Replacing the window with the new buffer may not be what I want.
- 
+
 #+BEGIN_SRC elisp
   (defalias 'ee 'find-file-other-window)
 #+END_SRC
