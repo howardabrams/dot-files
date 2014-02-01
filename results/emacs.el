@@ -7,18 +7,30 @@
 ;;; Source: ~/Work/dot-files/emacs.org
 ;;; ------------------------------------------
 
+;; Directory Structure
+
+;;    In case this is the first time running this on a computer, we need
+;;    to make sure the following directories have been created.
+
+(let* ((subdirs '("elisp" "backups" "snippets" "ac-dict"))
+       (fulldirs (mapcar (lambda (d) (concat user-emacs-directory d)) subdirs)))
+  (dolist (dir fulldirs)
+    (when (not (file-exists-p dir))
+      (message "Make directory: %s" dir)
+      (make-directory dir))))
+
 ;; Extra Packages
 
 ;;    Extra packages not available via the package manager go in my
 ;;    personal stash at: =$HOME/.emacs.d/elisp=
 
-(add-to-list 'load-path (concat (getenv "HOME") "/.emacs.d/elisp"))
+(add-to-list 'load-path (concat user-emacs-directory "elisp"))
 
 ;; Make sure that =PATH= variable for finding binary files can
 ;;    is the same as what Emacs will look for binary files...but only if
 ;;    we are running from the =Applications= directory.
 
-(when window-system 
+(when window-system
   (let ((path-from-shell (shell-command-to-string "bash -i -c 'echo $PATH'")))
     (setenv "PATH" path-from-shell)
     (setq exec-path (split-string path-from-shell path-separator))))
@@ -30,7 +42,6 @@
 ;;    so conservative, we need to add more repositories to get all the
 ;;    sweet goodness, I demand.
 
-; (load "~/.emacs.d/elpa/package.el") Needed for version 23 only!
 (require 'package)
 
 (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
@@ -53,12 +64,27 @@
 ;;    yeah, this is pretty new. Looks like everyone just rolls there own,
 ;;    so this is mine.
 
+(defun filter (condp lst)
+  "Emacs Lisp doesn’t come with a ‘filter’ function to keep elements that satisfy
+a conditional and excise the elements that do not satisfy it. One can use ‘mapcar’
+to iterate over a list with a conditional, and then use ‘delq’ to remove the ‘nil’
+values."
+  (delq nil
+        (mapcar (lambda (x) (and (funcall condp x) x)) lst)))
+
+(defun inverse-filter (condp lst)
+  "A filter function, but returns a list of the entries that don't match the predicate."
+  (delq nil
+        (mapcar (lambda (x) (and (not (funcall condp x)) x)) lst)))
+
 (defun packages-install (packages)
-  (dolist (it packages)
-    (when (not (package-installed-p it))
-      (if (y-or-n-p (format "Package '%s' not found on system. Install?" it))
-          (package-install it))))
-  (delete-other-windows))
+  "Given a list of packages, this will install them from the standard locations."
+  (let ((to-install (inverse-filter 'package-installed-p packages)))
+    (when to-install
+      (package-refresh-contents)
+      (dolist (it to-install)
+          (package-install it)
+      (delete-other-windows)))))
 
 ;; This means that at any point in my configuration file, I can
 ;;    specify a list of packages to make sure they are installed.
@@ -68,6 +94,8 @@
                  circe
                  color-theme
                  color-theme-sanityinc-tomorrow
+                 color-identifiers-mode  ;; Color variables differently
+                 highlight-tail          ;; Used only sporadically
                  dired-details
                  epl
                  expand-region
@@ -155,7 +183,9 @@ Does not support subfeatures."
 (setq visible-bell t)             ;; Get rid of the beeps
 (scroll-bar-mode 0)               ;; Scrollbars are wasted screen estate
 (tool-bar-mode 0)                 ;; Toolbars were only cool with XEmacs
-(menu-bar-mode 0)                 ;; No menus... especially in text mode
+
+(unless (window-system)
+  (menu-bar-mode 0))              ;; No menus... but only in text mode
 
 ;; Font Settings
 
@@ -192,7 +222,7 @@ Does not support subfeatures."
   "Colors the block headers and footers to make them stand out more for lighter themes"
   (interactive)
   (custom-set-faces
-   '(org-block-begin-line 
+   '(org-block-begin-line
     ((t (:underline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF"))))
    '(org-block-background
      ((t (:background "#FFFFEA"))))
@@ -208,7 +238,7 @@ Does not support subfeatures."
   "Colors the block headers and footers to make them stand out more for dark themes"
   (interactive)
   (custom-set-faces
-   '(org-block-begin-line 
+   '(org-block-begin-line
      ((t (:foreground "#008ED1" :background "#002E41"))))
    '(org-block-background
      ((t (:background "#111111"))))
@@ -259,16 +289,16 @@ Does not support subfeatures."
   ;; Aquamacs-specific code:
   (when (boundp 'aquamacs-version)
     (global-set-key [(alt k)] 'nlinum-mode))
-  
+
   ;; Emacs on Mac specific code:
   (unless (boundp 'aquamacs-version)
     ;; Since I already have Command-V for pasting, I
     ;; don't need Ctrl-V to do that, so disable CUA:
     (cua-mode -1)
-    
+
     (require 'mac-key-mode)
     (mac-key-mode 1)
-    
+
     (define-key mac-key-mode-map [(alt o)] 'ido-find-file)
 
     ;; I'd rather selectively bind Meta-I to my italics function,
@@ -312,8 +342,8 @@ If WINDOW is the only one in its frame, then `delete-frame' too."
     (setq window (or window (selected-window)))
     (select-window window)
     (kill-buffer)
-    (if (one-window-p t) 
-        (delete-frame) 
+    (if (one-window-p t)
+        (delete-frame)
         (delete-window (selected-window)))))
 
 ;; Skype
@@ -381,6 +411,22 @@ end tell"))
 
 (winner-mode 1)
 
+;; Better Newline
+
+;;    Since =paredit= and other modes automatically insert final
+;;    characters like semi-colons and parenthesis, what I really want is
+;;    to hit return from the /end of the line/. Pretty simple function.
+
+(defun newline-for-code ()
+  "Inserts a newline character, but from the end of the current line."
+  (interactive)
+  (move-end-of-line 1)
+  (newline-and-indent))
+
+;; And we can bind that to the free, /Meta-Return/:
+
+(global-set-key (kbd "M-RET") 'newline-for-code)
+
 ;; Key Chords
 
 ;;    Key Chords allows you to use any two keys pressed at the same time
@@ -440,7 +486,7 @@ end tell"))
 ;;    are typing. Useful at times ... annoying at others.
 
 (require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
+(add-to-list 'ac-dictionary-directories (concat user-emacs-directory "ac-dict"))
 
 (set-default 'ac-sources
              '(ac-source-abbrev
@@ -463,8 +509,9 @@ end tell"))
 ;; While you can make abbreviations in situ, I figured I should
 ;;    /pre-load/ a bunch that I use:
 
-(define-abbrev-table 'global-abbrev-table 
+(define-abbrev-table 'global-abbrev-table
   '(("HA" "Howard Abrams")
+    ("CCB" "CI x CD x BP")
     ("WD" "Workday")
     ("btw" "by the way")
     ("func" "function")
@@ -486,7 +533,7 @@ end tell"))
 ;;    mode, e.g.  =clojure-mode= and =org-mode=. This connects the mode
 ;;    with the snippets.
 
-(add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
+(add-to-list 'yas-snippet-dirs (concat user-emacs-directory "snippets"))
 
 ;; [[https://code.google.com/p/js2-mode/][js2-mode]] is good, but its name means that Yas' won't automatically
 ;;    link it to its =js-mode=. This little bit of magic does the linking:
@@ -510,7 +557,7 @@ end tell"))
 ;;    First, we need to have the =find-grep= ignore =.git= directories
 ;;    and search for wholewords:
 
-(setq grep-find-command 
+(setq grep-find-command
       "find . -type f '!' -wholename '*/.git/*' -print0 | xargs -0 -e grep -nHPi -e ")
 (setq rep-highlight-matches t)
 
@@ -595,7 +642,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
         " [Not readable]" ; current diretory is not readable
         " [Too big]"      ; directory too big
         " [Confirm]")))   ; confirm creation of new file or buffer
- 
+
 (add-hook 'ido-setup-hook                                                  ; Navigate ido-mode vertically
           (lambda ()
             (define-key ido-completion-map [down] 'ido-next-match)
@@ -652,6 +699,13 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 (require 'saveplace)
 (setq-default save-place t)
+
+;; Strip Whitespace on Save
+
+;;     When I save, I want to always, and I do mean always strip all
+;;     trailing whitespace from the file.
+
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 ;; Uniquify
 
@@ -726,845 +780,37 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 (add-hook 'after-init-hook #'global-flycheck-mode)
 
-;; Org Mode
+;; Org-Mode
 
-;;   The [[http://orgmode.org][Org Mode]] feature was a big reason in my recent re-kindling of my
-;;   Emacs love affair. Make sure the latest packages are installed:
+;;   See [[file:emacs-org.org][emacs-org-mode.el]] for details on my [[http://www.orgmode][Org-Mode]] settings.
 
-(packages-install '( org
-                     org-mime
-                     org-journal
-                     org-presie
-                     plantuml-mode
-                     ox-reveal ))
+(require 'init-org-mode)
 
-;; Initial Settings
+;; Or if I should load it after the Clojure mode kicks in?
 
-;;    Initialization of Org Mode by hooking it into YASnippets, which
-;;    should allow me to easily add templates to my files.
-
-(add-hook 'org-mode-hook
-          '(lambda ()
-             (yas/minor-mode-on)))
-
-;; Journaling
-
-;;    Didn't realize that [[http://www.emacswiki.org/emacs/OrgJournal][org-journal]] essentially does what I have been
-;;    doing by hand. With a little customization, I don't have to change
-;;    anything else:
-
-(if (autofeaturep 'org-journal)
-    (progn
-      (require 'org-journal)
-      (setq org-journal-dir "~/journal/")))
-
-;; All my journal entries will be formatted using org-mode:
-
-(add-to-list 'auto-mode-alist '(".*/[0-9]*$" . org-mode))
-
-;; The date format is essentially, the top of the file.
-
-(setq org-journal-date-format "#+TITLE: Journal Entry- %Y-%m-%d (%A)")
-
-;; The time format is the heading for each section. I will set it to a
-;;    blank since I really don't care about the time I add a section.
-
-(setq org-journal-time-format "")
-
-;; A function to easily load today (and yesterday's) journal entry.
-
-(defun journal-file-today ()
-  "Creates and load a file based on today's date."
-  (interactive)
-  (let ((daily-name (format-time-string "%Y%m%d")))
-    (find-file (expand-file-name
-                (concat "~/journal/" daily-name)))))
-
-;; Since I sometimes (not often) forget to create
-
-(defun journal-file-yesterday ()
-  "Creates and load a file based on yesterday's date."
-  (interactive)
-  (let ((daily-name (format-time-string "%Y%m%d"
-     (time-subtract (current-time) (days-to-time 1)))))
-    (find-file (expand-file-name
-                (concat "~/journal/" daily-name)))))
-
-;; I really would really like to read what I did last year "at this
-;; time", and by that, I mean, 365 days ago, plus or minus a few to get
-;; to the same day of the week.
-
-(defun journal-last-year-file ()
-  "Returns the string corresponding to the journal entry that
-happened 'last year' at this same time (meaning on the same day
-of the week)."
-(let* ((last-year-seconds (- (float-time) (* 365 24 60 60)))
-       (last-year (seconds-to-time last-year-seconds))
-       (last-year-dow (nth 6 (decode-time last-year)))
-       (this-year-dow (nth 6 (decode-time)))
-       (difference (if (> this-year-dow last-year-dow)
-                       (- this-year-dow last-year-dow)
-                     (- last-year-dow this-year-dow)))
-       (target-date-seconds (+ last-year-seconds (* difference 24 60 60)))
-       (target-date (seconds-to-time target-date-seconds)))
-  (format-time-string "%Y%m%d" target-date)))
-
-(defun journal-last-year ()
-  "Loads last year's journal entry, which is not necessary the
-same day of the month, but will be the same day of the week."
-  (interactive)
-  (let ((journal-file (concat org-journal-dir (journal-last-year-file))))
-    (find-file journal-file)))
-
-;; Org-Mode Sprint Note Files
-
-;;     At the beginning of each sprint, we need to set this to the new
-;;     sprint file.
-
-(setq current-sprint "2014-02")
-
-(defun current-sprint-file ()
-  (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
-
-(defun get-current-sprint-file ()
-  "Loads up the org-mode note associated with my current sprint."
-  (interactive)
-  (find-file (current-sprint-file)))
-
-;; Taking Meeting Notes
-
-;;     I've notice that while I really like taking notes in a meeting, I
-;;     don't always like the multiple windows I have opened, so I created
-;;     this function that I can easily call to eliminate distractions
-;;     during a meeting.
-
-(defun meeting-notes ()
-  "Call this after creating an org-mode heading for where the notes for the meeting
-should be. After calling this function, call 'meeting-done' to reset the environment."
-  (interactive)
-  (outline-mark-subtree)                              ;; Select org-mode section
-  (narrow-to-region (region-beginning) (region-end))  ;; Only show that region
-  (deactivate-mark)
-  (delete-other-windows)                              ;; Get rid of other windows
-  (text-scale-set 2)                                  ;; Text is now readable by others
-  (global-set-key (kbd "<f6>") 'meeting-done)
-  (message "When finished taking your notes, press <F6>"))
-
-;; Of course, I need an 'undo' feature when the meeting is over...
-
-(defun meeting-done ()
-  "Attempt to 'undo' the effects of taking meeting notes."
-  (interactive)
-  (widen)                                       ;; Opposite of narrow-to-region
-  (text-scale-set 0)                            ;; Reset the font size increase
-  (winner-undo))                                ;; Put the windows back in place
-
-;; Recent and Heavily Used Files
-
-;;     Daily note-taking goes into my sprint file notes, so this makes a
-;;     global short-cut key.
-
-(global-set-key (kbd "C-x C-u") 'get-current-sprint-file)
-
-;; Org-Mode Colors
-
-;;   Before we load =org-mode= proper, we need to set the following
-;;   syntax high-lighting parameters. These are used to help bring out
-;;   the source code during literate programming mode.
-
-;;   This information came from [[http://orgmode.org/worg/org-contrib/babel/examples/fontify-src-code-blocks.html][these instructions]], however, they tend
-;;   to conflict with the /color-theme/, so we'll turn them off for now.
-
-(defface org-block-begin-line
-  '((t (:underline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))
-  "Face used for the line delimiting the begin of source blocks.")
-
-(defface org-block-background
-  '((t (:background "#FFFFEA")))
-  "Face used for the source block background.")
-
-(defface org-block-end-line
-  '((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))
-  "Face used for the line delimiting the end of source blocks.")
-
-;; Library Loading
-
-;;    The standard package manager (and most recent versions of Emacs)
-;;    include =org-mode=, however, I want the latest version that has
-;;    specific features for literate programming.
-
-;;    Org-mode is installed in the global directory.
-
-(require 'org)
-(require 'ob-tangle)
-
-;; Global Key Bindings
-
-;;    The =org-mode= has some useful keybindings that are helpful no
-;;    matter what mode you are using currently.
-
-(global-set-key (kbd "C-c l") 'org-store-link)
-(global-set-key (kbd "C-c a") 'org-agenda)
-(global-set-key (kbd "C-c b") 'org-iswitchb)
-
-(global-set-key (kbd "C-M-|") 'indent-rigidly)
-
-;; Local Key Bindings
-
-;;    A couple of short-cut keys to make it easier to edit text.
-
-(defun org-text-wrapper (txt &optional endtxt)
-  "Wraps the region with the text passed in as an argument."
-  (if (use-region-p)
-      (save-restriction
-        (narrow-to-region (region-beginning) (region-end))
-        (goto-char (point-min))
-        (insert txt)
-        (goto-char (point-max))
-        (if endtxt
-            (insert endtxt)
-          (insert txt)))
-    (if (looking-at "[A-z]")
-        (save-excursion
-          (if (not (looking-back "[     ]"))
-              (backward-word))
-          (progn
-            (mark-word)
-            (org-text-wrapper txt endtxt)))
-      (progn
-        (insert txt)
-        (let ((spot (point)))
-          (insert txt)
-          (goto-char spot))))))
-
-(defun org-text-bold () "Wraps the region with asterisks."
-  (interactive)
-  (org-text-wrapper "*"))
-(defun org-text-italics () "Wraps the region with slashes."
-  (interactive)
-  (org-text-wrapper "/"))
-(defun org-text-code () "Wraps the region with equal signs."
-  (interactive)
-  (org-text-wrapper "="))
-
-;; Now we can associate some keystrokes to the org-mode:
-
-(add-hook 'org-mode-hook
-      (lambda ()
-        (local-set-key (kbd "A-b") 'org-text-bold)
-        (local-set-key (kbd "A-i") 'org-text-italics)
-        (local-set-key (kbd "A-=") 'org-text-code)))
-
-;; When pasting certain kinds of links, the "text" may be obvious.
-
-(defun org-generate-link-description (url description)
-  (cond
-   ((string-match "jira.workday" url)
-    (replace-regexp-in-string "https://jira.+/browse/" "" url))
-   ((string-match "crucible.workday" url)
-    (replace-regexp-in-string "https://crucible.+/cru/" "" url))
-   (t description)))
-
-(setq org-make-link-description-function 'org-generate-link-description)
-
-;; I'm often typing Jira entries that match a particular link pattern.
-
-(defun jira-link (b e)
-  "Wraps the region with an org-mode link."
-  (interactive "r")
-  (save-restriction
-    (narrow-to-region b e)
-    (let ((jiraid (buffer-substring (point-min) (point-max))))
-      (goto-char (point-min))
-      (insert "[[https://jira.workday.com/browse/" jiraid "][")
-      (goto-char (point-max))
-      (insert "]]"))))
-
-;; Speed Keys
-
-;;    If point is at the beginning of a headline or code block in
-;;    org-mode, single keys do fun things. See =org-speed-command-help=
-;;    for details (or hit the ? key at a headline).
-
-(setq org-use-speed-commands t)
-
-;; Specify the Org Directories
-
-;;    I keep all my =org-mode= files in a few directories, and I would
-;;    like them automatically searched when I generate agendas.
-
-(setq org-agenda-files '("~/Dropbox/org/personal" 
-                         "~/Google Drive/technical" 
-                         "~/Dropbox/org/project"))
-
-;; Auto Note Capturing
-
-;;    Let's say you were in the middle of something, but would like to
-;;    /take a quick note/, but without affecting the file you are
-;;    working on. This is called a "capture", and is bound to the
-;;    following key:
-
-(global-set-key (kbd "C-c c") 'org-capture)
-
-;; This will bring up a list of /note capturing templates/:
-
-(setq org-capture-templates
-      '(("n" "Thought or Note" entry (file "~/Technical/general-notes.org")
-         "* %i%?\n    %a" :empty-lines 1)
-
-        ("w" "General Sprint Note" entry (file+headline (current-sprint-file) "Work Issues")
-         "*** %i%?" :empty-lines 1)
-        ("r" "Retrospective Status" entry (file+headline (current-sprint-file) "Status/Accomplishments")
-         "*** %i%?\n  Linked: %a" :empty-lines 1)
-        ("g" "Retrospective Goodness" entry (file+headline (current-sprint-file) "Keep Doing (Good)")
-         "*** %i%?" :empty-lines 1)
-        ("b" "Retrospective Badness" entry (file+headline (current-sprint-file) "Stop Doing (Bad)")
-         "*** %i%?" :empty-lines 1)
-        ("i" "Retrospective Improvement" entry (file+headline (current-sprint-file) "Start Doing (Improvements)")
-         "*** %i%?" :empty-lines 1)
-        ("x" "Note for Next Sprint" entry (file+headline (current-sprint-file) "Notes for Next Sprint")
-         "*** %i%?" :empty-lines 1)
-
-        ("p" "Personal Journal" entry (file+datetree "~/Technical/personal.org")
-         "* Projects\n\n  %i%?\n\n  %a" :empty-lines 1)))
-
-;; General notes go into this file:
-(setq org-default-notes-file "~/Technical/personal.org")
-
-;; Checking Things Off
-
-;;    When I check off an item as done, sometimes I want to add some
-;;    details about the completion (this is really only helpful when I'm
-;;    consulting). 
-
-;;    With this setting, each time you turn an entry from a TODO state
-;;    into the DONE state, a line 'CLOSED: [timestamp]' will be inserted
-;;    just after the headline. If you turn the entry back into a TODO
-;;    item through further state cycling, that line will be removed
-;;    again.
-
-; (setq org-log-done 'time)
-(setq org-log-done 'note)
-
-;; Org Publishing
-
-;;    The brilliance of =org-mode= is the ability to publish your notes
-;;    as HTML files into a web server. See [[http://orgmode.org/worg/org-tutorials/org-publish-html-tutorial.html][these instructions]]. I've
-;;    transitioned over to the new =ox= exporter, see [[http://orgmode.org/worg/org-8.0.html][these instructions]].
-
-(require 'ox-html)
-
-(setq org-publish-project-alist  '(
-  ("org-notes"
-   :base-directory        "~/Technical/"
-   :base-extension        "org"
-   :publishing-directory  "~/Sites/"
-   :recursive             t
-   :publishing-function org-html-publish-to-html
-   :headline-levels       4             ; Just the default for this project.
-   :auto-preamble         t
-   :auto-sitemap          t             ; Generate sitemap.org automagically...
-   :makeindex             t
-   :section-numbers       nil
-   :table-of-contents     nil
-   :style "<link rel=\"stylesheet\" href=\"../css/styles.css\" type=\"text/css\"/><link rel=\"stylesheet\" href=\"css/styles.css\" type=\"text/css\"/> <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js\" type=\"text/javascript\"></script> <link href=\"http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/smoothness/jquery-ui.css\" type=\"text/css\" rel=\"Stylesheet\" />    <script src=\"https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js\" type=\"text/javascript\"></script> <script =\"text/jacascript\" src=\"js/script.js\"></script>"
-   )
-
-  ("dot-files"
-   :base-directory       "~/Work/dot-files/"
-   :base-extension       "org"
-   :publishing-directory "~/Work/dot-files/docs"
-   :recursive            f
-   :publishing-function org-html-publish-to-html
-   :auto-preamble         t
-   :auto-sitemap          t             ; Generate sitemap.org automagically...
-   :makeindex             f
-   :section-numbers       nil
-   :table-of-contents     nil
-   )
-
-  ("org-static"
-   :base-directory       "~/Dropbox/org/"
-   :base-extension       "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
-   :publishing-directory "~/Sites/"
-   :recursive            t
-   :publishing-function  org-publish-attachment
-   )
-
-  ("all" :components ("org-notes" "org-static" "dot-files"))))
-
-;; I really, really would like to affect the output of the
-;;    exported/published HTML files to make them /prettier/.
-
-(setq org-html-style "<link rel='stylesheet' href='http://www.howardism.org/styles/org-export-html-style.css' type='text/css'/>
-<script src='http://use.edgefonts.net/source-sans-pro.js'></script>
-<script src='http://use.edgefonts.net/source-code-pro.js'></script>")
-
-;; Default Export Settings
-
-;;     To make the =org-mode= export defaults closer to my liking
-;;     (without having to put specific #+PROPERTY commands), start by
-;;     =describe-variable= the =org-export-plist-vars= variable.
-
-;;     This returns the list of variables that can be customized:
-
-(setq org-export-with-section-numbers nil)
-(setq org-export-with-toc nil)
-(setq org-export-skip-text-before-1st-heading nil)
-
-(setq org-export-html-postamble nil) ;; don't need any gunk at end
-
-(setq org-export-creator-info nil)
-(setq org-export-email-info nil)
-(setq org-export-author-info nil)
-(setq org-export-time-stamp-file nil)
-(setq org-export-html-with-timestamp nil)
-
-;; Publishing as Presentation
-
-;;     Out of all [[http://orgmode.org/worg/org-tutorials/non-beamer-presentations.html][the ideas]] online, I prefer using [[http://meyerweb.com/eric/tools/s5/][S5]], and by loading
-;;     [[https://github.com/eschulte/org-S5/blob/master/org-export-as-s5.el][this code]], we can issue =org-export-as-s5=:
-
-(autoload 'org-export-as-s5 "org-export-as-s5"
-          "Module extension for Presentations for Org-Mode." t nil)
-
-;; And let's tie this to a keystroke to make it easier to use:
-
-(global-set-key (kbd "<f9> p") 'org-export-as-s5)
-
-;; Presentations
-
-;;    Currently generating presentations from my org-mode files using
-;;    [[https://github.com/hakimel/reveal.js/][reveal.js]] and [[https://github.com/yjwen/org-reveal][org-reveal]].
-
-(require 'ox-reveal)
-
-(setq org-reveal-root (concat "file://" (getenv "HOME") "/Other/reveal.js"))
-
-(setq org-reveal-postamble "Howard Abrams")
-
-;; MobileOrg
-
-;;    I use [[http://mobileorg.ncogni.to/doc/getting-started/using-dropbox/][Dropbox with MobileOrg]] in order to read my notes on my iPad.
-
-;;    The "global" location of my Org files on my local system:
-
-(setq org-directory "~/Dropbox/org/personal")
-
-;; Set the name of the file where new notes will be stored
-
-(setq org-mobile-inbox-for-pull "~/Dropbox/org/flagged.org")
-
-;; Set to <your Dropbox root directory>/MobileOrg.
-
-(setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
-
-;; The Tower of Babel
-
-;;    The trick to literate programming is in the [[http://orgmode.org/worg/org-contrib/babel/intro.html][Babel project]], which
-;;    allows org-mode to not only interpret source code blocks, but
-;;    evaluate them and tangle them out to a file.
-
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((sh         . t)
-   (js         . t)
-   (coffee     . t)
-   (emacs-lisp . t)
-   (perl       . t)
-   (scala      . t)
-   (clojure    . t)
-   (python     . t)
-   (dot        . t)
-   (css        . t)
-   (plantuml   . t)))
-
-;; Just Evaluate It
-
-;;     I'm normally fine with having my code automatically evaluated.
-
-(setq org-confirm-babel-evaluate nil)
-
-;; Font Coloring in Code Blocks
-    
-;;     Normally, fontifying the individual code blocks makes it
-;;     impossible to work with, so instead of turning it on at the global
-;;     level for all blocks, I created a couple of keystrokes to
-;;     selectively colorize one block at a time.
-
-; (setq org-src-fontify-natively t)
-
-(global-set-key (kbd "<f9> g") 'org-src-fontify-buffer)
-(global-set-key (kbd "<f9> f") 'org-src-fontify-block)
-
-;; Clojure
-
-;;    Me like [[http://clojure.org][Clojure]], and since it is a LISP, then [[https://github.com/clojure-emacs][Emacs likes it]] too.
-;;    Here are all the packages related to Clojure that I use. Note
-;;    my migration from [[https://github.com/clojure-emacs/nrepl.el][nrepl]] to [[https://github.com/clojure-emacs/cider][Cider]].
-
-(packages-install '( ac-nrepl
-                     clojure-mode
-                     clojure-cheatsheet
-                     clojure-snippets
-                     clojurescript-mode
-                     cider
-                     elein
-                     ;; nrepl
-                     ;; nrepl-ritz
-                     paredit
-                     rainbow-delimiters  ;; Mode for alternating paren colors
-                     ))
-
-;; Need to add Yasnippets to Clojure mode:
-
-(require 'clojure-mode)
-
-(add-hook 'clojure-mode-hook
-          '(lambda ()
-             (yas/minor-mode-on)))
-
-;; According to the [[https://github.com/weavejester/compojure/wiki][Compojure Wiki]], the following code makes their
-;;    macros look prettier:
-
-(define-clojure-indent
-  (defroutes 'defun)
-  (GET 2)
-  (POST 2)
-  (PUT 2)
-  (DELETE 2)
-  (HEAD 2)
-  (ANY 2)
-  (context 2))
-
-;; Most LISP-based programming is better with rainbow ponies:
-
-(add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
-(add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
-
-;; Paredit
-
-;;     One of the cooler features of Emacs is the [[http://emacswiki.org/emacs/ParEdit][ParEdit mode]] which
-;;     keeps all parenthesis balanced in Lisp-oriented languages.
-;;     See this [[http://www.emacswiki.org/emacs/PareditCheatsheet][cheatsheet]].
-
-(autoload 'paredit-mode "paredit"
-  "Minor mode for pseudo-structurally editing Lisp code." t)
-
-;; To associate specific language modes with ParEdit, first create a
-;;     helper function:
-
-(defun turn-on-paredit () (paredit-mode 1))
-
-;; Then associate the following Lisp-based modes with ParEdit:
-
-(add-hook 'emacs-lisp-mode-hook       'turn-on-paredit)
-(add-hook 'lisp-mode-hook             'turn-on-paredit)
-(add-hook 'lisp-interaction-mode-hook 'turn-on-paredit)
-(add-hook 'scheme-mode-hook           'turn-on-paredit)
-(add-hook 'clojure-mode-hook          'turn-on-paredit)
-(add-hook 'cider-repl-mode-hook       'turn-on-paredit)
-(add-hook 'sibiliant-mode-hook        'turn-on-paredit)
-
-;; ElDoc
-
-;;     Need to get [[http://emacswiki.org/emacs/ElDoc][ElDoc]] working with Clojure (oh, and with Emacs Lisp).
-;;     Do I need [[https://gist.github.com/tomykaira/1386472][this EL file]]?
-
-(add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
-(add-hook 'clojure-mode-hook 'turn-on-eldoc-mode)
-(add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
-
-;; Cider
-
-;;   The [[https://github.com/clojure-emacs/cider][Cider project]] is da bomb. Usage:
-
-;;    - =cider-jack-in= - For starting an nREPL server and setting
-;;      everything up. Keyboard: =C-c M-j=
-;;    - =cider= to connect to an existing nREPL server.
-
-;;   Don't care much for the extra buffers that show up when you start:
-
-(setq nrepl-hide-special-buffers t)
-
-;; Stop the error buffer from popping up while working in buffers other than the REPL:
-
-(setq cider-popup-stacktraces nil)
-
-;; Scala
-
-;;    We need to load the [[https://github.com/haxney/scala-mode][scala mode]].
-;;    We follow [[http://www.scala-lang.org/node/354][these instructions]] to hook it up with [[http://code.google.com/p/yasnippet/][Yasnippet]].
-
-(autoload 'scala-mode "scala-mode"
-  "Programming mode for Scala." t nil)
-
-;; Shouldn't this be done by default?
-(add-to-list 'auto-mode-alist '("\\.scala$" . scala-mode))
-
-(add-hook 'scala-mode-hook
-          '(lambda ()
-             (yas/minor-mode-on)
-             (scala-mode-feature-electric-mode)))
-
-;; We follow [[http://jawher.net/2011/01/17/scala-development-environment-emacs-sbt-ensime/][these instructions]] to set it up with [[https://github.com/aemoncannon/ensime][Ensime]], since
-;;    it current is not available as a package.
-
-(if (file-exists-p "~/.emacs.d/ensime")
-    (progn
-      (add-to-list 'load-path "~/.emacs.d/ensime/elisp")
-      (autoload 'ensime-mode "ensime-mode"
-        "Programming support mode for Scala." t nil)
-      (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)))
-
-;; JavaScript
-
-;;    JavaScript should have three parts:
-;;    - Syntax highlight (already included)
-;;    - Syntax verification (with flycheck)
-;;    - Interactive REPL
-
-;;    We use the following packages based on =js2-mode=:
-
-(packages-install '( js-comint
-                     js2-mode
-                     ac-js2
-                     js2-refactor
-                     json-mode
-                     coffee-mode ))
-
-;; Why yes, it seems that the JavaScript mode has a special
-;;    indentation setting. Go below?
-
-(setq js-basic-indent 2)
-(setq-default js2-basic-indent 2)
-
-(setq-default js2-basic-offset 2)
-(setq-default js2-auto-indent-p t)
-(setq-default js2-cleanup-whitespace t)
-(setq-default js2-enter-indents-newline t)
-(setq-default js2-global-externs "jQuery $")
-(setq-default js2-indent-on-enter-key t)
-(setq-default js2-mode-indent-ignore-first-tab t)
-
-(setq-default js2-global-externs '("module" "require" "buster" "sinon" "assert" "refute" "setTimeout" "clearTimeout" "setInterval" "clearInterval" "location" "__dirname" "console" "JSON"))
-
-;; We'll let fly do the error parsing...
-(setq-default js2-show-parse-errors nil)
-
-(autoload 'js2-mode "js2-mode" nil t)
-(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-
-;; Change the word "function" to just an "f":
-
-(font-lock-add-keywords
- 'js2-mode `(("\\(function *\\)("
-             (0 (progn (compose-region (match-beginning 1) (match-end 1) "ƒ")
-                       nil)))))
-
-;; Place warning font around TODO and others:
-
-(font-lock-add-keywords 'js2-mode
-                        '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
-                           1 font-lock-warning-face t)))
-
-;; Refactoring JavaScript
-
-;;     The [[https://github.com/magnars/js2-refactor.el][js2-refactor]] mode should start with `C-c C-m` and then a two-letter mnemonic shortcut.
-
-;;        * =ef= is =extract-function=: Extracts the marked expressions out into a new named function.
-;;        * =em= is =extract-method=: Extracts the marked expressions out into a new named method in an object literal.
-;;        * =ip= is =introduce-parameter=: Changes the marked expression to a parameter in a local function.
-;;        * =lp= is =localize-parameter=: Changes a parameter to a local var in a local function.
-;;        * =eo= is =expand-object=: Converts a one line object literal to multiline.
-;;        * =co= is =contract-object=: Converts a multiline object literal to one line.
-;;        * =eu= is =expand-function=: Converts a one line function to multiline (expecting semicolons as statement delimiters).
-;;        * =cu= is =contract-function=: Converts a multiline function to one line (expecting semicolons as statement delimiters).
-;;        * =ea= is =expand-array=: Converts a one line array to multiline.
-;;        * =ca= is =contract-array=: Converts a multiline array to one line.
-;;        * =wi= is =wrap-buffer-in-iife=: Wraps the entire buffer in an immediately invoked function expression
-;;        * =ig= is =inject-global-in-iife=: Creates a shortcut for a marked global by injecting it in the wrapping immediately invoked function expression
-;;        * =ag= is =add-to-globals-annotation=: Creates a =/*global */= annotation if it is missing, and adds the var at point to it.
-;;        * =ev= is =extract-var=: Takes a marked expression and replaces it with a var.
-;;        * =iv= is =inline-var=: Replaces all instances of a variable with its initial value.
-;;        * =rv= is =rename-var=: Renames the variable on point and all occurrences in its lexical scope.
-;;        * =vt= is =var-to-this=: Changes local =var a= to be =this.a= instead.
-;;        * =ao= is =arguments-to-object=: Replaces arguments to a function call with an object literal of named arguments. Requires yasnippets.
-;;        * =3i= is =ternary-to-if=: Converts ternary operator to if-statement.
-;;        * =sv= is =split-var-declaration=: Splits a =var= with multiple vars declared, into several =var= statements.
-;;        * =uw= is =unwrap=: Replaces the parent statement with the selected region.
-
-(if (autofeaturep 'js2-refactor)
-    (progn
-      (require 'js2-refactor)
-      (js2r-add-keybindings-with-prefix "C-c C-m")))
-
-;; Server JS with Node.js
-
-;;      Use [[http://js-comint-el.sourceforge.net][js-comint]], but hook it up with node.js:
-
-(autoload 'js-comint "js-comint"
-  "Hooking JavaScript interpreter up to the JS Files." t nil)
-
-(setenv "NODE_NO_READLINE" "1")   ;; Turn off fancy node prompt
-;; Use node as our repl
-(setq inferior-js-program-command "node")
-
-;; According to [[http://nodejs.org/api/all.html#all_repl][these instructions]], we set the =NODE_NO_READLINE=
-;;     variable.
-
-;;     Need some prompt configuration for the REPL:
-
-(setq inferior-js-mode-hook
-      (lambda ()
-        ;; We like nice colors
-        (ansi-color-for-comint-mode-on)
-        ;; Deal with some prompt nonsense
-        (add-to-list
-         'comint-preoutput-filter-functions
-         (lambda (output)
-           (replace-regexp-in-string "\033\\[[0-9]+[GK]" "" output)
-           (replace-regexp-in-string ".*1G.*3G" "&GT;" output)
-           (replace-regexp-in-string "&GT;" "> " output)))))
-
-;; Start the JavaScript node REPL with: =run-js=
-;;     Set up some helpful keyboard instructions:
-
-(add-hook 'js2-mode-hook
-        (lambda () 
-          (local-set-key (kbd "C-c C-c") #'js-send-buffer)
-          (local-set-key (kbd "C-c C-r") #'js-send-region)
-          (local-set-key (kbd "C-c C-s") #'js-send-last-sexp)
-          (local-set-key (kbd "C-c C-z") #'run-js)))
-
-;; Slime-JS
-
-;;      Slime seems a lot better for REPL work than js-comint.
-
-(add-hook 'after-init-hook
-  #'(lambda ()
-    (when (locate-library "slime-js")
-      (require 'setup-slime-js))))
-
-;; Coffee
- 
-;;     Gotta load up CoffeeScript files, but I use a special shell
-;;     script that loads up my special 'coughy' environment
-
-(setq coffee-command (concat (getenv "HOME") "/bin/coughy"))
+(eval-after-load 'clojure-mode '(require 'init-clojure))
 
 ;; Python
 
-;;    Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].  The
-;;    question is whether I use Rope or Jedi for auto-completion.  Seems
-;;    like Rope is better, so I will use it instead of Jedi... for now.
+;;    See [[file:emacs-python.org][emacs-python.el]] for details on working with Python.
+;;    Not sure if I should just load it directly, like:
 
-(packages-install '( nose
-                     jedi
-                     ein
-                     virtualenv ))
+(load-library "init-python")
 
-;; WSGI files are just Python files in disguise, so tell them to use
-;;    the Python environment:
+;; Emacs Lisp
 
-(add-to-list 'auto-mode-alist '("\\.wsgi$" . python-mode))
+;;    The most important change to Emacs Lisp is colorizing the
+;;    variables:
 
-;; Debugging
+(add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode)
 
-;;     Use the [[https://pypi.python.org/pypi/virtualenv][virtualenv]] world of goodness, but only if it is installed.
-;;     This allows me to =M-x virtualenv-workon= and specify the virtual
-;;     environment to run all the Python gunk from within Emacs.
+;; Might as well pretty up the lambdas, because, we can!
 
-(if (autofeaturep 'virtualenv)
-    (progn
-        (require 'virtualenv)))
-
-;; Nose
-
-;;     Unit test and code coverage tool for Python now comes to Emacs
-;;     with [[http://ivory.idyll.org/articles/nose-intro.html][Python Nose]].
-
-(if (autofeaturep 'nose)
-      (progn
-       (require 'nose)
-
-       ;;   Include this line only for people with non-eco non-global test
-       ;;   runners... like the Python Koans:
-       (add-to-list 'nose-project-names
-                    "~/Google\ Drive/python_koans/python2")))
-
-;; IPython
-
-;;    Got iPython and EIN? Great! Remember, pre-install the following packages:
-;;    - websocket
-;;    - request
-;;    - ein
-
-(if (autofeaturep 'ein)
-      (progn 
-        (require 'ein)
-        (setq ein:use-auto-complete t)))
-
-;; Rope
-
-;;     After installing the following Python libraries using =pip= (in a
-;;     global environment):
-
-;;     - [[http://rope.sourceforge.net/index.html][Rope]]
-;;     - [[http://rope.sourceforge.net/ropemacs.html][Ropemacs]]
-;;     - [[https://pypi.python.org/pypi/ropemode][Ropemode]]
-
-;;     And have installed [[http://pymacs.progiciels-bpi.ca/pymacs.html][pymacs]], with both =package-install= as well as
-;;     by cloning [[https://github.com/pinard/Pymacs.git][this Git repo]] and issuing a =make install=.
-;;     According to [[http://stackoverflow.com/questions/2855378/ropemacs-usage-tutorial][this discusssion]], we /just/ need to:
-
-;; (require 'pymacs)
-  
-(autoload 'pymacs-apply "pymacs")
-(autoload 'pymacs-call "pymacs")
-(autoload 'pymacs-eval "pymacs" nil t)
-(autoload 'pymacs-exec "pymacs" nil t)
-(autoload 'pymacs-load "pymacs" nil t)
-(autoload 'pymacs-autoload "pymacs")
-
-;;(eval-after-load "pymacs"
-;;  '(add-to-list 'pymacs-load-path YOUR-PYMACS-DIRECTORY"))
-
-(add-hook 'python-mode-hook
-          (lambda ()
-            (pymacs-load "ropemacs" "rope-")
-            (setq ropemacs-enable-autoimport t)))
-
-(defun rope-before-save-actions () 
-  ;; Does nothing but save us from an error.
-  )
-(defun rope-after-save-actions () 
-  ;; Does nothing but save us from an error.
-  )
-(defun rope-exiting-actions () 
-  ;; Does nothing but save us from an error.
-  )
-
-;; HTML, CSS and Web Work
-   
-;;    The basic web features of Emacs are often good enough, but
-;;    [[https://github.com/smihica/emmet-mode][Emmet-Mode]] looks pretty sweet.
-
-(packages-install '( emmet-mode
-                     web-mode
-                     mustache-mode
-                     handlebars-mode
-                     htmlize ))    ;; I use this more for org-mode
-
-;; Now, hook emmet up to SGML and all the other modes:
-
-(add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
-(add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
-
-;; Set emmet to only use 2 spaces:
-
-(add-hook 'emmet-mode-hook (lambda () 
-                             (setq emmet-indentation 2))) ;; indent 2 spaces.
+(font-lock-add-keywords 'emacs-lisp-mode
+                        '(("(\\(lambda\\)\\>" (0 (prog1 ()
+                                                   (compose-region (match-beginning 1)
+                                                                   (match-end 1)
+                                                                   ?λ))))))
 
 ;; Git
 
@@ -1649,9 +895,8 @@ should be. After calling this function, call 'meeting-done' to reset the environ
         (local-set-key (kbd "A-i") 'wiki-italics)
         (local-set-key (kbd "A-=") 'wiki-code)))
 
-;; PlantUML
-
-;;    To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, get the "mode" working for
+;; To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, download the Jar and place
+;;    in the =~/bin= directory. We then set the "mode" working for
 ;;    editing the files:
 
 (setq plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
@@ -1775,8 +1020,3 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 
 (setq lui-flyspell-p t
       lui-flyspell-alist '((".*" "american")))
-
-;; Then the following code will work:
-
-(if (file-exists-p "~/.emacs.d/clojuredocs.el")
-    (load-library "clojuredocs"))
