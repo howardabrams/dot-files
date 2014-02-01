@@ -841,7 +841,6 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
    "Major mode for editing Markdown files" t)
 (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.txt\\'" . markdown-mode))
 
 ;; Using the =org-text-wrapper= function, I create some wrapper
 ;;    functions to make it easier to bold text in Markdown files:
