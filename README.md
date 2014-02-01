@@ -25,6 +25,12 @@ Startup scripts for [Emacs][3] and [Zsh][6]. Specifically:
 </td><td>
   "Sourced" in from the <code>.emacs</code> file
 </td></tr><tr><td>
+  <a href="http://howardabrams.com/projects/dot-files/profile.html"><code>profile.org</code></a>
+</td><td>
+   <a href="results/profile"><code>.profile</code></a>
+</td><td>
+  My General Profile
+</td></tr><tr><td>
   <a href="http://howardabrams.com/projects/dot-files/zsh-theme.html"><code>zsh-theme.org</code></a>
 </td><td>
    <a href="results/happiness.zsh-theme"><code>.oh-my-zsh/themes</code></a>
