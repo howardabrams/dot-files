@@ -1,0 +1,168 @@
+#+TITLE:  Emacs Settings for Clojure
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   [2014-02-01 Sat][2014-02-01 Sat]
+#+TAGS:   emacs clojure
+
+   Me like [[http://clojure.org][Clojure]], and since it is a LISP, then [[https://github.com/clojure-emacs][Emacs likes it]] too.
+   Here are all the packages related to Clojure that I use. Note
+   my migration from [[https://github.com/clojure-emacs/nrepl.el][nrepl]] to [[https://github.com/clojure-emacs/cider][Cider]].
+
+#+BEGIN_SRC elisp
+  (packages-install '( ac-nrepl
+                       clojure-mode
+                       clojure-cheatsheet
+                       clojure-snippets
+                       clojurescript-mode
+                       cider
+                       clj-refactor
+                       elein
+                       ;; nrepl
+                       ;; nrepl-ritz
+                       paredit
+                       rainbow-delimiters  ;; Mode for alternating paren colors
+                       ))
+#+END_SRC
+
+   Need to add Yasnippets to Clojure mode:
+
+#+BEGIN_SRC elisp
+  (require 'clojure-mode)
+
+  (add-hook 'clojure-mode-hook
+            '(lambda ()
+               (yas/minor-mode-on)))
+#+END_SRC
+
+   According to the [[https://github.com/weavejester/compojure/wiki][Compojure Wiki]], the following code makes their
+   macros look prettier:
+
+#+BEGIN_SRC elisp
+  (define-clojure-indent
+    (defroutes 'defun)
+    (GET 2)
+    (POST 2)
+    (PUT 2)
+    (DELETE 2)
+    (HEAD 2)
+    (ANY 2)
+    (context 2))
+#+END_SRC
+
+   Most LISP-based programming is better with rainbow ponies:
+
+#+BEGIN_SRC elisp
+  (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
+  (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
+#+END_SRC
+
+   With the =elein= project installed, it allows us to do things
+   like: =M-x elein-run-cmd koan run=
+
+   Really want to try out my new [[file:~/Dropbox/Clojure/clojuredocs-emacs/org/clojuredocs.org][ClojureDocs functions]]. Note: You
+   need to do the following steps:
+
+#+BEGIN_SRC sh :tangle no
+  cd ~/Other/... # or whatever
+  git clone https://github.com/howardabrams/clojuredocs-emacs.git
+  cd ~/.emacs.d
+  ln -s ~/Other/clojuredocs-emacs/clojuredocs.el .
+#+END_SRC
+
+   Then the following code will work:
+
+#+Begin_SRC emacs-lisp
+  (if (locate-library "clojuredocs")
+      (load-library "clojuredocs"))
+#+END_SRC
+
+   Finally, if you are just learning Clojure, check out [[http://www.4clojure.com/][4Clojure]] and then
+   install [[https://github.com/joshuarh/4clojure.el][4clojure-mode]].
+
+*** Paredit
+
+    One of the cooler features of Emacs is the [[http://emacswiki.org/emacs/ParEdit][ParEdit mode]] which
+    keeps all parenthesis balanced in Lisp-oriented languages.
+    See this [[http://www.emacswiki.org/emacs/PareditCheatsheet][cheatsheet]].
+
+#+BEGIN_SRC elisp
+  (autoload 'paredit-mode "paredit"
+    "Minor mode for pseudo-structurally editing Lisp code." t)
+#+END_SRC
+
+    To associate specific language modes with ParEdit, first create a
+    helper function:
+
+#+BEGIN_SRC elisp
+  (defun turn-on-paredit () (paredit-mode 1))
+#+END_SRC
+
+    Then associate the following Lisp-based modes with ParEdit:
+
+#+BEGIN_SRC elisp
+  (add-hook 'emacs-lisp-mode-hook       'turn-on-paredit)
+  (add-hook 'lisp-mode-hook             'turn-on-paredit)
+  (add-hook 'lisp-interaction-mode-hook 'turn-on-paredit)
+  (add-hook 'scheme-mode-hook           'turn-on-paredit)
+  (add-hook 'clojure-mode-hook          'turn-on-paredit)
+  (add-hook 'cider-repl-mode-hook       'turn-on-paredit)
+  (add-hook 'sibiliant-mode-hook        'turn-on-paredit)
+#+END_SRC
+
+    Note, without the helpful =turn-on-paredit= function defined
+    above, I'd have to do something like:
+
+#+BEGIN_SRC elisp :tangle no
+  (add-hook 'clojure-mode-hook          (lambda () (paredit-mode +1)))
+#+END_SRC
+
+*** ElDoc
+
+    Need to get [[http://emacswiki.org/emacs/ElDoc][ElDoc]] working with Clojure (oh, and with Emacs Lisp).
+    Do I need [[https://gist.github.com/tomykaira/1386472][this EL file]]?
+
+#+BEGIN_SRC elisp
+  (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+  (add-hook 'clojure-mode-hook 'turn-on-eldoc-mode)
+  (add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
+#+END_SRC
+
+*** Cider
+
+  The [[https://github.com/clojure-emacs/cider][Cider project]] is da bomb. Usage:
+
+   - =cider-jack-in= - For starting an nREPL server and setting
+     everything up. Keyboard: =C-c M-j=
+   - =cider= to connect to an existing nREPL server.
+
+  Don't care much for the extra buffers that show up when you start:
+
+#+BEGIN_SRC elisp
+  (setq nrepl-hide-special-buffers t)
+#+END_SRC
+
+Stop the error buffer from popping up while working in buffers other than the REPL:
+
+#+BEGIN_SRC elisp
+  (setq cider-popup-stacktraces nil)
+#+END_SRC
+
+* Technical Artifacts
+
+  Make sure that we can simply =require= this library.
+
+#+BEGIN_SRC elisp
+  (provide 'init-clojure)
+#+END_SRC
+
+  Before you can build this on a new system, make sure that you put
+  the cursor over any of these properties, and hit: =C-c C-c=
+
+#+DESCRIPTION: A literate programming version of my Emacs Initialization of Clojure
+#+PROPERTY:    results silent
+#+PROPERTY:    tangle ~/.emacs.d/elisp/init-clojure.el
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js

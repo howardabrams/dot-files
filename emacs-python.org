@@ -1,0 +1,178 @@
+#+TITLE:  Emacs Settings for Python
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   [2014-02-01 Sat][2014-02-01 Sat]
+#+TAGS:   emacs python
+
+   Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].  The
+   question is whether I use Rope or Jedi for auto-completion.  Seems
+   like Rope is better, so I will use it instead of Jedi... for now.
+
+#+BEGIN_SRC elisp
+  (packages-install '( nose
+                       jedi
+                       ;; ein
+                       virtualenv ))
+#+END_SRC
+
+   Make sure that PATH can reference the Python executables, and
+   since I am installing a updated Python...
+
+#+BEGIN_SRC elisp :tangle no
+  (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
+#+END_SRC
+
+   WSGI files are just Python files in disguise, so tell them to use
+   the Python environment:
+
+#+BEGIN_SRC elisp
+  (add-to-list 'auto-mode-alist '("\\.wsgi$" . python-mode))
+#+END_SRC
+
+   Need to color the defined variables:
+
+#+BEGIN_SRC elisp
+  (add-hook 'python-mode-hook 'color-identifiers-mode)
+#+END_SRC
+
+* Debugging
+
+    Use the [[https://pypi.python.org/pypi/virtualenv][virtualenv]] world of goodness, but only if it is installed.
+    This allows me to =M-x virtualenv-workon= and specify the virtual
+    environment to run all the Python gunk from within Emacs.
+
+#+BEGIN_SRC elisp
+  (if (autofeaturep 'virtualenv)
+      (progn
+          (require 'virtualenv)))
+#+END_SRC
+
+* Jedi
+
+    Auto-completion system for Python. This code hooks Jedi into the
+    standard Python mode. See [[http://tkf.github.io/emacs-jedi/][these instructions]] for details. New
+    keys:
+
+    - =C-Tab= for auto complete.
+    - =C-.= to jump to definition.
+    - =C-c d= to show the function documentation
+
+#+BEGIN_SRC elisp :tangle no
+  (if (autofeaturep 'jedi-mode)
+      (progn
+        (add-hook 'python-mode-hook 'jedi:setup)
+        (add-hook 'python-mode-hook 'jedi:ac-setup)
+        (setq jedi:setup-keys t)                      ; optional
+        (setq jedi:complete--dot t)))                 ; optional
+#+END_SRC
+
+* Flymake for Python
+
+    Lint-style syntax checking for Python builds on the regular
+    Flymake package, however, I am now using Flycheck for that.
+
+#+BEGIN_SRC elisp :tangle no
+  (if (autofeaturep 'flymake-python-pyflakes)
+      (progn
+        (require 'flymake-python-pyflakes)
+        (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)))
+#+END_SRC
+
+* Nose
+
+    Unit test and code coverage tool for Python now comes to Emacs
+    with [[http://ivory.idyll.org/articles/nose-intro.html][Python Nose]].
+
+#+BEGIN_SRC elisp
+  (if (autofeaturep 'nose)
+        (progn
+         (require 'nose)
+
+         ;;   Include this line only for people with non-eco non-global test
+         ;;   runners... like the Python Koans:
+         (add-to-list 'nose-project-names
+                      "~/Google\ Drive/python_koans/python2")))
+#+END_SRC
+
+* Rope
+
+    After installing the following Python libraries using =pip= (in a
+    global environment):
+
+    - [[http://rope.sourceforge.net/index.html][Rope]]
+    - [[http://rope.sourceforge.net/ropemacs.html][Ropemacs]]
+    - [[https://pypi.python.org/pypi/ropemode][Ropemode]]
+
+    And have installed [[http://pymacs.progiciels-bpi.ca/pymacs.html][pymacs]], with both =package-install= as well as
+    by cloning [[https://github.com/pinard/Pymacs.git][this Git repo]] and issuing a =make install=.
+    According to [[http://stackoverflow.com/questions/2855378/ropemacs-usage-tutorial][this discusssion]], we /just/ need to:
+
+#+BEGIN_SRC elisp
+  ;; (require 'pymacs)
+
+  (autoload 'pymacs-apply "pymacs")
+  (autoload 'pymacs-call "pymacs")
+  (autoload 'pymacs-eval "pymacs" nil t)
+  (autoload 'pymacs-exec "pymacs" nil t)
+  (autoload 'pymacs-load "pymacs" nil t)
+  (autoload 'pymacs-autoload "pymacs")
+
+  ;;(eval-after-load "pymacs"
+  ;;  '(add-to-list 'pymacs-load-path YOUR-PYMACS-DIRECTORY"))
+
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (pymacs-load "ropemacs" "rope-")
+              (setq ropemacs-enable-autoimport t)))
+
+  (defun rope-before-save-actions ()
+    ;; Does nothing but save us from an error.
+    )
+  (defun rope-after-save-actions ()
+    ;; Does nothing but save us from an error.
+    )
+  (defun rope-exiting-actions ()
+    ;; Does nothing but save us from an error.
+    )
+#+END_SRC
+
+    A helluva lot of work, but it is worth it. As long as the Rope
+    instance stays alive and doesn't die. Then it becomes pretty
+    annoying.
+
+* IPython
+
+   Got iPython and EIN? Great! Remember, pre-install the following packages:
+   - websocket
+   - request
+   - ein
+
+#+BEGIN_SRC elisp :tangle no
+  (if (autofeaturep 'ein)
+        (progn
+          (require 'ein)
+          (setq ein:use-auto-complete t)))
+#+END_SRC
+
+   After starting the IPython notebook server,
+   type =M-x ein:notebooklist-open= to open notebook list.
+
+* Technical Artifacts
+
+  Make sure that we can simply =require= this library.
+
+#+BEGIN_SRC elisp
+  (provide 'init-python)
+#+END_SRC
+
+  Before you can build this on a new system, make sure that you put
+  the cursor over any of these properties, and hit: =C-c C-c=
+
+#+DESCRIPTION: A literate programming version of my Emacs Initialization of Python
+#+PROPERTY:    results silent
+#+PROPERTY:    tangle ~/.emacs.d/elisp/init-python.el
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js

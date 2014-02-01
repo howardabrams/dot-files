@@ -1,0 +1,236 @@
+#+TITLE:  Emacs Settings for JavaScript
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   [2014-02-01 Sat][2014-02-01 Sat]
+#+TAGS:   emacs javascript
+
+   JavaScript should have three parts:
+   - Syntax highlight (already included)
+   - Syntax verification (with flycheck)
+   - Interactive REPL
+
+   We use the following packages based on =js2-mode=:
+
+#+BEGIN_SRC elisp
+  (packages-install '( js-comint
+                       js2-mode
+                       ac-js2
+                       js2-refactor
+                       json-mode
+                       coffee-mode ))
+#+END_SRC
+
+   Why yes, it seems that the JavaScript mode has a special
+   indentation setting. Go below?
+
+#+BEGIN_SRC elisp
+  (setq js-basic-indent 2)
+  (setq-default js2-basic-indent 2)
+
+  (setq-default js2-basic-offset 2)
+  (setq-default js2-auto-indent-p t)
+  (setq-default js2-cleanup-whitespace t)
+  (setq-default js2-enter-indents-newline t)
+  (setq-default js2-global-externs "jQuery $")
+  (setq-default js2-indent-on-enter-key t)
+  (setq-default js2-mode-indent-ignore-first-tab t)
+
+  (setq-default js2-global-externs '("module" "require" "buster" "sinon" "assert" "refute" "setTimeout" "clearTimeout" "setInterval" "clearInterval" "location" "__dirname" "console" "JSON"))
+
+  ;; We'll let fly do the error parsing...
+  (setq-default js2-show-parse-errors nil)
+
+  (autoload 'js2-mode "js2-mode" nil t)
+  (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+#+END_SRC
+
+   Change the word "function" to just an "f":
+
+#+BEGIN_SRC elisp
+  (font-lock-add-keywords
+   'js2-mode `(("\\(function *\\)("
+               (0 (progn (compose-region (match-beginning 1) (match-end 1) "ƒ")
+                         nil)))))
+#+END_SRC
+
+   Place warning font around TODO and others:
+
+#+BEGIN_SRC elisp
+  (font-lock-add-keywords 'js2-mode
+                          '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
+                             1 font-lock-warning-face t)))
+#+END_SRC
+
+   Finally, color any /defined/ variables with [[https://github.com/ankurdave/color-identifiers-mode][color-identifiers-mode]].
+
+#+BEGIN_SRC elisp
+  (add-hook 'js2-mode-hook 'color-identifiers-mode)
+#+END_SRC
+
+* FlyMake and JSHint
+
+   While editing JavaScript is baked into Emacs, it is kinda cool to
+   have it give you red sections based on [[http://www.jshint.com/][jshint]].
+   This is now done with Flycheck, and we now don't use [[http://www.emacswiki.org/emacs/FlymakeJavaScript][FlyMake]].
+
+#+BEGIN_SRC elisp :tangle no
+  (autoload 'flymake-jshint "flymake-jshint"
+    "Error and linting support mode for JavaScript." t nil)
+
+  (add-hook 'js-mode-hook
+            (lambda () (flymake-mode 1)))
+#+END_SRC
+
+   Now load and edit a JavaScript file, like [[file:~/jshint-code-test.js][jshint-code-test.js]].
+
+* Refactoring JavaScript
+
+    The [[https://github.com/magnars/js2-refactor.el][js2-refactor]] mode should start with `C-c C-m` and then a two-letter mnemonic shortcut.
+
+       * =ef= is =extract-function=: Extracts the marked expressions out into a new named function.
+       * =em= is =extract-method=: Extracts the marked expressions out into a new named method in an object literal.
+       * =ip= is =introduce-parameter=: Changes the marked expression to a parameter in a local function.
+       * =lp= is =localize-parameter=: Changes a parameter to a local var in a local function.
+       * =eo= is =expand-object=: Converts a one line object literal to multiline.
+       * =co= is =contract-object=: Converts a multiline object literal to one line.
+       * =eu= is =expand-function=: Converts a one line function to multiline (expecting semicolons as statement delimiters).
+       * =cu= is =contract-function=: Converts a multiline function to one line (expecting semicolons as statement delimiters).
+       * =ea= is =expand-array=: Converts a one line array to multiline.
+       * =ca= is =contract-array=: Converts a multiline array to one line.
+       * =wi= is =wrap-buffer-in-iife=: Wraps the entire buffer in an immediately invoked function expression
+       * =ig= is =inject-global-in-iife=: Creates a shortcut for a marked global by injecting it in the wrapping immediately invoked function expression
+       * =ag= is =add-to-globals-annotation=: Creates a =/*global */= annotation if it is missing, and adds the var at point to it.
+       * =ev= is =extract-var=: Takes a marked expression and replaces it with a var.
+       * =iv= is =inline-var=: Replaces all instances of a variable with its initial value.
+       * =rv= is =rename-var=: Renames the variable on point and all occurrences in its lexical scope.
+       * =vt= is =var-to-this=: Changes local =var a= to be =this.a= instead.
+       * =ao= is =arguments-to-object=: Replaces arguments to a function call with an object literal of named arguments. Requires yasnippets.
+       * =3i= is =ternary-to-if=: Converts ternary operator to if-statement.
+       * =sv= is =split-var-declaration=: Splits a =var= with multiple vars declared, into several =var= statements.
+       * =uw= is =unwrap=: Replaces the parent statement with the selected region.
+
+#+BEGIN_SRC elisp
+  (if (autofeaturep 'js2-refactor)
+      (progn
+        (require 'js2-refactor)
+        (js2r-add-keybindings-with-prefix "C-c C-m")))
+#+END_SRC
+
+* JavaScript REPL
+
+    We can use two different approaches for a JavaScript REPL.
+    *Note:* Neither are working very effectively.
+
+** Client JS with MozRepl
+
+     Assuming you have Mozilla Firefox running with the [[https://addons.mozilla.org/en-US/firefox/addon/mozrepl/][MozRepl]]
+     add-on and you've installed a =moz= executable:
+
+#+BEGIN_SRC elisp :tangle no
+  (autoload 'moz-minor-mode "moz" "Mozilla Minor and Inferior Mozilla Modes" t)
+
+  (add-hook 'js-mode-hook 'javascript-custom-setup)
+  (defun javascript-custom-setup ()
+    (moz-minor-mode 1))
+#+END_SRC
+
+     This gives you the following commands:
+
+     - C-c C-s: open a MozRepl interaction buffer and switch to it
+     - C-c C-l: save the current buffer and load it in MozRepl
+     - C-M-x: send the current function (as recognized by c-mark-function) to MozRepl
+     - C-c C-c: send the current function to MozRepl and switch to the interaction buffer
+     - C-c C-r: send the current region to MozRepl
+
+** Server JS with Node.js
+
+     Use [[http://js-comint-el.sourceforge.net][js-comint]], but hook it up with node.js:
+
+#+BEGIN_SRC elisp
+  (autoload 'js-comint "js-comint"
+    "Hooking JavaScript interpreter up to the JS Files." t nil)
+
+  (setenv "NODE_NO_READLINE" "1")   ;; Turn off fancy node prompt
+  ;; Use node as our repl
+  (setq inferior-js-program-command "node")
+#+END_SRC
+
+    According to [[http://nodejs.org/api/all.html#all_repl][these instructions]], we set the =NODE_NO_READLINE=
+    variable.
+
+    Need some prompt configuration for the REPL:
+
+#+BEGIN_SRC elisp
+  (setq inferior-js-mode-hook
+        (lambda ()
+          ;; We like nice colors
+          (ansi-color-for-comint-mode-on)
+          ;; Deal with some prompt nonsense
+          (add-to-list
+           'comint-preoutput-filter-functions
+           (lambda (output)
+             (replace-regexp-in-string "\033\\[[0-9]+[GK]" "" output)
+             (replace-regexp-in-string ".*1G.*3G" "&GT;" output)
+             (replace-regexp-in-string "&GT;" "> " output)))))
+#+END_SRC
+
+    Start the JavaScript node REPL with: =run-js=
+    Set up some helpful keyboard instructions:
+
+#+BEGIN_SRC elisp
+  (add-hook 'js2-mode-hook
+          (lambda ()
+            (local-set-key (kbd "C-c C-c") #'js-send-buffer)
+            (local-set-key (kbd "C-c C-r") #'js-send-region)
+            (local-set-key (kbd "C-c C-s") #'js-send-last-sexp)
+            (local-set-key (kbd "C-c C-z") #'run-js)))
+#+END_SRC
+
+    Wanna try it all out?
+
+#+BEGIN_SRC js :tangle no
+  function factorial(n) {
+    return n == 0 ? 1 : n * factorial(n - 1);
+  }
+  return factorial(16);
+#+END_SRC
+
+** Slime-JS
+
+     Slime seems a lot better for REPL work than js-comint.
+
+#+BEGIN_SRC elisp
+(add-hook 'after-init-hook
+  #'(lambda ()
+    (when (locate-library "slime-js")
+      (require 'setup-slime-js))))
+#+END_SRC
+
+* Coffee
+
+    Gotta load up CoffeeScript files, but I use a special shell
+    script that loads up my special 'coughy' environment
+
+ #+BEGIN_SRC elisp
+  (setq coffee-command (concat (getenv "HOME") "/bin/coughy"))
+ #+END_SRC
+
+* Technical Artifacts
+
+  Make sure that we can simply =require= this library.
+
+#+BEGIN_SRC elisp
+  (provide 'init-javascript)
+#+END_SRC
+
+  Before you can build this on a new system, make sure that you put
+  the cursor over any of these properties, and hit: =C-c C-c=
+
+#+DESCRIPTION: A literate programming version of my Emacs Initialization of JavaScript
+#+PROPERTY:    results silent
+#+PROPERTY:    tangle ~/.emacs.d/elisp/init-javascript.el
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
