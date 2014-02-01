@@ -50,23 +50,12 @@ a shell-slut, and dabble between Zshell and Fish.
   export EDITOR=/usr/local/bin/emacsclient
 #+END_SRC
 
-  I like Cask.
-
-#+BEGIN_SRC sh
-  if [ ! -d $HOME/.cask ]
-  then
-    curl -fsSkL https://raw.github.com/cask/cask/master/go | python
-  fi
-
-  export PATH="$HOME/.cask/bin:$PATH"
-#+END_SRC
-
-* Global Aliases
+* COMMENT Global Aliases
 
   I dislike =more=, especially since =less= is now really sweet.
 
 #+BEGIN_SRC sh
-alias more=less
+  alias more=less
 #+END_SRC
 
 * System-Specific Variables
@@ -74,10 +63,10 @@ alias more=less
   Host-specific values, are stored in a separate profile.
 
 #+BEGIN_SRC sh
-if [ -x $HOME/.profile-local ]
-then
-  . $HOME/.profile-local
-fi
+  if [ -x $HOME/.profile-local ]
+  then
+    . $HOME/.profile-local
+  fi
 #+END_SRC
 
 * Technical Gunk
