@@ -69,6 +69,18 @@ a shell-slut, and dabble between Zshell and Fish.
   fi
 #+END_SRC
 
+* My Function Collection
+
+  Load up my [[file:sh-functions.org][shared functions]]. These can be shared with Bash, Fish and
+  Zshell.
+
+#+BEGIN_SRC sh
+  if [[ -f $HOME/.sh-funcs.sh ]]
+  then
+      source $HOME/.sh-funcs.sh
+  fi
+#+END_SRC
+
 * Technical Gunk
 
   Anything else that is interesting, will be set up in more

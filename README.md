@@ -49,11 +49,6 @@ Startup scripts for [Emacs][3] and [Zsh][6]. Specifically:
 </td><td>
   Zsh functions ... calls <code>sh-funcs.sh</code>
 </td></tr><tr><td>
-</td><td>
-  <code>.profile</code>
-</td><td>
-  Machine-specific environment variables
-</td></tr><tr><td>
   <a href="http://howardabrams.com/projects/dot-files/sh-functions.html"><code>sh-functions.org</code></a>
 </td><td>
    <a href="results/sh-functions.sh"><code>.sh-funcs.sh</code></a>

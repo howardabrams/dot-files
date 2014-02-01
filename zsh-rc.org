@@ -97,16 +97,6 @@ things here are for callable functions, aliases and the like.
 
 * My Functions
 
-  Load up my [[file:sh-functions.org][shared functions]]. 
-  These can be shared with Bash.
-
-#+BEGIN_SRC sh
-  if [[ -f $HOME/.sh-funcs.sh ]]
-  then
-      source $HOME/.sh-funcs.sh
-  fi
-#+END_SRC
-
   Each machine I'm on (work or home), may have some special functions
   or aliases, so let's load anything that begins with =.zshrc-=:
 
