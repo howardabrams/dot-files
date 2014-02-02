@@ -21,7 +21,7 @@ done
 
 # Set up all the symbolic links:
 
-if [ ! -h $HOME/.vimrc ]
+if [ ! -f $HOME/.vimrc ]
 then
     echo "Linking .vimrc ... Don't know why I really care about vi"
     ln -s $DIR/vimrc $HOME/.vimrc
@@ -32,9 +32,9 @@ fi
 for FILE in emacs.d/*.el
 do
     F=$(basename $FILE)
-    if [ ! -h $HOME/.emacs.d/$F ]
+    if [ ! -f $HOME/.emacs.d/elisp/$F ]
     then
         echo "Linking $FILE"
-        ln -s $DIR/$FILE $HOME/.emacs.d
+        ln -s $DIR/$FILE $HOME/.emacs.d/elisp
     fi
 done
