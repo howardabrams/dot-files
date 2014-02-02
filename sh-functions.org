@@ -120,7 +120,7 @@ and global variables are stored in =.profile= and =.zsh_profile=.
           shift
           FILES="$*"
       fi
-      
+
       # Ignore the classes and .git directories, as well as look for every
       # file name given.
       find $START_PATH \
@@ -195,9 +195,9 @@ function dash {
         shift
         shift
     fi
-    
+
     HISTFILE=$HOME/.zsh_histories/$(echo $TITLE | sed 's/ /_/g')
-  
+
     osascript <<EOF
       tell application "System Events"
         tell process "Terminal" to keystroke "t" using command down
@@ -250,7 +250,7 @@ function ngrep {
 }
 #+END_SRC
 
-  Notable =grep= options include: 
+  Notable =grep= options include:
 
   * --max-count=1 to only display the first match from file
   * --context=3 for extra lines around the match.
@@ -360,7 +360,7 @@ function ngrep {
     FIRST=$1
     ENDING=$2
     PADDING=${3:-""}
-  
+
     perl -ne "\$s=1 if (/$FIRST/); \$s=0 if (/$ENDING/); print \"$PADDING\$_\" if (\$s==1);"
   }
 #+END_SRC
@@ -455,13 +455,9 @@ alias gf='git status --porcelain | cut -c4-'
 
 #+BEGIN_SRC sh
   # The following may already be aliases...
-  for A in l g d
-  do
-    if [ alias = $(whence -w $A | cut -d: -f2) ]
-    then
-      unalias $A
-    fi
-  done
+  unalias l >/dev/null 2>&1
+  unalias g >/dev/null 2>&1
+  unalias d >/dev/null 2>&1
 
   if [ -e ~/.bash.d/bashmarks.sh ]
   then
