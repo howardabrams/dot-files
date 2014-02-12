@@ -83,7 +83,7 @@ brew linkapps
         (make-directory dir))))
 #+END_SRC
 
-** Extra Packages
+** Setting up the Load Path
 
    Extra packages not available via the package manager go in my
    personal stash at: =$HOME/.emacs.d/elisp=
@@ -116,7 +116,6 @@ brew linkapps
   (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
                            ("gnu"       . "http://elpa.gnu.org/packages/")
                            ("melpa"     . "http://melpa.milkbox.net/packages/")
-                           ("tromey"    . "http://tromey.com/elpa/")
                            ("marmalade" . "http://marmalade-repo.org/packages/")))
 #+END_SRC
 
@@ -174,6 +173,7 @@ brew linkapps
                    highlight-tail          ;; Used only sporadically
                    dired-details
                    epl
+                   esh-buf-stack
                    expand-region
                    flycheck
                    flycheck-color-mode-line
@@ -690,7 +690,7 @@ brew linkapps
    *Note:* Capitalizing the first letter, i.e. =Btw=, expands the
    abbreviation with an initial capital, i.e. =By the way= ... Sweet.
 
-** Yas Snippet
+** Yasnippets
 
    The [[https://github.com/capitaomorte/yasnippet][yasnippet project]] allows me to create snippets of code that
    can be brought into a file, based on the language.
@@ -711,7 +711,7 @@ brew linkapps
    [[https://code.google.com/p/js2-mode/][js2-mode]] is good, but its name means that Yas' won't automatically
    link it to its =js-mode=. This little bit of magic does the linking:
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle no
   (add-hook 'js2-mode-hook '(lambda ()
                               (make-local-variable 'yas-extra-modes)
                               (add-to-list 'yas-extra-modes 'js-mode)
@@ -1053,6 +1053,20 @@ brew install homebrew/dupes/grep
 #+END_SRC
 
 * Programming Languages
+** Fixme in Comments
+
+   Wanting to play around with the concept of highlighting certain
+   comments with the TODO or FIXME keywords:
+
+#+BEGIN_SRC elisp
+  (require 'fic-mode)
+  (add-hook 'js2-mode-hook 'turn-on-fic-mode)
+  (add-hook 'coffee-mode-hook 'turn-on-fic-mode)
+  (add-hook 'python-mode-hook 'turn-on-fic-mode)
+  (add-hook 'clojure-mode-hook 'turn-on-fic-mode)
+  (add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode)
+#+END_SRC
+
 ** Clojure
 
    See [[file:emacs-clojure.org][emacs-clojure.el]] for details on working with [[http://clojure.org][Clojure]].
@@ -1077,7 +1091,7 @@ brew install homebrew/dupes/grep
    See [[file:emacs-python.org][emacs-python.el]] for details on working with Python.
    Not sure if I should just load it directly, like:
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle no
   (load-library "init-python")
 #+END_SRC
 
@@ -1086,7 +1100,7 @@ brew install homebrew/dupes/grep
    See [[file:emacs-javascript.org][emacs-javascript.el]] for details on working with JavaScript.
 
 #+BEGIN_SRC elisp :tangle no
-  (load-library "init-javascript")
+;;  (load-library "init-javascript")
 #+END_SRC
 
 ** HTML, CSS and other Web Programming
@@ -1242,6 +1256,21 @@ brew install homebrew/dupes/grep
 * Applications
 ** Eshell
 
+*** Stack the Buffer
+
+    One of the few things I miss about ZShell is the ability to easily
+    save off a half-finished command for later invocation. I now have
+    =M-q= functionality:
+
+#+BEGIN_SRC elisp
+  (require 'esh-buf-stack)
+  (setup-eshell-buf-stack)
+  (add-hook 'eshell-mode-hook
+            (lambda () (local-set-key (kbd "M-q") 'eshell-push-command)))
+#+END_SRC
+
+*** Ignoring Directories
+
    Great shell with some good tweaks taken from [[https://github.com/eschulte/emacs24-starter-kit/blob/master/starter-kit-eshell.org][the Starter Kit]]
    project. Ignoring the =.git= directories seem like a good idea.
 
@@ -1250,6 +1279,8 @@ brew install homebrew/dupes/grep
         eshell-save-history-on-exit t
         eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
 #+END_SRC
+
+*** Visual Executables
 
    Eshell would get somewhat confused if I ran the following commands
    directly through the normal Elisp library, as these need the better
@@ -1262,6 +1293,8 @@ brew install homebrew/dupes/grep
         (add-to-list 'eshell-visual-commands "tail")))
 #+END_SRC
 
+*** Set up the Correct Path
+
    Need the correct PATH even if we start Emacs from the GUI:
 
 #+BEGIN_SRC elisp
@@ -1271,12 +1304,16 @@ brew install homebrew/dupes/grep
            (getenv "PATH")))
 #+END_SRC
 
+*** Pager Setup
+
    If any program wants to pause the output through the =$PAGER=
    variable, well, we don't really need that:
 
 #+BEGIN_SRC elisp
   (setenv "PAGER" "cat")
 #+END_SRC
+
+*** Aliases
 
    Gotta have some [[http://www.emacswiki.org/emacs/EshellAlias][shell aliases]], right?
 
@@ -1355,16 +1392,15 @@ brew install homebrew/dupes/grep
    fun to see if there is something else to waste time.
 
 #+BEGIN_SRC elisp
-  (defun irc ()
-    "Connect to all my IRC servers... well, just this one."
-    (interactive)
-    (circe "Ciphermonkeys"))
+  (setq circe-format-say "{nick}> {body}")
 #+END_SRC
 
    Let's hide all the JOIN, PART and other messages that I don't care
    about:
 
 #+BEGIN_SRC elisp
+  (setq circe-reduce-lurker-spam t)
+
   (circe-set-display-handler "JOIN" (lambda (&rest ignored) nil))
   (circe-set-display-handler "PART" (lambda (&rest ignored) nil))
   (circe-set-display-handler "QUIT" (lambda (&rest ignored) nil))
@@ -1379,10 +1415,71 @@ brew install homebrew/dupes/grep
   (add-hook 'circe-channel-mode-hook 'enable-lui-autopaste)
 #+END_SRC
 
+   Who can really spell, amirite?
+
 #+BEGIN_SRC elisp
   (setq lui-flyspell-p t
         lui-flyspell-alist '((".*" "american")))
 #+END_SRC
+
+   Since I often run my IRC in a smaller window, I need to allow for
+   the timestamps to be in a margin, so that we can wrap correctly.
+
+#+BEGIN_SRC elisp
+  (setq lui-time-stamp-position 'right-margin
+        lui-time-stamp-format "%H:%M")
+
+  (add-hook 'lui-mode-hook 'my-circe-set-margin)
+  (defun my-circe-set-margin ()
+    (setq right-margin-width 5))
+
+  (setq lui-time-stamp-position 'right-margin
+        lui-fill-type nil)
+
+  (add-hook 'lui-mode-hook 'my-lui-setup)
+  (defun my-lui-setup ()
+    (setq
+     fringes-outside-margins t
+     right-margin-width 5
+     word-wrap t
+     wrap-prefix "    "))
+#+END_SRC
+
+** Chatting
+
+   Using the [[http://www.emacswiki.org/emacs/JabberEl][jabber.el]] project to connect up to Google Talk and what
+   not. To begin, make sure you =brew install gnutls=
+
+#+BEGIN_SRC elisp
+  (when (autofeaturep 'jabber)
+    (setq starttls-use-gnutls t
+          starttls-gnutls-program "gnutls-cli"
+          starttls-extra-arguments '("--starttls" "--insecure"))
+    (setq
+     jabber-history-enabled t
+     jabber-use-global-history nil
+     jabber-backlog-number 40
+     jabber-backlog-days 30)
+
+    (defun my-jabber-chat-delete-or-bury ()
+      (interactive)
+      (if (eq 'jabber-chat-mode major-mode)
+          (condition-case e
+              (delete-frame)
+            (error
+             (if (string= "Attempt to delete the sole visible or iconified frame"
+                          (cadr e))
+                 (bury-buffer))))))
+
+    (define-key jabber-chat-mode-map [escape]
+      'my-jabber-chat-delete-or-bury)
+
+    (when (autofeaturep 'autosmiley)
+      (add-hook 'jabber-chat-mode-hook 'autosmiley-mode)))
+#+END_SRC
+
+  To chat simply press: =C-x C-j C-c= ... hahaha. I doubt I can
+  remember that one. Perhaps.
 
 * Technical Artifacts
 
