@@ -577,8 +577,7 @@ brew linkapps
    =C-x z=, so let's map it to something else.
 
 #+BEGIN_SRC elisp
-  (if (autofeaturep 'key-chord)
-      (progn
+  (when (autofeaturep 'key-chord)
         (require 'key-chord)
         (key-chord-mode +1)
 
@@ -587,12 +586,11 @@ brew linkapps
         (key-chord-define-global "xb" 'ido-switch-buffer)
         (key-chord-define-global "xf" 'ido-find-file)
 
-        (if (autofeaturep 'iy-go-to-char)
-            (progn
+        (when (autofeaturep 'iy-go-to-char)
               (require 'iy-go-to-char)
 
               (key-chord-define-global "fg" 'iy-go-to-char)
-              (key-chord-define-global "df" 'iy-go-to-char-backward)))))
+              (key-chord-define-global "df" 'iy-go-to-char-backward)))
 #+END_SRC
 
    The [[https://github.com/doitian/iy-go-to-char][iy-go-to-char]] project allows a quick search for a particular
@@ -619,12 +617,11 @@ brew linkapps
    default keybindings, so I set up the suggested:
 
 #+BEGIN_SRC elisp
-  (if (autofeaturep 'multiple-cursors)
-        (progn
-          (require 'multiple-cursors)
-          (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-          (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-          (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)))
+  (when (autofeaturep 'multiple-cursors)
+        (require 'multiple-cursors)
+        (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+        (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+        (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
 #+END_SRC
 
 ** Auto Complete
@@ -968,10 +965,9 @@ brew install homebrew/dupes/grep
     can slowly increase a region selection by logical segments.
 
 #+BEGIN_SRC elisp
-  (if (autofeaturep 'expand-region)
-      (progn
+  (when (autofeaturep 'expand-region)
         (require 'expand-region)
-        (global-set-key (kbd "C-=") 'er/expand-region)))
+        (global-set-key (kbd "C-=") 'er/expand-region))
 #+END_SRC
 
 *** Smart Mode Line
@@ -1059,12 +1055,13 @@ brew install homebrew/dupes/grep
    comments with the TODO or FIXME keywords:
 
 #+BEGIN_SRC elisp
-  (require 'fic-mode)
-  (add-hook 'js2-mode-hook 'turn-on-fic-mode)
-  (add-hook 'coffee-mode-hook 'turn-on-fic-mode)
-  (add-hook 'python-mode-hook 'turn-on-fic-mode)
-  (add-hook 'clojure-mode-hook 'turn-on-fic-mode)
-  (add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode)
+  (when (autofeaturep 'fic-mode)
+    (require 'fic-mode)
+    (add-hook 'js2-mode-hook 'turn-on-fic-mode)
+    (add-hook 'coffee-mode-hook 'turn-on-fic-mode)
+    (add-hook 'python-mode-hook 'turn-on-fic-mode)
+    (add-hook 'clojure-mode-hook 'turn-on-fic-mode)
+    (add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode))
 #+END_SRC
 
 ** Clojure
@@ -1147,12 +1144,11 @@ brew install homebrew/dupes/grep
 
 #+BEGIN_SRC elisp
   (if (autofeaturep 'git-gutter-fringe)
-      (progn
-        (when (window-system)
+      (when (window-system)
           (require 'git-gutter-fringe)
           (global-git-gutter-mode +1)
           (setq-default indicate-buffer-boundaries 'left)
-          (setq-default indicate-empty-lines +1))))
+          (setq-default indicate-empty-lines +1)))
 #+END_SRC
 
 ** Markdown
