@@ -1,0 +1,20 @@
+# -*- mode: snippet -*-
+# name: sandbox
+# key: sandbox
+# --
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>$1</title>
+
+    <link rel="stylesheet" href="${2:`(file-name-base (buffer-file-name (current-buffer)))`}.css" type="text/css"/>
+    <script type="text/javascript" src="//code.jquery.com/jquery-latest.min.js"></script>
+    <script type="text/javascript" src="//coffeescript.org/extras/coffee-script.js"></script>
+    <script type="text/javascript" src="$2.js"></script>
+    <script type="text/coffeescript" src="$2.coffee"></script>
+  </head>
+  <body>
+    <h1>$1</h1>
+    $0
+  </body>
+</html>

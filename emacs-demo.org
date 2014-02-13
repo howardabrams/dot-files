@@ -32,7 +32,7 @@
 
   (defun my-demo/step-2 ()
     (demo/org-presentation-return))
-  
+
   ;; Wrap the collection of functions in another function...
   (defun my-demo ()
      "My fabulous demonstration."
@@ -125,7 +125,7 @@
   ;; See http://bzg.fr/emacs-hide-mode-line.html
   (defvar-local hidden-mode-line-mode nil)
   (defvar-local hide-mode-line nil)
-  
+
   (define-minor-mode hidden-mode-line-mode
     "Minor mode to hide the mode-line in the current buffer."
     :init-value nil
@@ -179,13 +179,13 @@
 #+BEGIN_SRC elisp
   (require 'org-tree-slide)
 
-  (defvar demo/org-presentation-file "")  
-  (defvar demo/org-presentation-buffer "")  
+  (defvar demo/org-presentation-file "")
+  (defvar demo/org-presentation-buffer "")
 
   (defun demo/org-presentation (org-file)
     (delete-other-windows)
     (find-file org-file)
-    (setq demo/org-presentation-file org-file)  
+    (setq demo/org-presentation-file org-file)
     (setq demo/org-presentation-buffer (buffer-name))
     (org-tree-slide-mode)
     (text-scale-set 2))
@@ -217,11 +217,124 @@
       (switch-to-buffer orig-window)))
 #+END_SRC
 
+** Display an HTML Page
+
+   The easiest way to open a URL for the default browser is simply to
+   call, =(browser-url-of-buffer)= (assuming, of course, that it is an
+   HTML file). However, if we want the HTML to be shown in an
+   impatient mode...
+
+#+BEGIN_SRC elisp
+  (defun demo/show-impatient-html ()
+     "Shows the current HTML buffer in a browser where all changes are immediately displayed.
+      Requires both impatient-mode and simple-httpd packages."
+     (interactive)
+     (let ((name (buffer-name (current-buffer))))
+       (require 'impatient-mode)
+       (require 'simple-httpd)
+       (impatient-mode t)
+       (setq httpd-port 8888)
+       (httpd-start)
+       (browse-url (concat "http://localhost:8888/imp/live/" name))))
+#+END_SRC
+
+** Switch Framesize
+
+   During a demonstration, it might be nice to toggle between
+   full screen and "regular window" in a programmatic way:
+
+#+BEGIN_SRC elisp
+  (defun toggle-fullscreen ()
+    "Toggle full screen"
+    (interactive)
+    (set-frame-parameter
+       nil 'fullscreen
+       (when (not (frame-parameter nil 'fullscreen)) 'fullboth)))
+#+END_SRC
+
+   We can force the window to be full screen:
+
+#+BEGIN_SRC elisp
+  (defun frame-fullscreen ()
+    "Set the frame window to cover the full screen."
+    (interactive)
+    (set-frame-parameter nil 'fullscreen 'fullboth))
+#+END_SRC
+
+   Let's make a right-side frame window:
+
+#+BEGIN_SRC elisp
+  (defun frame-leftside ()
+    "Set the window frame to be exactly half of the screen on the left."
+    (interactive)
+    (let* ((full-pixels (- (x-display-pixel-width) 16))
+           (full-width  (/ full-pixels (frame-char-width)))
+           (dest-width (/ full-width 2)))
+      (set-frame-parameter nil 'fullscreen nil)
+      (set-frame-parameter nil 'width dest-width)
+      (set-frame-parameter nil 'left 0)))
+#+END_SRC
+
+   To get the values for a particular frame, do:
+
+#+BEGIN_SRC elisp :results list
+(frame-parameters nil)
+#+END_SRC
+
+#+RESULTS:
+- (tool-bar-position . top)
+- (parent-id)
+- (explicit-name)
+- (display . "Mac")
+- (visibility . t)
+- (icon-name)
+- (window-id . "4301978032")
+- (top . 0)
+- (left . 0)
+- (buried-buffer-list)
+- (buffer-list #<buffer emacs-demo.org> #<buffer *Help*> #<buffer .emacs> #<buffer  *Minibuf-1*> #<buffer *eshell*> #<buffer #1101> #<buffer personal.org> #<buffer :home> #<buffer irc.ciphermonkeys.org:6667> #<buffer emacs.org> #<buffer .emacs-ext.el> #<buffer *GNU Emacs*> #<buffer *scratch*>)
+- (unsplittable)
+- (minibuffer . #<window 4 on  *Minibuf-0*>)
+- (modeline . t)
+- (width . 178)
+- (height . 50)
+- (name . "Emacs@HABRAMS-01.local")
+- (environment)
+- (cursor-color . "#de935f")
+- (background-mode . dark)
+- (display-type . color)
+- (horizontal-scroll-bars . t)
+- (window-system . mac)
+- (alpha)
+- (scroll-bar-width . 0)
+- (cursor-type . box)
+- (auto-lower)
+- (auto-raise)
+- (icon-type)
+- (menu-bar-lines . 1)
+- (fullscreen . fullscreen)
+- (title)
+- (buffer-predicate)
+- (tool-bar-lines . 0)
+- (right-fringe . 8)
+- (left-fringe . 8)
+- (line-spacing)
+- (screen-gamma)
+- (border-color . "#282a2e")
+- (mouse-color . "black")
+- (background-color . "#1d1f21")
+- (foreground-color . "#c5c8c6")
+- (vertical-scroll-bars)
+- (internal-border-width . 0)
+- (border-width . 0)
+- (font . "-*-Source Code Pro-normal-normal-normal-*-14-*-*-*-m-0-iso10646-1")
+- (font-backend mac-ct)
+
 * Technical Section
-  
+
   This file originally came from an [[http://orgmode.org][org-mode]] file.
   Create the script by tangling it with: =C-c C-v t=
-  
+
 #+PROPERTY: tangle ~/.emacs.d/elisp/demo.el
 #+PROPERTY: comments org
 #+PROPERTY: shebang #!/usr/bin/env emacs
