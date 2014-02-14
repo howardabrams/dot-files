@@ -4,6 +4,8 @@
 #+DATE:   [2014-02-01 Sat][2014-02-01 Sat]
 #+TAGS:   emacs web
 
+* Emmet Mode
+
    The basic web features of Emacs are often good enough, but
    [[https://github.com/smihica/emmet-mode][Emmet-Mode]] is pretty sweet.
 
@@ -33,7 +35,36 @@
    after expanding:
 
 #+BEGIN_SRC elisp :tangle no
-  (setq emmet-move-cursor-between-quotes t) ;; default nil
+  (setq emmet-move-cursor-between-quotes t)
+#+END_SRC
+
+* Impatient Mode
+
+  Changing web buffers with HTML and CSS style-sheets, can
+  automatically update a browser with [[https://github.com/netguy204/imp.el][impatient-mode]]:
+
+#+BEGIN_SRC elisp
+  (when (autofeaturep 'impatient-mode)
+    (require 'impatient-mode))
+#+END_SRC
+
+  Simply turn on the =impatient-mode= for any buffer that should be
+  /served/ and then pop over to http://localhost:8888/imp/
+
+  *Note:* This doesn't work well for automatically updating JavaScript
+  or CoffeeScript.
+
+* HTTP Server
+
+  Having Emacs be an [[https://github.com/skeeto/emacs-web-server][HTTP Server]] means a browser could be updated as
+  it attempts to render HTML, CSS or JavaScript.
+
+#+BEGIN_SRC elisp
+  (when (autofeaturep 'simple-httpd)
+    (require 'simple-httpd)
+    (setq httpd-port 8888)
+    (setq httpd-root "~/technical")
+    (httpd-start))
 #+END_SRC
 
 * Technical Artifacts
