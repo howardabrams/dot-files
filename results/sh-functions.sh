@@ -71,7 +71,7 @@ function findit {
         shift
         FILES="$*"
     fi
-    
+
     # Ignore the classes and .git directories, as well as look for every
     # file name given.
     find $START_PATH \
@@ -136,7 +136,7 @@ function xtab() {
       shift
       shift
   fi
-  
+
   HISTFILE=$HOME/.zsh_histories/$(echo $TITLE | sed 's/ /_/g')
 
   osascript <<EOF
@@ -355,13 +355,9 @@ alias gf='git status --porcelain | cut -c4-'
 #   - l - list all bookmarks
 
 # The following may already be aliases...
-for A in l g d
-do
-  if [ alias = $(whence -w $A | cut -d: -f2) ]
-  then
-    unalias $A
-  fi
-done
+unalias l >/dev/null 2>&1
+unalias g >/dev/null 2>&1
+unalias d >/dev/null 2>&1
 
 if [ -e ~/.bash.d/bashmarks.sh ]
 then

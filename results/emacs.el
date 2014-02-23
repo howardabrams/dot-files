@@ -19,7 +19,7 @@
       (message "Make directory: %s" dir)
       (make-directory dir))))
 
-;; Extra Packages
+;; Setting up the Load Path
 
 ;;    Extra packages not available via the package manager go in my
 ;;    personal stash at: =$HOME/.emacs.d/elisp=
@@ -47,7 +47,6 @@
 (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
                          ("gnu"       . "http://elpa.gnu.org/packages/")
                          ("melpa"     . "http://melpa.milkbox.net/packages/")
-                         ("tromey"    . "http://tromey.com/elpa/")
                          ("marmalade" . "http://marmalade-repo.org/packages/")))
 
 ;; While we can now do a =package-list-packages=, you can install and
@@ -98,6 +97,7 @@ values."
                  highlight-tail          ;; Used only sporadically
                  dired-details
                  epl
+                 esh-buf-stack
                  expand-region
                  flycheck
                  flycheck-color-mode-line
@@ -440,8 +440,7 @@ end tell"))
 ;;    you did. Emacs has similar functionality, but I never remember
 ;;    =C-x z=, so let's map it to something else.
 
-(if (autofeaturep 'key-chord)
-    (progn
+(when (autofeaturep 'key-chord)
       (require 'key-chord)
       (key-chord-mode +1)
 
@@ -450,12 +449,11 @@ end tell"))
       (key-chord-define-global "xb" 'ido-switch-buffer)
       (key-chord-define-global "xf" 'ido-find-file)
 
-      (if (autofeaturep 'iy-go-to-char)
-          (progn
+      (when (autofeaturep 'iy-go-to-char)
             (require 'iy-go-to-char)
 
             (key-chord-define-global "fg" 'iy-go-to-char)
-            (key-chord-define-global "df" 'iy-go-to-char-backward)))))
+            (key-chord-define-global "df" 'iy-go-to-char-backward)))
 
 ;; Recent File List
 
@@ -473,12 +471,11 @@ end tell"))
 ;;    I'm going to try to remember it is there. It doesn't have any
 ;;    default keybindings, so I set up the suggested:
 
-(if (autofeaturep 'multiple-cursors)
-      (progn
-        (require 'multiple-cursors)
-        (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-        (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-        (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)))
+(when (autofeaturep 'multiple-cursors)
+      (require 'multiple-cursors)
+      (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+      (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+      (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
 
 ;; Auto Complete
 
@@ -521,7 +518,7 @@ end tell"))
     ("JS" "JavaScript")
     ("CS" "CoffeeScript")))
 
-;; Yas Snippet
+;; Yasnippets
 
 ;;    The [[https://github.com/capitaomorte/yasnippet][yasnippet project]] allows me to create snippets of code that
 ;;    can be brought into a file, based on the language.
@@ -534,14 +531,6 @@ end tell"))
 ;;    with the snippets.
 
 (add-to-list 'yas-snippet-dirs (concat user-emacs-directory "snippets"))
-
-;; [[https://code.google.com/p/js2-mode/][js2-mode]] is good, but its name means that Yas' won't automatically
-;;    link it to its =js-mode=. This little bit of magic does the linking:
-
-(add-hook 'js2-mode-hook '(lambda ()
-                            (make-local-variable 'yas-extra-modes)
-                            (add-to-list 'yas-extra-modes 'js-mode)
-                            (yas-minor-mode 1)))
 
 ;; Dash
 
@@ -650,6 +639,24 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
             (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
             (define-key ido-completion-map (kbd "C-p") 'ido-prev-match)))
 
+;; SMEX
+
+;;     Built using [[*IDO%20(Interactively%20DO%20Things)][IDO]].
+
+(require 'smex)
+(smex-initialize) ; Can be omitted. This might cause a (minimal) delay
+
+(global-set-key (kbd "M-x") 'smex)
+(global-set-key (kbd "M-X") 'smex-major-mode-commands)
+
+;; This is our old M-x.
+(global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
+
+;; Not crazy about =zap-to-char= being so close to the very useful
+;;    =M-x= sequence, so...
+
+(global-set-key (kbd "M-z") 'smex-major-mode-commands)
+
 ;; Backup Settings
 
 ;;     This setting moves all backup files to a central location.
@@ -719,10 +726,9 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 ;;     Wherever you are in a file, and whatever the type of file, you
 ;;     can slowly increase a region selection by logical segments.
 
-(if (autofeaturep 'expand-region)
-    (progn
+(when (autofeaturep 'expand-region)
       (require 'expand-region)
-      (global-set-key (kbd "C-=") 'er/expand-region)))
+      (global-set-key (kbd "C-=") 'er/expand-region))
 
 ;; Smart Mode Line
 
@@ -786,16 +792,22 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 (require 'init-org-mode)
 
+;; Fixme in Comments
+
+;;    Wanting to play around with the concept of highlighting certain
+;;    comments with the TODO or FIXME keywords:
+
+(when (autofeaturep 'fic-mode)
+  (require 'fic-mode)
+  (add-hook 'js2-mode-hook 'turn-on-fic-mode)
+  (add-hook 'coffee-mode-hook 'turn-on-fic-mode)
+  (add-hook 'python-mode-hook 'turn-on-fic-mode)
+  (add-hook 'clojure-mode-hook 'turn-on-fic-mode)
+  (add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode))
+
 ;; Or if I should load it after the Clojure mode kicks in?
 
 (eval-after-load 'clojure-mode '(require 'init-clojure))
-
-;; Python
-
-;;    See [[file:emacs-python.org][emacs-python.el]] for details on working with Python.
-;;    Not sure if I should just load it directly, like:
-
-(load-library "init-python")
 
 ;; Emacs Lisp
 
@@ -803,6 +815,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 ;;    variables:
 
 (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode)
+(add-hook 'emacs-lisp-mode-hook 'paredit-mode)
 
 ;; Might as well pretty up the lambdas, because, we can!
 
@@ -825,12 +838,11 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 ;;    windowing versions of Emacs.
 
 (if (autofeaturep 'git-gutter-fringe)
-    (progn
-      (when (window-system)
+    (when (window-system)
         (require 'git-gutter-fringe)
         (global-git-gutter-mode +1)
         (setq-default indicate-buffer-boundaries 'left)
-        (setq-default indicate-empty-lines +1))))
+        (setq-default indicate-empty-lines +1)))
 
 ;; Markdown
 
@@ -904,7 +916,18 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 (setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
 
-;; Eshell
+;; Stack the Buffer
+
+;;     One of the few things I miss about ZShell is the ability to easily
+;;     save off a half-finished command for later invocation. I now have
+;;     =M-q= functionality:
+
+(require 'esh-buf-stack)
+(setup-eshell-buf-stack)
+(add-hook 'eshell-mode-hook
+          (lambda () (local-set-key (kbd "M-q") 'eshell-push-command)))
+
+;; Ignoring Directories
 
 ;;    Great shell with some good tweaks taken from [[https://github.com/eschulte/emacs24-starter-kit/blob/master/starter-kit-eshell.org][the Starter Kit]]
 ;;    project. Ignoring the =.git= directories seem like a good idea.
@@ -913,7 +936,9 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
       eshell-save-history-on-exit t
       eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
 
-;; Eshell would get somewhat confused if I ran the following commands
+;; Visual Executables
+
+;;    Eshell would get somewhat confused if I ran the following commands
 ;;    directly through the normal Elisp library, as these need the better
 ;;    handling of ansiterm:
 
@@ -922,19 +947,25 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
       (add-to-list 'eshell-visual-commands "ssh")
       (add-to-list 'eshell-visual-commands "tail")))
 
-;; Need the correct PATH even if we start Emacs from the GUI:
+;; Set up the Correct Path
+
+;;    Need the correct PATH even if we start Emacs from the GUI:
 
 (setenv "PATH"
         (concat
          "/usr/local/bin:/usr/local/sbin:"
          (getenv "PATH")))
 
-;; If any program wants to pause the output through the =$PAGER=
+;; Pager Setup
+
+;;    If any program wants to pause the output through the =$PAGER=
 ;;    variable, well, we don't really need that:
 
 (setenv "PAGER" "cat")
 
-;; Gotta have some [[http://www.emacswiki.org/emacs/EshellAlias][shell aliases]], right?
+;; Aliases
+
+;;    Gotta have some [[http://www.emacswiki.org/emacs/EshellAlias][shell aliases]], right?
 
 (defalias 'e 'find-file)
 (defalias 'emacs 'find-file)
@@ -998,13 +1029,12 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 ;; Perhaps we want to join other channels ... you know, just for
 ;;    fun to see if there is something else to waste time.
 
-(defun irc ()
-  "Connect to all my IRC servers... well, just this one."
-  (interactive)
-  (circe "Ciphermonkeys"))
+(setq circe-format-say "{nick}> {body}")
 
 ;; Let's hide all the JOIN, PART and other messages that I don't care
 ;;    about:
+
+(setq circe-reduce-lurker-spam t)
 
 (circe-set-display-handler "JOIN" (lambda (&rest ignored) nil))
 (circe-set-display-handler "PART" (lambda (&rest ignored) nil))
@@ -1017,5 +1047,59 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 (require 'lui-autopaste)
 (add-hook 'circe-channel-mode-hook 'enable-lui-autopaste)
 
+;; Who can really spell, amirite?
+
 (setq lui-flyspell-p t
       lui-flyspell-alist '((".*" "american")))
+
+;; Since I often run my IRC in a smaller window, I need to allow for
+;;    the timestamps to be in a margin, so that we can wrap correctly.
+
+(setq lui-time-stamp-position 'right-margin
+      lui-time-stamp-format "%H:%M")
+
+(add-hook 'lui-mode-hook 'my-circe-set-margin)
+(defun my-circe-set-margin ()
+  (setq right-margin-width 5))
+
+(setq lui-time-stamp-position 'right-margin
+      lui-fill-type nil)
+
+(add-hook 'lui-mode-hook 'my-lui-setup)
+(defun my-lui-setup ()
+  (setq
+   fringes-outside-margins t
+   right-margin-width 5
+   word-wrap t
+   wrap-prefix "    "))
+
+;; Chatting
+
+;;    Using the [[http://www.emacswiki.org/emacs/JabberEl][jabber.el]] project to connect up to Google Talk and what
+;;    not. To begin, make sure you =brew install gnutls=
+
+(when (autofeaturep 'jabber)
+  (setq starttls-use-gnutls t
+        starttls-gnutls-program "gnutls-cli"
+        starttls-extra-arguments '("--starttls" "--insecure"))
+  (setq
+   jabber-history-enabled t
+   jabber-use-global-history nil
+   jabber-backlog-number 40
+   jabber-backlog-days 30)
+
+  (defun my-jabber-chat-delete-or-bury ()
+    (interactive)
+    (if (eq 'jabber-chat-mode major-mode)
+        (condition-case e
+            (delete-frame)
+          (error
+           (if (string= "Attempt to delete the sole visible or iconified frame"
+                        (cadr e))
+               (bury-buffer))))))
+
+  (define-key jabber-chat-mode-map [escape]
+    'my-jabber-chat-delete-or-bury)
+
+  (when (autofeaturep 'autosmiley)
+    (add-hook 'jabber-chat-mode-hook 'autosmiley-mode)))
