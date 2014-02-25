@@ -153,6 +153,25 @@ and global variables are stored in =.profile= and =.zsh_profile=.
   }
 #+END_SRC
 
+* Copying Git Repos
+
+  For some odd reason, I find I often need to copy the files from a checked out
+  branch from a Git repository, to a remote server, but /without the entire repository/.
+  By using =tar='s =exclude= option, we can do a pipe to =ssh=.
+
+  Parameters:
+
+  =$1= - The directory to copy
+  =$2= - The remote server (which can include any options to =ssh=)
+
+#+BEGIN_SRC sh
+  function scp-git {
+    DIR=$1
+    shift
+    tar -cjf - --exclude .git $DIR | ssh $* 'tar -xjvf -'
+  }
+#+END_SRC
+
 * Dash Documentation
 
   I like Dash for pulling up quick technical information, and while I
