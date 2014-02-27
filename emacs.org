@@ -872,6 +872,7 @@ brew install homebrew/dupes/grep
   (smex-initialize) ; Can be omitted. This might cause a (minimal) delay
 
   (global-set-key (kbd "M-x") 'smex)
+  (global-set-key (kbd "M-z") 'smex)  ;; Zap to char isn't so helpful
   (global-set-key (kbd "M-X") 'smex-major-mode-commands)
 
   ;; This is our old M-x.
@@ -1250,93 +1251,12 @@ brew install homebrew/dupes/grep
 #+END_SRC
 
 * Applications
-** Eshell
+* EShell
 
-*** Stack the Buffer
+  See [[file:emacs-eshell.org][emacs-eshell.el]] for details of configuring and using EShell.
 
-    One of the few things I miss about ZShell is the ability to easily
-    save off a half-finished command for later invocation. I now have
-    =M-q= functionality:
-
-#+BEGIN_SRC elisp
-  (require 'esh-buf-stack)
-  (setup-eshell-buf-stack)
-  (add-hook 'eshell-mode-hook
-            (lambda () (local-set-key (kbd "M-q") 'eshell-push-command)))
-#+END_SRC
-
-*** Ignoring Directories
-
-   Great shell with some good tweaks taken from [[https://github.com/eschulte/emacs24-starter-kit/blob/master/starter-kit-eshell.org][the Starter Kit]]
-   project. Ignoring the =.git= directories seem like a good idea.
-
-#+BEGIN_SRC elisp
-  (setq eshell-cmpl-cycle-completions nil
-        eshell-save-history-on-exit t
-        eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
-#+END_SRC
-
-*** Visual Executables
-
-   Eshell would get somewhat confused if I ran the following commands
-   directly through the normal Elisp library, as these need the better
-   handling of ansiterm:
-
-#+BEGIN_SRC elisp
-  (add-hook 'eshell-mode-hook
-     '(lambda nil
-        (add-to-list 'eshell-visual-commands "ssh")
-        (add-to-list 'eshell-visual-commands "tail")))
-#+END_SRC
-
-*** Set up the Correct Path
-
-   Need the correct PATH even if we start Emacs from the GUI:
-
-#+BEGIN_SRC elisp
-  (setenv "PATH"
-          (concat
-           "/usr/local/bin:/usr/local/sbin:"
-           (getenv "PATH")))
-#+END_SRC
-
-*** Pager Setup
-
-   If any program wants to pause the output through the =$PAGER=
-   variable, well, we don't really need that:
-
-#+BEGIN_SRC elisp
-  (setenv "PAGER" "cat")
-#+END_SRC
-
-*** Aliases
-
-   Gotta have some [[http://www.emacswiki.org/emacs/EshellAlias][shell aliases]], right?
-
-#+BEGIN_SRC elisp
-  (defalias 'e 'find-file)
-  (defalias 'emacs 'find-file)
-#+END_SRC
-
-   Replacing the window with the new buffer may not be what I want.
-
-#+BEGIN_SRC elisp
-  (defalias 'ee 'find-file-other-window)
-#+END_SRC
-
-   Some of my favorite bash aliases, can be even more helpful in
-   Eshell.
-
-   However, my =gst= command should be an alias to =magit-status=, but
-   using the =alias= doesn't pull in the current working directory, so
-   I make it a function, instead:
-
-#+BEGIN_SRC elisp
-  (defun eshell/gst (&rest args)
-      (magit-status (pop args) nil))
-
-  (defun eshell/l (&rest args)
-      (dired (pop args) nil))
+#+BEGIN_SRC elisp :tangle no
+  (require 'init-eshell)
 #+END_SRC
 
 ** Twitter
