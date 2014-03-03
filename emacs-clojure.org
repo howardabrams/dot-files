@@ -17,8 +17,6 @@
                        cider
                        clj-refactor
                        elein
-                       ;; nrepl
-                       ;; nrepl-ritz
                        paredit
                        rainbow-delimiters  ;; Mode for alternating paren colors
                        ))
