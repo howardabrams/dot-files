@@ -16,7 +16,7 @@ a shell-slut, and dabble between Zshell and Fish.
   if [ ! -d /usr/local/Cellar ]
   then
     echo "ZOMG! No Homebrew installed! Installing now..."
-    ruby -e "$(curl -fsSL https://raw.github.com/mxcl/homebrew/go/install)"
+    ruby -e "`curl -fsSL https://raw.github.com/mxcl/homebrew/go/install`"
   fi
 #+END_SRC
 
@@ -31,12 +31,12 @@ a shell-slut, and dabble between Zshell and Fish.
 
   for DIR in /usr/local/git/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/sbin
   do
-    if [[ -d $DIR ]]
+    if [ -d $DIR ]
     then
         PATH=$PATH:$DIR
     fi
   done
-  
+
   PATH=$PATH:$OLDPATH
 #+END_SRC
 
@@ -50,7 +50,7 @@ a shell-slut, and dabble between Zshell and Fish.
   export EDITOR=/usr/local/bin/emacsclient
 #+END_SRC
 
-* COMMENT Global Aliases
+* Global Aliases
 
   I dislike =more=, especially since =less= is now really sweet.
 
@@ -75,9 +75,9 @@ a shell-slut, and dabble between Zshell and Fish.
   Zshell.
 
 #+BEGIN_SRC sh
-  if [[ -f $HOME/.sh-funcs.sh ]]
+  if [ -f $HOME/.sh-funcs.sh ]
   then
-      source $HOME/.sh-funcs.sh
+      . $HOME/.sh-funcs.sh
   fi
 #+END_SRC
 
@@ -92,4 +92,3 @@ a shell-slut, and dabble between Zshell and Fish.
 #+PROPERTY: comments org
 #+PROPERTY: shebang #!/bin/sh
 #+DESCRIPTION: Global environment variables for all shells
-

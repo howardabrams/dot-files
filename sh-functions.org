@@ -22,12 +22,6 @@ and global variables are stored in =.profile= and =.zsh_profile=.
 
 * Technical Gunk
 
-  If not running interactively, we don't need to do anything:
-
-#+BEGIN_SRC sh
-  [ -z "$PS1" ] && return
-#+END_SRC
-
   The following are the tangled settings. Type: =C-c C-v t=
   to create the script file.
 
@@ -60,12 +54,13 @@ and global variables are stored in =.profile= and =.zsh_profile=.
 
 #+BEGIN_SRC sh
   function ediff() {
-      if [ "X${2}" = "X" ]; then
+      if [ -z "$2" ]
+      then
           echo "USAGE: ediff <FILE 1> <FILE 2>"
       else
           # The --eval flag takes lisp code and evaluates it with EMACS
-          /Applications/Emacs.app/Contents/MacOS/bin/emacsclient -c --eval "(ediff-files \"$1\" \"$2\")"
-        fi
+          emacsclient -c --eval "(ediff-files \"$1\" \"$2\")"
+      fi
   }
 #+END_SRC
 
@@ -127,7 +122,6 @@ and global variables are stored in =.profile= and =.zsh_profile=.
           -not \( -path '*classes*' -or -path '*node_modules*' -or -path '.git*' \) \
           -and -iname $(perl -e 'print join " -o -iname ", @ARGV' $FILES)
   }
-
   alias f='noglob findit'
 #+END_SRC
 
@@ -455,7 +449,6 @@ alias gshow='git stash show -p stash@{0}'
 alias gf='git status --porcelain | cut -c4-'
 alias gf-new='git status --porcelain | grep "^??" | cut -c4-'
 alias gf-changed='git status --porcelain | grep "^ M" | cut -c4-'
-alias gf='git status --porcelain | cut -c4-'
 #+END_SRC
 
 * Directory Bookmarks
