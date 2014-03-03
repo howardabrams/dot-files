@@ -4,43 +4,70 @@
 #+DATE:   [2014-02-27 Thu]
 #+TAGS:   emacs
 
-My frustration with shells makes me enjoy Emacs Shell.
+My frustration with shells makes me enjoy Emacs Shell, but there are
+some significant differences to address.
 
-* Stack the Buffer
+* Introduction
 
-    One of the few things I miss about ZShell is the ability to easily
-    save off a half-finished command for later invocation. I now have
-    =M-q= functionality:
+  Sure /most/ things /just work/ as I would expect, and typing =dired=
+  (or my =d= alias), can be good for altering file names and things.
+  However, after reading the manual, I realize I need to remember the
+  advantages and differences.
 
-#+BEGIN_SRC elisp
-  (require 'esh-buf-stack)
-  (setup-eshell-buf-stack)
-  (add-hook 'eshell-mode-hook
-            (lambda () (local-set-key (kbd "M-q") 'eshell-push-command)))
+** Looping over Files
+
+   First, "shell work" goes between curly braces. For instance, the
+   following shell command:
+
+#+BEGIN_SRC sh :tangle no
+for FILE in *.xpm
+do
+   f=`basename $FILE`
+   convert $f.xpm $f.png
+done
 #+END_SRC
 
-* Ignoring Directories
+   Would become the following in EShell:
 
-   Great shell with some good tweaks taken from [[https://github.com/eschulte/emacs24-starter-kit/blob/master/starter-kit-eshell.org][the Starter Kit]]
-   project. Ignoring the =.git= directories seem like a good idea.
-
-#+BEGIN_SRC elisp
-  (setq eshell-cmpl-cycle-completions nil
-        eshell-save-history-on-exit t
-        eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
+#+BEGIN_SRC sh :tangle no
+for f in *.xpm(:r) { convert $f.xpm $f.png }
 #+END_SRC
 
-* Visual Executables
+   Here we also see that the =(:r)= modifies the glob pattern to strip
+   off the extension.
 
-   Eshell would get somewhat confused if I ran the following commands
-   directly through the normal Elisp library, as these need the better
-   handling of ansiterm:
+** Calling Lisp
+
+   The following two commands seem to be the same:
+
+#+BEGIN_EXAMPLE
+$ (message "Hello")
+$ message "Hello"
+#+END_EXAMPLE
+
+   In other words, you can just call Emacs functions through a
+   lispy-approach, or with a more shell-ish. However, you can not do
+   non-Emacs functions, like =echo=, in parens.
+
+** Interacting with Emacs
+
+   The following command will append the list of files at the end of this
+   buffer (remember to not use a single =>= or the buffer will be overwritten.
+
+#+BEGIN_EXAMPLE
+ls >> #<buffer emacs-eshell.org>
+#+END_EXAMPLE
+
+   Remember that piping to =/etc/clip= will put the output into the clipboard.
+
+* Eshell-Specific Packages
+
+  While EShell is built into the Emacs (and has been for
+  freakin'ever), I have a few packages I think would be nice to use.
 
 #+BEGIN_SRC elisp
-  (add-hook 'eshell-mode-hook
-     '(lambda nil
-        (add-to-list 'eshell-visual-commands "ssh")
-        (add-to-list 'eshell-visual-commands "tail")))
+  (packages-install '( esh-buf-stack
+                       ))
 #+END_SRC
 
 * Set up the Correct Path
@@ -69,6 +96,7 @@ My frustration with shells makes me enjoy Emacs Shell.
 
 #+BEGIN_SRC elisp
   (defalias 'e 'find-file)
+  (defalias 'ff 'find-file)
   (defalias 'emacs 'find-file)
 #+END_SRC
 
@@ -88,16 +116,94 @@ My frustration with shells makes me enjoy Emacs Shell.
    Some of my favorite bash aliases, can be even more helpful in
    Eshell.
 
-   However, my =gst= command should be an alias to =magit-status=, but
-   using the =alias= doesn't pull in the current working directory, so
-   I make it a function, instead:
+** Git
+
+   My =gst= command is just an alias to =magit-status=, but using the
+   =alias= doesn't pull in the current working directory, so I make it
+   a function, instead:
 
 #+BEGIN_SRC elisp
   (defun eshell/gst (&rest args)
-      (magit-status (pop args) nil))
+      (magit-status (pop args) nil)
+      (eshell/echo))   ;; The echo command suppresses output
+#+END_SRC
 
-  (defun eshell/l (&rest args)
-      (dired (pop args) nil))
+   What about =gd= to call the Diff command?
+
+#+BEGIN_SRC elisp
+  (defun eshell/gd ()
+      (magit-diff-unstaged)
+      (eshell/echo))
+
+  (defun eshell/gds ()
+      (magit-diff-staged)
+      (eshell/echo))
+#+END_SRC
+
+** Find File
+
+   We should have an "f" alias for searching the current directory for
+   a file, and a "ef" for editing that file.
+
+#+BEGIN_SRC elisp
+  (defun eshell/f (filename &optional dir)
+    "Searches in the current directory for files that match the
+  given pattern. A simple wrapper around the standard 'find'
+  function."
+    (let ((cmd (concat
+                "find " (or dir ".")
+                "      -not -path '*/.git*'"
+                " -and -not -path '*node_modules*'"
+                " -and -not -path '*classes*'"
+                " -and "
+                " -type f -and "
+                "-iname '" filename "'")))
+      (message cmd)
+      (shell-command-to-string cmd)))
+
+  (defun eshell/ef (filename &optional dir)
+    "Searches for the first matching filename and loads it into a
+  file to edit."
+    (let* ((files (eshell/f filename dir))
+           (file (car (s-split "\n" files))))
+      (find-file file)))
+#+END_SRC
+
+* Visual Executables
+
+   Eshell would get somewhat confused if I ran the following commands
+   directly through the normal Elisp library, as these need the better
+   handling of ansiterm:
+
+#+BEGIN_SRC elisp
+  (add-hook 'eshell-mode-hook
+     '(lambda nil
+        (add-to-list 'eshell-visual-commands "ssh")
+        (add-to-list 'eshell-visual-commands "tail")))
+#+END_SRC
+
+* Ignoring Directories
+
+   Great shell with some good tweaks taken from [[https://github.com/eschulte/emacs24-starter-kit/blob/master/starter-kit-eshell.org][the Starter Kit]]
+   project. Ignoring the =.git= directories seem like a good idea.
+
+#+BEGIN_SRC elisp
+  (setq eshell-cmpl-cycle-completions nil
+        eshell-save-history-on-exit t
+        eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
+#+END_SRC
+
+* Stack the Buffer
+
+    One of the few things I miss about ZShell is the ability to easily
+    save off a half-finished command for later invocation. I now have
+    =M-q= functionality:
+
+#+BEGIN_SRC elisp
+  (require 'esh-buf-stack)
+  (setup-eshell-buf-stack)
+  (add-hook 'eshell-mode-hook
+            (lambda () (local-set-key (kbd "M-q") 'eshell-push-command)))
 #+END_SRC
 
 * Shell Here
@@ -129,6 +235,19 @@ My frustration with shells makes me enjoy Emacs Shell.
       (eshell-send-input)))
 
   (global-set-key (kbd "C-!") 'eshell-here)
+#+END_SRC
+
+* Smarter Shell
+
+  After reading Mickey's [[http://www.masteringemacs.org/articles/2010/12/13/complete-guide-mastering-eshell/][Mastering EShell]] article, I like the /smart/
+  approach where the cursor stays on the command (where it can be
+  re-edited). Sure, it takes a little while to get used to...
+
+#+BEGIN_SRC elisp
+  (require 'em-smart)
+  (setq eshell-where-to-jump 'begin)
+  (setq eshell-review-quick-commands nil)
+  (setq eshell-smart-space-goes-to-end t)
 #+END_SRC
 
 * Technical Artifacts
