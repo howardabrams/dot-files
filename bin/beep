@@ -1,0 +1,64 @@
+#!/bin/sh
+
+# We first need to capture the status of the previous command
+ERROR=$?
+COMMAND="The command"
+unset MESSAGE
+
+# Default value for the audio depends on the success or failure
+# of the previous command... and do we have Failure wave file.
+if [ $ERROR -eq 0 ]
+then
+    AUDIO=/System/Library/Sounds/Ping.aiff
+else
+    AUDIO=~/.sh-funcs-error.wav
+    if [ ! -f "$AUDIO" ]
+    then
+        AUDIO=/System/Library/Sounds/Glass.aiff
+    fi
+fi
+
+while getopts "b:c:m:" o $*
+do
+    case "$o" in
+        b)  AUDIO=/System/Library/Sounds/$OPTARG.aiff;;
+        c)  COMMAND="$OPTARG";;
+        m)  MESSAGE="$OPTARG";;
+        [?])    print >&2 "Usage: $0 [-b audio] [-m message] [-c] command-name"
+            exit 1;;
+    esac
+done
+shift `expr $OPTIND - 1`
+
+# I would like the -c argument to be truly optional, so that if words
+# are just given, they are automatically assumed to have a -c in front.
+if [ $# -gt 0 ]
+then
+    COMMAND="$@"
+fi
+
+if [ -z "$MESSAGE" ]
+then
+    if [ $ERROR -eq 0 ]
+    then
+        MESSAGE="$COMMAND has completed."
+    else
+        MESSAGE="$COMMAND has failed."
+    fi
+fi
+
+# echo $MESSAGE
+afplay $AUDIO
+say $MESSAGE
+
+if type terminal-notifier >/dev/null 2>&1
+then
+    terminal-notifier -message "$MESSAGE" -title "Process Complete"
+fi
+
+# In case we are still using && on the command line, we need to
+# pass on the failure... and since we really can't assign $?
+if [ $ERROR -ne 0 ]
+then
+    /bin/ls /no-file 2>/dev/null   # Make next process know previous failed
+fi
