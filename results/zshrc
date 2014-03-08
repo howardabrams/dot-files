@@ -29,7 +29,7 @@ zstyle :compinstall filename '/Users/howard.abrams/.zshrc'
 
 # Add my own custom completion scripts:
 
-fpath=(~/.zsh/completion /usr/local/share/zsh-completions $fpath)
+fpath=(~/.zsh/completion $fpath)
 
 autoload -Uz compinit
 compinit
@@ -46,7 +46,7 @@ zstyle ":vcs_info:*" enable git  # svn
 
 # Modules
 
-#   Using the modules from [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]]. 
+#   Using the modules from [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]].
 #   The plugins are in =~/.oh-my-zsh/plugins/*=
 
 plugins=(osx terminalapp gnu-utils lein npm)

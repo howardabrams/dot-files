@@ -114,7 +114,6 @@ values."
                  markdown-mode
                  multiple-cursors
                  nlinum
-                 smart-mode-line
                  ;; redo+             ;; If not installed, edit mac-key-mode
                  smex
                  undo-tree
@@ -647,6 +646,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 (smex-initialize) ; Can be omitted. This might cause a (minimal) delay
 
 (global-set-key (kbd "M-x") 'smex)
+(global-set-key (kbd "M-z") 'smex)  ;; Zap to char isn't so helpful
 (global-set-key (kbd "M-X") 'smex-major-mode-commands)
 
 ;; This is our old M-x.
@@ -730,29 +730,11 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
       (require 'expand-region)
       (global-set-key (kbd "C-=") 'er/expand-region))
 
-;; Smart Mode Line
+;; Mode Line
 
-;;     I like the cleanliness of the [[https://github.com/Bruce-Connor/smart-mode-line][Smart Mode Line]]:
+;;     My [[file:emacs-mode-line.org][mode-line code]] is now more complex in order to make it more simpler.
 
-(require 'smart-mode-line)
-(if after-init-time (sml/setup)
-  (add-hook 'after-init-hook 'sml/setup))
-
-(custom-set-variables '(sml/active-background-color "dark blue"))
-
-;; Especially since you can limit the pathname of the displayed
-;;     filename.
-
-(add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" ":Goo:"))
-(add-to-list 'sml/replacer-regexp-list '("^~/Other/dot-files" ":.:"))
-(add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-api/server/" ":API:"))
-(add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-fai/ci/" ":CI:"))
-
-;; Hiding some Minor modes in the mode line is real swell. This
-;;     leaves the mode-line with only important stuff.
-
-(add-to-list 'sml/hidden-modes " GitGutter")
-(add-to-list 'sml/hidden-modes " Undo-Tree")
+(require 'init-mode-line)
 
 ;; Better Searching and Visual Regular Expressions
 
@@ -916,77 +898,6 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 (setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
 
-;; Stack the Buffer
-
-;;     One of the few things I miss about ZShell is the ability to easily
-;;     save off a half-finished command for later invocation. I now have
-;;     =M-q= functionality:
-
-(require 'esh-buf-stack)
-(setup-eshell-buf-stack)
-(add-hook 'eshell-mode-hook
-          (lambda () (local-set-key (kbd "M-q") 'eshell-push-command)))
-
-;; Ignoring Directories
-
-;;    Great shell with some good tweaks taken from [[https://github.com/eschulte/emacs24-starter-kit/blob/master/starter-kit-eshell.org][the Starter Kit]]
-;;    project. Ignoring the =.git= directories seem like a good idea.
-
-(setq eshell-cmpl-cycle-completions nil
-      eshell-save-history-on-exit t
-      eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
-
-;; Visual Executables
-
-;;    Eshell would get somewhat confused if I ran the following commands
-;;    directly through the normal Elisp library, as these need the better
-;;    handling of ansiterm:
-
-(add-hook 'eshell-mode-hook
-   '(lambda nil
-      (add-to-list 'eshell-visual-commands "ssh")
-      (add-to-list 'eshell-visual-commands "tail")))
-
-;; Set up the Correct Path
-
-;;    Need the correct PATH even if we start Emacs from the GUI:
-
-(setenv "PATH"
-        (concat
-         "/usr/local/bin:/usr/local/sbin:"
-         (getenv "PATH")))
-
-;; Pager Setup
-
-;;    If any program wants to pause the output through the =$PAGER=
-;;    variable, well, we don't really need that:
-
-(setenv "PAGER" "cat")
-
-;; Aliases
-
-;;    Gotta have some [[http://www.emacswiki.org/emacs/EshellAlias][shell aliases]], right?
-
-(defalias 'e 'find-file)
-(defalias 'emacs 'find-file)
-
-;; Replacing the window with the new buffer may not be what I want.
-
-(defalias 'ee 'find-file-other-window)
-
-;; Some of my favorite bash aliases, can be even more helpful in
-;;    Eshell.
-
-;;    However, my =gst= command should be an alias to =magit-status=, but
-;;    using the =alias= doesn't pull in the current working directory, so
-;;    I make it a function, instead:
-
-(defun eshell/gst (&rest args)
-    (magit-status (pop args) nil))
-
-(defun eshell/l (&rest args)
-    (dired (pop args) nil))
-
 ;; Twitter
 
 ;;    I know, I know, reading my [[http://www.emacswiki.org/emacs-en/TwitteringMode][twitter feed in Emacs]] is pretty geeking
@@ -1079,6 +990,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 ;;    not. To begin, make sure you =brew install gnutls=
 
 (when (autofeaturep 'jabber)
+  (require 'jabber)
   (setq starttls-use-gnutls t
         starttls-gnutls-program "gnutls-cli"
         starttls-extra-arguments '("--starttls" "--insecure"))

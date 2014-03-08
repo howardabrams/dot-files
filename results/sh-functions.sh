@@ -1,11 +1,5 @@
 #!/bin/sh
 
-# Technical Gunk
-
-#   If not running interactively, we don't need to do anything:
-
-[ -z "$PS1" ] && return
-
 # Editor
 
 #   Another wrapper around =emacsclient= but this is a blocking
@@ -20,12 +14,13 @@ alias e='emacsclient -q -a emacs'
 #   command line.
 
 function ediff() {
-    if [ "X${2}" = "X" ]; then
+    if [ -z "$2" ]
+    then
         echo "USAGE: ediff <FILE 1> <FILE 2>"
     else
         # The --eval flag takes lisp code and evaluates it with EMACS
-        /Applications/Emacs.app/Contents/MacOS/bin/emacsclient -c --eval "(ediff-files \"$1\" \"$2\")"
-      fi
+        emacsclient -c --eval "(ediff-files \"$1\" \"$2\")"
+    fi
 }
 
 # Listing Files
@@ -78,7 +73,6 @@ function findit {
         -not \( -path '*classes*' -or -path '*node_modules*' -or -path '.git*' \) \
         -and -iname $(perl -e 'print join " -o -iname ", @ARGV' $FILES)
 }
-
 alias f='noglob findit'
 
 # sf
@@ -97,6 +91,23 @@ function sf {
 
 function ef {
     e $(f $*)
+}
+
+# Copying Git Repos
+
+#   For some odd reason, I find I often need to copy the files from a checked out
+#   branch from a Git repository, to a remote server, but /without the entire repository/.
+#   By using =tar='s =exclude= option, we can do a pipe to =ssh=.
+
+#   Parameters:
+
+#   =$1= - The directory to copy
+#   =$2= - The remote server (which can include any options to =ssh=)
+
+function scp-git {
+  DIR=$1
+  shift
+  tar -cjf - --exclude .git $DIR | ssh $* 'tar -xjvf -'
 }
 
 # Dash Documentation
@@ -338,7 +349,6 @@ alias gshow='git stash show -p stash@{0}'
 alias gf='git status --porcelain | cut -c4-'
 alias gf-new='git status --porcelain | grep "^??" | cut -c4-'
 alias gf-changed='git status --porcelain | grep "^ M" | cut -c4-'
-alias gf='git status --porcelain | cut -c4-'
 
 # Directory Bookmarks
 
