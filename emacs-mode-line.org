@@ -1,0 +1,159 @@
+#+TITLE:  Emacs Mode-Line
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   [2014-02-28 Fri]
+#+TAGS:   emacs
+
+* Smart Mode Line
+
+  While I like the cleanliness of the [[https://github.com/Bruce-Connor/smart-mode-line][Smart Mode Line]], I actually feel
+  that I get cleaner mode-lines with [[PowerLine][PowerLine]], so while I'm leaving
+  this configuration code here, I'm actually not tangling it.
+
+#+BEGIN_SRC elisp :tangle no
+  (require 'smart-mode-line)
+  (if after-init-time (sml/setup)
+    (add-hook 'after-init-hook 'sml/setup))
+
+  (custom-set-variables '(sml/active-background-color "dark blue"))
+#+END_SRC
+
+    Especially since you can limit the pathname of the displayed
+    filename.
+
+#+BEGIN_SRC elisp :tangle no
+  (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" ":Goo:"))
+  (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/technical" ":Tech:"))
+  (add-to-list 'sml/replacer-regexp-list '("^~/Other/dot-files" ":.:"))
+  (add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-api/server/" ":API:"))
+  (add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-fai/ci/" ":CI:"))
+#+END_SRC
+
+    Hiding some Minor modes in the mode line is real swell. This
+    leaves the mode-line with only important stuff.
+
+#+BEGIN_SRC elisp :tangle no
+  (setq useless-minor-modes '(" AC"   ;; First must have a space. :-(
+                              "GitGutter"
+                              "Undo-Tree"
+                              "Fly"
+                              "ARev"
+                              "Abbrev"
+                              "Fill"
+                              "ColorIds"
+                              "FIC"
+                              "FlyC.*"))
+  (setq sml/hidden-modes (mapconcat 'identity useless-minor-modes "\\| *"))
+#+END_SRC
+
+* PowerLine
+
+  The [[http://www.emacswiki.org/emacs/PowerLine][PowerLine]] project can really clean up the mode line, but I'm
+  also able to create my own "theme" in order to remove many of the
+  minor modes that don't really help.
+
+#+BEGIN_SRC elisp
+  (require 'powerline)
+
+  (defun powerline-simpler-vc-mode (s)
+    (if s
+        (replace-regexp-in-string "Git:" ":" s)
+      s))
+
+  (defun powerline-simpler-minor-display (s)
+    (replace-regexp-in-string
+     (concat " "
+             (mapconcat 'identity '("Fly[^C]" "Undo-Tree" "GitGutter"
+                                    "Abbrev" "ColorIds"
+                                    "Fill" "AC" "FIC") "\\|")) "" s))
+
+  (defun powerline-ha-theme ()
+    "A powerline theme that removes many minor-modes that don't serve much purpose on the mode-line."
+    (interactive)
+    (setq-default mode-line-format
+          '("%e"
+   (:eval
+    (let*
+        ((active
+          (powerline-selected-window-active))
+         (mode-line
+          (if active 'mode-line 'mode-line-inactive))
+         (face1
+          (if active 'powerline-active1 'powerline-inactive1))
+         (face2
+          (if active 'powerline-active2 'powerline-inactive2))
+         (separator-left
+          (intern
+           (format "powerline-%s-%s" powerline-default-separator
+                   (car powerline-default-separator-dir))))
+         (separator-right
+          (intern
+           (format "powerline-%s-%s" powerline-default-separator
+                   (cdr powerline-default-separator-dir))))
+         (lhs
+          (list
+           (powerline-raw "%*" nil 'l)
+           ;; (powerline-buffer-size nil 'l)
+           (powerline-buffer-id nil 'l)
+           (powerline-raw " ")
+           (funcall separator-left mode-line face1)
+           (powerline-narrow face1 'l)
+           (powerline-simpler-vc-mode (powerline-vc face1))))
+         (rhs
+          (list
+           (powerline-raw global-mode-string face1 'r)
+           (powerline-raw "%4l" face1 'r)
+           (powerline-raw ":" face1)
+           (powerline-raw "%3c" face1 'r)
+           (funcall separator-right face1 mode-line)
+           (powerline-raw " ")
+           (powerline-raw "%6p" nil 'r)
+           (powerline-hud face2 face1)))
+         (center
+          (list
+           (powerline-raw " " face1)
+           (funcall separator-left face1 face2)
+           (when
+               (boundp 'erc-modified-channels-object)
+             (powerline-raw erc-modified-channels-object face2 'l))
+           (powerline-major-mode face2 'l)
+           (powerline-process face2)
+           (powerline-raw " :" face2)
+
+           (powerline-simpler-minor-display (powerline-minor-modes face2 'l))
+
+           (powerline-raw " " face2)
+           (funcall separator-right face2 face1))))
+      (concat
+       (powerline-render lhs)
+       (powerline-fill-center face1
+                              (/
+                               (powerline-width center)
+                               2.0))
+       (powerline-render center)
+       (powerline-fill face1
+                       (powerline-width rhs))
+       (powerline-render rhs)))))))
+
+  (powerline-ha-theme)
+#+END_SRC
+
+* Technical Artifacts
+
+  Make sure that we can simply =require= this library.
+
+#+BEGIN_SRC elisp
+  (provide 'init-mode-line)
+#+END_SRC
+
+  Before you can build this on a new system, make sure that you put
+  the cursor over any of these properties, and hit: =C-c C-c=
+
+#+DESCRIPTION: A literate programming version of my Emacs ModeLine Initialization
+#+PROPERTY:    results silent
+#+PROPERTY:    tangle ~/.emacs.d/elisp/init-mode-line.el
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
