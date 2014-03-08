@@ -867,7 +867,7 @@ brew install homebrew/dupes/grep
 
     Built using [[*IDO%20(Interactively%20DO%20Things)][IDO]].
 
-#+BEGIN_SRC elisp :tangle no
+#+BEGIN_SRC elisp
   (require 'smex)
   (smex-initialize) ; Can be omitted. This might cause a (minimal) delay
 
@@ -876,6 +876,13 @@ brew install homebrew/dupes/grep
 
   ;; This is our old M-x.
   (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
+#+END_SRC
+
+   Not crazy about =zap-to-char= being so close to the very useful
+   =M-x= sequence, so...
+
+#+BEGIN_SRC elisp
+  (global-set-key (kbd "M-z") 'smex-major-mode-commands)
 #+END_SRC
 
 *** Backup Settings
@@ -1115,6 +1122,7 @@ brew install homebrew/dupes/grep
 
 #+BEGIN_SRC elisp
   (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode)
+  (add-hook 'emacs-lisp-mode-hook 'paredit-mode)
 #+END_SRC
 
    Might as well pretty up the lambdas, because, we can!

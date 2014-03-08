@@ -45,8 +45,8 @@ things here are for callable functions, aliases and the like.
   Add my own custom completion scripts:
 
 #+BEGIN_SRC sh
-  fpath=(~/.zsh/completion /usr/local/share/zsh-completions $fpath)
-  
+  fpath=(~/.zsh/completion $fpath)
+
   autoload -Uz compinit
   compinit
 #+END_SRC
@@ -67,7 +67,7 @@ things here are for callable functions, aliases and the like.
 
 * Modules
 
-  Using the modules from [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]]. 
+  Using the modules from [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]].
   The plugins are in =~/.oh-my-zsh/plugins/*=
 
 #+BEGIN_SRC sh
@@ -119,4 +119,3 @@ things here are for callable functions, aliases and the like.
 #+PROPERTY: comments org
 #+PROPERTY: shebang #!/usr/local/bin/zsh
 #+DESCRIPTION: Functions, aliases and other resources for ZShell
-

@@ -198,9 +198,14 @@
    presentation.
 
 #+BEGIN_SRC elisp
-  (defun demo/org-presentation-return ()
+  (defun demo/org-presentation-return-noadvance ()
     (switch-to-buffer demo/org-presentation-buffer)
-    (delete-other-windows)
+    (delete-other-windows))
+#+END_SRC
+
+#+BEGIN_SRC elisp
+  (defun demo/org-presentation-return ()
+    (demo/org-presentation-return-noadvance)
     (org-tree-slide-move-next-tree))
 #+END_SRC
 
