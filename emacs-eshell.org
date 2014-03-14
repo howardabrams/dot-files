@@ -222,7 +222,9 @@ ls >> #<buffer emacs-eshell.org>
   (defun eshell-here ()
     "Opens up a new shell in the directory associated with the current buffer's file."
     (interactive)
-    (let* ((parent (file-name-directory (buffer-file-name)))
+    (let* ((parent (if (buffer-file-name)
+                       (file-name-directory (buffer-file-name))
+                     default-directory))
            (name   (car
                     (last
                      (split-string parent "/" t)))))
@@ -235,6 +237,24 @@ ls >> #<buffer emacs-eshell.org>
       (eshell-send-input)))
 
   (global-set-key (kbd "C-!") 'eshell-here)
+#+END_SRC
+
+* Using IDO for the History
+
+  On [[http://www.reddit.com/r/emacs/comments/1zkj2d/advanced_usage_of_eshell/][this discussion]] a little gem for using IDO to search back through
+  the history, using =C-c h=.
+
+#+BEGIN_SRC elisp
+  (add-hook 'eshell-mode-hook
+            (lambda ()
+              (local-set-key (kbd "C-c h")
+                     (lambda ()
+                       (interactive)
+                       (insert
+                        (ido-completing-read "Eshell history: "
+                                 (delete-dups
+                                  (ring-elements eshell-history-ring))))))
+              (local-set-key (kbd "C-c C-h") 'eshell-list-history)))
 #+END_SRC
 
 * Smarter Shell

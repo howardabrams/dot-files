@@ -393,6 +393,12 @@ brew linkapps
                                    (org-src-color-blocks-dark)))
 #+END_SRC
 
+   And the default startup goes to ... night...
+
+#+BEGIN_SRC elisp
+  (color-theme-sanityinc-tomorrow-night)
+  (org-src-color-blocks-dark)
+#+END_SRC
 ** Macintosh
 
    I like the ability to use the Command key to turn a standard Emacs
@@ -1240,7 +1246,7 @@ brew install homebrew/dupes/grep
 
   See [[file:emacs-eshell.org][emacs-eshell.el]] for details of configuring and using EShell.
 
-#+BEGIN_SRC elisp :tangle no
+#+BEGIN_SRC elisp
   (require 'init-eshell)
 #+END_SRC
 
@@ -1282,15 +1288,19 @@ brew install homebrew/dupes/grep
 #+BEGIN_SRC elisp
   (require 'circe)
 
-  (setq circe-network-options
-        `(("Ciphermonkeys"
+  (add-to-list 'circe-network-options
+        '("Ciphermonkeys"
            :host "irc.ciphermonkeys.org"
            :nick "ha"
-           :channels ("#1101"))))
+           :channels ("#1101"))
+        '("Freenode"
+          :nick "howardabrams"
+          :channels ("#emacs" "#clojure-pdx")
+          :nickserv-password ,freenode-password)
+          )
 #+END_SRC
 
-   Perhaps we want to join other channels ... you know, just for
-   fun to see if there is something else to waste time.
+   Simplify the channel output.
 
 #+BEGIN_SRC elisp
   (setq circe-format-say "{nick}> {body}")
