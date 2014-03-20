@@ -27,7 +27,8 @@ do
 done
 #+END_SRC
 
-   Would become the following in EShell:
+   Would become the follow
+ing in EShell:
 
 #+BEGIN_SRC sh :tangle no
 for f in *.xpm(:r) { convert $f.xpm $f.png }
@@ -213,7 +214,9 @@ ls >> #<buffer emacs-eshell.org>
 
 #+BEGIN_SRC elisp
   (defun eshell/x (&rest args)
-    (delete-single-window))
+    (insert "exit")
+    (eshell-send-input)
+    (delete-window))
 #+END_SRC
 
   Now making little Shells whenever I need them makes sense:
@@ -239,22 +242,26 @@ ls >> #<buffer emacs-eshell.org>
   (global-set-key (kbd "C-!") 'eshell-here)
 #+END_SRC
 
-* Using IDO for the History
+* Better Command Line History
 
   On [[http://www.reddit.com/r/emacs/comments/1zkj2d/advanced_usage_of_eshell/][this discussion]] a little gem for using IDO to search back through
-  the history, using =C-c h=.
+  the history, instead of =M-r=. Also, while =M-p= cycles through the
+  history, =M-P= actually moves up the history in the buffer. Seems
+  reasonable.
 
 #+BEGIN_SRC elisp
   (add-hook 'eshell-mode-hook
             (lambda ()
-              (local-set-key (kbd "C-c h")
+              (local-set-key (kbd "M-P") 'eshell-previous-prompt)
+              (local-set-key (kbd "M-N") 'eshell-next-prompt)
+              (local-set-key (kbd "M-r")
                      (lambda ()
                        (interactive)
                        (insert
                         (ido-completing-read "Eshell history: "
                                  (delete-dups
                                   (ring-elements eshell-history-ring))))))
-              (local-set-key (kbd "C-c C-h") 'eshell-list-history)))
+              (local-set-key (kbd "M-S-r") 'eshell-list-history)))
 #+END_SRC
 
 * Smarter Shell
