@@ -27,8 +27,7 @@ do
 done
 #+END_SRC
 
-   Would become the follow
-ing in EShell:
+   Would become the following in EShell:
 
 #+BEGIN_SRC sh :tangle no
 for f in *.xpm(:r) { convert $f.xpm $f.png }
@@ -152,6 +151,9 @@ alias ll /usr/local/bin/gls -AlohG --color=always
   (defun eshell/gds ()
       (magit-diff-staged)
       (eshell/echo))
+
+(defalias 'gd 'magit-diff-unstaged)
+(defalias 'gds 'magit-diff-staged)
 #+END_SRC
 
 ** Find File
@@ -241,10 +243,11 @@ alias ll /usr/local/bin/gls -AlohG --color=always
     (let* ((parent (if (buffer-file-name)
                        (file-name-directory (buffer-file-name))
                      default-directory))
+           (height (/ (window-total-height) 3))
            (name   (car
                     (last
                      (split-string parent "/" t)))))
-      (split-window-vertically)
+      (split-window-vertically (- height))
       (other-window 1)
       (eshell "new")
       (rename-buffer (concat "*eshell: " name "*"))
