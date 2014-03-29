@@ -216,10 +216,11 @@ alias ll /usr/local/bin/gls -AlohG --color=always
     =M-q= functionality:
 
 #+BEGIN_SRC elisp
+(when (autofeaturep 'esh-buf-stack)
   (require 'esh-buf-stack)
   (setup-eshell-buf-stack)
   (add-hook 'eshell-mode-hook
-            (lambda () (local-set-key (kbd "M-q") 'eshell-push-command)))
+            (lambda () (local-set-key (kbd "M-q") 'eshell-push-command))))
 #+END_SRC
 
 * Shell Here

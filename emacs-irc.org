@@ -1,0 +1,80 @@
+#+TITLE:  IRC Settings for Emacs
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2014 Mar 28
+#+TAGS:   emacs
+
+ Currently, however, [[https://github.com/jorgenschaefer/circe/wiki][Circe]] isn't available in the standard locations,
+ so I have it downloaded and installed, and need the following
+ configuration:
+
+#+BEGIN_SRC elisp
+  (require 'circe)
+
+  (add-to-list 'circe-network-options
+        '("Ciphermonkeys"
+           :host "irc.ciphermonkeys.org"
+           :nick "ha"
+           :channels ("#1101"))
+        '("Freenode"
+          :nick "howardabrams"
+          :channels ("#emacs" "#clojure-pdx")
+          :nickserv-password ,freenode-password)
+          )
+#+END_SRC
+
+   Simplify the channel output.
+
+#+BEGIN_SRC elisp
+  (setq circe-format-say "{nick}> {body}")
+#+END_SRC
+
+   Let's hide all the JOIN, PART and other messages that I don't care
+   about:
+
+#+BEGIN_SRC elisp
+  (setq circe-reduce-lurker-spam t)
+
+  (circe-set-display-handler "JOIN" (lambda (&rest ignored) nil))
+  (circe-set-display-handler "PART" (lambda (&rest ignored) nil))
+  (circe-set-display-handler "QUIT" (lambda (&rest ignored) nil))
+#+END_SRC
+
+   Circe (actually, lui) has the ability to intercept long pastes if
+   it is done in a single input. Lui will then ask if the user would
+   prefer to use a paste service.
+
+#+BEGIN_SRC elisp
+  (require 'lui-autopaste)
+  (add-hook 'circe-channel-mode-hook 'enable-lui-autopaste)
+#+END_SRC
+
+   Who can really spell, amirite?
+
+#+BEGIN_SRC elisp
+  (setq lui-flyspell-p t
+        lui-flyspell-alist '((".*" "american")))
+#+END_SRC
+
+   Since I often run my IRC in a smaller window, I need to allow for
+   the timestamps to be in a margin, so that we can wrap correctly.
+
+#+BEGIN_SRC elisp
+  (setq lui-time-stamp-position 'right-margin
+        lui-time-stamp-format "%H:%M")
+
+  (add-hook 'lui-mode-hook 'my-circe-set-margin)
+  (defun my-circe-set-margin ()
+    (setq right-margin-width 5))
+
+  (setq lui-time-stamp-position 'right-margin
+        lui-fill-type nil)
+
+  (add-hook 'lui-mode-hook 'my-lui-setup)
+  (defun my-lui-setup ()
+    (setq
+     fringes-outside-margins t
+     right-margin-width 5
+     word-wrap t
+     wrap-prefix "    "))
+#+END_SRC

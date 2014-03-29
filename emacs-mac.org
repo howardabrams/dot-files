@@ -1,0 +1,332 @@
+#+TITLE:  Macintosh Configuration for Emacs
+#+AUTHOR: Howard
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2014 Mar 22
+#+TAGS:   emacs
+
+The settings in this file are only included on a Macintosh, and even
+then, only during a graphical run.
+
+* Needed Packages
+
+#+BEGIN_SRC elisp
+  (packages-install '( color-theme
+                       color-theme-sanityinc-tomorrow
+                       highlight-tail          ;; Used only sporadically
+                       mac-key-mode
+                       smart-mode-line))
+#+END_SRC
+
+* Key Bindings
+
+   I like the ability to use the Command key to turn a standard Emacs
+   into a more Macintosh-specific application. (See [[http://stackoverflow.com/questions/162896/emacs-on-mac-os-x-leopard-key-bindings][these online notes]])
+
+#+BEGIN_SRC elisp
+  (when (eq system-type 'darwin)
+    (setq mac-option-modifier 'meta)
+
+    ;; Aquamacs-specific code:
+    (when (boundp 'aquamacs-version)
+      (global-set-key [(alt k)] 'nlinum-mode))
+
+    ;; Emacs on Mac specific code:
+    (unless (boundp 'aquamacs-version)
+      ;; Since I already have Command-V for pasting, I
+      ;; don't need Ctrl-V to do that, so disable CUA:
+      (cua-mode -1)
+
+      (require 'mac-key-mode)
+      (mac-key-mode 1)
+
+      (define-key mac-key-mode-map [(alt o)] 'ido-find-file)
+
+      ;; I'd rather selectively bind Meta-I to my italics function,
+      ;; instead of showing the file in the Finder.
+      (define-key mac-key-mode-map (kbd "A-i") nil)
+      (define-key mac-key-mode-map [(alt 2)] 'mac-key-show-in-finder)
+
+      (define-key mac-key-mode-map [(alt +)] 'text-scale-increase)
+      (define-key mac-key-mode-map [(alt _)] 'text-scale-decrease)
+      (define-key mac-key-mode-map [(alt l)] 'goto-line)
+      (define-key mac-key-mode-map [(alt w)] 'delete-single-window)
+      ; (define-key mac-key-mode-map [(alt m)] 'toggle-meta-key)
+      (define-key mac-key-mode-map [(alt k)] 'nlinum-mode))
+#+END_SRC
+
+   Since the default ls for the Mac isn't so good, I always have the
+   GNU ls version available in =/usr/local/bin/gls=.
+
+#+BEGIN_SRC elisp
+    (require 'ls-lisp)
+    (setq ls-lisp-use-insert-directory-program t)
+    (setq insert-directory-program "/usr/local/bin/gls"))
+#+END_SRC
+
+   I hate the default implementation of Command-M. Now,
+   pressing Command-M will toggle whether the Option key is a
+   standard Option key or a Meta key:
+
+#+BEGIN_SRC elisp
+  (defun toggle-meta-key ()
+    "Toggles whether the Mac option key is an option key or a meta key."
+    (interactive)
+    (if (eq mac-option-modifier 'meta)
+        (setq mac-option-modifier nil)
+      (setq mac-option-modifier 'meta)))
+#+END_SRC
+
+   I would like Command-W to close a frame, but only if it only has a
+   single window in it. I found this code on [[http://www.emacswiki.org/emacs/frame-cmds.el][this site]].
+
+#+BEGIN_SRC elisp
+  (defun delete-single-window (&optional window)
+    "Remove WINDOW from the display.  Default is `selected-window'.
+  If WINDOW is the only one in its frame, then `delete-frame' too."
+    (interactive)
+    (save-current-buffer
+      (setq window (or window (selected-window)))
+      (select-window window)
+      (kill-buffer)
+      (if (one-window-p t)
+          (delete-frame)
+          (delete-window (selected-window)))))
+#+END_SRC
+
+* Font Settings
+
+   I love syntax highlighting.
+
+#+BEGIN_SRC elisp
+  (global-font-lock-mode 1)
+#+END_SRC
+
+   Specify the default font as =Source Code Pro=, which should already
+   be [[http://blogs.adobe.com/typblography/2012/09/source-code-pro.html][downloaded]] and installed.
+
+#+BEGIN_SRC elisp
+  (set-frame-font "Source Code Pro")
+  (set-face-attribute 'default nil :font "Source Code Pro" :height 140)
+  (set-face-font 'default "Source Code Pro")
+#+END_SRC
+
+   While I do like the =Anonymous Pro= font (and usually have it download and
+   installed), I don't like it as much.
+
+#+BEGIN_SRC elisp :tangle no
+  (set-default-font "Anonymous Pro")
+  (set-face-attribute 'default nil :font "Anonymous Pro" :height 140)
+  (set-face-font 'default "Anonymous Pro")
+#+END_SRC
+
+* Color Theme
+
+   Use the color theme project by following [[http://www.nongnu.org/color-theme/][these instructions]].
+   We now can do =M-x color-theme-<TAB> RET=
+
+#+BEGIN_SRC elisp
+  (require 'color-theme)
+#+END_SRC
+
+   The color themes work quite well, except they don't know about the
+   org-mode source code blocks, so we need to set up a couple
+   functions that we can use to set them.
+
+#+BEGIN_SRC elisp
+  (defun org-src-color-blocks-light ()
+    "Colors the block headers and footers to make them stand out more for lighter themes"
+    (interactive)
+    (custom-set-faces
+     '(org-block-begin-line
+      ((t (:underline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF"))))
+     '(org-block-background
+       ((t (:background "#FFFFEA"))))
+     '(org-block-end-line
+       ((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))))
+
+     ;; Looks like the minibuffer issues are only for v23
+     ; (set-face-foreground 'minibuffer "black")
+     ; (set-face-foreground 'minibuffer-prompt "red")
+  )
+
+  (defun org-src-color-blocks-dark ()
+    "Colors the block headers and footers to make them stand out more for dark themes"
+    (interactive)
+    (custom-set-faces
+     '(org-block-begin-line
+       ((t (:foreground "#008ED1" :background "#002E41"))))
+     '(org-block-background
+       ((t (:background "#111111"))))
+     '(org-block-end-line
+       ((t (:foreground "#008ED1" :background "#002E41")))))
+
+     ;; Looks like the minibuffer issues are only for v23
+     ; (set-face-foreground 'minibuffer "white")
+     ; (set-face-foreground 'minibuffer-prompt "white")
+  )
+#+END_SRC
+
+   My main reason for wanting to use the color theme project is to
+   switch between /black on white/ during the day, and /white on
+   black/ at night.
+
+#+BEGIN_SRC elisp
+  (defun color-theme-my-default ()
+    "Tries to set up a normal color scheme"
+    (interactive)
+    (color-theme-sanityinc-tomorrow-day)
+    (org-src-color-blocks-light))
+
+  ;; During the day, we use the "standard" theme:
+  (global-set-key (kbd "<f9> d") 'color-theme-my-default)
+
+  ;; A good late-night scheme that isn't too harsh
+  (global-set-key (kbd "<f9> l") (lambda () (interactive)
+                                   (color-theme-sanityinc-tomorrow-eighties)
+                                   (org-src-color-blocks-dark)))
+
+  ;; Programming late into the night
+  (global-set-key (kbd "<f9> m") (lambda () (interactive)
+                                   (color-theme-sanityinc-tomorrow-bright)
+                                   (org-src-color-blocks-dark)))
+
+  ;; Too harsh? Use the late night theme
+  (global-set-key (kbd "<f9> n") (lambda () (interactive)
+                                   (color-theme-sanityinc-tomorrow-night)
+                                   (org-src-color-blocks-dark)))
+#+END_SRC
+
+   And the default startup goes to ... night...
+
+#+BEGIN_SRC elisp
+  (color-theme-sanityinc-tomorrow-night)
+  (org-src-color-blocks-dark)
+#+END_SRC
+
+* Undo and Redo
+
+    According to [[http://ergoemacs.org/emacs/emacs_best_redo_mode.html][this article]], I get better functionality than the
+    =redo+= plugin (which I can't seem to get working well).
+
+#+BEGIN_SRC elisp
+  (require 'undo-tree)
+  (global-undo-tree-mode 1)
+  (defalias 'redo 'undo-tree-redo)
+
+  (when (eq system-type 'darwin)
+    (unless (boundp 'aquamacs-version)
+      (define-key mac-key-mode-map [(alt z)] 'undo-tree-undo)
+      (define-key mac-key-mode-map [(alt S-z)] 'undo-tree-redo)))
+
+  (global-set-key (kbd "C-z") 'undo) ; Zap to character isn't helpful
+  (global-set-key (kbd "C-S-z") 'redo)
+#+END_SRC
+
+* Dash
+
+   The [[http://kapeli.com/][Dash product]] is nice, and [[https://github.com/Kapeli/dash-at-point][this project]] allows Emacs to open
+   Dash for documentation of anything with a =C-c d= keystroke:
+
+#+BEGIN_SRC elisp
+  (autoload 'dash-at-point "dash-at-point"
+            "Search the word at point with Dash." t nil)
+  (global-set-key (kbd "C-c d") 'dash-at-point)
+#+END_SRC
+
+   Note: I checked out the code elsewhere, and created a symlink from
+   my =~/.emacs.d/elisp= directory to the =dash-as-point.el= file.
+
+* Mode Line
+
+    My [[file:emacs-mode-line.org][mode-line code]] is now more complex in order to make it more simpler.
+
+#+BEGIN_SRC elisp
+  (require 'init-mode-line)
+#+END_SRC
+
+* Window Size
+
+   Hrm ... I'm always increasing the window size, so I might as well
+   just have it default to the size I want:
+
+#+BEGIN_SRC elisp
+(add-to-list 'default-frame-alist '(height . 46))
+(add-to-list 'default-frame-alist '(width . 80))
+#+END_SRC
+
+   The bell is pretty obnoxious when it dings during scrolling.
+
+#+BEGIN_SRC elisp
+(setq ring-bell-function 'ignore)
+#+END_SRC
+
+* Twitter
+
+   I know, I know, reading my [[http://www.emacswiki.org/emacs-en/TwitteringMode][twitter feed in Emacs]] is pretty geeking
+   awesome. And I can filter out tweets that match a pattern that annoys me:
+
+#+BEGIN_SRC elisp
+  (setq twittering-tweet-filters '("kickstart" "#burritowatch"))
+
+  (defun twittering-filter-tweets ()
+    (setq non-matching-statuses '())
+    (dolist (status twittering-new-tweets-statuses)
+      (setq matched-tweets 0)
+      (dolist (pat twittering-tweet-filters)
+        (if (string-match pat (cdr (assoc 'text status)))
+            (setq matched-tweets (+ 1 matched-tweets))))
+      (if (= 0 matched-tweets)
+          (setq non-matching-statuses (append non-matching-statuses `(,status)))))
+    (setq new-statuses non-matching-statuses))
+
+  (add-hook 'twittering-new-tweets-hook 'twittering-filter-tweets)
+#+END_SRC
+
+   Need to enable spell-checking for the Twitter mode.
+
+#+BEGIN_SRC elisp
+(add-hook 'twittering-edit-mode-hook (lambda () (ispell-minor-mode) (flyspell-mode)))
+#+END_SRC
+
+* Skype
+
+    I normally mute Skype with some Alfred keystroke running some
+    AppleScript. However, Emacs will grab all keystrokes before
+    passing them on, so I need this function:
+
+#+BEGIN_SRC elisp
+   (defun mute-skype ()
+     "Mutes or unmutes Skype via an AppleScript call."
+     (interactive)
+     (let ((mute-script "tell application \"Skype\"
+    if \(send command \"GET MUTE\" script name \"MuteToggler\"\) is equal to \"MUTE ON\" then
+      send command \"SET MUTE OFF\" script name \"MuteToggler\"
+    else
+      send command \"SET MUTE ON\" script name \"MuteToggler\"
+    end if
+  end tell"))
+       (progn
+         (call-process "osascript" nil nil nil "-ss" "-e" mute-script)
+         (message "Skype (un)mute message has been sent."))))
+
+  (global-set-key (kbd "C-M-A-m") 'mute-skype)
+#+END_SRC
+* TODO Technical Artifacts
+
+  Make sure that we can simply =require= this library.
+
+#+BEGIN_SRC elisp
+  (provide 'init-mac)
+#+END_SRC
+
+  Before you can build this on a new system, make sure that you put
+  the cursor over any of these properties, and hit: =C-c C-c=
+
+#+DESCRIPTION: A literate programming version of my Emacs Initialization for Graphical Clients
+#+PROPERTY:    results silent
+#+PROPERTY:    tangle ~/.emacs.d/elisp/init-mac.el
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
