@@ -5,28 +5,43 @@
 #+TAGS:   emacs python
 
    Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].  The
-   question is whether I use Rope or Jedi for auto-completion.  Seems
-   like Rope is better, so I will use it instead of Jedi... for now.
+   question is whether I use [[http://rope.sourceforge.net/ropemacs.html][Rope]] or [[https://github.com/tkf/emacs-jedi][Jedi]] for auto-completion.  Rope,
+   while claiming more features, seems to crash and lock up my Emacs
+   connections, so I'm back to using Jedi...for now. See [[http://www.masteringemacs.org/articles/2013/01/10/jedi-completion-library-python/][this article]].
 
 #+BEGIN_SRC elisp
-  (packages-install '( nose
+  (packages-install '( elpy
+                       nose
                        jedi
-                       ;; ein
-                       virtualenv ))
+                       py-autopep8
+                       pylint
+                       pysmell
+                       pyvenv))
 #+END_SRC
 
-   Make sure that PATH can reference the Python executables, and
-   since I am installing a updated Python...
+* Basics
+
+  Make sure that PATH can reference the Python executables, and
+  since I am installing a updated Python...
 
 #+BEGIN_SRC elisp :tangle no
   (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
 #+END_SRC
 
-   WSGI files are just Python files in disguise, so tell them to use
-   the Python environment:
+  WSGI files are just Python files in disguise, so tell them to use
+  the Python environment:
 
 #+BEGIN_SRC elisp
   (add-to-list 'auto-mode-alist '("\\.wsgi$" . python-mode))
+#+END_SRC
+
+  Careful with the tabs, my friend.
+
+#+BEGIN_SRC elisp
+  (setq-default indent-tabs-mode nil)
+  (setq-default tab-width 4)
+
+  (add-hook 'python-mode-hook '(lambda () (setq python-indent 4)))
 #+END_SRC
 
    Need to color the defined variables:
@@ -35,47 +50,67 @@
   (add-hook 'python-mode-hook 'color-identifiers-mode)
 #+END_SRC
 
-* Debugging
+* Virtual Environments
 
-    Use the [[https://pypi.python.org/pypi/virtualenv][virtualenv]] world of goodness, but only if it is installed.
-    This allows me to =M-x virtualenv-workon= and specify the virtual
-    environment to run all the Python gunk from within Emacs.
+  Almost all development for Python is done inside virtual
+  environments, and we need to have Emacs know about it.
 
 #+BEGIN_SRC elisp
-  (if (autofeaturep 'virtualenv)
-      (progn
-          (require 'virtualenv)))
+  (require 'pyvenv)
 #+END_SRC
 
-* Jedi
+  The main entry points are =pyvenv-activate=, which queries for a
+  virtual environment directory to activate, and =pyvenv-workon=,
+  which queries for a virtual environment in =$WORKON_HOME= (from
+  =virtualenvwrapper.sh=).
 
-    Auto-completion system for Python. This code hooks Jedi into the
-    standard Python mode. See [[http://tkf.github.io/emacs-jedi/][these instructions]] for details. New
-    keys:
+  To restart the inferior Python processes automatically when
+  switching virtual environments, add =pyvenv-restart-python= to
+  =pyvenv-post-activate-hooks=.
 
-    - =C-Tab= for auto complete.
-    - =C-.= to jump to definition.
-    - =C-c d= to show the function documentation
+* ELPY
 
-#+BEGIN_SRC elisp :tangle no
-  (if (autofeaturep 'jedi-mode)
-      (progn
-        (add-hook 'python-mode-hook 'jedi:setup)
-        (add-hook 'python-mode-hook 'jedi:ac-setup)
-        (setq jedi:setup-keys t)                      ; optional
-        (setq jedi:complete--dot t)))                 ; optional
+  According to the [[https://github.com/jorgenschaefer/elpy/wiki][ELPY Web Site]], we first install the python-based
+  part, by issuing, =pip install elpy= before we can use this.
+
+#+BEGIN_SRC elisp
+  ;; (require 'elpy)
+  (elpy-enable)
 #+END_SRC
 
-* Flymake for Python
+* Lint
 
     Lint-style syntax checking for Python builds on the regular
     Flymake package, however, I am now using Flycheck for that.
 
 #+BEGIN_SRC elisp :tangle no
-  (if (autofeaturep 'flymake-python-pyflakes)
-      (progn
+  (when (autofeaturep 'flymake-python-pyflakes)
         (require 'flymake-python-pyflakes)
-        (add-hook 'python-mode-hook 'flymake-python-pyflakes-load)))
+        (add-hook 'python-mode-hook 'flymake-python-pyflakes-load))
+#+END_SRC
+
+    Let's try out the Pysmell project, which depends on Pymacs:
+    sudo pip install Pymacs
+
+#+BEGIN_SRC elisp
+  (require 'pymacs)
+  (require 'pysmell)
+  (add-hook 'python-mode-hook (lambda () (pysmell-mode 1)))
+#+END_SRC
+
+    We also want to use the =autopep8= project, just make sure you've
+    install the library: =pip install --upgrade autopep8=
+
+#+BEGIN_SRC elisp
+  (require 'py-autopep8)
+#+END_SRC
+
+  Not sure I want to automatically change my files on save...you know,
+  in case, I'm editing someone else's file. But this does seem like a
+  good idea:
+
+#+BEGIN_SRC elisp :tangle no
+  (add-hook 'before-save-hook 'py-autopep8-before-save)
 #+END_SRC
 
 * Nose
@@ -94,6 +129,27 @@
                       "~/Google\ Drive/python_koans/python2")))
 #+END_SRC
 
+* Jedi
+
+    Auto-completion system for Python. This code hooks Jedi into the
+    standard Python mode. See [[http://tkf.github.io/emacs-jedi/][these instructions]] for details.
+
+        pip install jedi
+
+    New keys:
+
+    - =C-Tab= for auto complete.
+    - =C-.= to jump to definition.
+    - =C-c d= to show the function documentation
+
+#+BEGIN_SRC elisp
+  (when (autofeaturep 'jedi)
+        (add-hook 'python-mode-hook 'jedi:setup)
+        (add-hook 'python-mode-hook 'jedi:ac-setup)
+        (setq jedi:setup-keys t)
+        (setq jedi:complete-on-dot t))
+#+END_SRC
+
 * Rope
 
     After installing the following Python libraries using =pip= (in a
@@ -107,7 +163,7 @@
     by cloning [[https://github.com/pinard/Pymacs.git][this Git repo]] and issuing a =make install=.
     According to [[http://stackoverflow.com/questions/2855378/ropemacs-usage-tutorial][this discusssion]], we /just/ need to:
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle no
   ;; (require 'pymacs)
 
   (autoload 'pymacs-apply "pymacs")
@@ -139,6 +195,18 @@
     A helluva lot of work, but it is worth it. As long as the Rope
     instance stays alive and doesn't die. Then it becomes pretty
     annoying.
+
+* Debugging
+
+    Use the [[https://pypi.python.org/pypi/virtualenv][virtualenv]] world of goodness, but only if it is installed.
+    This allows me to =M-x virtualenv-workon= and specify the virtual
+    environment to run all the Python gunk from within Emacs.
+
+#+BEGIN_SRC elisp
+  (if (autofeaturep 'virtualenv)
+      (progn
+          (require 'virtualenv)))
+#+END_SRC
 
 * IPython
 
