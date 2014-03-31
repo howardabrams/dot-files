@@ -254,6 +254,26 @@ then, only during a graphical run.
 (add-to-list 'default-frame-alist '(width . 80))
 #+END_SRC
 
+   However, I often want to put the window fullscreen:
+
+#+BEGIN_SRC elisp
+  (defun frame-fullscreen ()
+    "Set the frame window to cover the full screen."
+    (interactive)
+    (set-frame-parameter nil 'fullscreen 'fullboth))
+#+END_SRC
+
+   Not sure if this *toggle* is a good feature or not.
+
+#+BEGIN_SRC elisp
+  (defun toggle-fullscreen ()
+    "Toggle full screen"
+    (interactive)
+    (set-frame-parameter
+       nil 'fullscreen
+       (when (not (frame-parameter nil 'fullscreen)) 'fullboth)))
+#+END_SRC
+
    The bell is pretty obnoxious when it dings during scrolling.
 
 #+BEGIN_SRC elisp

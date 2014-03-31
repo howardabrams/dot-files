@@ -453,7 +453,7 @@ brew linkapps
 #+BEGIN_SRC elisp
   (when (autofeaturep 'yasnippet)
     (require 'yasnippet)
-    (yas-global-mode 1)
+    (yas-global-mode 1))
 #+END_SRC
 
    Inside the =snippets= directory should be directories for each
@@ -678,19 +678,23 @@ brew install homebrew/dupes/grep
 #+BEGIN_SRC elisp
   (load-library "smart-scan")
 #+END_SRC
+
 *** Dired Options
 
-    The associated group name isn't too useful when viewing the dired output.
+    The associated group name isn't too useful when viewing the dired
+    output.
 
-#+BEGIN_SRC elisp
-  (setq dired-listing-switches "-AlohGD")
+#+BEGIN_SRC elisp :tangle no
+  (setq dired-listing-switches "-AlohGD -dired")
+  (setq ls-lisp-use-insert-directory-program t)
+  (setq insert-directory-program "/usr/local/bin/gls")
 #+END_SRC
 
     This enhancement to dired hides the ugly details until you hit
     '(' and shows the details with ')'. I also change the [...] to a
     simple asterisk.
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle no
   (when (autofeaturep 'dired-details)
     (require 'dired-details)
     (dired-details-install)
@@ -1003,7 +1007,7 @@ brew install homebrew/dupes/grep
    bits of the Emacs window are accessible and whatnot.
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'init-irc)
+  (when (autofeaturep 'circe)
     (require 'init-irc))
 #+END_SRC
 
