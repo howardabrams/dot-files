@@ -49,7 +49,7 @@ then, only during a graphical run.
       (define-key mac-key-mode-map [(alt +)] 'text-scale-increase)
       (define-key mac-key-mode-map [(alt _)] 'text-scale-decrease)
       (define-key mac-key-mode-map [(alt l)] 'goto-line)
-      (define-key mac-key-mode-map [(alt w)] 'delete-single-window)
+      (define-key mac-key-mode-map [(alt w)] 'bury-buffer)
       ; (define-key mac-key-mode-map [(alt m)] 'toggle-meta-key)
       (define-key mac-key-mode-map [(alt k)] 'nlinum-mode))
 #+END_SRC
@@ -311,7 +311,7 @@ then, only during a graphical run.
 
   (global-set-key (kbd "C-M-A-m") 'mute-skype)
 #+END_SRC
-* TODO Technical Artifacts
+* Technical Artifacts
 
   Make sure that we can simply =require= this library.
 
