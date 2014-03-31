@@ -70,7 +70,9 @@ ls >> #<buffer emacs-eshell.org>
                        ))
 #+END_SRC
 
-* Set up the Correct Path
+* Basics
+
+** Set up the Correct Path
 
    Need the correct PATH even if we start Emacs from the GUI:
 
@@ -81,7 +83,7 @@ ls >> #<buffer emacs-eshell.org>
            (getenv "PATH")))
 #+END_SRC
 
-* Pager Setup
+** Pager Setup
 
    If any program wants to pause the output through the =$PAGER=
    variable, well, we don't really need that:
@@ -119,7 +121,7 @@ ls >> #<buffer emacs-eshell.org>
    Running the following once should update the [[file:~/.emacs.d/eshell/alias][.emacs.d/eshell/alias]] file.
 
 #+BEGIN_EXAMPLE
-alias ll /usr/local/bin/gls -AlohG --color=always
+  alias ll /usr/local/bin/gls -AlohG --color=always
 #+END_EXAMPLE
 
    To make things more consistent between different hosts, I will
@@ -144,14 +146,6 @@ alias ll /usr/local/bin/gls -AlohG --color=always
    What about =gd= to call the Diff command?
 
 #+BEGIN_SRC elisp
-  (defun eshell/gd ()
-      (magit-diff-unstaged)
-      (eshell/echo))
-
-  (defun eshell/gds ()
-      (magit-diff-staged)
-      (eshell/echo))
-
 (defalias 'gd 'magit-diff-unstaged)
 (defalias 'gds 'magit-diff-staged)
 #+END_SRC
@@ -203,7 +197,7 @@ alias ll /usr/local/bin/gls -AlohG --color=always
    Great shell with some good tweaks taken from [[https://github.com/eschulte/emacs24-starter-kit/blob/master/starter-kit-eshell.org][the Starter Kit]]
    project. Ignoring the =.git= directories seem like a good idea.
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle no
   (setq eshell-cmpl-cycle-completions nil
         eshell-save-history-on-exit t
         eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
@@ -216,11 +210,11 @@ alias ll /usr/local/bin/gls -AlohG --color=always
     =M-q= functionality:
 
 #+BEGIN_SRC elisp
-(when (autofeaturep 'esh-buf-stack)
-  (require 'esh-buf-stack)
-  (setup-eshell-buf-stack)
-  (add-hook 'eshell-mode-hook
-            (lambda () (local-set-key (kbd "M-q") 'eshell-push-command))))
+  (when (autofeaturep 'esh-buf-stack)
+    (require 'esh-buf-stack)
+    (setup-eshell-buf-stack)
+    (add-hook 'eshell-mode-hook
+              (lambda () (local-set-key (kbd "M-q") 'eshell-push-command))))
 #+END_SRC
 
 * Shell Here
@@ -239,15 +233,15 @@ alias ll /usr/local/bin/gls -AlohG --color=always
 
 #+BEGIN_SRC elisp
   (defun eshell-here ()
-    "Opens up a new shell in the directory associated with the current buffer's file."
+    "Opens up a new shell in the directory associated with the
+  current buffer's file. The eshell is renamed to match that
+  directory to make multiple eshell windows easier."
     (interactive)
     (let* ((parent (if (buffer-file-name)
                        (file-name-directory (buffer-file-name))
                      default-directory))
            (height (/ (window-total-height) 3))
-           (name   (car
-                    (last
-                     (split-string parent "/" t)))))
+           (name   (car (last (split-string parent "/" t)))))
       (split-window-vertically (- height))
       (other-window 1)
       (eshell "new")

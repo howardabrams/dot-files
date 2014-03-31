@@ -694,7 +694,7 @@ brew install homebrew/dupes/grep
     '(' and shows the details with ')'. I also change the [...] to a
     simple asterisk.
 
-#+BEGIN_SRC elisp :tangle no
+#+BEGIN_SRC elisp
   (when (autofeaturep 'dired-details)
     (require 'dired-details)
     (dired-details-install)
