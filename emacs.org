@@ -269,7 +269,7 @@ brew linkapps
     (scroll-bar-mode 0))            ;; Scrollbars are waste screen estate
 #+END_SRC
 
-** More Key Definitions
+** Function Key Definitions
 
    Clearly, the most important keybindings are the function keys,
    right? Here is my list of needs:
@@ -286,9 +286,12 @@ brew linkapps
      bindings that I actually don't use that often
 
 #+BEGIN_SRC elisp
-  (global-set-key (kbd "<f5>") 'repeat-complex-command)
+  (global-set-key (kbd "<f5>") 'repeat)
+  (global-set-key (kbd "S-<f5>") 'repeat-complex-command)
   (global-set-key (kbd "<f6>") 'setup-windows)
   (global-set-key (kbd "<f7>") 'other-window)
+  (global-set-key (kbd "S-<f7>")
+                  '(lambda () "Previous Window" (interactive) (other-window -1)))
   (global-set-key (kbd "<f8>") 'ido-switch-buffer)
 #+END_SRC
 

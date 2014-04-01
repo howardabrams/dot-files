@@ -50,6 +50,7 @@ then, only during a graphical run.
       (define-key mac-key-mode-map [(alt _)] 'text-scale-decrease)
       (define-key mac-key-mode-map [(alt l)] 'goto-line)
       (define-key mac-key-mode-map [(alt w)] 'bury-buffer)
+      (define-key mac-key-mode-map [(meta alt w)] 'kill-this-buffer)
       ; (define-key mac-key-mode-map [(alt m)] 'toggle-meta-key)
       (define-key mac-key-mode-map [(alt k)] 'nlinum-mode))
 #+END_SRC
