@@ -116,6 +116,43 @@
   The following functions seem to be useful for doing these sorts of
   demonstrations.
 
+** Fancy Region Highlighting
+
+   When talking about a single function or area, we use the
+   =expand-region= project along with the =fancy-narrow=:
+
+#+BEGIN_SRC elisp
+  (unless (featurep 'expand-region)
+    (package-refresh-contents)
+    (package-install 'expand-region)
+    (require 'expand-region)
+
+    (global-set-key (kbd "C-=") 'er/expand-region))
+
+  (unless (featurep 'fancy-narrow)
+    (package-refresh-contents)
+    (package-install 'fancy-narrow)
+    (require 'fancy-narrow)
+
+    (global-set-key (kbd "C-+") 'highlight-section)
+    (global-set-key (kbd "M-C-+") 'fancy-widen))
+#+END_SRC
+
+   While sometimes I want highlight some code, it is usually a
+   function, so instead of remembering two key combinations, let's
+   just have the =C-+= narrow to the region if active, otherwise,
+   narrow to the function:
+
+#+BEGIN_SRC elisp
+  (defun highlight-section ()
+    "If the region is active, call 'fancy-narrow-to-region on it,
+  otherwise, call 'fancy-narrow-to-defun, and see what happens."
+    (interactive)
+    (if (region-active-p)
+        (fancy-narrow-to-region)
+      (fancy-narrow-to-defun)))
+#+END_SRC
+
 ** Hiding the Modeline
 
    Call the =hidden-mode-line= when displaying images, or just not
