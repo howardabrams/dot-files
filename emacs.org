@@ -186,8 +186,10 @@ brew linkapps
                    flycheck
                    flycheck-color-mode-line
                    flyspell
+                   git-blame
                    git-commit-mode
                    git-gutter-fringe
+                   git-messenger
                    gitconfig-mode
                    gitignore-mode
                    graphviz-dot-mode
@@ -280,7 +282,7 @@ brew linkapps
    - *F4* - Replay a keyboard macro
    - *F5* - Repeat the last command ...
    - *F6* - Setup window or move forward with demonstration.
-   - *F7* - Switch to another window
+   - *F7* - Switch to another window ... Shift goes the other way.
    - *F8* - Switch to buffer
    - *F9* - My other meta key for changing colors and other odd
      bindings that I actually don't use that often
@@ -895,6 +897,21 @@ brew install homebrew/dupes/grep
           (global-git-gutter-mode +1)
           (setq-default indicate-buffer-boundaries 'left)
           (setq-default indicate-empty-lines +1)))
+#+END_SRC
+
+   Git blame makes the history of a buffer pretty obvious... maybe a
+   tad too obvious.
+   Git Messenger shows the blame line as a popup.
+
+#+BEGIN_SRC elisp
+  (when (autofeaturep 'git-blame)
+    ;; (require 'git-blame)
+    (autoload 'git-blame-mode "git-blame"
+             "Minor mode for incremental blame for Git." t))
+
+  (when (autofeaturep 'git-messenger)
+    (require 'git-messenger)
+    (global-set-key (kbd "C-x v p") 'git-messenger:popup-message))
 #+END_SRC
 
 ** Markdown
