@@ -810,11 +810,6 @@ brew install homebrew/dupes/grep
       (surround nil nil txt)))
 #+END_SRC
 
-  I'm not sure I get it, but when I do, update the Gist and this:
-
-  Wanted some pasted text to have quotes around it. Spent a very enjoyable bus ride
-  home generalizing it. <3 #emacs https://gist.github.com/howardabrams/9928461
-
 *** Better Searching and Visual Regular Expressions
 
     Only after you've started an =isearch-forward= do you wish you had
