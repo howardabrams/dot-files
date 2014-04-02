@@ -751,40 +751,69 @@ brew install homebrew/dupes/grep
     with a beginning and ending string really makes sense.
 
 #+BEGIN_SRC elisp
-  (defun wrap-text (start end txt)
-     "Wraps the specified region with some textual markers that
-  this function requests from the user. Opening-type text, like
-  parens and angle-brackets will insert the matching closing
-  symbol.
+  (defun surround (start end txt)
+   "Wraps the specified region (or the current 'symbol / word'
+  with some textual markers that this function requests from the
+  user. Opening-type text, like parens and angle-brackets will
+  insert the matching closing symbol.
 
   This function also supports some org-mode wrappers:
 
-    ,* `#s` wraps the region in a source code block
-    ,* `#e` wraps it in an example block
-    ,* `#q` wraps it in an quote block"
-    (interactive "r\nsEnter beginning and ending text: " start end txt)
+    - `#s` wraps the region in a source code block
+    - `#e` wraps it in an example block
+    - `#q` wraps it in an quote block"
+    (interactive "r\nsEnter text to surround: " start end txt)
 
-    (narrow-to-region start end)
-    (goto-char (point-min))
-    (pcase txt
-      ("#s"     (insert "#+BEGIN_SRC \n"))
-      ("#e"     (insert "#+BEGIN_EXAMPLE\n"))
-      ("#q"     (insert "#+BEGIN_QUOTE\n"))
-      (default (insert default)))
-    (goto-char (point-max))
-    (pcase txt
-      ("#s"     (insert "\n#+END_SRC"))
-      ("#e"     (insert "\n#+END_EXAMPLE"))
-      ("#e"     (insert "\n#+END_QUOTE"))
-      ("<"     (insert ">"))
-      ("("     (insert ")"))
-      ("{"     (insert "}"))
-      ("["     (insert "]"))
-      (default (insert default)))
-    (widen))
+    ;; If the region is not active, we use the 'thing-at-point' function
+    ;; to get a "symbol" (often a variable or a single word in text),
+    ;; and use that as our region.
 
-  (global-set-key (kbd "C-+") 'wrap-text)
+    (if (not (region-active-p))
+        (let ((new-region (bounds-of-thing-at-point 'symbol)))
+          (setq start (car new-region))
+          (setq end (cdr new-region))))
+
+      ;; We create a table of "odd balls" where the front and the end are
+      ;; not the same string.
+    (let* ((s-table '(("#e" . ("#+BEGIN_EXAMPLE\n" "\n#+END_EXAMPLE") )
+                      ("#s" . ("#+BEGIN_SRC \n"    "\n#+END_SRC") )
+                      ("#q" . ("#+BEGIN_QUOTE\n"   "\n#+END_QUOTE"))
+                      ("<"  . ("<" ">"))
+                      ("("  . ("(" ")"))
+                      ("{"  . ("{" "}"))
+                      ("["  . ("[" "]"))))    ; Why yes, we'll add more
+           (s-pair (assoc-default txt s-table)))
+
+      ;; If txt doesn't match a table entry, then the pair will just be
+      ;; the text for both the front and the back...
+      (unless s-pair
+        (setq s-pair (list txt txt)))
+
+      (save-excursion
+        (narrow-to-region start end)
+        (goto-char (point-min))
+        (insert (car s-pair))
+        (goto-char (point-max))
+        (insert (cadr s-pair))
+        (widen))))
+
+  (global-set-key (kbd "C-+") 'surround)
 #+END_SRC
+
+  To make it easier to call from other functions, let's wrap that
+  wrapper:
+
+#+BEGIN_SRC elisp
+  (defun surround-text (txt)
+    (if (region-active-p)
+        (surround (region-beginning) (region-end) txt)
+      (surround nil nil txt)))
+#+END_SRC
+
+  I'm not sure I get it, but when I do, update the Gist and this:
+
+  Wanted some pasted text to have quotes around it. Spent a very enjoyable bus ride
+  home generalizing it. <3 #emacs https://gist.github.com/howardabrams/9928461
 
 *** Better Searching and Visual Regular Expressions
 
@@ -967,19 +996,19 @@ brew install homebrew/dupes/grep
   (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
 #+END_SRC
 
-   Using the =org-text-wrapper= function, I create some wrapper
+   Using the =surround= function, I create some wrapper
    functions to make it easier to bold text in Markdown files:
 
 #+BEGIN_SRC elisp
   (defun markdown-bold () "Wraps the region with double asterisks."
     (interactive)
-    (org-text-wrapper "**"))
+    (surround-text "**"))
   (defun markdown-italics () "Wraps the region with asterisks."
     (interactive)
-    (org-text-wrapper "*"))
+    (surround-text "*"))
   (defun markdown-code () "Wraps the region with equal signs."
     (interactive)
-    (org-text-wrapper "`"))
+    (surround-text "`"))
 #+END_SRC
 
    Now I can associate some keystrokes to =markdown-mode=:
@@ -1010,13 +1039,13 @@ brew install homebrew/dupes/grep
 #+BEGIN_SRC elisp
   (defun wiki-bold () "Wraps the region with single asterisks."
     (interactive)
-    (org-text-wrapper "*"))
+    (surround-text "*"))
   (defun wiki-italics () "Wraps the region with underbars."
     (interactive)
-    (org-text-wrapper "_"))
+    (surround-text "_"))
   (defun wiki-code () "Wraps the region with curly brackets."
     (interactive)
-    (org-text-wrapper "{{" "}}"))
+    (surround-text "{{" "}}"))
 #+END_SRC
 
    Now I can associate some keystrokes to =markdown-mode=:

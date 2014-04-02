@@ -117,22 +117,6 @@ to the same day of the week.
       (find-file journal-file)))
   #+END_SRC
 
-** Org-Mode Sprint Note Files
-
-    At the beginning of each sprint, we need to set this to the new
-    sprint file.
-
-#+BEGIN_SRC elisp
-  (setq current-sprint "2014-02")
-
-  (defun current-sprint-file ()
-    (expand-file-name (concat "~/Notes/Sprint-" current-sprint ".org")))
-
-  (defun get-current-sprint-file ()
-    "Loads up the org-mode note associated with my current sprint."
-    (interactive)
-    (find-file (current-sprint-file)))
-#+END_SRC
 
 ** Taking Meeting Notes
 
@@ -164,15 +148,6 @@ should be. After calling this function, call 'meeting-done' to reset the environ
   (widen)                                       ;; Opposite of narrow-to-region
   (text-scale-set 0)                            ;; Reset the font size increase
   (winner-undo))                                ;; Put the windows back in place
-#+END_SRC
-
-** Recent and Heavily Used Files
-
-    Daily note-taking goes into my sprint file notes, so this makes a
-    global short-cut key.
-
-#+BEGIN_SRC elisp
-  (global-set-key (kbd "C-x C-u") 'get-current-sprint-file)
 #+END_SRC
 
 ** Org-Mode Colors
@@ -226,42 +201,34 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 
 * Local Key Bindings
 
+  The following keybind ideas came from [[http://eschulte.github.io/emacs24-starter-kit/starter-kit-org.html][Emacs24 Starter Kit]].
+
+#+BEGIN_SRC elisp
+(add-hook 'org-mode-hook
+          (lambda ()
+            (local-set-key "\M-\C-n" 'outline-next-visible-heading)
+            (local-set-key "\M-\C-p" 'outline-previous-visible-heading)
+            (local-set-key "\M-\C-u" 'outline-up-heading)
+            ;; table
+            (local-set-key "\M-\C-w" 'org-table-copy-region)
+            (local-set-key "\M-\C-y" 'org-table-paste-rectangle)
+            (local-set-key "\M-\C-l" 'org-table-sort-lines)
+            ;; display images
+            (local-set-key "\M-I" 'org-toggle-iimage-in-org)))
+#+END_SRC
+
    A couple of short-cut keys to make it easier to edit text.
 
 #+BEGIN_SRC elisp
-  (defun org-text-wrapper (txt &optional endtxt)
-    "Wraps the region with the text passed in as an argument."
-    (if (use-region-p)
-        (save-restriction
-          (narrow-to-region (region-beginning) (region-end))
-          (goto-char (point-min))
-          (insert txt)
-          (goto-char (point-max))
-          (if endtxt
-              (insert endtxt)
-            (insert txt)))
-      (if (looking-at "[A-z]")
-          (save-excursion
-            (if (not (looking-back "[     ]"))
-                (backward-word))
-            (progn
-              (mark-word)
-              (org-text-wrapper txt endtxt)))
-        (progn
-          (insert txt)
-          (let ((spot (point)))
-            (insert txt)
-            (goto-char spot))))))
-
   (defun org-text-bold () "Wraps the region with asterisks."
     (interactive)
-    (org-text-wrapper "*"))
+    (surround-text "*"))
   (defun org-text-italics () "Wraps the region with slashes."
     (interactive)
-    (org-text-wrapper "/"))
+    (surround-text "/"))
   (defun org-text-code () "Wraps the region with equal signs."
     (interactive)
-    (org-text-wrapper "="))
+    (surround-text "="))
 #+END_SRC
 
    Now we can associate some keystrokes to the org-mode:
@@ -614,17 +581,19 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 
 ** Font Coloring in Code Blocks
 
+#+BEGIN_SRC elisp
+   ; (setq org-src-fontify-natively t)
+   (setq org-src-tab-acts-natively t)
+
+   (global-set-key (kbd "<f9> g") 'org-src-fontify-buffer)
+   (global-set-key (kbd "<f9> f") 'org-src-fontify-block)
+#+END_SRC
+
     Normally, fontifying the individual code blocks makes it
     impossible to work with, so instead of turning it on at the global
     level for all blocks, I created a couple of keystrokes to
     selectively colorize one block at a time.
 
-#+BEGIN_SRC elisp
-  ; (setq org-src-fontify-natively t)
-
-  (global-set-key (kbd "<f9> g") 'org-src-fontify-buffer)
-  (global-set-key (kbd "<f9> f") 'org-src-fontify-block)
-#+END_SRC
 * Technical Artifacts
 
   Need to provide the =init-org-mode= so that I can require this
