@@ -745,6 +745,47 @@ brew install homebrew/dupes/grep
         (global-set-key (kbd "C-=") 'er/expand-region))
 #+END_SRC
 
+*** Block Wrapper
+
+    With the =expand-region= command, wrapping a logical block of text
+    with a beginning and ending string really makes sense.
+
+#+BEGIN_SRC elisp
+  (defun wrap-text (start end txt)
+     "Wraps the specified region with some textual markers that
+  this function requests from the user. Opening-type text, like
+  parens and angle-brackets will insert the matching closing
+  symbol.
+
+  This function also supports some org-mode wrappers:
+
+    ,* `#s` wraps the region in a source code block
+    ,* `#e` wraps it in an example block
+    ,* `#q` wraps it in an quote block"
+    (interactive "r\nsEnter beginning and ending text: " start end txt)
+
+    (narrow-to-region start end)
+    (goto-char (point-min))
+    (pcase txt
+      ("#s"     (insert "#+BEGIN_SRC \n"))
+      ("#e"     (insert "#+BEGIN_EXAMPLE\n"))
+      ("#q"     (insert "#+BEGIN_QUOTE\n"))
+      (default (insert default)))
+    (goto-char (point-max))
+    (pcase txt
+      ("#s"     (insert "\n#+END_SRC"))
+      ("#e"     (insert "\n#+END_EXAMPLE"))
+      ("#e"     (insert "\n#+END_QUOTE"))
+      ("<"     (insert ">"))
+      ("("     (insert ")"))
+      ("{"     (insert "}"))
+      ("["     (insert "]"))
+      (default (insert default)))
+    (widen))
+
+  (global-set-key (kbd "C-+") 'wrap-text)
+#+END_SRC
+
 *** Better Searching and Visual Regular Expressions
 
     Only after you've started an =isearch-forward= do you wish you had
@@ -1069,6 +1110,16 @@ brew install homebrew/dupes/grep
   remember that one. Perhaps.
 
 * Technical Artifacts
+
+  Before we finish, we need to check if there is a local file for us
+  to load and evaluate:
+
+#+BEGIN_SRC elisp
+  (let ((local-file "~/.emacs.d/elisp/init-local.el"))
+    (when (file-exists-p local-file)
+      (load-file local-file)
+      (message "Loaded machine-specific settings: %s" local-file)))
+#+END_SRC
 
   Before you can build this on a new system, make sure that you put
   the cursor over any of these properties, and hit: =C-c C-c=
