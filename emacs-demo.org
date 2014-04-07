@@ -207,6 +207,25 @@
     (find-file file))
 #+END_SRC
 
+   Would be nice to load up a file and automatically highlight some
+   lines.
+
+#+BEGIN_SRC elisp
+  (defun demo/load-fancy-side-window (file type line1 line2 &optional side)
+    "Load up a file in a side window, and then use the family region highlighting to show off some of the file."
+    (if side (demo/make-side-window))
+    (find-file file)
+    (let ((start line1)
+          (end line2))
+      (unless (eq type 'char)
+        (goto-line line1)
+        (setq start (point))
+        (goto-line (1+ line2))
+        (setq end (point)))
+      (fancy-narrow-to-region start end)))
+
+  ;; (demo/load-fancy-side-window "~/Work/wpc-ci/verify" 'line 21 25)
+#+END_SRC
 ** Starting an ORG Presentation
 
    Since I often have an org-mode file on the side of the screen to
