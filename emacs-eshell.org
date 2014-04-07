@@ -223,7 +223,8 @@ ls >> #<buffer emacs-eshell.org>
   "x" alias that quickly exits and [[file:emacs.org::*Macintosh][closes the window]].
 
 #+BEGIN_SRC elisp
-  (defun eshell/x (&rest args)
+  (defun eshell/x ()
+    "Closes the EShell session and gets rid of the EShell window."
     (insert "exit")
     (eshell-send-input)
     (delete-window))

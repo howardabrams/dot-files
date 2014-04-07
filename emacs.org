@@ -969,6 +969,29 @@ brew install homebrew/dupes/grep
   (global-set-key (kbd "M-C-g") 'magit-status)
 #+END_SRC
 
+   I like having Magit to run in a /full screen/ mode, and took this
+   =defadvice= idea from [[https://github.com/magnars/.emacs.d/blob/master/setup-magit.el][Sven Magnars]]:
+
+#+BEGIN_SRC elisp
+  (defadvice magit-status (around magit-fullscreen activate)
+    (window-configuration-to-register :magit-fullscreen)
+    ad-do-it
+    (delete-other-windows))
+#+END_SRC
+
+   Now, we have to have the =q= command recover the window session
+   that was stored in a window register:
+
+#+BEGIN_SRC elisp
+  (defun magit-quit-session ()
+    "Restores the previous window configuration and kills the magit buffer"
+    (interactive)
+    (kill-buffer)
+    (jump-to-register :magit-fullscreen))
+
+  (define-key magit-status-mode-map (kbd "q") 'magit-quit-session)
+#+END_SRC
+
    I install and use the [[https://github.com/syohex/emacs-git-gutter-fringe][Git Gutter Fringe]] as it works better with
    windowing versions of Emacs.
 
