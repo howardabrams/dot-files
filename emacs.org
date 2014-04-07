@@ -327,40 +327,28 @@ brew linkapps
 
    Remember, this works everywhere /except/ for org-mode.
 
-** Key Chords
-
-   Key Chords allows you to use any two keys pressed at the same time
-   to trigger a function call. Interesting possibilities, but of
-   course, you don't want it to make any mistakes.
-
-   Like 'xo' seemed good for 'other-window' until I needed to type
-   the word, 'ox'.
-
-   I like vi's =.= command, where it quickly repeats the last command
-   you did. Emacs has similar functionality, but I never remember
-   =C-x z=, so let's map it to something else.
-
-#+BEGIN_SRC elisp
-  (when (autofeaturep 'key-chord)
-        (require 'key-chord)
-        (key-chord-mode +1)
-
-        (key-chord-define-global ",." 'repeat)
-        (key-chord-define-global "qw" 'query-replace)
-        (key-chord-define-global "xb" 'ido-switch-buffer)
-        (key-chord-define-global "xf" 'ido-find-file)
-
-        (when (autofeaturep 'iy-go-to-char)
-              (require 'iy-go-to-char)
-
-              (key-chord-define-global "fg" 'iy-go-to-char)
-              (key-chord-define-global "df" 'iy-go-to-char-backward)))
-#+END_SRC
+** Better Movement
 
    The [[https://github.com/doitian/iy-go-to-char][iy-go-to-char]] project allows a quick search for a particular
    character. In [[http://www.youtube.com/watch?v%3DNXTf8_Arl1w][Episode 6]] of [[http://www.emacsrocks.com][EmacsRocks]], [[http://twitter.com/emacsrocks][Magnar Sveen]] pulls it all
    together and makes a compelling case for micro-optimizations.
    We'll see if I can remember to use the feature.
+
+#+BEGIN_SRC elisp
+  (when (autofeaturep 'iy-go-to-char)
+    (require 'iy-go-to-char)
+    (global-set-key (kbd "C-`") 'iy-go-to-char)
+    (global-set-key (kbd "C-~") 'iy-go-to-char-backward))
+#+END_SRC
+
+   To use, type =C-`= and then a character, number or other symbol to
+   jump to. Typing most things will bugger out of its "state" and
+   start editing, however, typing:
+
+   - =;= will jump to the next occurrence of that letter
+   - =,= jumps backwards
+   - =C-w= cuts from where the cursor started and where it ended.
+   - =M-w= copies that region
 
 ** Recent File List
 
