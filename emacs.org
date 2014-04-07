@@ -325,6 +325,8 @@ brew linkapps
   (global-set-key (kbd "M-RET") 'newline-for-code)
 #+END_SRC
 
+   Remember, this works everywhere /except/ for org-mode.
+
 ** Key Chords
 
    Key Chords allows you to use any two keys pressed at the same time
@@ -745,10 +747,25 @@ brew install homebrew/dupes/grep
         (global-set-key (kbd "C-=") 'er/expand-region))
 #+END_SRC
 
-*** Block Wrapper
+*** Block Wrappers
 
-    With the =expand-region= command, wrapping a logical block of text
-    with a beginning and ending string really makes sense.
+    The =M-(= binding to =insert-pair= is great, but we often need to
+    wrap other commands. Thankfully, =insert-pair= is up to the task
+    by simply having new bindings.
+
+#+BEGIN_SRC elisp
+  (global-set-key (kbd "M-[") 'insert-pair)
+  (global-set-key (kbd "M-{") 'insert-pair)
+  (global-set-key (kbd "M-<") 'insert-pair)
+  (global-set-key (kbd "M-'") 'insert-pair)
+  (global-set-key (kbd "M-`") 'insert-pair)
+  (global-set-key (kbd "M-\"") 'insert-pair)
+#+END_SRC
+
+    But in order to wrap text in a more general way (with just about
+    any textual string), we need something more. Especially with the
+    =expand-region= command, wrapping a logical block of text with a
+    beginning and ending string really makes sense.
 
 #+BEGIN_SRC elisp
   (defun surround (start end txt)
