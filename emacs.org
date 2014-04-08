@@ -44,11 +44,16 @@ brew linkapps
   ;; Load our Literate Programming version of our Dot Emacs
   ;; file, from file: ~/Work/dot-files/emacs.org
   (unless (boundp 'aquamacs-version)
-    (load-file "~/.emacs-ext.el"))
+    (load-file "~/.emacs.d/elisp/init-main.el")
+
+    (when (window-system)
+      (require 'init-mac))
+
+    (server-start))
 #+END_EXAMPLE
 
    *Note:* I only load this from a "normal" Emacs distribution, which allows
-   me to play around with [[http://aquamacs.org/][Aquamacs]] and [[http://eschulte.github.io/emacs-starter-kit/][Starter Kits]] for recommendation
+   me to play around with [[http://aquamacs.org/][Aquamacs]] and [[http://eschulte.github.io/emacs-starter-kit/][Starter Kits]] for recommendations
    to people new to Emacs.
 
 ** Editing Warning
