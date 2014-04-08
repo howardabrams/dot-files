@@ -534,8 +534,28 @@ brew install homebrew/dupes/grep
    Also, you can do a full locate with =C-x C-l=:
 
 #+BEGIN_SRC elisp
-  (global-set-key (kbd "C-x C-l") 'locate)
   (setq locate-command "mdfind")  ;; Use Mac OS X's Spotlight
+  (global-set-key (kbd "C-x C-l") 'locate)
+#+END_SRC
+
+   The following function wraps =locate-with-filter= to only grab
+   =org-mode= files:
+
+#+BEGIN_SRC elisp
+  (defun locate-org-files (search-string)
+    (interactive "sSearch string: ")
+    (locate-with-filter search-string ".org$"))
+
+  (global-set-key (kbd "C-x C-n") 'locate-org-filesq)
+#+END_SRC
+
+   The =mdfind= command is pretty powerful and has quite the scripting
+   language, so I might toy with the following:
+
+#+BEGIN_SRC elisp :tangle no
+  (defun spot-locate-make-command-line (search-string)
+    (list "mdfind" "-interpret" search-string))
+  (setq locate-make-command-line 'spot-locate-make-command-line)
 #+END_SRC
 
 ** Spell Checking
