@@ -343,6 +343,7 @@ brew linkapps
   (when (autofeaturep 'iy-go-to-char)
     (require 'iy-go-to-char)
     (global-set-key (kbd "C-`") 'iy-go-to-char)
+    (global-set-key (kbd "<f13>") 'iy-go-to-char)
     (global-set-key (kbd "C-~") 'iy-go-to-char-backward))
 #+END_SRC
 
