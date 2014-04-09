@@ -5,7 +5,7 @@
 
 DIR=$(dirname $0)
 FILES=""
-     
+
 # wrap each argument in the code required to call tangle on it
 for i in $DIR/*.org $DIR/bin/*.org $@; do
     FILES="$FILES \"$i\""
@@ -38,3 +38,6 @@ do
         ln -s $DIR/$FILE $HOME/.emacs.d/elisp
     fi
 done
+
+/usr/local/bin/emacs -Q --batch \
+    --eval "(byte-recompile-directory \"~/.emacs.d/elisp\" 0)"
