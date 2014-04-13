@@ -144,8 +144,6 @@ brew linkapps
   (package-initialize)
 #+END_SRC
 
-** Installing Extra Packages
-
    Not sure why the package management system doesn't come with a
    programmatic way to specify what packages should be installed. Oh
    yeah, this is pretty new. Looks like everyone just rolls there own,
@@ -175,6 +173,7 @@ brew linkapps
         (delete-other-windows)))))
 #+END_SRC
 
+** Installing Extra Packages
 
    This means that at any point in my configuration file, I can
    specify a list of packages to make sure they are installed.
@@ -182,6 +181,8 @@ brew linkapps
 #+BEGIN_SRC elisp
   (packages-install
                  '(auto-complete
+                   ack-and-a-half
+                   ag
                    circe
                    dired-details
                    color-identifiers-mode  ;; Color variables differently
@@ -475,19 +476,12 @@ brew linkapps
                                 (yas-minor-mode 1))))
 #+END_SRC
 
-** Note Grep
+** Grep for my Notes
 
-   First, we need to have the =find-grep= ignore =.git= directories
-   and search for wholewords:
+   I have a voluminous amount of org-mode text files I routinely need
+   search and filter.
 
-#+BEGIN_SRC elisp
-  (setq grep-find-command
-        "find . -type f '!' -wholename '*/.git/*' -print0 | xargs -0 -e grep -nHPi -e ")
-  (setq rep-highlight-matches t)
-#+END_SRC
-
-   I use the standard [[http://emacswiki.org/emacs/GrepMode#toc1][grep package]] in Emacs and wrap it so that I
-   can easily search through my notes. However, I'm using a later
+   I use the standard [[http://emacswiki.org/emacs/GrepMode#toc1][grep package]] in Emacs, but need a later
    version of Gnu Grep. On Mac OS X, run these two commands:
 
 #+BEGIN_EXAMPLE
@@ -495,44 +489,29 @@ brew tap homebrew/dupes
 brew install homebrew/dupes/grep
 #+END_EXAMPLE
 
-   Now we can call the =ggrep= command:
+   I also use [[http://beyondgrep.com][ack]] and the [[http://geoff.greer.fm/2011/12/27/the-silver-searcher-better-than-ack/][Silver Searcher]] (but for different uses).
+
+#+BEGIN_EXAMPLE
+brew install ack
+brew install ag
+#+END_EXAMPLE
+
+   The [[https://github.com/jhelwig/ack-and-a-half][ack-and-a-half]] project requires the following:
 
 #+BEGIN_SRC elisp
-  (defun ngrep (reg-exp)
-    "Searches the Notes and ORG directory tree for an expression.
-  The pipe symbol separates an org-mode tag from the phrase to search,
-  e.g. jquery|appendTo searches only the files with a 'jquery' tag."
-    (interactive "sSearch note directories: ")
-    (let ((search-dir "~/Notes ~/Technical")
-          (options "--line-number --with-filename --word-regexp --ignore-case")
-          (the-args (split-string reg-exp "\|")))
-      (if (> (length the-args) 1)
-          (let* ((the-tag (car the-args))
-                 (reg-exp (combine-and-quote-strings (cdr the-args)))
-                 (files   (split-string (shell-command-to-string
-                               (concat
-                                "grep -r --files-with-matches '#+TAGS: .*"
-                                the-tag "' " search-dir)) "\n")))
-            (progn
-              (message "Searching for %s with tag of %s" reg-exp the-tag)
-              (grep-find (concat "grep " options " " reg-exp " "
-                                 (combine-and-quote-strings files)))))
-        (let* ((file-exts '( "*.org" "*.md" "*.txt" "*.markdown"))
-               (file-types (mapconcat (function (lambda (x) (concat "--include '" x "'")))  file-exts " ")))
-          (progn
-            (message "Searching in %s" search-dir)
-            (grep-compute-defaults)
-            (grep-find (concat "grep -r -e " reg-exp " " options " "
-                               file-types " " search-dir)))))))
+  (when (autofeaturep 'ack-and-a-half)
+    (require 'ack-and-a-half)
 
-  (global-set-key (kbd "C-x C-n") 'ngrep)
-  ;; (global-set-key (kbd "C-x C-r") 'rgrep)
+    ;; Create shorter aliases
+    (defalias 'ack 'ack-and-a-half)
+    (defalias 'ack-same 'ack-and-a-half-same)
+    (defalias 'ack-find-file 'ack-and-a-half-find-file)
+    (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same))
 #+END_SRC
 
-   Don't forget that after doing a =C-x C-f= to find a file, you can
-   hit another =M-f= to do a find the given directory (and subs).
-
-   Also, you can do a full locate with =C-x C-l=:
+   However, I need an /indexing/ approach to searching through my
+   notes, and since I'm usually on a Mac, I might as well use the
+   /Spotlight/ service that is already running:
 
 #+BEGIN_SRC elisp
   (setq locate-command "mdfind")  ;; Use Mac OS X's Spotlight
@@ -547,16 +526,51 @@ brew install homebrew/dupes/grep
     (interactive "sSearch string: ")
     (locate-with-filter search-string ".org$"))
 
-  (global-set-key (kbd "C-x C-n") 'locate-org-filesq)
+  (global-set-key (kbd "C-x C-L") 'locate-org-files)
 #+END_SRC
 
-   The =mdfind= command is pretty powerful and has quite the scripting
-   language, so I might toy with the following:
+   We /could/ limit the location that Spotlight request searches:
 
 #+BEGIN_SRC elisp :tangle no
-  (defun spot-locate-make-command-line (search-string)
-    (list "mdfind" "-interpret" search-string))
-  (setq locate-make-command-line 'spot-locate-make-command-line)
+  (defun locate-my-org-files (search-string)
+    (let ((tech (concat (getenv "HOME") "/technical"))
+          (pers (concat (getenv "HOME") "/personal"))
+          (note (concat (getenv "HOME") "/notes"))
+          (jrnl (concat (getenv "HOME") "/journal")))
+      (-flatten (list "mdfind"
+               (if (file-exists-p tech) (list "-onlyin" tech))
+               (if (file-exists-p pers) (list "-onlyin" pers))
+               (if (file-exists-p note) (list "-onlyin" note))
+               (if (file-exists-p jrnl) (list "-onlyin" jrnl))
+               "-interpret" search-string))))
+
+  (setq locate-make-command-line 'locate-my-org-files)
+#+END_SRC
+
+   However, the problem with locate, is it doesn't show me any
+   context. My [[file:bin/find-notes][find-notes]] script uses both =mdfind= and =grep= to both
+   better search and display some useful context.
+
+   Just need to wrap that in a function:
+
+#+BEGIN_SRC elisp
+  (defun find-notes (words)
+    "Uses my 'find-notes' shell script as a better grep
+  utility. Not only does it show the results in a clickable list,
+  it also highlights the result, allowing us to put more context in
+  the output."
+    (interactive "sSearch for words:")
+    (let ((program (concat (getenv "HOME") "/bin/find-notes"))
+          (buffer-name (concat "*find-notes: " words "*")))
+      (call-process program nil buffer-name t words)
+      (switch-to-buffer buffer-name)
+      (read-only-mode 1)
+      (grep-mode)
+      (beginning-of-buffer)
+      (dolist (word (split-string words))
+        (highlight-regexp word))))
+
+  (global-set-key (kbd "C-x C-n") 'find-notes)
 #+END_SRC
 
 ** Spell Checking
@@ -977,9 +991,7 @@ brew install homebrew/dupes/grep
    Git is [[http://emacswiki.org/emacs/Git][already part of Emacs]]. However, [[http://philjackson.github.com/magit/magit.html][Magit]] is sweet.
 
 #+BEGIN_SRC elisp
-  (autoload 'magint "magit"
-    "Hooking Git up to supported files." t nil)
-
+  (require 'magit)
   (global-set-key (kbd "M-C-g") 'magit-status)
 #+END_SRC
 

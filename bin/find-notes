@@ -1,0 +1,43 @@
+#!/bin/sh
+#
+#  We use Apple's Spotlight System (via mdfind) to do the initial
+#  search for particluar files. We then get some context for the
+#  results by calling grep. The result should work well with Emacs.
+
+INITIAL_LOCATIONS="$HOME/technical $HOME/Notes $HOME/journal $HOME/personal $HOME/Other/dot-files $HOME/Work/dot-files"
+
+# I run this script on many different machines, which may or may not
+# have all of the directories listed above, so let's make sure they
+# exist first.
+
+LOCATIONS=""
+for DIR in $INITIAL_LOCATIONS
+do
+    if [ -d $DIR ]
+    then
+        LOCATIONS="$LOCATIONS -onlyin $DIR"
+    fi
+done
+
+# While mdfind will put the text in any order, grep requires the
+# regular expression to be separated by vertical bars:
+
+REGEXP=$(echo "$*" | sed 's/ /\\|/g')
+TRIM=$(echo "$HOME" | wc -m)
+
+# echo mdfind $LOCATIONS -interpret $*
+
+mdfind $LOCATIONS -interpret $* | while read FILE
+do
+    if echo $FILE | grep -v -q '#'
+    then
+        LOC=$(grep -ni -m 1 "$REGEXP" "$FILE" | cut -d: -f1)
+        NAME=$(echo $FILE | cut -c$TRIM-)
+        TITLE=$(head -n 1 "$FILE" | sed 's/#+TITLE: //')
+        echo "~$NAME:$LOC: $TITLE"
+        grep -C 1 -i -m 3 "$REGEXP" "$FILE"
+        echo
+    fi
+done
+
+echo "----eot-----"
