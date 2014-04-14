@@ -1,0 +1,59 @@
+#+TITLE:  Blogging with Emacs and org-page
+#+AUTHOR: Howard
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2014 Apr 13
+#+TAGS:   emacs blog website
+
+After playing around with [[https://github.com/kelvinh/org-page][org-page]], I've decided to lease it for a
+while. Which amounts to doing the following:
+
+#+BEGIN_SRC elisp :tangle no
+  (let ((repo "~/howardism"))
+    (make-directory repo)
+    (op/new-repository repo))
+#+END_SRC
+
+Of course, we need to make sure that our [[file:~/Work/Personal/gitolite-admin/conf/gitolite.conf::repo%20website-howardism][Git server]] supports this new
+repository.
+
+#+BEGIN_SRC elisp
+  (when (autofeaturep 'org-page)
+    (require 'org-page)
+
+    (setq op/repository-directory "~/Google Drive/website-howardism")
+    (setq op/site-main-title "howardisms")
+    (setq op/site-sub-title "An aging and frustrated poet in love with the absurd, his family, and his own hubris...oh, and Lisp.")
+
+    (setq op/site-domain "http://www.howardism.org/")
+    (setq op/personal-github-link "https://github.org/howardabrams")
+
+    ;; (setq op/theme-root-directory "~/howardism/theme") ;; ??
+
+    ;;; for commenting, you can choose either disqus or duoshuo
+    (setq op/personal-disqus-shortname "howardabrams")
+    ;; (setq op/personal-duoshuo-shortname "your_duoshuo_shortname")
+
+    ;;; the configuration below are optional
+    ;; (setq op/personal-google-analytics-id "your_google_analytics_id")
+  )
+#+END_SRC
+
+* Other Variables
+
+  Like most good Emacs packages, =org-page= has a pretty good
+  collection of [[https://github.com/kelvinh/org-page/blob/master/op-vars.el][customizable variables]].
+
+* Theme
+
+  The default theme that comes with =org-page= is pretty descent, and
+  should be sufficient just to customize the CSS file only. However,
+  the =mdo= theme (see the =op/theme= variable) is pulling its
+  contents directly from the MELPA downloaded distribution:
+  =~/.emacs.d/elpa/org-page-20140330.2032/themes/mdo/=
+
+  I could create my own based on his, and then modify the
+  =op/template-directory= which points directly into the themes
+  directory.
+
+  In particular, check out the =container.mustache= file which holds
+  the basic layout of a page.

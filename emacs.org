@@ -32,7 +32,8 @@ brew install emacs --HEAD --cocoa --srgb
 brew linkapps
 #+END_SRC
 
-   Not only does this install the latest version of Emacs in
+   Not only does this install the latest
+version of Emacs in
    =/usr/local/bin/emacs=, but it also links a GUI version in
    =/Application/Emacs.app=. Goody.
 

@@ -1,0 +1,16 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: blog
+# key: blog
+# --
+#+TITLE:       ${1:`(replace-regexp-in-string "-" " " (capitalize (file-name-nondirectory (file-name-sans-extension (buffer-file-name)))))`}
+#+AUTHOR:      Howard Abrams
+#+EMAIL:       howard.abrams@gmail.com
+#+DATE:        `(format-time-string "%Y-%b-%d %a")`
+#+URI:         `(replace-regexp-in-string (concat (getenv "HOME") "/[^/]*/") "/" (file-name-sans-extension (buffer-file-name)))`/
+#+TAGS:        $2
+#+KEYWORDS:    $3
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: $4
+
+$0
