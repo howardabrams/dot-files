@@ -184,7 +184,6 @@ version of Emacs in
                  '(auto-complete
                    ack-and-a-half
                    ag
-                   circe
                    dired-details
                    color-identifiers-mode  ;; Color variables differently
                    epl
@@ -333,6 +332,47 @@ version of Emacs in
 #+END_SRC
 
    Remember, this works everywhere /except/ for org-mode.
+
+** Join Lines
+
+   I like how =M-SPC= removes all but one space, and =M-\= removes all
+   spaces. Would be nice to remove all /newlines/ in the same way.
+
+   Sure, =C-x C-o= removes all following newlines, so if at the end of
+   the first line that should be /joined/, then this acts somewhat
+   like =M-SPC=.
+
+#+BEGIN_SRC elisp
+  (defun join-lines ()
+    "If at the end of the line, will join the following line to the
+    end of this one...unless it is blank, in which case, it will
+    keep joining lines until the next line with text is
+    connected."
+    (interactive)
+
+    ;; Move to the the beginning of the white space before attempting
+    ;; this process. This allows us to join lines even if we are in the
+    ;; middle of some empty lines.
+    (re-search-backward "[^[:space:]\\r\\n]")
+    (forward-char)
+
+    ;; Just in case we have some trailing whitespace we can't see, let's
+    ;; just get rid of it. Won't do anything if in the middle of a line,
+    ;; or if there is not trailing whitespace.
+    (delete-trailing-whitespace (point) (point-at-eol))
+
+    ;; While we are at the end of the line, join a line, remove the
+    ;; whitespace, and keep on going until we're through...
+    (while (eq (point-at-eol) (point))
+      (delete-char 1)
+      (delete-trailing-whitespace (point) (point-at-eol))))
+
+  (global-set-key (kbd "C-RET") 'join-lines)
+#+END_SRC
+
+   I would like to have =M-RET= remove the lines similar to the way
+   =M-SPC= works, but that is already bound in =org-mode= to making a
+   special header, so I'll just bind it to Control.
 
 ** Better Movement
 
@@ -720,10 +760,8 @@ brew install ag
     The associated group name isn't too useful when viewing the dired
     output.
 
-#+BEGIN_SRC elisp :tangle no
-  (setq dired-listing-switches "-AlohGD -dired")
-  (setq ls-lisp-use-insert-directory-program t)
-  (setq insert-directory-program "/usr/local/bin/gls")
+#+BEGIN_SRC elisp
+  (setq ls-lisp-use-insert-directory-program nil)
 #+END_SRC
 
     This enhancement to dired hides the ugly details until you hit
@@ -973,7 +1011,9 @@ brew install ag
 
 #+BEGIN_SRC elisp
   (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode)
-  (add-hook 'emacs-lisp-mode-hook 'paredit-mode)
+
+  (when (featurep 'paredit)
+    (add-hook 'emacs-lisp-mode-hook (lambda () (paredit-mode t))))
 #+END_SRC
 
    Might as well pretty up the lambdas, because, we can!
