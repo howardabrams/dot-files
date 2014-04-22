@@ -197,11 +197,14 @@ then, only during a graphical run.
                                    (org-src-color-blocks-dark)))
 #+END_SRC
 
-   And the default startup goes to ... night...
+   And the default startup goes to...night...unless I'm at work, and
+   then we'll take the bright shiny theme.
 
 #+BEGIN_SRC elisp
-  (color-theme-sanityinc-tomorrow-night)
-  (org-src-color-blocks-dark)
+  (if (equal "howard.abrams" user-login-name)
+      (color-theme-my-default)
+    (color-theme-sanityinc-tomorrow-night)
+    (org-src-color-blocks-dark))
 #+END_SRC
 
 * Undo and Redo
