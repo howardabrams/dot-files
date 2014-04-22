@@ -4,13 +4,18 @@
 #+DATE:   2014 Mar 28
 #+TAGS:   emacs
 
- Currently, however, [[https://github.com/jorgenschaefer/circe/wiki][Circe]] isn't available in the standard locations,
- so I have it downloaded and installed, and need the following
- configuration:
+I'm digging on the [[https://github.com/jorgenschaefer/circe/wiki][Circe]] as my IRC client of choice. Just have to
+install it's package:
 
 #+BEGIN_SRC elisp
-  (require 'circe)
+  (packages-install '(circe))
 
+  (require 'circe)
+#+END_SRC
+
+Which means we can create my connections to my servers:
+
+#+BEGIN_SRC elisp
   (add-to-list 'circe-network-options
         '("Ciphermonkeys"
            :host "irc.ciphermonkeys.org"
