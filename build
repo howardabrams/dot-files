@@ -3,8 +3,10 @@
 # -----------------------------------------------------------------
 # Tangles the org-mode files and even compresses some.
 
-DIR=$(dirname $0)
+DIR=$(cd `dirname $0`; pwd)
 FILES=""
+
+mkdir -p ~/.emacs.d/elisp
 
 # wrap each argument in the code required to call tangle on it
 for i in $DIR/*.org $DIR/bin/*.org $@; do
@@ -35,9 +37,10 @@ do
     if [ ! -f $HOME/.emacs.d/elisp/$F ]
     then
         echo "Linking $FILE"
-        ln -s $DIR/$FILE $HOME/.emacs.d/elisp
+        rm -f $HOME/.emacs.d/elisp/$F
+        ln -s $DIR/$FILE $HOME/.emacs.d/elisp/$F
     fi
 done
 
-/usr/local/bin/emacs -Q --batch \
-    --eval "(byte-recompile-directory \"~/.emacs.d/elisp\" 0)"
+# /usr/local/bin/emacs -Q --batch \
+#     --eval "(byte-recompile-directory \"~/.emacs.d/elisp\" 0)"
