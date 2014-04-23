@@ -225,8 +225,7 @@ ls >> #<buffer emacs-eshell.org>
 #+BEGIN_SRC elisp
   (defun eshell/x ()
     "Closes the EShell session and gets rid of the EShell window."
-    (insert "exit")
-    (eshell-send-input)
+    (kill-buffer)
     (delete-window))
 #+END_SRC
 
