@@ -147,6 +147,24 @@ and global variables are stored in =.profile= and =.zsh_profile=.
   }
 #+END_SRC
 
+* SSH Force
+
+  According to [[http://linuxcommando.blogspot.com/2008/10/how-to-disable-ssh-host-key-checking.html][this document]], we can ignore the /man in the middle/
+  attacks with a couple of parameters. Why is this good? Well, I have
+  transient hosts that often get rebuilt with the same IP address, and
+  editing the =.ssh/known_hosts= file is pretty obnoxious.
+
+#+BEGIN_SRC sh
+  alias sshf='ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
+#+END_SRC
+
+  Granted, I like this =sed= command for quickly dispatching the
+  offending line from the file:
+
+#+BEGIN_SRC sh :tangle no
+  sed -i 3d ~/.ssh/known_hosts
+#+END_SRC
+
 * Copying Git Repos
 
   For some odd reason, I find I often need to copy the files from a checked out
