@@ -11,9 +11,8 @@ Emacs love affair. Make sure the latest packages are installed:
   (packages-install '( org
                        org-mime
                        org-journal
-                       org-presie
                        plantuml-mode
-                       ox-reveal ))
+                     ))
 #+END_SRC
 
 * Initial Settings
@@ -506,11 +505,12 @@ should be. After calling this function, call 'meeting-done' to reset the environ
    [[https://github.com/hakimel/reveal.js/][reveal.js]] and [[https://github.com/yjwen/org-reveal][org-reveal]].
 
 #+BEGIN_SRC elisp
-  (require 'ox-reveal)
+  (when (autofeaturep 'ox-reveal)
+    (require 'ox-reveal)
 
-  (setq org-reveal-root (concat "file://" (getenv "HOME") "/Other/reveal.js"))
+    (setq org-reveal-root (concat "file://" (getenv "HOME") "/Other/reveal.js"))
 
-  (setq org-reveal-postamble "Howard Abrams")
+    (setq org-reveal-postamble "Howard Abrams"))
 #+END_SRC
 
 * MobileOrg
