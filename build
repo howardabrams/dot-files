@@ -42,5 +42,12 @@ do
     fi
 done
 
+# Link others to the snippets folder
+if [ ! -e $HOME/.emacs.d/snippets ]
+then
+    ln -s $DIR/snippets $HOME/.emacs.d/snippets
+fi
+
+
 # /usr/local/bin/emacs -Q --batch \
 #     --eval "(byte-recompile-directory \"~/.emacs.d/elisp\" 0)"
