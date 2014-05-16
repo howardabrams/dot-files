@@ -288,6 +288,29 @@ ls >> #<buffer emacs-eshell.org>
   (setq eshell-smart-space-goes-to-end t)
 #+END_SRC
 
+* Helpers
+
+  Sometimes you just need to change something about the current file
+  you are editing...like the permissions or even execute it. Hitting
+  =Command-1= will prompt for a shell command string and then append
+  the current file to it and execute it.
+
+#+BEGIN_SRC elisp
+  (defun execute-command-on-file-buffer (cmd)
+    (interactive "sCommand to execute: ")
+    (let* ((file-name (buffer-file-name))
+           (full-cmd (concat cmd " " file-name)))
+      (shell-command full-cmd)))
+
+  (defun execute-command-on-file-directory (cmd)
+    (interactive "sCommand to execute: ")
+    (let* ((dir-name (file-name-directory (buffer-file-name)))
+           (full-cmd (concat "cd " dir-name "; " cmd)))
+      (shell-command full-cmd)))
+
+  (global-set-key (kbd "A-1") 'execute-command-on-file-buffer)
+  (global-set-key (kbd "A-!") 'execute-command-on-file-directory)
+#+END_SRC
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.
