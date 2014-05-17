@@ -398,6 +398,42 @@ version of Emacs in
    - =C-w= cuts from where the cursor started and where it ended.
    - =M-w= copies that region
 
+** Better Beginning of Line
+
+   This [[http://emacsredux.com/blog/2013/05/22/smarter-navigation-to-the-beginning-of-a-line/][Emacs Redux article]] has a great suggestion for having =C-a= go
+   to the beginning of the line's content instead of the actual
+   beginning of the line. Hit =C-a= a second to get to the actual
+   beginning.
+
+#+BEGIN_SRC elisp
+  (defun smarter-move-beginning-of-line (arg)
+    "Move point back to indentation of beginning of line.
+
+  Move point to the first non-whitespace character on this line.
+  If point is already there, move to the beginning of the line.
+  Effectively toggle between the first non-whitespace character and
+  the beginning of the line.
+
+  If ARG is not nil or 1, move forward ARG - 1 lines first.  If
+  point reaches the beginning or end of the buffer, stop there."
+    (interactive "^p")
+    (setq arg (or arg 1))
+
+    ;; Move lines first
+    (when (/= arg 1)
+      (let ((line-move-visual nil))
+        (forward-line (1- arg))))
+
+    (let ((orig-point (point)))
+      (back-to-indentation)
+      (when (= orig-point (point))
+        (move-beginning-of-line 1))))
+
+  ;; remap C-a to `smarter-move-beginning-of-line'
+  (global-set-key [remap move-beginning-of-line]
+                  'smarter-move-beginning-of-line)
+#+END_SRC
+
 ** Recent File List
 
    According to [[http://www.emacswiki.org/emacs-es/RecentFiles][this article]], Emacs already has the recent file
@@ -408,6 +444,74 @@ version of Emacs in
   (recentf-mode 1)
   (setq recentf-max-menu-items 25)
   (global-set-key (kbd "C-x C-r") 'recentf-open-files)
+#+END_SRC
+
+** Next and Previous File
+
+   Sometimes it is obvious what is the /next file/ based on the one
+   I'm currently reading. For instance, in my journal entries, the
+   filename is a number that can be incremented. Same with
+   presentation files...
+
+#+BEGIN_SRC elisp
+  (defun split-string-with-number (string)
+    "Returns a list of three components of the string, the first is
+  the text prior to any numbers, the second is the embedded number,
+  and the third is the rest of the text in the string."
+    (let* ((start (string-match "[0-9]+" string))
+           (end (string-match "[^0-9]+" string start)))
+      (if start
+          (list (substring string 0 start)
+                (substring string start end)
+                (if end  (substring string end)  "")))))
+#+END_SRC
+
+   Which means that the following defines this function:
+
+#+BEGIN_SRC elisp :tangle no
+(split-string-with-number "abc42xyz")  ;; ("abc" "42" "xyz")
+(split-string-with-number "42xyz")     ;; ("" "42" "xyz")
+(split-string-with-number "abc42")     ;; ("abc" "42" "")
+(split-string-with-number "20140424")  ;; ("" "20140424" "")
+(split-string-with-number "abcxyz")    ;; nil
+#+END_SRC
+
+   Given this splitter function, we create a function that takes some
+   sort of operator and return a new filename based on the conversion
+   that happens:
+
+#+BEGIN_SRC elisp
+  (defun find-file-number-change (f)
+    (let* ((filename (buffer-file-name))
+           (parts    (split-string-with-number
+                      (file-name-base filename)))
+           (new-name (number-to-string
+                      (funcall f (string-to-number (nth 1 parts))))))
+       (concat (file-name-directory filename)
+               (nth 0 parts)
+               new-name
+               (nth 2 parts))))
+#+END_SRC
+
+   And this allows us to create two simple functions that can load the
+   "next" and "previous" files:
+
+#+BEGIN_SRC elisp
+  (defun find-file-increment ()
+    "Takes the current buffer, and loads the file that is 'one
+  more' than the file contained in the current buffer. This
+  requires that the current file contain a number that can be
+  incremented."
+    (interactive)
+    (find-file (find-file-number-change '1+)))
+
+  (defun find-file-decrement ()
+    "Takes the current buffer, and loads the file that is 'one
+  less' than the file contained in the current buffer. This
+  requires that the current file contain a number that can be
+  decremented."
+    (interactive)
+    (find-file (find-file-number-change '1-)))
 #+END_SRC
 
 ** Multiple Cursors
