@@ -93,6 +93,15 @@ function ef {
     e $(f $*)
 }
 
+# SSH Force
+
+#   According to [[http://linuxcommando.blogspot.com/2008/10/how-to-disable-ssh-host-key-checking.html][this document]], we can ignore the /man in the middle/
+#   attacks with a couple of parameters. Why is this good? Well, I have
+#   transient hosts that often get rebuilt with the same IP address, and
+#   editing the =.ssh/known_hosts= file is pretty obnoxious.
+
+alias sshf='ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
+
 # Copying Git Repos
 
 #   For some odd reason, I find I often need to copy the files from a checked out

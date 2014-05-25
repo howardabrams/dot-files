@@ -35,6 +35,15 @@
     (setenv "PATH" path-from-shell)
     (setq exec-path (split-string path-from-shell path-separator))))
 
+;; Customization Section
+
+;;    While I would rather program my configurations, sometimes the Emacs
+;;    menu system is "good enough", but I want it in its own file:
+
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file))
+
 ;; Package Manager
 
 ;;    Emacs has become like every other operating system, and now has a
@@ -276,6 +285,11 @@ Does not support subfeatures."
 (global-set-key (kbd "<f9> n") (lambda () (interactive)
                                  (color-theme-sanityinc-tomorrow-night)
                                  (org-src-color-blocks-dark)))
+
+;; And the default startup goes to ... night...
+
+(color-theme-sanityinc-tomorrow-night)
+(org-src-color-blocks-dark)
 
 ;; Macintosh
 
@@ -689,7 +703,7 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 ;;     The associated group name isn't too useful when viewing the dired output.
 
-(setq dired-listing-switches "-alGh")
+(setq dired-listing-switches "-AlohGD")
 
 ;; This enhancement to dired hides the ugly details until you hit
 ;;     '(' and shows the details with ')'. I also change the [...] to a
@@ -898,6 +912,12 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 (setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
 
+;; EShell
+
+;;   See [[file:emacs-eshell.org][emacs-eshell.el]] for details of configuring and using EShell.
+
+(require 'init-eshell)
+
 ;; Twitter
 
 ;;    I know, I know, reading my [[http://www.emacswiki.org/emacs-en/TwitteringMode][twitter feed in Emacs]] is pretty geeking
@@ -931,14 +951,18 @@ e.g. jquery|appendTo searches only the files with a 'jquery' tag."
 
 (require 'circe)
 
-(setq circe-network-options
-      `(("Ciphermonkeys"
+(add-to-list 'circe-network-options
+      '("Ciphermonkeys"
          :host "irc.ciphermonkeys.org"
          :nick "ha"
-         :channels ("#1101"))))
+         :channels ("#1101"))
+      '("Freenode"
+        :nick "howardabrams"
+        :channels ("#emacs" "#clojure-pdx")
+        :nickserv-password ,freenode-password)
+        )
 
-;; Perhaps we want to join other channels ... you know, just for
-;;    fun to see if there is something else to waste time.
+;; Simplify the channel output.
 
 (setq circe-format-say "{nick}> {body}")
 
