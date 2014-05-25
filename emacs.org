@@ -103,7 +103,7 @@ brew linkapps
 
 #+BEGIN_SRC elisp
   (when window-system
-    (let ((path-from-shell (shell-command-to-string "bash -i -c 'echo $PATH'")))
+    (let ((path-from-shell (shell-command-to-string "/bin/bash -l -c 'echo $PATH'")))
       (setenv "PATH" path-from-shell)
       (setq exec-path (split-string path-from-shell path-separator))))
 #+END_SRC
@@ -865,7 +865,13 @@ brew install ag
     quickly pop to it.
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'linum-relative)
+  (if (not (autofeaturep 'linum-relative))
+
+      ;; If this isn't installed, we'll just toggle between showing and
+      ;; not showing the line numbers.
+      (global-set-key (kbd "A-k") 'linum-mode)
+
+    ;; Otherwise, let's take advantage of the relative line numbering:
     (require 'linum-relative)
 
     (defun linum-new-mode ()
