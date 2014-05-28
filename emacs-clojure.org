@@ -84,18 +84,16 @@
     See this [[http://www.emacswiki.org/emacs/PareditCheatsheet][cheatsheet]].
 
 #+BEGIN_SRC elisp
-  (autoload 'paredit-mode "paredit"
-    "Minor mode for pseudo-structurally editing Lisp code." t)
+  (require 'paredit)
 #+END_SRC
 
-    To associate specific language modes with ParEdit, first create a
-    helper function:
+    Associate the following Lisp-based modes with ParEdit:
 
 #+BEGIN_SRC elisp
-  (defun turn-on-paredit () (paredit-mode 1))
+  (defun turn-on-paredit () (paredit-mode t))
 #+END_SRC
 
-    Then associate the following Lisp-based modes with ParEdit:
+    Associate the following Lisp-based modes with ParEdit:
 
 #+BEGIN_SRC elisp
   (add-hook 'emacs-lisp-mode-hook       'turn-on-paredit)
@@ -111,9 +109,46 @@
     above, I'd have to do something like:
 
 #+BEGIN_SRC elisp :tangle no
-  (add-hook 'clojure-mode-hook          (lambda () (paredit-mode +1)))
+  (add-hook 'clojure-mode-hook (lambda () (paredit-mode +1)))
 #+END_SRC
 
+*** Electric Returns
+
+    According to [[http://www.emacswiki.org/emacs/ParEdit#toc4][the ParEdit documentation]], we can allow a Return
+    keypress to insert a couple of indented newlines, if within an
+    s-expression. While within =paredit=, simply press =)= to shrink
+    back up the extra whitespace.
+
+    First, define a regular expression where we trigger this behavior:
+
+#+BEGIN_SRC elisp
+  (defvar electrify-return-match
+      "[\]}\)\"]"
+      "If this regexp matches the text after the cursor, do an \"electric\" return.")
+#+END_SRC
+
+    Next, encapsulate the behavior in a function:
+
+#+BEGIN_SRC elisp
+  (defun electrify-return-if-match (arg)
+      "If the text after the cursor matches `electrify-return-match' then
+    open and indent an empty line between the cursor and the text.  Move the
+    cursor to the new line."
+      (interactive "P")
+      (let ((case-fold-search nil))
+        (if (looking-at electrify-return-match)
+            (save-excursion (newline-and-indent)))
+        (newline arg)
+        (indent-according-to-mode)))
+#+END_SRC
+
+    Finally, bind the function to a key:
+
+#+BEGIN_SRC elisp
+  (add-hook 'paredit-mode-hook
+          (lambda ()
+            (local-set-key (kbd "RET") 'electrify-return-if-match)))
+#+END_SRC
 *** ElDoc
 
     Need to get [[http://emacswiki.org/emacs/ElDoc][ElDoc]] working with Clojure (oh, and with Emacs Lisp).
@@ -133,18 +168,32 @@
      everything up. Keyboard: =C-c M-j=
    - =cider= to connect to an existing nREPL server.
 
+  Let's color the REPL:
+
+#+BEGIN_SRC elisp
+  (setq cider-repl-use-clojure-font-lock t)
+#+END_SRC
+
   Don't care much for the extra buffers that show up when you start:
 
 #+BEGIN_SRC elisp
   (setq nrepl-hide-special-buffers t)
 #+END_SRC
 
-Stop the error buffer from popping up while working in buffers other than the REPL:
+  Stop the error buffer from popping up while working in buffers other than the REPL:
 
 #+BEGIN_SRC elisp
   (setq cider-popup-stacktraces nil)
 #+END_SRC
 
+  To get Clojure's Cider working with org-mode, do:
+
+#+BEGIN_SRC elisp
+  (require 'ob-clojure)
+
+  (setq org-babel-clojure-backend 'cider)
+  (require 'cider)
+#+END_SRC
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.
