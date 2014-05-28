@@ -188,6 +188,8 @@ brew linkapps
                    epl
                    esh-buf-stack
                    expand-region
+                   flx
+                   flx-ido
                    flycheck
                    flycheck-color-mode-line
                    flyspell
@@ -203,7 +205,7 @@ brew linkapps
                    magit
                    markdown-mode
                    multiple-cursors
-                   ;; redo+             ;; If not installed, edit mac-key-mode
+                   redo+             ;; If not installed, edit mac-key-mode
                    smex
                    thesaurus
                    undo-tree
@@ -767,6 +769,7 @@ brew install ag
   (setq ido-enable-flex-matching t)
   (setq ido-everywhere t)
   (ido-mode 1)
+  (flx-ido-mode 1)
 #+END_SRC
 
     According to [[https://gist.github.com/rkneufeld/5126926][Ryan Kneufeld]], we could make IDO work
