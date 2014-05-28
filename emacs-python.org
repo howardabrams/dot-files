@@ -16,7 +16,7 @@
                        py-autopep8
                        pylint
                        pysmell
-                       pyvenv))
+                       virtualenvwrapper))
 #+END_SRC
 
 * Basics
@@ -52,17 +52,27 @@
 
 * Virtual Environments
 
-  Almost all development for Python is done inside virtual
-  environments, and we need to have Emacs know about it.
+  Almost all development for Python is done in [[http://docs.python-guide.org/en/latest/dev/virtualenvs/][virtual environments]],
+  and I need to have Emacs know about it. Would like to have all
+  environments centrally located as well as /within/ the project, to
+  work with both [[http://virtualenvwrapper.readthedocs.org/en/latest/index.html][virtualenvwrapper]] and [[https://github.com/kennethreitz/autoenv][autoenv]], so:
+
+  - Each project has a =.env= directory containing the environment
+  - The =$HOME/.pyenvs= directory has symbolic links... visa-versa?
+
+  Currently using [[https://github.com/jorgenschaefer/pyvenv][pyvenv]]
 
 #+BEGIN_SRC elisp
-  (require 'pyvenv)
+  (when (autofeaturep 'virtualenvwrapper)
+    (require 'virtualenvwrapper)
+    ;; (venv-initialize-interactive-shells) ;; if you want interactive shell support
+    (venv-initialize-eshell) ;; if you want eshell support
+    (setq venv-location (concat (getenv "HOME") "/.virtualenvs/")))
 #+END_SRC
 
-  The main entry points are =pyvenv-activate=, which queries for a
-  virtual environment directory to activate, and =pyvenv-workon=,
-  which queries for a virtual environment in =$WORKON_HOME= (from
-  =virtualenvwrapper.sh=).
+  The main entry points are =venv-workon=, which queries for a
+  virtual environment to activate.
+
 
   To restart the inferior Python processes automatically when
   switching virtual environments, add =pyvenv-restart-python= to
