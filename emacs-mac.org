@@ -278,6 +278,39 @@ then, only during a graphical run.
 (setq ring-bell-function 'ignore)
 #+END_SRC
 
+* Notifications
+
+  Looking at making some processes a bit more obvious, for instance,
+  when a command kicked off in the eshell takes too much time, I need
+  it to beep when it is done. For this, I simply shell out to Mac's
+  notification center using the [[https://github.com/alloy/terminal-notifier][terminal-notifier]]. To install, do:
+
+  #+BEGIN_EXAMPLE
+  brew install terminal-notifier
+  #+END_EXAMPLE
+
+  The =beep= command can either be typed at the end of a command
+  (after a semi-colon), or at the beginning, since anything following
+  is executed first, and the notification follows.
+
+#+BEGIN_SRC elisp
+  (defun eshell/beep (&rest args)
+    "Send a Mac notification message when the command given has
+  completed."
+
+    (let ((comment (if args
+                       (concat "Process has completed: " (car args))
+                     "Process has completed.")))
+      (if args
+          (eshell-plain-command (car args) (cdr args)))
+
+      (shell-command-to-string
+       (concat "terminal-notifier -message '"
+               comment
+               "' -title 'Emacs' -subtitle 'Eshell Process Completed'"
+               " -sound default -sender org.gnu.Emacs"))))
+#+END_SRC
+
 * Twitter
 
    I know, I know, reading my [[http://www.emacswiki.org/emacs-en/TwitteringMode][twitter feed in Emacs]] is pretty geeking
