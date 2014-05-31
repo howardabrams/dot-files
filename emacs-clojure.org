@@ -10,6 +10,7 @@
 
 #+BEGIN_SRC elisp
   (packages-install '( ac-nrepl
+                       auto-complete
                        clojure-mode
                        clojure-cheatsheet
                        clojure-snippets
@@ -18,7 +19,9 @@
                        clj-refactor
                        elein
                        paredit
+                       popup
                        rainbow-delimiters  ;; Mode for alternating paren colors
+                       rainbow-mode
                        ))
 #+END_SRC
 
@@ -149,6 +152,35 @@
           (lambda ()
             (local-set-key (kbd "RET") 'electrify-return-if-match)))
 #+END_SRC
+
+*** Auto Completion
+
+    Basic auto completion taken from [[http://fgiasson.com/blog/index.php/2014/05/22/my-optimal-gnu-emacs-settings-for-developing-clojure-so-far/][these instructions]]:
+
+#+BEGIN_SRC elisp
+  (require 'auto-complete-config)
+  (setq ac-delay 0.0)
+  (setq ac-quick-help-delay 0.5)
+  (ac-config-default)
+#+END_SRC
+
+    The CIDER-specific configuration for auto completion:
+
+#+BEGIN_SRC elisp
+  (require 'ac-nrepl)
+  (add-hook 'cider-mode-hook 'ac-nrepl-setup)
+  (add-hook 'cider-repl-mode-hook 'ac-nrepl-setup)
+  (add-to-list 'ac-modes 'cider-mode)
+  (add-to-list 'ac-modes 'cider-repl-mode)
+#+END_SRC
+
+    And we can call it with =C-c C-d=:
+
+#+BEGIN_SRC elisp
+  (eval-after-load "cider"
+    '(define-key cider-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
+#+END_SRC
+
 *** ElDoc
 
     Need to get [[http://emacswiki.org/emacs/ElDoc][ElDoc]] working with Clojure (oh, and with Emacs Lisp).
