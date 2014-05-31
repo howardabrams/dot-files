@@ -514,6 +514,14 @@ should be. After calling this function, call 'meeting-done' to reset the environ
     (setq org-reveal-postamble "Howard Abrams"))
 #+END_SRC
 
+   Displaying the headers using various bullets are nice for my presentations.
+
+#+BEGIN_SRC elisp
+  (when (autofeaturep 'org-bullets)
+    (require 'org-bullets)
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+#+END_SRC
+
 * MobileOrg
 
    I use [[http://mobileorg.ncogni.to/doc/getting-started/using-dropbox/][Dropbox with MobileOrg]] in order to read my notes on my iPad.
