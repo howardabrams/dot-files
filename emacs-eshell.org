@@ -203,6 +203,93 @@ ls >> #<buffer emacs-eshell.org>
         eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
 #+END_SRC
 
+* Special Prompt
+
+  Following [[http://blog.liangzan.net/blog/2012/12/12/customizing-your-emacs-eshell-prompt/][these instructions]], we build a better prompt with the Git
+  branch in it (Of course, it matches my Bash prompt). First, we need
+  a function that returns a string with the Git branch in it,
+  e.g. ":master"
+
+  #+BEGIN_SRC elisp
+    (defun curr-dir-git-branch-string (pwd)
+      "Returns current git branch as a string, or the empty string if
+    PWD is not in a git repo (or the git command is not found)."
+      (interactive)
+      (when (and (eshell-search-path "git")
+                 (locate-dominating-file pwd ".git"))
+        (let ((git-output (shell-command-to-string (concat "cd " pwd " && git branch | grep '\\*' | sed -e 's/^\\* //'"))))
+          (if (> (length git-output) 0)
+              (concat " :" (substring git-output 0 -1))
+            "(no branch)"))))
+  #+END_SRC
+
+  The function takes the current directory passed in via =pwd= and
+  replaces the =$HOME= part with a tilde. I'm sure this function
+  already exists in the eshell source, but I didn't find it...
+
+  #+BEGIN_SRC elisp
+    (defun pwd-replace-home (pwd)
+      "Replace home in PWD with tilde (~) character."
+      (interactive)
+      (let* ((home (expand-file-name (getenv "HOME")))
+             (home-len (length home)))
+        (if (and
+             (>= (length pwd) home-len)
+             (equal home (substring pwd 0 home-len)))
+            (concat "~" (substring pwd home-len))
+          pwd)))
+  #+END_SRC
+
+  Make the directory name be shorter...by replacing all directory
+  names with just its first names. However, we leave the last two to
+  be the full names. Why yes, I did steal this.
+
+  #+BEGIN_SRC
+    (defun pwd-shorten-dirs (pwd)
+      "Shorten all directory names in PWD except the last two."
+      (let ((p-lst (split-string pwd "/")))
+        (if (> (length p-lst) 2)
+            (concat
+             (mapconcat (lambda (elm) (if (zerop (length elm)) ""
+                                   (substring elm 0 1)))
+                        (butlast p-lst 2)
+                        "/")
+             "/"
+             (mapconcat (lambda (elm) elm)
+                        (last p-lst 2)
+                        "/"))
+          (mapconcat (lambda (elm) elm)
+                     p-lst
+                     "/"))))
+  #+END_SRC
+
+  Now tie it all together with a prompt function can color each of the
+  prompts components.
+
+  #+BEGIN_SRC elisp
+    (setq eshell-prompt-function
+          (lambda ()
+            (let* ((directory (pwd-shorten-dirs (pwd-replace-home (eshell/pwd))))
+                   (parent (file-name-directory directory))
+                   (name (file-name-base directory))
+                   (branch (or (curr-dir-git-branch-string (eshell/pwd)) "")))
+
+              (if (eq 'dark (frame-parameter nil 'background-mode))
+                  (concat   ;; Prompt for Dark Themes
+                   (propertize parent 'face `(:foreground "#8888FF"))
+                   (propertize name   'face `(:foreground "#8888FF" :weight bold))
+                   (propertize branch 'face `(:foreground "green"))
+                   (propertize " $"   'face `(:weight ultra-bold))
+                   (propertize " "    'face `(:weight bold)))
+
+                (concat    ;; Prompt for Light Themes
+                 (propertize parent 'face `(:foreground "blue"))
+                 (propertize name   'face `(:foreground "blue" :weight bold))
+                 (propertize branch 'face `(:foreground "dark green"))
+                 (propertize " $"   'face `(:weight ultra-bold))
+                 (propertize " "    'face `(:weight bold)))))))
+  #+END_SRC
+
 * Stack the Buffer
 
     One of the few things I miss about ZShell is the ability to easily
