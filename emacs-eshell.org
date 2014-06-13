@@ -244,7 +244,7 @@ ls >> #<buffer emacs-eshell.org>
   names with just its first names. However, we leave the last two to
   be the full names. Why yes, I did steal this.
 
-  #+BEGIN_SRC
+  #+BEGIN_SRC elisp
     (defun pwd-shorten-dirs (pwd)
       "Shorten all directory names in PWD except the last two."
       (let ((p-lst (split-string pwd "/")))
@@ -261,6 +261,9 @@ ls >> #<buffer emacs-eshell.org>
           (mapconcat (lambda (elm) elm)
                      p-lst
                      "/"))))
+
+    ;; Turn off the default prompt.
+    (setq eshell-highlight-prompt nil)
   #+END_SRC
 
   Now tie it all together with a prompt function can color each of the
