@@ -48,6 +48,5 @@ then
     ln -s $DIR/snippets $HOME/.emacs.d/snippets
 fi
 
-
 # /usr/local/bin/emacs -Q --batch \
 #     --eval "(byte-recompile-directory \"~/.emacs.d/elisp\" 0)"
