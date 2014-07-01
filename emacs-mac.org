@@ -33,7 +33,7 @@ then, only during a graphical run.
       (cua-mode -1)
 
       (require 'mac-key-mode)
-      (mac-key-mode 1)
+      (mac-key-mode)
 
       (define-key mac-key-mode-map [(alt o)] 'ido-find-file)
 
@@ -86,6 +86,29 @@ then, only during a graphical run.
       (if (one-window-p t)
           (delete-frame)
           (delete-window (selected-window)))))
+#+END_SRC
+
+* Unicode Characters
+
+  Some of my frequently used Unicode characters:
+
+#+BEGIN_SRC elisp
+  (global-set-key (kbd "<f9> <up>") "↑")
+  (global-set-key (kbd "<f9> <down>") "↓")
+  (global-set-key (kbd "<f9> <left>") "←")
+  (global-set-key (kbd "<f9> <right>") "→")
+
+  (global-set-key (kbd "<f9> 8") "•")
+  (global-set-key (kbd "<f9> -") "—")
+  (global-set-key (kbd "<f9> .") "…")
+  (global-set-key (kbd "<f9> ;") "😜")
+  (global-set-key (kbd "<f9> )") "😀")
+
+  (global-set-key (kbd "<f9> A") "α")
+  (global-set-key (kbd "<f9> B") "β")
+  (global-set-key (kbd "<f9> L") "λ")
+  (global-set-key (kbd "<f9> P") "π")
+  (global-set-key (kbd "<f9> T") "θ")
 #+END_SRC
 
 * Font Settings
@@ -170,6 +193,7 @@ then, only during a graphical run.
     "Tries to set up a normal color scheme"
     (interactive)
     (color-theme-sanityinc-tomorrow-day)
+    (powerline-reset)
     (org-src-color-blocks-light))
 
   ;; During the day, we use the "standard" theme:
@@ -178,16 +202,19 @@ then, only during a graphical run.
   ;; A good late-night scheme that isn't too harsh
   (global-set-key (kbd "<f9> l") (lambda () (interactive)
                                    (color-theme-sanityinc-tomorrow-eighties)
+                                   (powerline-reset)
                                    (org-src-color-blocks-dark)))
 
   ;; Programming late into the night
   (global-set-key (kbd "<f9> m") (lambda () (interactive)
                                    (color-theme-sanityinc-tomorrow-bright)
+                                   (powerline-reset)
                                    (org-src-color-blocks-dark)))
 
   ;; Too harsh? Use the late night theme
   (global-set-key (kbd "<f9> n") (lambda () (interactive)
                                    (color-theme-sanityinc-tomorrow-night)
+                                   (powerline-reset)
                                    (org-src-color-blocks-dark)))
 #+END_SRC
 
