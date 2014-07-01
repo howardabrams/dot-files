@@ -50,6 +50,49 @@
     (context 2))
 #+END_SRC
 
+* Keystrokes
+
+  The M-e to go forward a sentence may be useful, but not during
+  coding. Let's rebind that key sequence to =forward-sexp=:
+
+#+BEGIN_SRC elisp
+  (add-hook 'clojure-mode-hook
+            (lambda ()
+              (local-set-key (kbd "M-e") 'forward-sexp)
+              (local-set-key (kbd "M-a") 'backward-sexp)))
+#+END_SRC
+
+#+BEGIN_SRC elisp
+  (defun paredit-delete-indentation (&optional arg)
+    "Handle joining lines that end in a comment."
+    (interactive "*P")
+    (let (comt)
+      (save-excursion
+        (move-beginning-of-line (if arg 1 0))
+        (when (skip-syntax-forward "^<" (point-at-eol))
+          (setq comt (delete-and-extract-region (point) (point-at-eol)))))
+      (delete-indentation arg)
+      (when comt
+        (save-excursion
+          (move-end-of-line 1)
+          (insert " ")
+          (insert comt)))))
+
+  (defun paredit-remove-newlines ()
+    "Removes extras whitespace and newlines from the current point
+  to the next parenthesis."
+    (interactive)
+    (let ((up-to (point))
+          (from (re-search-forward "[])}]")))
+       (backward-char)
+       (while (> (point) up-to)
+         (paredit-delete-indentation))))
+
+  (define-key paredit-mode-map (kbd "C-^") 'paredit-remove-newlines)
+  (define-key paredit-mode-map (kbd "M-^") 'paredit-delete-indentation)
+#+END_SRC
+* Rainbow Ponies
+
    Most LISP-based programming is better with rainbow ponies:
 
 #+BEGIN_SRC elisp
@@ -57,8 +100,12 @@
   (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
 #+END_SRC
 
+* Leiningen
+
    With the =elein= project installed, it allows us to do things
    like: =M-x elein-run-cmd koan run=
+
+* Clojure Docs
 
    Really want to try out my new [[file:~/Dropbox/Clojure/clojuredocs-emacs/org/clojuredocs.org][ClojureDocs functions]]. Note: You
    need to do the following steps:
@@ -80,7 +127,7 @@
    Finally, if you are just learning Clojure, check out [[http://www.4clojure.com/][4Clojure]] and then
    install [[https://github.com/joshuarh/4clojure.el][4clojure-mode]].
 
-*** Paredit
+* Paredit
 
     One of the cooler features of Emacs is the [[http://emacswiki.org/emacs/ParEdit][ParEdit mode]] which
     keeps all parenthesis balanced in Lisp-oriented languages.
@@ -115,7 +162,7 @@
   (add-hook 'clojure-mode-hook (lambda () (paredit-mode +1)))
 #+END_SRC
 
-*** Electric Returns
+* Electric Returns
 
     According to [[http://www.emacswiki.org/emacs/ParEdit#toc4][the ParEdit documentation]], we can allow a Return
     keypress to insert a couple of indented newlines, if within an
@@ -153,7 +200,7 @@
             (local-set-key (kbd "RET") 'electrify-return-if-match)))
 #+END_SRC
 
-*** Auto Completion
+* Auto Completion
 
     Basic auto completion taken from [[http://fgiasson.com/blog/index.php/2014/05/22/my-optimal-gnu-emacs-settings-for-developing-clojure-so-far/][these instructions]]:
 
@@ -181,7 +228,7 @@
     '(define-key cider-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
 #+END_SRC
 
-*** ElDoc
+* ElDoc
 
     Need to get [[http://emacswiki.org/emacs/ElDoc][ElDoc]] working with Clojure (oh, and with Emacs Lisp).
     Do I need [[https://gist.github.com/tomykaira/1386472][this EL file]]?
@@ -192,7 +239,7 @@
   (add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
 #+END_SRC
 
-*** Cider
+* Cider
 
   The [[https://github.com/clojure-emacs/cider][Cider project]] is da bomb. Usage:
 
