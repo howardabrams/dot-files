@@ -40,7 +40,8 @@
   ;; We'll let fly do the error parsing...
   (setq-default js2-show-parse-errors nil)
 
-  (autoload 'js2-mode "js2-mode" nil t)
+  ;; (autoload 'js2-mode "js2-mode" nil t)
+  (require 'js2-mode)
   (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 #+END_SRC
 
@@ -178,12 +179,15 @@
     Set up some helpful keyboard instructions:
 
 #+BEGIN_SRC elisp
-  (add-hook 'js2-mode-hook
-          (lambda ()
-            (local-set-key (kbd "C-c C-c") #'js-send-buffer)
-            (local-set-key (kbd "C-c C-r") #'js-send-region)
-            (local-set-key (kbd "C-c C-s") #'js-send-last-sexp)
-            (local-set-key (kbd "C-c C-z") #'run-js)))
+  (defun my/js-keybindings ()
+    (interactive)
+    (local-set-key (kbd "C-c C-c") 'js-send-buffer)
+    (local-set-key (kbd "C-c C-r") 'js-send-region)
+    (local-set-key (kbd "C-c C-s") 'js-send-last-sexp)
+    (local-set-key (kbd "C-c C-z") 'run-js))
+
+  (add-hook 'js-mode-hook 'my/js-keybindings)
+  (add-hook 'js2-mode-hook 'my/js-keybindings)
 #+END_SRC
 
     Wanna try it all out?
