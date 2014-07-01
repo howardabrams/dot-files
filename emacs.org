@@ -857,10 +857,29 @@ brew install ag
 #+BEGIN_SRC elisp
   (defun fix-linum-size ()
     (interactive)
-    (set-face-attribute 'linum nil :height 140))
+    (set-face-attribute 'linum nil :height 110))
 
   (add-hook 'linum-mode-hook 'fix-linum-size)
 #+END_SRC
+
+    If we alternate between line numbers and no-line numbers, I also
+    have to turn on/off the fringe. Actually, this is really only
+    useful when giving presentations.
+
+    #+BEGIN_SRC elisp
+      (defun linum-off-mode ()
+        "Toggles the line numbers as well as the fringe. This allows me
+      to maximize the screen estate."
+        (interactive)
+        (if linum-mode
+            (progn
+              (fringe-mode '(0 . 0))
+              (linum-mode -1))
+          (fringe-mode '(8 . 0))
+          (linum-mode 1)))
+
+        (global-set-key (kbd "A-C-K") 'linum-off-mode)
+    #+END_SRC
 
     I'm intrigued with the [[https://github.com/coldnew/linum-relative][linum-relative]] mode (especially since I can
     toggle between them). The idea is that I can see the line that I
@@ -887,6 +906,7 @@ brew install ag
 
     (global-set-key (kbd "A-k") 'linum-new-mode))
 #+END_SRC
+
 *** Smart Scan
 
     Use the =M-n= to search the buffer for the word the cursor is
@@ -1101,6 +1121,34 @@ brew install ag
     (add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode))
 #+END_SRC
 
+** Emacs Lisp
+
+   Gotta load me up my wonderful world of Paredit.
+
+#+BEGIN_SRC elisp
+  (require 'paredit)
+#+END_SRC
+
+   The most important change to Emacs Lisp is colorizing the
+   variables:
+
+#+BEGIN_SRC elisp
+  (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode)
+
+  (when (featurep 'paredit)
+    (add-hook 'emacs-lisp-mode-hook (lambda () (paredit-mode t))))
+#+END_SRC
+
+   Might as well pretty up the lambdas, because, we can!
+
+#+BEGIN_SRC elisp
+  (font-lock-add-keywords 'emacs-lisp-mode
+                          '(("(\\(lambda\\)\\>" (0 (prog1 ()
+                                                     (compose-region (match-beginning 1)
+                                                                     (match-end 1)
+                                                                     ?λ))))))
+#+END_SRC
+
 ** Clojure
 
    See [[file:emacs-clojure.org][emacs-clojure.el]] for details on working with [[http://clojure.org][Clojure]].
@@ -1145,28 +1193,6 @@ brew install ag
   (load-library "init-web")
 #+END_SRC
 
-** Emacs Lisp
-
-   The most important change to Emacs Lisp is colorizing the
-   variables:
-
-#+BEGIN_SRC elisp
-  (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode)
-
-  (when (featurep 'paredit)
-    (add-hook 'emacs-lisp-mode-hook (lambda () (paredit-mode t))))
-#+END_SRC
-
-   Might as well pretty up the lambdas, because, we can!
-
-#+BEGIN_SRC elisp
-  (font-lock-add-keywords 'emacs-lisp-mode
-                          '(("(\\(lambda\\)\\>" (0 (prog1 ()
-                                                     (compose-region (match-beginning 1)
-                                                                     (match-end 1)
-                                                                     ?λ))))))
-#+END_SRC
-
 * Tools
 ** Git
 
@@ -1175,6 +1201,7 @@ brew install ag
 #+BEGIN_SRC elisp
   (require 'magit)
   (global-set-key (kbd "M-C-g") 'magit-status)
+  (global-set-key (kbd "<f9> g") 'magit-status)
 #+END_SRC
 
    I like having Magit to run in a /full screen/ mode, and took this
