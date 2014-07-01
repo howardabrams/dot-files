@@ -101,7 +101,9 @@
           ;; and f-step is the function to call for this step...
           ((f-step (nth (1- demo/step) demo/steps)))
         (if f-step
+            (progn
               (funcall f-step)
+              (message "  %d" demo/step))
           (message "Finished the entire demonstration."))))
 #+END_SRC
 
@@ -111,10 +113,58 @@
   (global-set-key (kbd "<f6>") 'demo-step)
 #+END_SRC
 
+  Position or advance the slide? Depends...
+
+  #+BEGIN_SRC elisp
+    (defun demo/set-mouse-or-advance (evt)
+      "If clicked on the right side of any window, the demonstration
+      advances a step. Otherwise, it just position the point in the
+      window like normal."
+      (interactive "e")
+      (if (posn-area (event-start evt))  ;; Clicked in special area?
+          (demo-step)
+        (let ((col (car (posn-col-row (event-start evt))))
+              (wid (window-width (posn-window (event-start evt)))))
+          (if (> col (- wid 4))
+              (demo-step)
+            (mouse-set-point evt)))))
+
+    (defun ignore-event (evt)
+      (interactive "P")
+      (message ""))
+    (global-set-key (kbd "<mouse-1>") 'demo/set-mouse-or-advance)
+    (global-set-key [nil mouse-1] 'demo-step)
+    (global-set-key [nil wheel-up] 'ignore-event)
+    (global-set-key [nil wheel-down] 'ignore-event)
+    (global-set-key [nil wheel-left] 'ignore-event)
+    (global-set-key [nil wheel-right] 'ignore-event)
+  #+END_SRC
+
 * Supporting Functions
 
   The following functions seem to be useful for doing these sorts of
   demonstrations.
+
+** Auto Loading of Available Features
+
+   The following "supporting functions" often depend on other packages
+   from ELPA, but we don't want to simply 'require' something that
+   hasn't been installed. This function can be used to look up
+   packages that can be loaded without barfing.
+
+#+BEGIN_SRC elisp
+  (defun autofeaturep (feature)
+    "For a feature symbol 'foo, return a result equivalent to:
+  (or (featurep 'foo-autoloads) (featurep 'foo))
+  Does not support subfeatures."
+    (catch 'result
+      (let ((feature-name (symbol-name feature)))
+        (unless (string-match "-autoloads$" feature-name)
+          (let ((feature-autoloads (intern-soft (concat feature-name "-autoloads"))))
+            (when (and feature-autoloads (featurep feature-autoloads))
+              (throw 'result t))))
+        (featurep feature))))
+#+END_SRC
 
 ** Fancy Region Highlighting
 
@@ -122,19 +172,13 @@
    =expand-region= project along with the =fancy-narrow=:
 
 #+BEGIN_SRC elisp
-  (unless (featurep 'expand-region)
-    (package-refresh-contents)
-    (package-install 'expand-region)
+  (when (autofeaturep 'expand-region)
     (require 'expand-region)
-
     (global-set-key (kbd "C-=") 'er/expand-region))
 
-  (unless (featurep 'fancy-narrow)
-    (package-refresh-contents)
-    (package-install 'fancy-narrow)
+  (when (autofeaturep 'fancy-narrow)
     (require 'fancy-narrow)
-
-    (global-set-key (kbd "C-+") 'highlight-section)
+    (global-set-key (kbd "M-C-=") 'highlight-section)
     (global-set-key (kbd "M-C-+") 'fancy-widen))
 #+END_SRC
 
@@ -149,7 +193,7 @@
   otherwise, call 'fancy-narrow-to-defun, and see what happens."
     (interactive)
     (if (region-active-p)
-        (fancy-narrow-to-region)
+        (fancy-narrow-to-region (region-beginning) (region-end))
       (fancy-narrow-to-defun)))
 #+END_SRC
 
@@ -193,7 +237,7 @@
 #+BEGIN_SRC elisp
   (defun demo/make-side-window ()
     (split-window-horizontally)
-    (shrink-window-horizontally 10)
+    ; (shrink-window-horizontally 10)
     (other-window 1))
 #+END_SRC
 
@@ -243,6 +287,8 @@
     (find-file org-file)
     (setq demo/org-presentation-file org-file)
     (setq demo/org-presentation-buffer (buffer-name))
+    (setq org-tree-slide-heading-emphasis t)
+    (flyspell-mode -1)
     (org-tree-slide-mode)
     (text-scale-set 2))
 #+END_SRC
@@ -276,6 +322,16 @@
       (switch-to-buffer demo/org-presentation-buffer)
       (org-tree-slide-move-next-tree)
       (switch-to-buffer orig-window)))
+#+END_SRC
+
+** Display an Image on the Side
+
+#+BEGIN_SRC elisp
+  (defun demo/show-an-image (image-file)
+    (split-window-horizontally)
+    (other-window 1)
+    (find-file image-file)
+    (hidden-mode-line-mode))
 #+END_SRC
 
 ** Display an HTML Page
@@ -398,5 +454,6 @@
 
 #+PROPERTY: tangle ~/.emacs.d/elisp/demo.el
 #+PROPERTY: comments org
+#+PROPERTY: results silent
 #+PROPERTY: shebang #!/usr/bin/env emacs
 #+DESCRIPTION: A way to execute a series of "steps" to demonstration some emacs feature
