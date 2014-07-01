@@ -52,6 +52,26 @@
 
 * Keystrokes
 
+  We demonstrating Clojure, I find it is a better approach is to send
+  the S-Expression to the REPL and evaluate it there instead of
+  showing the result in the mini-buffer:
+
+#+BEGIN_SRC elisp
+  (defun cider-send-and-evaluate-sexp ()
+     "Sends the s-expression located before the point or the active
+  region to the REPL and evaluates it. Then the Clojure buffer is
+  activated as if nothing happened."
+     (interactive)
+     (if (not (region-active-p))
+         (cider-insert-last-sexp-in-repl)
+       (cider-insert-in-repl
+        (buffer-substring (region-beginning) (region-end)) nil))
+     (cider-switch-to-repl-buffer)
+     (cider-repl-closing-return)
+     (cider-switch-to-last-clojure-buffer)
+     (message ""))
+#+END_SRC
+
   The M-e to go forward a sentence may be useful, but not during
   coding. Let's rebind that key sequence to =forward-sexp=:
 
@@ -59,7 +79,8 @@
   (add-hook 'clojure-mode-hook
             (lambda ()
               (local-set-key (kbd "M-e") 'forward-sexp)
-              (local-set-key (kbd "M-a") 'backward-sexp)))
+              (local-set-key (kbd "M-a") 'backward-sexp)
+              (local-set-key (kbd "C-c C-v") 'cider-send-and-evaluate-sexp)))
 #+END_SRC
 
 #+BEGIN_SRC elisp
