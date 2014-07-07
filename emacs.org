@@ -251,12 +251,18 @@ brew linkapps
 
 *** Tabs vs Spaces
 
-   I have learned to distrust tabs in my source code, so let's make
-   sure that we only have spaces.
+    I have learned to distrust tabs in my source code, so let's make
+    sure that we only have spaces. See [[http://ergoemacs.org/emacs/emacs_tabs_space_indentation_setup.html][this discussion]] for details.
 
 #+BEGIN_SRC elisp
   (setq-default indent-tabs-mode nil)
   (setq tab-width 2)
+#+END_SRC
+
+    Make tab key do indent first then completion.
+
+#+BEGIN_SRC elisp
+  (setq-default tab-always-indent 'complete)
 #+END_SRC
 
 ** Display Settings
@@ -287,7 +293,7 @@ brew linkapps
    - *F3* - Define a keyboard macro
    - *F4* - Replay a keyboard macro
    - *F5* - Repeat the last command ...
-   - *F6* - Setup window or move forward with demonstration.
+   - *F6* - Repeat the last command entered at the M-x prompt
    - *F7* - Switch to another window ... Shift goes the other way.
    - *F8* - Switch to buffer
    - *F9* - My other meta key for changing colors and other odd
@@ -295,13 +301,25 @@ brew linkapps
 
 #+BEGIN_SRC elisp
   (global-set-key (kbd "<f5>") 'repeat)
-  (global-set-key (kbd "S-<f5>") 'repeat-complex-command)
-  (global-set-key (kbd "<f6>") 'setup-windows)
+  (global-set-key (kbd "<f6>") 'repeat-complex-command)
   (global-set-key (kbd "<f7>") 'other-window)
   (global-set-key (kbd "S-<f7>")
                   '(lambda () "Previous Window" (interactive) (other-window -1)))
   (global-set-key (kbd "<f8>") 'ido-switch-buffer)
 #+END_SRC
+
+** Other Key Bindings
+
+   After picking up an Advantage Kinesis, I decided that I wanted to
+   redo some of the bindings to make it easier on me...mainly because
+   the Shift key is now really, really hard to reach.
+
+   #+BEGIN_SRC elisp
+     (global-set-key (kbd "M-<left>") 'beginning-of-line)
+     (global-set-key (kbd "M-<right>") 'end-of-line)
+     (global-set-key (kbd "C-M-<left>") 'beginning-of-buffer)
+     (global-set-key (kbd "C-M-<right>") 'end-of-buffer)
+   #+END_SRC
 
    Change window configuration and then return to the old
    configuration with [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]].  Use =Control-C Arrow= keys to
@@ -565,29 +583,41 @@ brew linkapps
    the text modes:
 
 #+BEGIN_SRC elisp
-(add-hook 'text-mode-hook (lambda () (abbrev-mode 1)))
+  (add-hook 'text-mode-hook (lambda () (abbrev-mode 1)))
 #+END_SRC
 
    While you can make abbreviations in situ, I figured I should
-   /pre-load/ a bunch that I use:
+   /pre-load/ a bunch that I use, but make a distinction between
+   abbreviations that would be available globally, and in particular
+   modes (especially the text modes, like org-mode):
 
 #+BEGIN_SRC elisp
   (define-abbrev-table 'global-abbrev-table
     '(("HA" "Howard Abrams")
-      ("CCB" "CI x CD x BP")
-      ("WD" "Workday")
-      ("btw" "by the way")
       ("func" "function")
-      ("note" "*Note:*")
-      ("OS" "OpenStack")
-      ("NG" "AngularJS")
-      ("JS" "JavaScript")
       ("CS" "CoffeeScript")))
 #+END_SRC
 
-   This allows me to write =os= as =OpenStack=, and if I want to write
-   =os=, I just don't put a space or some punctuation behind it. The
-   trick, however, is remembering what works.
+   This allows me to write =ha= as =Howard Abrams=, and if I want to
+   write =HA=, I just don't put a space or some punctuation behind
+   it. The trick, however, is remembering what works.
+
+   However, I really want most of those to just be during the text and
+   org-mode, not everywhere:
+
+   #+BEGIN_SRC elisp :tangle yes
+     (define-abbrev-table 'text-mode-abbrev-table
+       '(("HALF" "½")
+         ("THIRD" "⅓")
+         ("QUARTER" "¼")
+         ("CCB" "CI x CD x BP")
+         ("OS" "OpenStack")
+         ("NG" "AngularJS")
+         ("JS" "JavaScript")
+         ("WD" "Workday")
+         ("btw" "by the way")
+         ("note" "*Note:*")))
+   #+END_SRC
 
    *Note:* Capitalizing the first letter, i.e. =Btw=, expands the
    abbreviation with an initial capital, i.e. =By the way= ... Sweet.
