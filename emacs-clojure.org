@@ -52,7 +52,26 @@
 
 * Keystrokes
 
-  We demonstrating Clojure, I find it is a better approach is to send
+  I like the idea that we can evaluate an s-expression, and have the
+  results embedded into the source code as a comment. Thanks to this
+  [[http://eigenhombre.com/clojure/2014/07/05/emacs-customization-for-clojure/?utm_source%3Ddlvr.it&utm_medium%3Dtwitter][blog entry]] for the idea.
+
+#+BEGIN_SRC elisp
+  (defun cider-eval-last-sexp-and-append ()
+    "Evaluate the expression preceding point and append result."
+    (interactive)
+    (let* ((last-sexp (if (region-active-p)
+                         (buffer-substring (region-beginning) (region-end))
+                       (cider-last-sexp)))
+           (last-results (cider-eval-and-get-value last-sexp)))
+
+      (with-current-buffer (current-buffer)
+        (comment-indent)
+        (insert " => ")
+        (insert (prin1-to-string last-results)))))
+#+END_SRC
+
+  When demonstrating Clojure, I find it is a better approach is to send
   the S-Expression to the REPL and evaluate it there instead of
   showing the result in the mini-buffer:
 
@@ -80,7 +99,8 @@
             (lambda ()
               (local-set-key (kbd "M-e") 'forward-sexp)
               (local-set-key (kbd "M-a") 'backward-sexp)
-              (local-set-key (kbd "C-c C-v") 'cider-send-and-evaluate-sexp)))
+              (local-set-key (kbd "C-c C-v") 'cider-eval-last-sexp-and-append)
+              (local-set-key (kbd "C-c C-S-v") 'cider-send-and-evaluate-sexp)))
 #+END_SRC
 
 #+BEGIN_SRC elisp
