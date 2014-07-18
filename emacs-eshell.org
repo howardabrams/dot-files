@@ -92,6 +92,14 @@ ls >> #<buffer emacs-eshell.org>
   (setenv "PAGER" "cat")
 #+END_SRC
 
+   For my money, I like to output stuff to a separate buffer, but the
+   syntax is a bit combursome, so I set the default, allowing me to
+   run a command and output the results to #'blah
+
+   #+BEGIN_SRC elisp
+   (setq eshell-buffer-shorthand t)
+   #+END_SRC
+
 * Aliases
 
    Gotta have some [[http://www.emacswiki.org/emacs/EshellAlias][shell aliases]], right?
