@@ -93,7 +93,7 @@ ls >> #<buffer emacs-eshell.org>
 #+END_SRC
 
    For my money, I like to output stuff to a separate buffer, but the
-   syntax is a bit combursome, so I set the default, allowing me to
+   syntax is a bit cumbersome, so I set the default, allowing me to
    run a command and output the results to #'blah
 
    #+BEGIN_SRC elisp
