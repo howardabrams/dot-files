@@ -119,23 +119,30 @@ then, only during a graphical run.
   (global-font-lock-mode 1)
 #+END_SRC
 
-   Specify the default font as =Source Code Pro=, which should already
-   be [[http://blogs.adobe.com/typblography/2012/09/source-code-pro.html][downloaded]] and installed.
+   Am I really a monospace font slut? I think so. I keep changing my
+   font based on the monospace du jour... right now, I am liking [[http://mplus-fonts.sourceforge.jp/mplus-outline-fonts/download/index.html][M+]]
+   since it is thinner and has more white space between lines.
+
+   However, I find [[http://blogs.adobe.com/typblography/2012/09/source-code-pro.html][Source Code Pro]] quite attractive, as well as
+   Anonymous Pro.
 
 #+BEGIN_SRC elisp
-  (set-frame-font "Source Code Pro")
-  (set-face-attribute 'default nil :font "Source Code Pro" :height 140)
-  (set-face-font 'default "Source Code Pro")
+  (setq my/font-family "M+ 1mn")
+  ;; (setq my/font-family "Source Code Pro")
+  ;; (setq my/font-family "Anonymous Pro")
 #+END_SRC
 
-   While I do like the =Anonymous Pro= font (and usually have it download and
-   installed), I don't like it as much.
+   With the font name situated, I just need to use that to set the
+   three magic frame settings:
 
-#+BEGIN_SRC elisp :tangle no
-  (set-default-font "Anonymous Pro")
-  (set-face-attribute 'default nil :font "Anonymous Pro" :height 140)
-  (set-face-font 'default "Anonymous Pro")
+#+BEGIN_SRC elisp
+  (set-frame-font my/font-family)
+  (set-face-attribute 'default nil :font my/font-family :height 160)
+  (set-face-font 'default my/font-family)
 #+END_SRC
+
+   *Note:* I find that the height should be =160= for M+, but =140=
+   for most other fonts.
 
 * Color Theme
 
