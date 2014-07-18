@@ -119,6 +119,7 @@ brew linkapps
     (load custom-file))
 #+END_SRC
 
+* Package Initialization
 ** Package Manager
 
    Emacs has become like every other operating system, and now has a
@@ -238,7 +239,7 @@ brew linkapps
         (featurep feature))))
 #+END_SRC
 
-** Variables
+* Variables
 
    General settings about me that other packages can use. The biggest
    problem is guessing my email address based on what computer I am using:
@@ -249,7 +250,7 @@ brew linkapps
     (setq user-mail-address "howard.abrams@gmail.com"))
 #+END_SRC
 
-*** Tabs vs Spaces
+** Tabs vs Spaces
 
     I have learned to distrust tabs in my source code, so let's make
     sure that we only have spaces. See [[http://ergoemacs.org/emacs/emacs_tabs_space_indentation_setup.html][this discussion]] for details.
@@ -265,7 +266,7 @@ brew linkapps
   (setq-default tab-always-indent 'complete)
 #+END_SRC
 
-** Display Settings
+* Display Settings
 
    I've been using Emacs for many years, and appreciate a certain
    minimalist approach to its display. While you can turn these off
@@ -283,6 +284,9 @@ brew linkapps
     (scroll-bar-mode 0))            ;; Scrollbars are waste screen estate
 #+END_SRC
 
+   Most of the display settings actually come from the [[file:emacs-mac.org][Mac initialization file]].
+
+* Key Bindings
 ** Function Key Definitions
 
    Clearly, the most important keybindings are the function keys,
@@ -452,86 +456,6 @@ brew linkapps
                   'smarter-move-beginning-of-line)
 #+END_SRC
 
-** Recent File List
-
-   According to [[http://www.emacswiki.org/emacs-es/RecentFiles][this article]], Emacs already has the recent file
-   listing available, just not turned on.
-
-#+BEGIN_SRC elisp
-  (require 'recentf)
-  (recentf-mode 1)
-  (setq recentf-max-menu-items 25)
-  (global-set-key (kbd "C-x C-r") 'recentf-open-files)
-#+END_SRC
-
-** Next and Previous File
-
-   Sometimes it is obvious what is the /next file/ based on the one
-   I'm currently reading. For instance, in my journal entries, the
-   filename is a number that can be incremented. Same with
-   presentation files...
-
-#+BEGIN_SRC elisp
-  (defun split-string-with-number (string)
-    "Returns a list of three components of the string, the first is
-  the text prior to any numbers, the second is the embedded number,
-  and the third is the rest of the text in the string."
-    (let* ((start (string-match "[0-9]+" string))
-           (end (string-match "[^0-9]+" string start)))
-      (if start
-          (list (substring string 0 start)
-                (substring string start end)
-                (if end  (substring string end)  "")))))
-#+END_SRC
-
-   Which means that the following defines this function:
-
-#+BEGIN_SRC elisp :tangle no
-(split-string-with-number "abc42xyz")  ;; ("abc" "42" "xyz")
-(split-string-with-number "42xyz")     ;; ("" "42" "xyz")
-(split-string-with-number "abc42")     ;; ("abc" "42" "")
-(split-string-with-number "20140424")  ;; ("" "20140424" "")
-(split-string-with-number "abcxyz")    ;; nil
-#+END_SRC
-
-   Given this splitter function, we create a function that takes some
-   sort of operator and return a new filename based on the conversion
-   that happens:
-
-#+BEGIN_SRC elisp
-  (defun find-file-number-change (f)
-    (let* ((filename (buffer-file-name))
-           (parts    (split-string-with-number
-                      (file-name-base filename)))
-           (new-name (number-to-string
-                      (funcall f (string-to-number (nth 1 parts))))))
-       (concat (file-name-directory filename)
-               (nth 0 parts)
-               new-name
-               (nth 2 parts))))
-#+END_SRC
-
-   And this allows us to create two simple functions that can load the
-   "next" and "previous" files:
-
-#+BEGIN_SRC elisp
-  (defun find-file-increment ()
-    "Takes the current buffer, and loads the file that is 'one
-  more' than the file contained in the current buffer. This
-  requires that the current file contain a number that can be
-  incremented."
-    (interactive)
-    (find-file (find-file-number-change '1+)))
-
-  (defun find-file-decrement ()
-    "Takes the current buffer, and loads the file that is 'one
-  less' than the file contained in the current buffer. This
-  requires that the current file contain a number that can be
-  decremented."
-    (interactive)
-    (find-file (find-file-number-change '1-)))
-#+END_SRC
-
 ** Multiple Cursors
 
    While I'm not sure how often I will use [[https://github.com/emacsmirror/multiple-cursors][multiple-cursors]] project,
@@ -584,6 +508,7 @@ brew linkapps
 
 #+BEGIN_SRC elisp
   (add-hook 'text-mode-hook (lambda () (abbrev-mode 1)))
+  (add-hook 'jabber-chat-mode-hook (lambda () (abbrev-mode 1)))
 #+END_SRC
 
    While you can make abbreviations in situ, I figured I should
@@ -621,6 +546,34 @@ brew linkapps
 
    *Note:* Capitalizing the first letter, i.e. =Btw=, expands the
    abbreviation with an initial capital, i.e. =By the way= ... Sweet.
+
+*** Spelling Correction with Abbreviation Mode
+
+    According to [[http://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][this discussion]], we can correct a misspelled word
+    with =C-x C-i= and it will use the abbreviation mode to
+    automatically correct that word...as long as you misspell it the
+    same way each time.
+
+    #+BEGIN_SRC elisp
+      (define-key ctl-x-map "\C-i" 'endless/ispell-word-then-abbrev)
+
+      (defun endless/ispell-word-then-abbrev (p)
+        "Call `ispell-word'. Then create an abbrev for the correction made.
+      With prefix P, create local abbrev. Otherwise it will be global."
+        (interactive "P")
+        (let ((bef (downcase (or (thing-at-point 'word) ""))) aft)
+          (call-interactively 'ispell-word)
+          (setq aft (downcase (or (thing-at-point 'word) "")))
+          (unless (string= aft bef)
+            (message "\"%s\" now expands to \"%s\" %sally"
+                     bef aft (if p "loc" "glob"))
+            (define-abbrev
+              (if p global-abbrev-table local-abbrev-table)
+              bef aft))))
+
+      (setq save-abbrevs t)
+      (setq-default abbrev-mode t)
+    #+END_SRC
 
 ** Yasnippets
 
@@ -791,86 +744,6 @@ brew install ag
 #+END_SRC
 
 ** Miscellaneous Settings
-*** IDO (Interactively DO Things)
-
-    According to [[http://www.masteringemacs.org/articles/2010/10/10/introduction-to-ido-mode/][Mickey]], IDO is the greatest thing.
-
-#+BEGIN_SRC elisp
-  (setq ido-enable-flex-matching t)
-  (setq ido-everywhere t)
-  (ido-mode 1)
-  (flx-ido-mode 1)
-#+END_SRC
-
-    According to [[https://gist.github.com/rkneufeld/5126926][Ryan Kneufeld]], we could make IDO work
-    vertically, which is much easier to read.
-
-#+BEGIN_SRC elisp
-(setq ido-decorations                                                      ; Make ido-mode display vertically
-      (quote
-       ("\n-> "           ; Opening bracket around prospect list
-        ""                ; Closing bracket around prospect list
-        "\n   "           ; separator between prospects
-        "\n   ..."        ; appears at end of truncated list of prospects
-        "["               ; opening bracket around common match string
-        "]"               ; closing bracket around common match string
-        " [No match]"     ; displayed when there is no match
-        " [Matched]"      ; displayed if there is a single match
-        " [Not readable]" ; current diretory is not readable
-        " [Too big]"      ; directory too big
-        " [Confirm]")))   ; confirm creation of new file or buffer
-
-(add-hook 'ido-setup-hook                                                  ; Navigate ido-mode vertically
-          (lambda ()
-            (define-key ido-completion-map [down] 'ido-next-match)
-            (define-key ido-completion-map [up] 'ido-prev-match)
-            (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
-            (define-key ido-completion-map (kbd "C-p") 'ido-prev-match)))
-#+END_SRC
-
-    I guess you can call =ido-use-url-at-point= with Markdown to jump
-    to the URLs. Perhaps?
-
-*** SMEX
-
-    Built using [[*IDO%20(Interactively%20DO%20Things)][IDO]].
-
-#+BEGIN_SRC elisp
-  (require 'smex)
-  (smex-initialize) ; Can be omitted. This might cause a (minimal) delay
-
-  (global-set-key (kbd "M-x") 'smex)
-  (global-set-key (kbd "M-z") 'smex)  ;; Zap to char isn't so helpful
-  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
-
-  ;; This is our old M-x.
-  (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
-#+END_SRC
-
-   Not crazy about =zap-to-char= being so close to the very useful
-   =M-x= sequence, so...
-
-#+BEGIN_SRC elisp
-  (global-set-key (kbd "M-z") 'smex-major-mode-commands)
-#+END_SRC
-
-*** Backup Settings
-
-    This setting moves all backup files to a central location.
-    Got it from [[http://whattheemacsd.com/init.el-02.html][this page]].
-
-#+BEGIN_SRC elisp
-  (setq backup-directory-alist
-        `(("." . ,(expand-file-name
-                   (concat user-emacs-directory "backups")))))
-#+END_SRC
-
-   Make backups of files, even when they're in version control
-
-#+BEGIN_SRC elisp
-  (setq vc-make-backup-files t)
-#+END_SRC
-
 *** Line Numbers
 
     Turn =linum-mode= on/off with =Command-K= (see the [[*Macintosh][Macintosh]]
@@ -964,16 +837,6 @@ brew install ag
     (require 'dired-details)
     (dired-details-install)
     (setq dired-details-hidden-string "* "))
-#+END_SRC
-
-*** Save Place
-
-    The [[http://www.emacswiki.org/emacs/SavePlace][Save Place]] mode will... well, save your place in between
-    Emacs sessions.
-
-#+BEGIN_SRC elisp
-  (require 'saveplace)
-  (setq-default save-place t)
 #+END_SRC
 
 *** Strip Whitespace on Save
@@ -1126,6 +989,208 @@ brew install ag
 #+END_SRC
 
     The most interesting aspect is that it doesn't support Clojure.
+
+* Loading and Finding Files
+** Tramp
+
+   The ability to edit files on remote systems is a wonderful win,
+   since it means I don't need to have my Emacs environment running on
+   remote machines (still a possibility, just not a requirement).
+
+   According to [[http://www.gnu.org/software/emacs/manual/html_node/tramp/Filename-Syntax.html][the manual]], I can access a file over SSH, via:
+
+   #+BEGIN_EXAMPLE
+   /ssh:10.52.224.67:blah
+   #+END_EXAMPLE
+
+   If I set the default method to SSH, I can do this:
+
+   #+BEGIN_EXAMPLE
+   /10.52.224.67:blah
+   #+END_EXAMPLE
+
+   So, let's do it...
+
+   #+BEGIN_SRC elisp
+     (setq tramp-default-method "ssh")
+   #+END_SRC
+
+   Come back someday, and see if the [[https://github.com/dougm/vagrant-tramp][vagrant-tramp]] project starts
+   working, as that would be nice to access files like:
+
+   #+BEGIN_EXAMPLE
+   /vagrant:collectd-server:/var/chef/cache/chef-stacktrace.out
+   #+END_EXAMPLE
+
+** IDO (Interactively DO Things)
+
+    According to [[http://www.masteringemacs.org/articles/2010/10/10/introduction-to-ido-mode/][Mickey]], IDO is the greatest thing.
+
+#+BEGIN_SRC elisp
+  (setq ido-enable-flex-matching t)
+  (setq ido-everywhere t)
+  (ido-mode 1)
+  (flx-ido-mode 1)
+#+END_SRC
+
+    According to [[https://gist.github.com/rkneufeld/5126926][Ryan Kneufeld]], we could make IDO work
+    vertically, which is much easier to read.
+
+#+BEGIN_SRC elisp
+(setq ido-decorations                                                      ; Make ido-mode display vertically
+      (quote
+       ("\n-> "           ; Opening bracket around prospect list
+        ""                ; Closing bracket around prospect list
+        "\n   "           ; separator between prospects
+        "\n   ..."        ; appears at end of truncated list of prospects
+        "["               ; opening bracket around common match string
+        "]"               ; closing bracket around common match string
+        " [No match]"     ; displayed when there is no match
+        " [Matched]"      ; displayed if there is a single match
+        " [Not readable]" ; current diretory is not readable
+        " [Too big]"      ; directory too big
+        " [Confirm]")))   ; confirm creation of new file or buffer
+
+(add-hook 'ido-setup-hook                                                  ; Navigate ido-mode vertically
+          (lambda ()
+            (define-key ido-completion-map [down] 'ido-next-match)
+            (define-key ido-completion-map [up] 'ido-prev-match)
+            (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
+            (define-key ido-completion-map (kbd "C-p") 'ido-prev-match)))
+#+END_SRC
+
+    I guess you can call =ido-use-url-at-point= with Markdown to jump
+    to the URLs. Perhaps?
+
+** SMEX
+
+    Built using [[*IDO%20(Interactively%20DO%20Things)][IDO]].
+
+#+BEGIN_SRC elisp
+  (require 'smex)
+  (smex-initialize) ; Can be omitted. This might cause a (minimal) delay
+
+  (global-set-key (kbd "M-x") 'smex)
+  (global-set-key (kbd "M-z") 'smex)  ;; Zap to char isn't so helpful
+  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
+
+  ;; This is our old M-x.
+  (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
+#+END_SRC
+
+   Not crazy about =zap-to-char= being so close to the very useful
+   =M-x= sequence, so...
+
+#+BEGIN_SRC elisp
+  (global-set-key (kbd "M-z") 'smex-major-mode-commands)
+#+END_SRC
+
+** Backup Settings
+
+    This setting moves all backup files to a central location.
+    Got it from [[http://whattheemacsd.com/init.el-02.html][this page]].
+
+#+BEGIN_SRC elisp
+  (setq backup-directory-alist
+        `(("." . ,(expand-file-name
+                   (concat user-emacs-directory "backups")))))
+#+END_SRC
+
+   Make backups of files, even when they're in version control
+
+#+BEGIN_SRC elisp
+  (setq vc-make-backup-files t)
+#+END_SRC
+
+** Save Place
+
+    The [[http://www.emacswiki.org/emacs/SavePlace][Save Place]] mode will... well, save your place in between
+    Emacs sessions.
+
+#+BEGIN_SRC elisp
+  (require 'saveplace)
+  (setq-default save-place t)
+#+END_SRC
+
+** Next and Previous File
+
+   Sometimes it is obvious what is the /next file/ based on the one
+   I'm currently reading. For instance, in my journal entries, the
+   filename is a number that can be incremented. Same with
+   presentation files...
+
+#+BEGIN_SRC elisp
+  (defun split-string-with-number (string)
+    "Returns a list of three components of the string, the first is
+  the text prior to any numbers, the second is the embedded number,
+  and the third is the rest of the text in the string."
+    (let* ((start (string-match "[0-9]+" string))
+           (end (string-match "[^0-9]+" string start)))
+      (if start
+          (list (substring string 0 start)
+                (substring string start end)
+                (if end  (substring string end)  "")))))
+#+END_SRC
+
+   Which means that the following defines this function:
+
+#+BEGIN_SRC elisp :tangle no
+(split-string-with-number "abc42xyz")  ;; ("abc" "42" "xyz")
+(split-string-with-number "42xyz")     ;; ("" "42" "xyz")
+(split-string-with-number "abc42")     ;; ("abc" "42" "")
+(split-string-with-number "20140424")  ;; ("" "20140424" "")
+(split-string-with-number "abcxyz")    ;; nil
+#+END_SRC
+
+   Given this splitter function, we create a function that takes some
+   sort of operator and return a new filename based on the conversion
+   that happens:
+
+#+BEGIN_SRC elisp
+  (defun find-file-number-change (f)
+    (let* ((filename (buffer-file-name))
+           (parts    (split-string-with-number
+                      (file-name-base filename)))
+           (new-name (number-to-string
+                      (funcall f (string-to-number (nth 1 parts))))))
+       (concat (file-name-directory filename)
+               (nth 0 parts)
+               new-name
+               (nth 2 parts))))
+#+END_SRC
+
+   And this allows us to create two simple functions that can load the
+   "next" and "previous" files:
+
+#+BEGIN_SRC elisp
+  (defun find-file-increment ()
+    "Takes the current buffer, and loads the file that is 'one
+  more' than the file contained in the current buffer. This
+  requires that the current file contain a number that can be
+  incremented."
+    (interactive)
+    (find-file (find-file-number-change '1+)))
+
+  (defun find-file-decrement ()
+    "Takes the current buffer, and loads the file that is 'one
+  less' than the file contained in the current buffer. This
+  requires that the current file contain a number that can be
+  decremented."
+    (interactive)
+    (find-file (find-file-number-change '1-)))
+#+END_SRC
+
+** Recent File List
+
+   According to [[http://www.emacswiki.org/emacs-es/RecentFiles][this article]], Emacs already has the recent file
+   listing available, just not turned on.
+
+#+BEGIN_SRC elisp
+  (require 'recentf)
+  (recentf-mode 1)
+  (setq recentf-max-menu-items 25)
+  (global-set-key (kbd "C-x C-r") 'recentf-open-files)
+#+END_SRC
 
 * Org-Mode
 
