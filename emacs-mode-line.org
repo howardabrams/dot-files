@@ -69,9 +69,9 @@
   (defun powerline-simpler-minor-display (s)
     (replace-regexp-in-string
      (concat " "
-             (mapconcat 'identity '("Fly[^C]" "Undo-Tree" "GitGutter"
+             (mapconcat 'identity '("Undo-Tree" "GitGutter" "Projectile"
                                     "Abbrev" "ColorIds" "MRev" "ElDoc" "Paredit"
-                                    "+1" "+2" "FlyC" ":1/0"
+                                    "+1" "+2" "FlyC" "Fly" ;; ":1/0"
                                     "Fill" "AC" "FIC") "\\|")) "" s))
 
   (defun powerline-ha-theme ()
