@@ -1,0 +1,75 @@
+#+TITLE:  Emacs EMMS
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2014 Jul 24
+#+TAGS:   emacs music
+
+This file attempts to define the needs I have for streaming music from
+Emacs at work instead of using iTunes like the good lord intended.
+
+* Setup and Installation
+
+  To begin, install all the goodness:
+
+  #+BEGIN_EXAMPLE
+  brew install mpg321
+  brew install mpg123
+  brew install mplayer
+  #+END_EXAMPLE
+
+  Load up the system and the players.
+  #+BEGIN_SRC elisp
+    (require 'emms-setup)
+    (emms-standard)
+    (emms-default-players)
+  #+END_SRC
+
+  Show the current track each time EMMS starts to play a track.
+
+  #+BEGIN_SRC elisp
+    (add-hook 'emms-player-started-hook 'emms-show)
+    (setq emms-show-format "Playing: %s")
+  #+END_SRC
+
+  When asked for =emms-play-directory=, always start from this one:
+
+  #+BEGIN_SRC elisp
+    (setq emms-source-file-default-directory "~/Music/")
+  #+END_SRC
+
+* Radio Stations
+
+  Perhaps the easiest approach is just to have some radio stations
+  wrapped up in some easy-to-functions, for instance:
+
+  #+BEGIN_SRC elisp
+    (defun jazz ()
+      "Start up some nice Jazz"
+      (interactive)
+      (emms-play-streamlist "http://thejazzgroove.com/itunes.pls"))
+
+    (defun trance ()
+      "Play an Internet music stream of electronica."
+      (interactive)
+      (emms-play-streamlist "http://www.1.fm/tunein/trance64k.pls"))
+  #+END_SRC
+
+* Technical Artifacts
+
+  Make sure that we can simply =require= this library.
+
+#+BEGIN_SRC elisp
+  (provide 'init-emms)
+#+END_SRC
+
+  Before you can build this on a new system, make sure that you put
+  the cursor over any of these properties, and hit: =C-c C-c=
+
+#+DESCRIPTION: A literate programming version of my Emacs Initialization for Graphical Clients
+#+PROPERTY:    results silent
+#+PROPERTY:    tangle ~/.emacs.d/elisp/init-emms.el
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
