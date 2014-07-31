@@ -7,31 +7,38 @@
 * Introduction
 
   When making demonstrations of new products, technologies and other
-  geekery, I love the versatility of starting up Emacs and "going to
-  town". However, I don't want to fat-finger, mentally burp, or even
-  delay the gratification while I type, so welcome to my "demo" mode.
+  geekery, I love the versatility of using Emacs to demonstrate the
+  trifecta of sprint reviews, including:
+
+  - Presentations explaining the technologies
+  - Source code ... correctly highlighted
+  - Executing the code in Eshell ... or similar demonstration
+
+  However, I don't want to fat-finger, mentally burp, or even delay
+  the gratification while I type, so I predefine each "step" as an
+  Elisp function, and then have =demo-it= execute each function when I
+  hit the F6 key.
 
   Using the library is a three step process:
 
   1. Load the library in your own Elisp source code file
   2. Create a collection of functions that "do things".
-  3. Call the =demo-start= function with the ordered list of
+  3. Call the =demo-it-start= function with the ordered list of
      functions.
 
   For instance:
 
 #+BEGIN_EXAMPLE
-  (load-library "demo")   ;; Load this library of functions
+  (load-library "demo-it")   ;; Load this library of functions
 
   ;; Define the first of many steps that do things.
   (defun my-demo/step-1 ()
     (delete-other-windows)
-    (find-file "~/technical/emacs-demo/emacs-demo-start.org")
-    (org-tree-slide-mode)
-    (text-scale-set 2))
+    (demo/org-presentation "~/presentations/emacs-demo/emacs-demo-start.org"))
 
   (defun my-demo/step-2 ()
-    (demo/org-presentation-return))
+    (demo-it/load-side-window "~/Work/my-proj/src/my-proj.py")
+    (demo-it/org-presentation-return))
 
   ;; Wrap the collection of functions in another function...
   (defun my-demo ()
@@ -47,15 +54,19 @@
 #+END_EXAMPLE
 
   Each "step" is a series of Elisp functions that "do things".
-  For instance:
+  While this package has a collection of helping functions, the steps
+  can use any Elisp command to show off a feature.
 
-  - =find-file=
-  - =text-scale-set=
-  - =split-window-horizontally= (or vertically)
-  - =eshell= ... followed by =(insert "some command")= and
-    =(eshell-send-input)=
+  I recommend installing these other Emacs packages:
 
-  Pretty simple, actually.
+  - [[https://github.com/takaxp/org-tree-slide][org-tree-slide-mode]]
+  - [[https://github.com/sabof/org-bullets][org-bullets]]
+  - [[https://github.com/magnars/expand-region.el][expand-region]]
+  - [[https://github.com/Bruce-Connor/fancy-narrow][fancy-narrow]]
+
+  #+BEGIN_SRC elisp
+  ;;; Code:
+  #+END_SRC
 
 * State
 
@@ -63,11 +74,11 @@
   the current state of the demonstration.
 
 #+BEGIN_SRC elisp
-  (defvar demo/step 0  "Stores the current demo 'step' function.")
+  (defvar demo-it/step 0  "Stores the current demo 'step' function.")
 #+END_SRC
 
 #+BEGIN_SRC elisp
-  (defvar demo/steps '() "The list of functions to be executed in order.")
+  (defvar demo-it/steps '() "The list of functions to be executed in order.")
 #+END_SRC
 
 * Starting a Demonstration
@@ -77,11 +88,11 @@
   first one on the list.
 
 #+BEGIN_SRC elisp
-  (defun demo-start (steps)
+  (defun demo-it-start (steps)
      "Start (or restart) the current demonstration and kick off the first step."
-     (setq demo/step 0)          ;; Reset the step to the beginning
-     (setq demo/steps steps)     ;; Store the steps.
-     (demo-step))
+     (setq demo-it/step 0)          ;; Reset the step to the beginning
+     (setq demo-it/steps steps)     ;; Store the steps.
+     (demo-it-step))
 #+END_SRC
 
 * Next Step
@@ -90,50 +101,51 @@
   the demonstration.
 
 #+BEGIN_SRC elisp
-  (defun demo-step (&optional step)
+  (defun demo-it-step (&optional step)
     "Execute the next step in the current demonstration."
     (interactive "P")
       (if step
-          (setq demo/step step)    ;; Changing Global state, yay!
-        (setq demo/step (1+ demo/step)))
+          (setq demo-it/step step)    ;; Changing Global state, yay!
+        (setq demo-it/step (1+ demo-it/step)))
       (let
           ;; At this point, step is 1-based, and I need it 0-based
           ;; and f-step is the function to call for this step...
-          ((f-step (nth (1- demo/step) demo/steps)))
+          ((f-step (nth (1- demo-it/step) demo-it/steps)))
         (if f-step
             (progn
               (funcall f-step)
-              (message "  %d" demo/step))
+              (message "  %d" demo-it/step))
           (message "Finished the entire demonstration."))))
 #+END_SRC
 
-  Bind the =demo-step= function to the F6 key:
+  Bind the =demo-it-step= function to the F6 key:
 
 #+BEGIN_SRC elisp
-  (global-set-key (kbd "<f6>") 'demo-step)
+  (global-set-key (kbd "<f6>") 'demo-it-step)
 #+END_SRC
 
   Position or advance the slide? Depends...
 
   #+BEGIN_SRC elisp
-    (defun demo/set-mouse-or-advance (evt)
+    (defun demo-it/set-mouse-or-advance (evt)
       "If clicked on the right side of any window, the demonstration
       advances a step. Otherwise, it just position the point in the
       window like normal."
       (interactive "e")
       (if (posn-area (event-start evt))  ;; Clicked in special area?
-          (demo-step)
+          (demo-it-step)
         (let ((col (car (posn-col-row (event-start evt))))
               (wid (window-width (posn-window (event-start evt)))))
           (if (> col (- wid 4))
-              (demo-step)
+              (demo-it-step)
             (mouse-set-point evt)))))
 
     (defun ignore-event (evt)
       (interactive "P")
       (message ""))
-    (global-set-key (kbd "<mouse-1>") 'demo/set-mouse-or-advance)
-    (global-set-key [nil mouse-1] 'demo-step)
+
+    (global-set-key (kbd "<mouse-1>") 'demo-it/set-mouse-or-advance)
+    (global-set-key [nil mouse-1] 'demo-it-step)
     (global-set-key [nil wheel-up] 'ignore-event)
     (global-set-key [nil wheel-down] 'ignore-event)
     (global-set-key [nil wheel-left] 'ignore-event)
@@ -155,8 +167,8 @@
 #+BEGIN_SRC elisp
   (defun autofeaturep (feature)
     "For a feature symbol 'foo, return a result equivalent to:
-  (or (featurep 'foo-autoloads) (featurep 'foo))
-  Does not support subfeatures."
+     (or (featurep 'foo-autoloads) (featurep 'foo))
+     Does not support subfeatures."
     (catch 'result
       (let ((feature-name (symbol-name feature)))
         (unless (string-match "-autoloads$" feature-name)
@@ -199,11 +211,12 @@
 
 ** Hiding the Modeline
 
-   Call the =hidden-mode-line= when displaying images, or just not
-   wanting to be bothered by the sight of the mode.
+   Call the =hidden-mode-line= when displaying images and org-mode
+   files displayed as "presentations"...or just not
+   wanting to be bothered by the sight of the mode. This code was
+   graciously lifted from [[http://bzg.fr/emacs-hide-mode-line.html][here]].
 
 #+BEGIN_SRC elisp
-  ;; See http://bzg.fr/emacs-hide-mode-line.html
   (defvar-local hidden-mode-line-mode nil)
   (defvar-local hide-mode-line nil)
 
@@ -214,12 +227,15 @@
     :variable hidden-mode-line-mode
     :group 'editing-basics
     (if hidden-mode-line-mode
-        (setq hide-mode-line mode-line-format
-              mode-line-format nil)
+        (progn
+          (setq hide-mode-line mode-line-format
+                mode-line-format nil)
+          (linum-mode -1))
       (setq mode-line-format hide-mode-line
             hide-mode-line nil))
     (force-mode-line-update)
     (set-window-buffer nil (current-buffer))
+
     (when (and (called-interactively-p 'interactive)
                hidden-mode-line-mode)
       (run-with-idle-timer
@@ -235,62 +251,136 @@
    outline.
 
 #+BEGIN_SRC elisp
-  (defun demo/make-side-window ()
+  (defun demo-it/make-side-window ()
+    "Splits the window horizontally and puts point on right side window."
     (split-window-horizontally)
-    ; (shrink-window-horizontally 10)
     (other-window 1))
 #+END_SRC
 
 ** Load a File in the Side Window
 
-   Splits the window and loads a file.
+   Splits the window and loads a file on the right side of the screen.
 
 #+BEGIN_SRC elisp
-  (defun demo/load-side-window (file)
-    (demo/make-side-window)
-    (find-file file))
+  (defun demo-it/load-side-file (file &optional size)
+    "Splits the window and loads a file on the right side of the screen."
+    (demo-it/make-side-window)
+    (find-file file)
+    (if size (text-scale-set size)
+             (text-scale-set 1)))
 #+END_SRC
+
+** Load a File and Fancily Highlight Some Lines
 
    Would be nice to load up a file and automatically highlight some
    lines.
 
 #+BEGIN_SRC elisp
-  (defun demo/load-fancy-side-window (file type line1 line2 &optional side)
-    "Load up a file in a side window, and then use the family region highlighting to show off some of the file."
-    (if side (demo/make-side-window))
+  (defun demo-it/load-fancy-side-file (file type line1 line2 &optional side size)
+    "Load up 'file', and then use the fancy region highlighting to
+     show off some of the file. If 'type' is set to 'char, then
+     'line1' and 'line2' are actually points in the file,
+     otherwise, 'line1' and 'line2' are the start and ending lines
+     of the file that should be highlighted. If 'side' is true,
+     this puts the buffer in a new window on the right side of the
+     screen."
+    (if side (demo-it/make-side-window))
     (find-file file)
+    (if size (text-scale-set size)
+             (text-scale-set 1))
     (let ((start line1)
           (end line2))
       (unless (eq type 'char)
-        (goto-line line1)
+        (goto-char (point-min)) (forward-line (1- line1))  ;; Heh: (goto-line line1)
         (setq start (point))
-        (goto-line (1+ line2))
+        (goto-char (point-min)) (forward-line line2)
         (setq end (point)))
       (fancy-narrow-to-region start end)))
-
-  ;; (demo/load-fancy-side-window "~/Work/wpc-ci/verify" 'line 21 25)
 #+END_SRC
+
+** Start an Eshell and Run Something
+
+   This function assumes you want an Eshell instance running in the
+   lower half of the window. Changes to a particular directory, and
+   automatically runs something.
+
+   #+BEGIN_SRC elisp
+     (defun demo-it/run-in-eshell (directory &optional shell-line name size)
+        "Starts an Eshell instance, and runs the command specified by
+         'shell-line' automatically in the 'directory' The variable 'name'
+         labels the buffer."
+        (let ((title (if name (concat "Shell: " name) "Shell")))
+          (split-window-vertically)
+          (other-window 1)
+          (eshell "new")
+          (rename-buffer title)
+          (if size (text-scale-set size)
+                   (text-scale-set 1))
+
+          (insert (concat "cd " directory))
+          (eshell-send-input)
+          (erase-buffer)
+          (eshell-send-input)
+
+          (when shell-line
+            (insert shell-line)
+            (eshell-send-input))))
+   #+END_SRC
+
+** Title Display
+
+   Create a file to serve as a "title" as it will be displayed with a
+   larger-than-life font.
+
+   #+BEGIN_SRC elisp
+     (defun demo-it/title-screen (file)
+       (delete-other-windows)
+       (fringe-mode '(0 . 0))
+
+       (find-file file)
+       (show-all)
+       (hidden-mode-line-mode)
+       (setq cursor-type nil)
+       (flyspell-mode -1)
+       (variable-pitch-mode 1)
+       (text-scale-set 5)
+
+       (message "%s" "† This presentation is running within Emacs."))
+   #+END_SRC
+
 ** Starting an ORG Presentation
 
    Since I often have an org-mode file on the side of the screen to
    demonstrate an outline of what I will be demoing, I made it a
    function.
 
+   If [[https://github.com/takaxp/org-tree-slide][org-tree-slide]] is available, it automatically uses it.
+
 #+BEGIN_SRC elisp
-  (require 'org-tree-slide)
+  (defvar demo-it/org-presentation-file "")
+  (defvar demo-it/org-presentation-buffer "")
 
-  (defvar demo/org-presentation-file "")
-  (defvar demo/org-presentation-buffer "")
-
-  (defun demo/org-presentation (org-file)
-    (delete-other-windows)
+  (defun demo-it/org-presentation (org-file &optional size)
+    "Loads up an org-mode file as a presentation using the org-tree-slide project."
     (find-file org-file)
-    (setq demo/org-presentation-file org-file)
-    (setq demo/org-presentation-buffer (buffer-name))
-    (setq org-tree-slide-heading-emphasis t)
+    (setq demo-it/org-presentation-file org-file)
+    (setq demo-it/org-presentation-buffer (buffer-name))
+
+    (when (autofeaturep 'org-tree-slide)
+      (require 'org-tree-slide)
+      (setq org-tree-slide-heading-emphasis t)
+      (org-tree-slide-mode))
+
     (flyspell-mode -1)
-    (org-tree-slide-mode)
-    (text-scale-set 2))
+    (setq cursor-type nil)
+    (variable-pitch-mode 1)
+    (set-face-attribute 'org-table nil :inherit 'fixed-pitch)
+    (hidden-mode-line-mode)
+    (if size (text-scale-set size)
+             (text-scale-set 2))
+
+    (when (autofeaturep 'org-bullets-mode)
+      (org-bullets-mode 1)))
 #+END_SRC
 
 ** Jumping Back to the Presentation
@@ -300,59 +390,67 @@
    presentation.
 
 #+BEGIN_SRC elisp
-  (defun demo/org-presentation-return-noadvance ()
-    (switch-to-buffer demo/org-presentation-buffer)
+  (defun demo-it/org-presentation-return-noadvance ()
+    "Returns to the org-mode presentation and deletes other windows."
+    (switch-to-buffer demo-it/org-presentation-buffer)
     (delete-other-windows))
 #+END_SRC
 
 #+BEGIN_SRC elisp
-  (defun demo/org-presentation-return ()
-    (demo/org-presentation-return-noadvance)
-    (org-tree-slide-move-next-tree))
+  (defun demo-it/org-presentation-return ()
+    "Returns to the org-mode presentation, deletes other windows,
+  and advances to the next org-mode section."
+    (demo-it/org-presentation-return-noadvance)
+    (when (autofeaturep 'org-tree-slide)
+       (org-tree-slide-move-next-tree)))
 #+END_SRC
 
 ** Advance Presentation without Changing Focus
 
-   We can advance the presentation, but return to the window where
-   our focus was initially.
+   Advances the org-mode presentation, but after popping into that
+   presentation buffer, returns to the window where our focus was
+   initially.
 
 #+BEGIN_SRC elisp
-  (defun demo/org-presentation-advance ()
+  (defun demo-it/org-presentation-advance ()
+    "Advances the org-mode presentation to the next frame, but
+  doesn't change the focus or other windows. Only useful if using
+  the org-tree-slide mode for the presentation buffer."
     (let ((orig-window (current-buffer)))
-      (switch-to-buffer demo/org-presentation-buffer)
-      (org-tree-slide-move-next-tree)
+      (switch-to-buffer demo-it/org-presentation-buffer)
+      (when (autofeaturep 'org-tree-slide)
+        (org-tree-slide-move-next-tree))
       (switch-to-buffer orig-window)))
 #+END_SRC
+
+** Clean up the Presentation
+
+   The org-presentation-start function alters the way an org-mode file
+   is displayed. This function returns it back to a normal, editable
+   state.
+
+   #+BEGIN_SRC elisp
+     (defun demo-it/org-presentation-quit ()
+       "Undoes the changes made to the presentation display."
+       (when (autofeaturep 'org-tree-slide)
+         (org-tree-slide-mode -1))
+
+       (flyspell-mode t)
+       (setq cursor-type t)
+       (variable-pitch-mode nil)
+       (hidden-mode-line-mode nil)
+       (text-scale-set 0))
+   #+END_SRC
 
 ** Display an Image on the Side
 
 #+BEGIN_SRC elisp
-  (defun demo/show-an-image (image-file)
+  (defun demo-it/show-an-image (image-file)
+    "Loads an image, or other file in a buffer on the right side without a mode line."
     (split-window-horizontally)
     (other-window 1)
     (find-file image-file)
     (hidden-mode-line-mode))
-#+END_SRC
-
-** Display an HTML Page
-
-   The easiest way to open a URL for the default browser is simply to
-   call, =(browser-url-of-buffer)= (assuming, of course, that it is an
-   HTML file). However, if we want the HTML to be shown in an
-   impatient mode...
-
-#+BEGIN_SRC elisp
-  (defun demo/show-impatient-html ()
-     "Shows the current HTML buffer in a browser where all changes are immediately displayed.
-      Requires both impatient-mode and simple-httpd packages."
-     (interactive)
-     (let ((name (buffer-name (current-buffer))))
-       (require 'impatient-mode)
-       (require 'simple-httpd)
-       (impatient-mode t)
-       (setq httpd-port 8888)
-       (httpd-start)
-       (browse-url (concat "http://localhost:8888/imp/live/" name))))
 #+END_SRC
 
 ** Switch Framesize
@@ -361,7 +459,7 @@
    full screen and "regular window" in a programmatic way:
 
 #+BEGIN_SRC elisp
-  (defun toggle-fullscreen ()
+  (defun demo-it/toggle-fullscreen ()
     "Toggle full screen"
     (interactive)
     (set-frame-parameter
@@ -372,7 +470,7 @@
    We can force the window to be full screen:
 
 #+BEGIN_SRC elisp
-  (defun frame-fullscreen ()
+  (defun demo-it/frame-fullscreen ()
     "Set the frame window to cover the full screen."
     (interactive)
     (set-frame-parameter nil 'fullscreen 'fullboth))
@@ -381,8 +479,11 @@
    Let's make a right-side frame window:
 
 #+BEGIN_SRC elisp
-  (defun frame-leftside ()
-    "Set the window frame to be exactly half of the screen on the left."
+  (defun demo-it/frame-leftside ()
+    "Set the window frame to be exactly half of the physical
+  display screen, and place it on the left side of the screen. This
+  can be helpful when showing off some other application running on
+  your system."
     (interactive)
     (let* ((full-pixels (- (x-display-pixel-width) 16))
            (full-width  (/ full-pixels (frame-char-width)))
@@ -392,68 +493,18 @@
       (set-frame-parameter nil 'left 0)))
 #+END_SRC
 
-   To get the values for a particular frame, do:
-
-#+BEGIN_SRC elisp :results list
-(frame-parameters nil)
-#+END_SRC
-
-#+RESULTS:
-- (tool-bar-position . top)
-- (parent-id)
-- (explicit-name)
-- (display . "Mac")
-- (visibility . t)
-- (icon-name)
-- (window-id . "4301978032")
-- (top . 0)
-- (left . 0)
-- (buried-buffer-list)
-- (buffer-list #<buffer emacs-demo.org> #<buffer *Help*> #<buffer .emacs> #<buffer  *Minibuf-1*> #<buffer *eshell*> #<buffer #1101> #<buffer personal.org> #<buffer :home> #<buffer irc.ciphermonkeys.org:6667> #<buffer emacs.org> #<buffer .emacs-ext.el> #<buffer *GNU Emacs*> #<buffer *scratch*>)
-- (unsplittable)
-- (minibuffer . #<window 4 on  *Minibuf-0*>)
-- (modeline . t)
-- (width . 178)
-- (height . 50)
-- (name . "Emacs@HABRAMS-01.local")
-- (environment)
-- (cursor-color . "#de935f")
-- (background-mode . dark)
-- (display-type . color)
-- (horizontal-scroll-bars . t)
-- (window-system . mac)
-- (alpha)
-- (scroll-bar-width . 0)
-- (cursor-type . box)
-- (auto-lower)
-- (auto-raise)
-- (icon-type)
-- (menu-bar-lines . 1)
-- (fullscreen . fullscreen)
-- (title)
-- (buffer-predicate)
-- (tool-bar-lines . 0)
-- (right-fringe . 8)
-- (left-fringe . 8)
-- (line-spacing)
-- (screen-gamma)
-- (border-color . "#282a2e")
-- (mouse-color . "black")
-- (background-color . "#1d1f21")
-- (foreground-color . "#c5c8c6")
-- (vertical-scroll-bars)
-- (internal-border-width . 0)
-- (border-width . 0)
-- (font . "-*-Source Code Pro-normal-normal-normal-*-14-*-*-*-m-0-iso10646-1")
-- (font-backend mac-ct)
-
 * Technical Section
 
-  This file originally came from an [[http://orgmode.org][org-mode]] file.
-  Create the script by tangling it with: =C-c C-v t=
+  As a final harrah, we need to let other files know how to include
+  this bad child.
 
-#+PROPERTY: tangle ~/.emacs.d/elisp/demo.el
+  #+BEGIN_SRC elisp
+  (provide 'demo-it)
+
+  ;;; demo-it ends here
+  #+END_SRC
+
+#+PROPERTY: tangle ~/Other/demo-it/demo-it.el
 #+PROPERTY: comments org
 #+PROPERTY: results silent
-#+PROPERTY: shebang #!/usr/bin/env emacs
 #+DESCRIPTION: A way to execute a series of "steps" to demonstration some emacs feature
