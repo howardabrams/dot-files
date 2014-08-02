@@ -19,14 +19,13 @@ done
      (mapc (lambda (file)
             (find-file (expand-file-name file \"$DIR\"))
             (org-babel-tangle)
-            (kill-buffer)) '($FILES)))" 2>&1 |grep -i tangled
+            (kill-buffer)) '($FILES)))" 2>&1 |grep -i 'tangled\|error'
 
 # Set up all the symbolic links:
 
 if [ ! -f $HOME/.vimrc ]
 then
-    echo "Linking .vimrc ... Don't know why I really care about vi"
-    ln -s $DIR/vimrc $HOME/.vimrc
+    ln -s -F $DIR/vimrc $HOME/.vimrc
 fi
 
 # Especially the .emacs.d directory:
@@ -45,7 +44,7 @@ done
 # Link others to the snippets folder
 if [ ! -e $HOME/.emacs.d/snippets ]
 then
-    ln -s $DIR/snippets $HOME/.emacs.d/snippets
+    ln -F -s $DIR/snippets $HOME/.emacs.d/snippets
 fi
 
 # /usr/local/bin/emacs -Q --batch \
