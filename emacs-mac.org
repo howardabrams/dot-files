@@ -127,8 +127,8 @@ then, only during a graphical run.
    Anonymous Pro.
 
 #+BEGIN_SRC elisp
-  (setq my/font-family "M+ 1mn")
-  ;; (setq my/font-family "Source Code Pro")
+  ;; (setq my/font-family "M+ 1mn")
+  (setq my/font-family "Source Code Pro")
   ;; (setq my/font-family "Anonymous Pro")
 #+END_SRC
 
