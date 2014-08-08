@@ -110,7 +110,8 @@
     (let (comt)
       (save-excursion
         (move-beginning-of-line (if arg 1 0))
-        (when (skip-syntax-forward "^<" (point-at-eol))
+        (when (skip
+-syntax-forward "^<" (point-at-eol))
           (setq comt (delete-and-extract-region (point) (point-at-eol)))))
       (delete-indentation arg)
       (when comt
@@ -160,7 +161,7 @@
 
    Then the following code will work:
 
-#+Begin_SRC emacs-lisp
+#+BEGIN_SRC elisp
   (if (locate-library "clojuredocs")
       (load-library "clojuredocs"))
 #+END_SRC
