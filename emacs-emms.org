@@ -37,6 +37,12 @@ Emacs at work instead of using iTunes like the good lord intended.
     (setq emms-source-file-default-directory "~/Music/")
   #+END_SRC
 
+  Finally, stop should be a bit quicker to hit:
+
+  #+BEGIN_SRC elisp
+  (global-set-key (kbd "<f9> s") 'emms-stop)
+  #+END_SRC
+
 * Radio Stations
 
   Perhaps the easiest approach is just to have some radio stations
@@ -52,6 +58,12 @@ Emacs at work instead of using iTunes like the good lord intended.
       "Play an Internet music stream of electronica."
       (interactive)
       (emms-play-streamlist "http://www.1.fm/tunein/trance64k.pls"))
+  #+END_SRC
+
+  Might as well make it easy to kick up the tunes...
+
+  #+BEGIN_SRC elisp
+  (global-set-key (kbd "<f9> j") 'jazz)
   #+END_SRC
 
 * Technical Artifacts
