@@ -7,6 +7,8 @@ DIR=$(cd `dirname $0`; pwd)
 FILES=""
 
 EMACS=${EDITOR:-/usr/local/bin/emacs}
+EMACS=$(echo $EMACS | sed 's/client//')
+
 if [ ! -e $EMACS ]; then
     EMACS=$(which emacs)
 fi
@@ -18,6 +20,7 @@ for i in $DIR/*.org $DIR/bin/*.org $@; do
     FILES="$FILES \"$i\""
 done
 
+echo Using $EMACS
 # echo $FILES
 
 $EMACS -Q --batch \
@@ -26,7 +29,7 @@ $EMACS -Q --batch \
      (mapc (lambda (file)
             (find-file (expand-file-name file \"$DIR\"))
             (org-babel-tangle)
-            (kill-buffer)) '($FILES)))" 2>&1 |grep -i 'tangled\|error'
+            (kill-buffer)) '($FILES)))" # 2>&1 |grep -i 'tangled\|error'
 
 # Set up all the symbolic links:
 
