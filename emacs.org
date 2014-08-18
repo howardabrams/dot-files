@@ -991,7 +991,7 @@ brew install ag
    However, I really want most of those to just be during the text and
    org-mode, not everywhere:
 
-   #+BEGIN_SRC elisp :tangle yes
+   #+BEGIN_SRC elisp
      (define-abbrev-table 'text-mode-abbrev-table
        '(("HALF" "½")
          ("THIRD" "⅓")
