@@ -1305,6 +1305,13 @@ brew install ag
                                                                      ?λ))))))
 #+END_SRC
 
+   Words with dashes don't separate words in Lisp:
+
+   #+BEGIN_SRC elisp
+     (dolist (c (string-to-list ":_-?!#*"))
+       (modify-syntax-entry c "w" emacs-lisp-mode-syntax-table))
+   #+END_SRC
+
 ** Clojure
 
    See [[file:emacs-clojure.org][emacs-clojure.el]] for details on working with [[http://clojure.org][Clojure]].
@@ -1410,6 +1417,21 @@ brew install ag
     (global-set-key (kbd "C-x v p") 'git-messenger:popup-message))
 #+END_SRC
 
+   Perhaps we can do Github pull requests from within Emacs, after
+   reading [[http://endlessparentheses.com/merging-github-pull-requests-from-emacs.html][this blog entry]].
+
+   #+BEGIN_SRC elisp
+     (when (autofeaturep 'magit-gh-pulls-mode)
+       (eval-after-load 'magit
+         '(define-key magit-mode-map "#gg"
+            (defun endless/load-gh-pulls-mode ()
+              "Start `magit-gh-pulls-mode' only after a manual request."
+              (interactive)
+              (require 'magit-gh-pulls)
+              (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls)
+              (magit-gh-pulls-mode 1)
+              (magit-gh-pulls-reload)))))
+   #+END_SRC
 ** Markdown
 
    Don't use Markdown nearly as much as I used to, but I'm surprised
@@ -1590,6 +1612,17 @@ brew install ag
        (let ((path-from-shell (shell-command-to-string "/bin/bash -l -c 'echo $PATH'")))
          (setenv "PATH" path-from-shell)
          (setq exec-path (split-string path-from-shell path-separator))))
+   #+END_SRC
+
+** Configure the Graphical Settings
+
+   If we are running in a windowed environment where we can set up
+   fonts and whatnot, call the 'mac' stuff... which will still work
+   for Linux too.
+
+   #+BEGIN_SRC elisp
+     (when (window-system)
+        (require 'init-mac))
    #+END_SRC
 
 ** Load up the Local Configuration
