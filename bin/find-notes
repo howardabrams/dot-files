@@ -26,9 +26,14 @@ done
 REGEXP=$(echo "$*" | sed 's/ /\\|/g')
 TRIM=$(echo "$HOME" | wc -m)
 
-# echo mdfind $LOCATIONS -interpret $*
+if [ -e /etc/redhat-release -o -e /etc/lsb-release -o -e /etc/os-release ]
+then
+    CALL="recoll -t -a -b"
+else
+    CALL="mdfind $LOCATIONS -interpret"
+fi
 
-mdfind $LOCATIONS -interpret $* | while read FILE
+$CALL $* | sed 's/^file:\/\///' | while read FILE
 do
     if echo $FILE | grep -v -q '#'
     then
