@@ -88,7 +88,7 @@ then, only during a graphical run.
           (delete-window (selected-window)))))
 #+END_SRC
 
-* TODO Unicode Characters
+* Unicode Characters
 
   Some of my frequently used Unicode characters:
 

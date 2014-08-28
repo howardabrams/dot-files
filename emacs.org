@@ -271,7 +271,9 @@ brew linkapps
 
   (when (window-system)
     (tool-bar-mode 0)               ;; Toolbars were only cool with XEmacs
-    (scroll-bar-mode 0))            ;; Scrollbars are waste screen estate
+    (when (fboundp 'horizontal-scroll-bar-mode)
+      (horizontal-scroll-bar-mode -1))
+    (scroll-bar-mode -1))            ;; Scrollbars are waste screen estate
 #+END_SRC
 
    Most of the display settings actually come from the [[file:emacs-mac.org][Mac initialization file]].
@@ -300,6 +302,11 @@ brew linkapps
   (global-set-key (kbd "S-<f7>")
                   '(lambda () "Previous Window" (interactive) (other-window -1)))
   (global-set-key (kbd "<f8>") 'ido-switch-buffer)
+
+  (if (commandp 'eww-follow-link)
+      (global-set-key (kbd "<f9> b") 'eww-follow-link))
+  (if (commandp 'eww-follow-url)
+      (global-set-key (kbd "<f9> u") 'eww-follow-url))
 #+END_SRC
 
 ** Other Key Bindings
@@ -662,38 +669,18 @@ brew linkapps
 #+BEGIN_SRC elisp
   (setq ido-enable-flex-matching t)
   (setq ido-everywhere t)
-  (ido-mode 1)
   (flx-ido-mode 1)
 #+END_SRC
 
     According to [[https://gist.github.com/rkneufeld/5126926][Ryan Kneufeld]], we could make IDO work
-    vertically, which is much easier to read.
+    vertically, which is much easier to read. For this, I use
+    [[https://github.com/gempesaw/ido-vertical-mode.el][ido-vertically]]:
 
-#+BEGIN_SRC elisp
-(setq ido-decorations                                                      ; Make ido-mode display vertically
-      (quote
-       ("\n-> "           ; Opening bracket around prospect list
-        ""                ; Closing bracket around prospect list
-        "\n   "           ; separator between prospects
-        "\n   ..."        ; appears at end of truncated list of prospects
-        "["               ; opening bracket around common match string
-        "]"               ; closing bracket around common match string
-        " [No match]"     ; displayed when there is no match
-        " [Matched]"      ; displayed if there is a single match
-        " [Not readable]" ; current diretory is not readable
-        " [Too big]"      ; directory too big
-        " [Confirm]")))   ; confirm creation of new file or buffer
-
-(add-hook 'ido-setup-hook                                                  ; Navigate ido-mode vertically
-          (lambda ()
-            (define-key ido-completion-map [down] 'ido-next-match)
-            (define-key ido-completion-map [up] 'ido-prev-match)
-            (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
-            (define-key ido-completion-map (kbd "C-p") 'ido-prev-match)))
-#+END_SRC
-
-    I guess you can call =ido-use-url-at-point= with Markdown to jump
-    to the URLs. Perhaps?
+    #+BEGIN_SRC elisp
+    (require 'ido-vertical-mode)
+    (ido-mode 1)
+    (ido-vertical-mode 1)
+    #+END_SRC
 
 ** SMEX
 
@@ -807,6 +794,7 @@ brew install ag
       (switch-to-buffer buffer-name)
       (read-only-mode 1)
       (grep-mode)
+      (toggle-truncate-lines)
       (beginning-of-buffer)
       (dolist (word (split-string words))
         (highlight-regexp word))))
@@ -1042,9 +1030,8 @@ brew install ag
    can be brought into a file, based on the language.
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'yasnippet)
-    (require 'yasnippet)
-    (yas-global-mode 1))
+  (require 'yasnippet)
+  (yas-global-mode 1)
 #+END_SRC
 
    Inside the =snippets= directory should be directories for each
