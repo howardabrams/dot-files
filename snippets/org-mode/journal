@@ -1,0 +1,5 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: journal
+# key: journal
+# --
+#+TITLE: Journal Entry- `(format-time-string "%Y-%m-%d (%A)")`
