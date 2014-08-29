@@ -322,6 +322,12 @@ brew linkapps
      (global-set-key (kbd "C-M-<right>") 'end-of-buffer)
    #+END_SRC
 
+   The [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Iswitchb.html][iswitchb]] is a nicer way to select buffers:
+
+   #+BEGIN_SRC elisp
+   (iswitchb-mode t)
+   #+END_SRC
+
    Change window configuration and then return to the old
    configuration with [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]].  Use =Control-C Arrow= keys to
    cycle through window/frame configurations.
