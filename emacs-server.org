@@ -7,9 +7,13 @@
 This file is a smaller subset of my Emacs configuration file oriented
 for servers.
 
+* Needed Packages
+
 #+BEGIN_SRC elisp
-  (load-file "~/.emacs.d/elisp/init-main.el")
+  (packages-install '( emmax ))
 #+END_SRC
+
+* Key Bindings
 
 If I am running on server, then I might as well attempt to pretend I'm
 on a desktop:
@@ -17,6 +21,16 @@ on a desktop:
 #+BEGIN_SRC elisp
   (cua-mode t)
 #+END_SRC
+
+* TMux Integration
+
+  #+BEGIN_SRC elisp
+  (when (getenv "TMUX")
+    (require 'emamux)
+    (global-set-key (kbd "M-!") 'emamux:run-command)
+    (global-set-key (kbd "C-x !") 'emamux:send-command)
+    (global-set-key (kbd "C-x ~") 'emamux:emamux:close-runner-pane))
+  #+END_SRC
 
 * Technical Artifacts
 

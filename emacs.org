@@ -303,10 +303,10 @@ brew linkapps
                   '(lambda () "Previous Window" (interactive) (other-window -1)))
   (global-set-key (kbd "<f8>") 'ido-switch-buffer)
 
-  (if (commandp 'eww-follow-link)
-      (global-set-key (kbd "<f9> b") 'eww-follow-link))
-  (if (commandp 'eww-follow-url)
-      (global-set-key (kbd "<f9> u") 'eww-follow-url))
+  (when (commandp 'eww)
+    (global-set-key (kbd "<f9> b") 'eww)
+    (global-set-key (kbd "<f9> l") 'eww-follow-link)
+    (global-set-key (kbd "<f9> u") 'eww-follow-url))
 #+END_SRC
 
 ** Other Key Bindings
@@ -1282,15 +1282,28 @@ brew install ag
     (add-hook 'emacs-lisp-mode-hook (lambda () (paredit-mode t))))
 #+END_SRC
 
-   Might as well pretty up the lambdas, because, we can!
+   Might as well pretty up the lambdas, and other functions using the
+   new 24.4 prettify-symbols-mode:
 
-#+BEGIN_SRC elisp
-  (font-lock-add-keywords 'emacs-lisp-mode
-                          '(("(\\(lambda\\)\\>" (0 (prog1 ()
-                                                     (compose-region (match-beginning 1)
-                                                                     (match-end 1)
-                                                                     ?λ))))))
-#+END_SRC
+   This approach seems to work and looks pretty good:
+
+   #+BEGIN_SRC elisp
+     (defconst lisp--prettify-symbols-alist
+       '(("lambda"  . ?λ)
+         ("." . ?•)))
+
+     (global-prettify-symbols-mode 1)
+   #+END_SRC
+
+   Let's see if it works ... granted, this will only show up when
+   editing it as a Lisp code:
+
+   #+BEGIN_SRC clojure :tangle no
+     (lambda ()
+       (if (and (== 4 4.0) (!= 4 5))
+           '()
+         '(4 5)))
+   #+END_SRC
 
    Words with dashes don't separate words in Lisp:
 
@@ -1298,6 +1311,8 @@ brew install ag
      (dolist (c (string-to-list ":_-?!#*"))
        (modify-syntax-entry c "w" emacs-lisp-mode-syntax-table))
    #+END_SRC
+
+   *Note:*: Need to change this to work with the v24.4 super-word.
 
 ** Clojure
 
@@ -1608,8 +1623,9 @@ brew install ag
    for Linux too.
 
    #+BEGIN_SRC elisp
-     (when (window-system)
-        (require 'init-mac))
+     (if (window-system)
+        (require 'init-client)
+      (require 'init-server))
    #+END_SRC
 
 ** Load up the Local Configuration

@@ -1,0 +1,312 @@
+#+TITLE:  Client Configuration for Emacs
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2014 Mar 22
+#+TAGS:   emacs
+
+The settings in this file are only included on a Macintosh, Linux, or
+other systems with a graphical front-end.
+
+* Needed Packages
+
+#+BEGIN_SRC elisp
+  (packages-install '( color-theme
+                       color-theme-sanityinc-tomorrow
+                       highlight-tail          ;; Used only sporadically
+                     ))
+#+END_SRC
+
+* Key Bindings
+
+   I would like Command-W to close a frame, but only if it only has a
+   single window in it. I found this code on [[http://www.emacswiki.org/emacs/frame-cmds.el][this site]].
+
+#+BEGIN_SRC elisp
+  (defun delete-single-window (&optional window)
+    "Remove WINDOW from the display.  Default is `selected-window'.
+  If WINDOW is the only one in its frame, then `delete-frame' too."
+    (interactive)
+    (save-current-buffer
+      (setq window (or window (selected-window)))
+      (select-window window)
+      (kill-buffer)
+      (if (one-window-p t)
+          (delete-frame)
+          (delete-window (selected-window)))))
+#+END_SRC
+
+* Unicode Characters
+
+  Some of my frequently used Unicode characters:
+
+#+BEGIN_SRC elisp
+  (global-set-key (kbd "<f9> <up>") "↑")
+  (global-set-key (kbd "<f9> <down>") "↓")
+  (global-set-key (kbd "<f9> <left>") "←")
+  (global-set-key (kbd "<f9> <right>") "→")
+
+  (global-set-key (kbd "<f9> !") "¹")
+  (global-set-key (kbd "<f9> @") "²")
+  (global-set-key (kbd "<f9> #") "³")
+  (global-set-key (kbd "<f9> $") "⁴")
+
+  (global-set-key (kbd "<f9> 2") "½")
+  (global-set-key (kbd "<f9> 3") "⅓")
+  (global-set-key (kbd "<f9> 4") "¼")
+
+
+  (global-set-key (kbd "<f9> 8") "•")
+  (global-set-key (kbd "<f9> *") "°")
+  (global-set-key (kbd "<f9> -") "—")
+  (global-set-key (kbd "<f9> .") "…")
+  (global-set-key (kbd "<f9> ;") "😜")
+  (global-set-key (kbd "<f9> )") "😀")
+
+  (global-set-key (kbd "<f9> x") "𝑥")
+  (global-set-key (kbd "<f9> y") "𝑦")
+  (global-set-key (kbd "<f9> A") "α")
+  (global-set-key (kbd "<f9> B") "β")
+  (global-set-key (kbd "<f9> L") "λ")
+  (global-set-key (kbd "<f9> P") "π")
+  (global-set-key (kbd "<f9> T") "θ")
+#+END_SRC
+
+* Font Settings
+
+   I love syntax highlighting.
+
+#+BEGIN_SRC elisp
+  (global-font-lock-mode 1)
+#+END_SRC
+
+   Am I really a monospace font slut? I think so. I keep changing my
+   font based on the monospace du jour... right now, I am liking [[http://mplus-fonts.sourceforge.jp/mplus-outline-fonts/download/index.html][M+]]
+   since it is thinner and has more white space between lines.
+
+   However, I find [[http://blogs.adobe.com/typblography/2012/09/source-code-pro.html][Source Code Pro]] quite attractive, as well as
+   Anonymous Pro.
+
+#+BEGIN_SRC elisp
+  ;; (setq my/font-family "M+ 1mn")
+  (setq my/font-family "Source Code Pro")
+  ;; (setq my/font-family "Anonymous Pro")
+#+END_SRC
+
+   With the font name situated, I just need to use that to set the
+   three magic frame settings:
+
+#+BEGIN_SRC elisp
+  (set-frame-font my/font-family)
+  (set-face-attribute 'default nil :font my/font-family :height 160)
+  (set-face-font 'default my/font-family)
+#+END_SRC
+
+   *Note:* I find that the height should be =160= for M+, but =140=
+   for most other fonts.
+
+* Color Theme
+
+   Use the color theme project by following [[http://www.nongnu.org/color-theme/][these instructions]].
+   We now can do =M-x color-theme-<TAB> RET=
+
+#+BEGIN_SRC elisp
+  (require 'color-theme)
+#+END_SRC
+
+   The color themes work quite well, except they don't know about the
+   org-mode source code blocks, so we need to set up a couple
+   functions that we can use to set them.
+
+#+BEGIN_SRC elisp
+  (defun org-src-color-blocks-light ()
+    "Colors the block headers and footers to make them stand out more for lighter themes"
+    (interactive)
+    (custom-set-faces
+     '(org-block-begin-line
+      ((t (:underline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF"))))
+     '(org-block-background
+       ((t (:background "#FFFFEA"))))
+     '(org-block-end-line
+       ((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))))
+
+     ;; Looks like the minibuffer issues are only for v23
+     ; (set-face-foreground 'minibuffer "black")
+     ; (set-face-foreground 'minibuffer-prompt "red")
+  )
+
+  (defun org-src-color-blocks-dark ()
+    "Colors the block headers and footers to make them stand out more for dark themes"
+    (interactive)
+    (custom-set-faces
+     '(org-block-begin-line
+       ((t (:foreground "#008ED1" :background "#002E41"))))
+     '(org-block-background
+       ((t (:background "#111111"))))
+     '(org-block-end-line
+       ((t (:foreground "#008ED1" :background "#002E41")))))
+
+     ;; Looks like the minibuffer issues are only for v23
+     ; (set-face-foreground 'minibuffer "white")
+     ; (set-face-foreground 'minibuffer-prompt "white")
+  )
+#+END_SRC
+
+   My main reason for wanting to use the color theme project is to
+   switch between /black on white/ during the day, and /white on
+   black/ at night.
+
+#+BEGIN_SRC elisp
+  (defun color-theme-my-default ()
+    "Tries to set up a normal color scheme"
+    (interactive)
+    (color-theme-sanityinc-tomorrow-day)
+    (powerline-reset)
+    (org-src-color-blocks-light))
+
+  ;; During the day, we use the "standard" theme:
+  (global-set-key (kbd "<f9> d") 'color-theme-my-default)
+
+  ;; A good late-night scheme that isn't too harsh
+  (global-set-key (kbd "<f9> l") (lambda () (interactive)
+                                   (color-theme-sanityinc-tomorrow-eighties)
+                                   (powerline-reset)
+                                   (org-src-color-blocks-dark)))
+
+  ;; Programming late into the night
+  (global-set-key (kbd "<f9> m") (lambda () (interactive)
+                                   (color-theme-sanityinc-tomorrow-bright)
+                                   (powerline-reset)
+                                   (org-src-color-blocks-dark)))
+
+  ;; Too harsh? Use the late night theme
+  (global-set-key (kbd "<f9> n") (lambda () (interactive)
+                                   (color-theme-sanityinc-tomorrow-night)
+                                   (powerline-reset)
+                                   (org-src-color-blocks-dark)))
+#+END_SRC
+
+   And the default startup goes to...night...unless I'm at work, and
+   then we'll take the bright shiny theme.
+
+#+BEGIN_SRC elisp
+  (if (equal "howard.abrams" user-login-name)
+      (color-theme-my-default)
+    (color-theme-sanityinc-tomorrow-night)
+    (org-src-color-blocks-dark))
+#+END_SRC
+
+* Undo and Redo
+
+    According to [[http://ergoemacs.org/emacs/emacs_best_redo_mode.html][this article]], I get better functionality than the
+    =redo+= plugin (which I can't seem to get working well).
+
+#+BEGIN_SRC elisp
+  (require 'undo-tree)
+  (global-undo-tree-mode 1)
+  (defalias 'redo 'undo-tree-redo)
+
+  (global-set-key (kbd "C-z") 'undo) ; Zap to character isn't helpful
+  (global-set-key (kbd "C-S-z") 'redo)
+#+END_SRC
+
+* Mode Line
+
+    My [[file:emacs-mode-line.org][mode-line code]] is now more complex in order to make it more simpler.
+
+#+BEGIN_SRC elisp
+  (require 'init-mode-line)
+#+END_SRC
+
+* Window Size
+
+   Hrm ... I'm always increasing the window size, so I might as well
+   just have it default to the size I want:
+
+#+BEGIN_SRC elisp
+  (add-to-list 'default-frame-alist '(height . 46))
+  (add-to-list 'default-frame-alist '(width . 80))
+#+END_SRC
+
+   However, I often want to put the window fullscreen:
+
+#+BEGIN_SRC elisp
+  (defun frame-fullscreen ()
+    "Set the frame window to cover the full screen."
+    (interactive)
+    (set-frame-parameter nil 'fullscreen 'fullboth))
+#+END_SRC
+
+   Not sure if this *toggle* is a good feature or not.
+
+#+BEGIN_SRC elisp
+  (defun toggle-fullscreen ()
+    "Toggle full screen"
+    (interactive)
+    (set-frame-parameter
+       nil 'fullscreen
+       (when (not (frame-parameter nil 'fullscreen)) 'fullboth)))
+#+END_SRC
+
+   The bell is pretty obnoxious when it dings during scrolling.
+
+#+BEGIN_SRC elisp
+  (setq ring-bell-function 'ignore)
+#+END_SRC
+
+* Twitter
+
+   I know, I know, reading my [[http://www.emacswiki.org/emacs-en/TwitteringMode][twitter feed in Emacs]] is pretty geeking
+   awesome. And I can filter out tweets that match a pattern that annoys me:
+
+#+BEGIN_SRC elisp
+  (setq twittering-tweet-filters '("kickstart" "#burritowatch"))
+
+  (defun twittering-filter-tweets ()
+    (setq non-matching-statuses '())
+    (dolist (status twittering-new-tweets-statuses)
+      (setq matched-tweets 0)
+      (dolist (pat twittering-tweet-filters)
+        (if (string-match pat (cdr (assoc 'text status)))
+            (setq matched-tweets (+ 1 matched-tweets))))
+      (if (= 0 matched-tweets)
+          (setq non-matching-statuses (append non-matching-statuses `(,status)))))
+    (setq new-statuses non-matching-statuses))
+
+  (add-hook 'twittering-new-tweets-hook 'twittering-filter-tweets)
+#+END_SRC
+
+   Need to enable spell-checking for the Twitter mode.
+
+#+BEGIN_SRC elisp
+(add-hook 'twittering-edit-mode-hook (lambda () (ispell-minor-mode) (flyspell-mode)))
+#+END_SRC
+
+* Technical Artifacts
+
+  Load up the particular operating system variation.
+
+  #+BEGIN_SRC elisp
+    (if (eq system-type 'darwin)
+        (require 'init-mac)
+      (require 'init-linux))
+  #+END_SRC
+
+  Notice "Windows" is not listed. That is by design.
+
+  Make sure that we can simply =require= this library.
+
+#+BEGIN_SRC elisp
+  (provide 'init-client)
+#+END_SRC
+
+  Before you can build this on a new system, make sure that you put
+  the cursor over any of these properties, and hit: =C-c C-c=
+
+#+DESCRIPTION: A literate programming version of my Emacs Initialization for Graphical Clients
+#+PROPERTY:    results silent
+#+PROPERTY:    tangle ~/.emacs.d/elisp/init-client.el
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
