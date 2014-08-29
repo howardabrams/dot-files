@@ -98,12 +98,25 @@ then, only during a graphical run.
   (global-set-key (kbd "<f9> <left>") "←")
   (global-set-key (kbd "<f9> <right>") "→")
 
+  (global-set-key (kbd "<f9> !") "¹")
+  (global-set-key (kbd "<f9> @") "²")
+  (global-set-key (kbd "<f9> #") "³")
+  (global-set-key (kbd "<f9> $") "⁴")
+
+  (global-set-key (kbd "<f9> 2") "½")
+  (global-set-key (kbd "<f9> 3") "⅓")
+  (global-set-key (kbd "<f9> 4") "¼")
+
+
   (global-set-key (kbd "<f9> 8") "•")
+  (global-set-key (kbd "<f9> *") "°")
   (global-set-key (kbd "<f9> -") "—")
   (global-set-key (kbd "<f9> .") "…")
   (global-set-key (kbd "<f9> ;") "😜")
   (global-set-key (kbd "<f9> )") "😀")
 
+  (global-set-key (kbd "<f9> x") "𝑥")
+  (global-set-key (kbd "<f9> y") "𝑦")
   (global-set-key (kbd "<f9> A") "α")
   (global-set-key (kbd "<f9> B") "β")
   (global-set-key (kbd "<f9> L") "λ")
