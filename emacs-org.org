@@ -237,8 +237,11 @@ should be. After calling this function, call 'meeting-done' to reset the environ
   (add-hook 'org-mode-hook
         (lambda ()
           (local-set-key (kbd "A-b") 'org-text-bold)
+          (local-set-key (kbd "s-b") 'org-text-bold)    ;; For Linux
           (local-set-key (kbd "A-i") 'org-text-italics)
-          (local-set-key (kbd "A-=") 'org-text-code)))
+          (local-set-key (kbd "s-i") 'org-text-italics)
+          (local-set-key (kbd "A-=") 'org-text-code)
+          (local-set-key (kbd "s-=") 'org-text-code)))
 #+END_SRC
 
    When pasting certain kinds of links, the "text" may be obvious.

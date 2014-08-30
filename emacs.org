@@ -1133,6 +1133,7 @@ brew install ag
           (linum-mode 1)))
 
         (global-set-key (kbd "A-C-K") 'linum-off-mode)
+        (global-set-key (kbd "s-C-K") 'linum-off-mode)  ;; For Linux
     #+END_SRC
 
     I'm intrigued with the [[https://github.com/coldnew/linum-relative][linum-relative]] mode (especially since I can
@@ -1146,6 +1147,7 @@ brew install ag
       ;; If this isn't installed, we'll just toggle between showing and
       ;; not showing the line numbers.
       (global-set-key (kbd "A-k") 'linum-mode)
+      (global-set-key (kbd "s-k") 'linum-mode)   ;; For Linux
 
     ;; Otherwise, let's take advantage of the relative line numbering:
     (require 'linum-relative)
@@ -1158,7 +1160,8 @@ brew install ag
           (linum-relative-toggle)
         (linum-mode 1)))
 
-    (global-set-key (kbd "A-k") 'linum-new-mode))
+    (global-set-key (kbd "A-k") 'linum-new-mode)
+    (global-set-key (kbd "s-k") 'linum-new-mode))   ;; For Linux
 #+END_SRC
 
 ** Smart Scan
@@ -1467,8 +1470,11 @@ brew install ag
   (add-hook 'markdown-mode-hook
         (lambda ()
           (local-set-key (kbd "A-b") 'markdown-bold)
+          (local-set-key (kbd "s-b") 'markdown-bold)    ;; For Linux
           (local-set-key (kbd "A-i") 'markdown-italics)
-          (local-set-key (kbd "A-=") 'markdown-code)))
+          (local-set-key (kbd "s-i") 'markdown-italics)
+          (local-set-key (kbd "A-=") 'markdown-code)
+          (local-set-key (kbd "s-=") 'markdown-code)))
 #+END_SRC
 
 ** Wiki
