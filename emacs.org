@@ -1322,13 +1322,13 @@ brew install ag
    See [[file:emacs-clojure.org][emacs-clojure.el]] for details on working with [[http://clojure.org][Clojure]].
    Not sure if I should just load it directly, like:
 
-#+BEGIN_SRC elisp :tangle no
+#+BEGIN_SRC elisp
   (require 'init-clojure)
 #+END_SRC
 
    Or if I should load it after the Clojure mode kicks in?
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle no
   (eval-after-load 'clojure-mode '(require 'init-clojure))
 #+END_SRC
 

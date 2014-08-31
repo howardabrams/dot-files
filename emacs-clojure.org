@@ -9,9 +9,7 @@
    my migration from [[https://github.com/clojure-emacs/nrepl.el][nrepl]] to [[https://github.com/clojure-emacs/cider][Cider]].
 
 #+BEGIN_SRC elisp
-  (packages-install '( ac-nrepl
-                       auto-complete
-                       clojure-mode
+  (packages-install '( clojure-mode
                        clojure-cheatsheet
                        clojure-snippets
                        clojurescript-mode
@@ -133,6 +131,24 @@
   (define-key paredit-mode-map (kbd "C-^") 'paredit-remove-newlines)
   (define-key paredit-mode-map (kbd "M-^") 'paredit-delete-indentation)
 #+END_SRC
+
+* Code Highlighting
+
+  Making it easier to read some Clojure code by changing into actual
+  symbols.
+
+   #+BEGIN_SRC elisp
+     (defconst clojure--prettify-symbols-alist
+       '(("fn"  . ?λ)
+         ("->" . ?→)
+         ("->>" . ?⇉)
+         ("<=" . ?≤)
+         (">=" . ?≥)
+         ("==" . ?≡)    ;; Do I like this?
+         ("not=" . ?≠)  ;; Or even this?
+         ("." . ?•)))
+   #+END_SRC
+
 * Rainbow Ponies
 
    Most LISP-based programming is better with rainbow ponies:
@@ -165,9 +181,6 @@
   (if (locate-library "clojuredocs")
       (load-library "clojuredocs"))
 #+END_SRC
-
-   Finally, if you are just learning Clojure, check out [[http://www.4clojure.com/][4Clojure]] and then
-   install [[https://github.com/joshuarh/4clojure.el][4clojure-mode]].
 
 * Paredit
 
@@ -246,7 +259,7 @@
 
     Basic auto completion taken from [[http://fgiasson.com/blog/index.php/2014/05/22/my-optimal-gnu-emacs-settings-for-developing-clojure-so-far/][these instructions]]:
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :toggle no
   (require 'auto-complete-config)
   (setq ac-delay 0.0)
   (setq ac-quick-help-delay 0.5)
@@ -255,17 +268,18 @@
 
     The CIDER-specific configuration for auto completion:
 
-#+BEGIN_SRC elisp
-  (require 'ac-nrepl)
-  (add-hook 'cider-mode-hook 'ac-nrepl-setup)
-  (add-hook 'cider-repl-mode-hook 'ac-nrepl-setup)
-  (add-to-list 'ac-modes 'cider-mode)
-  (add-to-list 'ac-modes 'cider-repl-mode)
+#+BEGIN_SRC elisp :toggle no
+  (require 'ac-cider)
+  (add-hook 'cider-mode-hook 'ac-flyspell-workaround)
+  (add-hook 'cider-mode-hook 'ac-cider-setup)
+  (add-hook 'cider-repl-mode-hook 'ac-cider-setup)
+  (eval-after-load "auto-complete"
+    '(add-to-list 'ac-modes 'cider-mode))
 #+END_SRC
 
     And we can call it with =C-c C-d=:
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :toggle no
   (eval-after-load "cider"
     '(define-key cider-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
 #+END_SRC
@@ -315,6 +329,120 @@
   (setq org-babel-clojure-backend 'cider)
   (require 'cider)
 #+END_SRC
+* New Key Bindings
+
+  That =<F2>= key is just aching to be more useful, so why not have
+  some better Clojure integration. I really should bind these to the
+  Clojure mode.
+
+  #+BEGIN_SRC elisp
+    ;; (global-set-key (kbd "<f2> c") 'cider-jack-in)
+
+    (eval-after-load 'cider
+      '(define-key clojure-mode-map (kbd "<f2> c") 'cider-jack-in))
+  #+END_SRC
+
+* 4Clojure
+
+   Finally, if you are just learning Clojure, check out [[http://www.4clojure.com/][4Clojure]] and then
+   install [[https://github.com/joshuarh/4clojure.el][4clojure-mode]].
+
+   #+BEGIN_SRC elisp
+     (when (package-installed-p '4clojure)
+       (defadvice 4clojure-open-question (around 4clojure-open-question-around)
+         "Start a cider/nREPL connection if one hasn't already been started when
+         opening 4clojure questions."
+         ad-do-it
+         (unless cider-current-clojure-buffer
+           (cider-jack-in)))
+
+       (global-set-key (kbd "<f2> 4") '4clojure-open-question)
+
+            (define-key clojure-mode-map (kbd "<f2> a") '4clojure-check-answers)
+            (define-key clojure-mode-map (kbd "<f2> n") '4clojure-next-question)
+            (define-key clojure-mode-map (kbd "<f2> p") '4clojure-previous-question))
+   #+END_SRC
+
+   I really should advice the =4clojure-next-question= to store the
+   current question ... and then we can pop back to that and resume
+   where we left off.
+
+   We need a file where we can save our current question:
+
+   #+BEGIN_SRC elisp
+   (defvar ha-4clojure-place-file (concat user-emacs-directory "4clojure-place.txt"))
+   #+END_SRC
+
+   Read a file's contents as a buffer by specifying the file. For
+   this, we use a temporary buffer, so that we don't have to worry
+   about saving it.
+
+   #+BEGIN_SRC elisp
+  (defun ha-file-to-string (file)
+    "Read the contents of FILE and return as a string."
+    (with-temp-buffer
+      (insert-file-contents file)
+      (buffer-substring-no-properties (point-min) (point-max))))
+   #+END_SRC
+
+   Parse a file into separate lines and return a list.
+
+  #+BEGIN_SRC elisp
+    (defun ha-file-to-list (file)
+      "Return a list of lines in FILE."
+      (split-string (ha-file-to-string file) "\n" t))
+  #+END_SRC
+
+   We create a wrapper function that reads our previous "place"
+   question and then calls the open question function.
+
+   #+BEGIN_SRC elisp
+     (defun ha-4clojure-last-project (file)
+       (interactive "f")
+       (if (file-exists-p file)
+           (car (ha-file-to-list file))
+         "1"))
+
+     (defun 4clojure-start-session ()
+       (interactive)
+       (4clojure-login "geekdad")
+       (4clojure-open-question
+        (ha-4clojure-last-project ha-4clojure-place-file)))
+
+     (global-set-key (kbd "<f2> s") '4clojure-start-session)
+   #+END_SRC
+
+   Write a value to a file. Making this interactive makes for an
+   interesting use case...we'll see if I use that.
+
+   #+BEGIN_SRC elisp
+     (defun ha-string-to-file (string file)
+       (interactive "sEnter the string: \nFFile to save to: ")
+       (with-temp-file file
+         (insert string)))
+   #+END_SRC
+
+   Whenever we load a 4clojure project or go to the next one, we store
+   the project number to our "place" file:
+
+   #+BEGIN_SRC elisp
+   (when (package-installed-p '4clojure)
+     (defun ha-4clojure-store-place (num)
+         (ha-string-to-file (int-to-string num) ha-4clojure-place-file))
+
+     (defadvice 4clojure-next-question (after ha-4clojure-next-question)
+       "Save the place for each question you progress to."
+       (ha-4clojure-store-place (4clojure/problem-number-of-current-buffer)))
+
+     (defadvice 4clojure-open-question (after ha-4clojure-next-question)
+       "Save the place for each question you progress to."
+       (ha-4clojure-store-place (4clojure/problem-number-of-current-buffer)))
+
+     (ad-activate '4clojure-next-question)
+     (ad-activate '4clojure-open-question))
+     ;; Notice that we don't advice the previous question...
+   #+END_SRC
+
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.
