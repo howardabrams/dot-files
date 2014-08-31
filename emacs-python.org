@@ -50,6 +50,17 @@
   (add-hook 'python-mode-hook 'color-identifiers-mode)
 #+END_SRC
 
+* Prettify
+
+  That =self= business in Python is quite distracting.
+
+  #+BEGIN_SRC elisp
+  (add-hook 'python-mode-hook
+          (lambda ()
+            (push '("self" . ?◎) prettify-symbols-alist)
+            (modify-syntax-entry ?. ".")))
+  #+END_SRC
+
 * Virtual Environments
 
   Almost all development for Python is done in [[http://docs.python-guide.org/en/latest/dev/virtualenvs/][virtual environments]],
