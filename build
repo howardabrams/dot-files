@@ -6,56 +6,15 @@
 DIR=$(cd `dirname $0`; pwd)
 FILES=""
 
-EMACS=${EDITOR:-/usr/local/bin/emacs}
+EMACS=${1:-/usr/local/bin/emacs}
 EMACS=$(echo $EMACS | sed 's/client//')
 
 if [ ! -e $EMACS ]; then
     EMACS=$(which emacs)
+else
+    EMACS="$EMACS -a ${1:-/usr/local/bin/emacs}"
 fi
 
 mkdir -p ~/.emacs.d/elisp
 
-# wrap each argument in the code required to call tangle on it
-for i in $DIR/*.org $DIR/bin/*.org $@; do
-    FILES="$FILES \"$i\""
-done
-
-echo Using $EMACS
-# echo $FILES
-
-$EMACS -Q --batch \
-    --eval "(progn
-     (require 'org)(require 'org-exp)(require 'ob)(require 'ob-tangle)
-     (mapc (lambda (file)
-            (find-file (expand-file-name file \"$DIR\"))
-            (org-babel-tangle)
-            (kill-buffer)) '($FILES)))" # 2>&1 |grep -i 'tangled\|error'
-
-# Set up all the symbolic links:
-
-if [ ! -f $HOME/.vimrc ]
-then
-    ln -s -F $DIR/vimrc $HOME/.vimrc
-fi
-
-# Especially the .emacs.d directory:
-
-for FILE in emacs.d/*.el
-do
-    F=$(basename $FILE)
-    if [ ! -f $HOME/.emacs.d/elisp/$F ]
-    then
-        echo "Linking $FILE"
-        rm -f $HOME/.emacs.d/elisp/$F
-        ln -s $DIR/$FILE $HOME/.emacs.d/elisp/$F
-    fi
-done
-
-# Link others to the snippets folder
-if [ ! -e $HOME/.emacs.d/snippets ]
-then
-    ln -F -s $DIR/snippets $HOME/.emacs.d/snippets
-fi
-
-# /usr/local/bin/emacs -Q --batch \
-#     --eval "(byte-recompile-directory \"~/.emacs.d/elisp\" 0)"
+$EMACS --load "./build.el"

@@ -46,7 +46,7 @@ then, only during a graphical run.
 #+BEGIN_SRC elisp
     (require 'ls-lisp)
     (setq ls-lisp-use-insert-directory-program t)
-    (setq insert-directory-program "/usr/local/bin/gls"))
+    (setq insert-directory-program "/usr/local/bin/gls")
 #+END_SRC
 
    I hate the default implementation of Command-M. Now,
