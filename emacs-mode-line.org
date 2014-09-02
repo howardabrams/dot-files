@@ -4,64 +4,28 @@
 #+DATE:   [2014-02-28 Fri]
 #+TAGS:   emacs
 
-* Smart Mode Line
-
-  While I like the cleanliness of the [[https://github.com/Bruce-Connor/smart-mode-line][Smart Mode Line]], I actually feel
-  that I get cleaner mode-lines with [[PowerLine][PowerLine]], so while I'm leaving
-  this configuration code here, I'm actually not tangling it.
-
-#+BEGIN_SRC elisp :tangle no
-  (require 'smart-mode-line)
-  (if after-init-time (sml/setup)
-    (add-hook 'after-init-hook 'sml/setup))
-
-  (custom-set-variables '(sml/active-background-color "dark blue"))
-#+END_SRC
-
-    Especially since you can limit the pathname of the displayed
-    filename.
-
-#+BEGIN_SRC elisp :tangle no
-  (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" ":Goo:"))
-  (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/technical" ":Tech:"))
-  (add-to-list 'sml/replacer-regexp-list '("^~/Other/dot-files" ":.:"))
-  (add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-api/server/" ":API:"))
-  (add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-fai/ci/" ":CI:"))
-#+END_SRC
-
-    Hiding some Minor modes in the mode line is real swell. This
-    leaves the mode-line with only important stuff.
-
-#+BEGIN_SRC elisp :tangle no
-  (setq useless-minor-modes '(" AC"   ;; First must have a space. :-(
-                              "GitGutter"
-                              "Undo-Tree"
-                              "Fly"
-                              "ARev"
-                              "Abbrev"
-                              "Fill"
-                              "ColorIds"
-                              "FIC"
-                              "FlyC.*"))
-  (setq sml/hidden-modes (mapconcat 'identity useless-minor-modes "\\| *"))
-#+END_SRC
-
 * PowerLine
 
   The [[http://www.emacswiki.org/emacs/PowerLine][PowerLine]] project can really clean up the mode line, but I'm
   also able to create my own "theme" in order to remove many of the
   minor modes that don't really help.
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
   (require 'powerline)
+  #+END_SRC
 
-  ;; (setq powerline-arrow-shape 'slant)
+  Need the colors to be a bit more pronounced ... and grayer.
 
+  #+BEGIN_SRC elisp
   (custom-set-faces
-   '(mode-line-buffer-id ((t (:foreground "#008000"))))
-   '(mode-line ((t (:foreground "green" :background "#dddddd" :box nil))))
+   '(mode-line-buffer-id ((t (:foreground "#008000" :bold t))))
+   '(mode-line ((t (:foreground "#008000" :background "#dddddd" :box nil))))
    '(mode-line-inactive ((t (:foreground "#008000" :background "#bbbbbb" :box nil)))))
+  #+END_SRC
 
+  Now, let's create our own theme:
+
+#+BEGIN_SRC elisp
   (defun powerline-simpler-vc-mode (s)
     (if s
         (replace-regexp-in-string "Git:" "" s)
