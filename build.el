@@ -9,7 +9,7 @@
 ;;; Code:
 
 (require 'org)
-(require 'org-exp)
+;; (require 'org-exp-blocks)
 (require 'ob)
 (require 'ob-tangle)
 
@@ -31,7 +31,7 @@
   (interactive "fSource file:\ndDestination link:")
   (if (and (file-symlink-p link) (not (file-directory-p link)))
       (delete-file link))
-  (dired-make-relative-symlink orig link t))
+  (make-symbolic-link orig link t))
 
 (defun ha-link-dot-files (src dest)
   (mapc (lambda (file) (ha-mksymlink src dest))
@@ -47,6 +47,9 @@
   (let ((home  (concat (getenv "HOME") "/"))
         (cwd   (file-name-directory (buffer-file-name)))
         (elisp (concat user-emacs-directory "elisp")))
+
+    ;; Initially create some of the destination directories
+    (make-directory (concat home ".oh-my-zsh/themes") t)
     (ha-tangle-files cwd)
 
     ;; For files that are not in a literate state of mind,
