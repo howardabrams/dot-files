@@ -59,7 +59,7 @@
 
   (custom-set-faces
    '(mode-line-buffer-id ((t (:foreground "#008000"))))
-   '(mode-line ((t (:foreground "green" :background "#ddddff" :box nil))))
+   '(mode-line ((t (:foreground "green" :background "#dddddd" :box nil))))
    '(mode-line-inactive ((t (:foreground "#008000" :background "#bbbbbb" :box nil)))))
 
   (defun powerline-simpler-vc-mode (s)
