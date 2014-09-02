@@ -58,8 +58,9 @@
   ;; (setq powerline-arrow-shape 'slant)
 
   (custom-set-faces
-   '(mode-line ((t (:foreground "#030303" :background "#ddddff" :box nil))))
-   '(mode-line-inactive ((t (:foreground "#f9f9f9" :background "#bbbbbb" :box nil)))))
+   '(mode-line-buffer-id ((t (:foreground "#008000"))))
+   '(mode-line ((t (:foreground "green" :background "#ddddff" :box nil))))
+   '(mode-line-inactive ((t (:foreground "#008000" :background "#bbbbbb" :box nil)))))
 
   (defun powerline-simpler-vc-mode (s)
     (if s
