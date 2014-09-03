@@ -302,12 +302,40 @@ brew linkapps
   (global-set-key (kbd "S-<f7>")
                   '(lambda () "Previous Window" (interactive) (other-window -1)))
   (global-set-key (kbd "<f8>") 'ido-switch-buffer)
-
-  (when (commandp 'eww)
-    (global-set-key (kbd "<f9> b") 'eww)
-    (global-set-key (kbd "<f9> l") 'eww-follow-link)
-    (global-set-key (kbd "<f9> u") 'eww-follow-url))
 #+END_SRC
+
+*** F9 Helpers
+
+    The F9 prefix is scattered about my config files.
+
+    #+BEGIN_SRC elisp
+      (global-set-key (kbd "<f9> b") 'bury-buffer)
+    #+END_SRC
+
+*** EWW
+
+    For v24.4, I like using EWW...especially if I can customize and
+    trim the resulting text. Something to work on, eh?
+
+    #+BEGIN_SRC
+    (when (fboundp 'eww)
+      (global-set-key (kbd "<f9> b") 'eww)
+      (global-set-key (kbd "<f9> l") 'eww-follow-link)
+      (global-set-key (kbd "<f9> u") 'eww-follow-url))
+    #+END_SRC
+
+*** Auto Hiding Functions
+
+    Big, structured file, like source code, hide all of the functions,
+    and selectively reveal them, using [[http://www.emacswiki.org/emacs/HideShow][hide-show-mode]]. I don't like
+    the complicated key-bindings, so I through them on the <f9>:
+
+    #+BEGIN_SRC elisp
+      (global-set-key (kbd "<f9> H") 'hs-hide-all)
+      (global-set-key (kbd "<f9> h") 'hs-hide-block)
+      (global-set-key (kbd "<f9> u") 'hs-show-all)
+      (global-set-key (kbd "<f9> v") 'hs-show-block)
+    #+END_SRC
 
 ** Other Key Bindings
 
@@ -680,6 +708,9 @@ brew linkapps
     (require 'ido-vertical-mode)
     (ido-mode 1)
     (ido-vertical-mode 1)
+
+    ; I like up and down arrow keys:
+    (setq ido-vertical-define-keys 'C-n-C-p-up-and-down)
     #+END_SRC
 
 ** SMEX
