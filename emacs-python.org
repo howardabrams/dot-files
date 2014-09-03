@@ -55,10 +55,11 @@
   That =self= business in Python is quite distracting.
 
   #+BEGIN_SRC elisp
-  (add-hook 'python-mode-hook
-          (lambda ()
-            (push '("self" . ?◎) prettify-symbols-alist)
-            (modify-syntax-entry ?. ".")))
+    (when (fboundp 'global-prettify-symbols-mode)
+      (add-hook 'python-mode-hook
+                (lambda ()
+                  (push '("self" . ?◎) prettify-symbols-alist)
+                  (modify-syntax-entry ?. "."))))
   #+END_SRC
 
 * Virtual Environments

@@ -1291,11 +1291,12 @@ brew install ag
    This approach seems to work and looks pretty good:
 
    #+BEGIN_SRC elisp
-     (defconst lisp--prettify-symbols-alist
-       '(("lambda"  . ?λ)
-         ("." . ?•)))
+     (when (fboundp 'global-prettify-symbols-mode)
+         (defconst lisp--prettify-symbols-alist
+           '(("lambda"  . ?λ)
+             ("." . ?•)))
 
-     (global-prettify-symbols-mode 1)
+         (global-prettify-symbols-mode 1))
    #+END_SRC
 
    Let's see if it works ... granted, this will only show up when
