@@ -331,11 +331,20 @@ brew linkapps
     the complicated key-bindings, so I through them on the <f9>:
 
     #+BEGIN_SRC elisp
-      (global-set-key (kbd "<f9> H") 'hs-hide-all)
+      (defun ha-hs-hide-all ()
+        "Wrapper around 'hs-hide-all' that turns on the minor mode."
+        (interactive)
+        (hs-minor-mode t)
+        (hs-hide-all))
+
+      (global-set-key (kbd "<f9> H") 'ha-hs-hide-all)
       (global-set-key (kbd "<f9> h") 'hs-hide-block)
-      (global-set-key (kbd "<f9> u") 'hs-show-all)
+      (global-set-key (kbd "<f9> V") 'hs-show-all)
       (global-set-key (kbd "<f9> v") 'hs-show-block)
     #+END_SRC
+
+    While 'S' does make sense for /showing/, I'm already using that
+    for 'Stop'. Besides, 'viewing' isn't a bad mnemonic.
 
 ** Other Key Bindings
 
