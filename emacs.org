@@ -197,6 +197,7 @@ brew linkapps
                    markdown-mode
                    multiple-cursors
                    redo+             ;; If not installed, edit mac-key-mode
+                   relative-line-numbers
                    smex
                    thesaurus
                    undo-tree
@@ -514,6 +515,25 @@ brew linkapps
         (require 'expand-region)
         (global-set-key (kbd "C-=") 'er/expand-region))
 #+END_SRC
+
+    This works really well with other commands, including [[https://github.com/Bruce-Connor/fancy-narrow][fancy-narrow]]:
+
+    #+BEGIN_SRC elisp
+      (when (autofeaturep 'fancy-narrow)
+
+        (require 'fancy-narrow)
+
+        (defun ha-highlight-section ()
+        "If If the region is active, call 'fancy-narrow-to-region on it, otherwise, call 'fancy-narrow-to-defun, and see what happens."
+        (interactive)
+        (if (fancy-narrow-active-p)
+            (fancy-widen)
+          (if (region-active-p)
+              (fancy-narrow-to-region (region-beginning) (region-end))
+            (fancy-narrow-to-defun))))
+
+        (global-set-key (kbd "C-M-+") 'ha-highlight-section))
+    #+END_SRC
 
 ** Block Wrappers
 
@@ -1186,8 +1206,9 @@ brew install ag
 
       ;; If this isn't installed, we'll just toggle between showing and
       ;; not showing the line numbers.
-      (global-set-key (kbd "A-k") 'linum-mode)
-      (global-set-key (kbd "s-k") 'linum-mode)   ;; For Linux
+      (progn
+        (global-set-key (kbd "A-k") 'linum-mode)
+        (global-set-key (kbd "s-k") 'linum-mode))   ;; For Linux
 
     ;; Otherwise, let's take advantage of the relative line numbering:
     (require 'linum-relative)
