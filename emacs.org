@@ -516,21 +516,43 @@ brew linkapps
         (global-set-key (kbd "C-=") 'er/expand-region))
 #+END_SRC
 
-    This works really well with other commands, including [[https://github.com/Bruce-Connor/fancy-narrow][fancy-narrow]]:
+    This works really well with other commands, including
+    [[https://github.com/Bruce-Connor/fancy-narrow][fancy-narrow]], where I can visually high-light a section of a
+    buffer. Great for code-reviews and other presentations.
 
     #+BEGIN_SRC elisp
       (when (autofeaturep 'fancy-narrow)
 
         (require 'fancy-narrow)
 
-        (defun ha-highlight-section ()
-        "If If the region is active, call 'fancy-narrow-to-region on it, otherwise, call 'fancy-narrow-to-defun, and see what happens."
-        (interactive)
-        (if (fancy-narrow-active-p)
-            (fancy-widen)
-          (if (region-active-p)
-              (fancy-narrow-to-region (region-beginning) (region-end))
-            (fancy-narrow-to-defun))))
+        (defun ha-highlight-block ()
+          "Highlights a 'block' in a buffer defined by the first blank
+           line before and after the current cursor position. Uses the
+           'fancy-narrow' mode to high-light the block."
+          (interactive)
+          (let (cur beg end)
+            (setq cur (point))
+            (setq end (or (re-search-forward  "^\s*$" nil t) (point-max)))
+            (goto-char cur)
+            (setq beg (or (re-search-backward "^\s*$" nil t) (point-min)))
+            (fancy-narrow-to-region beg end)
+            (goto-char cur)))
+
+        (defun ha-highlight-section (num)
+          "If some of the buffer is highlighted with the 'fancy-narrow'
+           mode, then un-highlight it by calling 'fancy-widen'.
+
+           If region is active, call 'fancy-narrow-to-region'.
+
+           If given a prefix value, C-u, highlight the current
+           block (delimited by blank lines). Otherwise, called
+           'fancy-narrow-to-defun, to highlight current function."
+          (interactive "p")
+          (cond
+           ((fancy-narrow-active-p) (fancy-widen))
+           ((> num 1)               (ha-highlight-block))
+           ((region-active-p)       (fancy-narrow-to-region (region-beginning) (region-end)))
+           (t                       (fancy-narrow-to-defun))))
 
         (global-set-key (kbd "C-M-+") 'ha-highlight-section))
     #+END_SRC
