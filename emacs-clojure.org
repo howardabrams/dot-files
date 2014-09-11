@@ -31,7 +31,8 @@
 
   (add-hook 'clojure-mode-hook
             '(lambda ()
-               (yas/minor-mode-on)))
+               ;; Two under-bars are used as "stuff to do" in the Koans
+               (highlight-phrase "__" 'hi-red-b)))
 #+END_SRC
 
    According to the [[https://github.com/weavejester/compojure/wiki][Compojure Wiki]], the following code makes their
@@ -50,6 +51,18 @@
 #+END_SRC
 
 * Keystrokes
+
+  While learning Clojure, I find that jumping to the next __ phrase...
+
+  #+BEGIN_SRC elisp
+    (defun clojure-next-issue ()
+      (interactive)
+      (search-forward "__")
+      (set-mark (- (point) 2))
+      (setq mark-alive t))
+
+    (global-set-key (kbd "<f2> q") 'clojure-next-issue)
+  #+END_SRC
 
   I like the idea that we can evaluate an s-expression, and have the
   results embedded into the source code as a comment. Thanks to this
@@ -109,8 +122,7 @@
     (let (comt)
       (save-excursion
         (move-beginning-of-line (if arg 1 0))
-        (when (skip
--syntax-forward "^<" (point-at-eol))
+        (when (skip-syntax-forward "^<" (point-at-eol))
           (setq comt (delete-and-extract-region (point) (point-at-eol)))))
       (delete-indentation arg)
       (when comt
@@ -148,7 +160,8 @@
            (">=" . ?≥)
            ("==" . ?≡)    ;; Do I like this?
            ("not=" . ?≠)  ;; Or even this?
-           ("." . ?•))))
+           ("." . ?•)
+           ("__" . ?⁈))))
    #+END_SRC
 
 * Rainbow Ponies
