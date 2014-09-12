@@ -36,11 +36,11 @@
                              (file-name-directory (buffer-file-name))))
 
 ;; Where all of the .el files will live and play:
-(defconst dest-elisp-dir (ha/get-file "${user-emacs-directory}/elisp"))
+(defconst dest-elisp-dir (ha/get-path "${user-emacs-directory}/elisp"))
 
 ;; The Script Part ... here we do all the building and compilation work.
 
-(defun ha-build-dot-files ()
+(defun ha/build-dot-files ()
   "Takes all my 'dot files' in this directory and deploys a new
 encironment (or updates an existing system)."
   (interactive)
@@ -81,20 +81,22 @@ encironment (or updates an existing system)."
   "Given a directory, PATH, of 'org-mode' files, tangle the source
 code out of all literate programming files."
   (interactive "D")
-  (mapc 'ha-tangle-file (ha/get-files path)))
+  (mapc 'ha/tangle-file (ha/get-files path)))
 
 
 (defun ha/get-dot-files ()
   "Pulls and builds the latest from the Github repository.  We
 then load the resulting Lisp code."
   (interactive)
-  (magit-fetch dot-files-src)
-  (magit-checkout "master")
-  (ha-build-dot-files)
-  (require 'init-main))
+  (let ((git-results
+         (shell-command (concat "cd " dot-files-src "; git pull"))))
+    (if (not (= git-results 0))
+        (message "Can't pull the goodness. Pull from git by hand.")
+      (load-file (concat dot-files-src "/emacs.d/shell-script-funcs.el"))
+      (load-file (concat dot-files-src "/build.el"))
+      (require 'init-main))))
 
-
-(ha-build-dot-files)  ;; Do it
+(ha/build-dot-files)  ;; Do it
 
 (provide 'dot-files)
 ;;; build.el ends here

@@ -1754,6 +1754,12 @@ brew install ag
       (message "Loaded machine-specific settings: %s" local-file)))
 #+END_SRC
 
+  After the first load, we can reload this with a require:
+
+  #+BEGIN_SRC elisp
+  (provide 'init-main)
+  #+END_SRC
+
   Before you can build this on a new system, make sure that you put
   the cursor over any of these properties, and hit: =C-c C-c=
 
