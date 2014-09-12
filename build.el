@@ -64,7 +64,7 @@ encironment (or updates an existing system)."
 
   ;; All of the .el files I've eithe tangled or linked should be comp'd:
   (mapc 'byte-compile-file
-        (ha/get-files "${user-emacs-directory}/elisp/*.el"))
+        (ha/get-files "${user-emacs-directory}/elisp/*.el" t))
 
   (message "Finished building dot-files- Restart Emacs."))
 
