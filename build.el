@@ -84,6 +84,16 @@ code out of all literate programming files."
   (mapc 'ha-tangle-file (ha/get-files path)))
 
 
+(defun ha/get-dot-files ()
+  "Pulls and builds the latest from the Github repository.  We
+then load the resulting Lisp code."
+  (interactive)
+  (magit-fetch dot-files-src)
+  (magit-checkout "master")
+  (ha-build-dot-files)
+  (require 'init-main))
+
+
 (ha-build-dot-files)  ;; Do it
 
 (provide 'dot-files)
