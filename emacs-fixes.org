@@ -1,0 +1,77 @@
+#+TITLE:  Functional Fixes for Emacs
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2014 Sep 16
+#+TAGS:   emacs
+
+Yeah, yeah, yeah...I love Emacs, but some functions could make better
+assumptions to what you want. Case in point, is the 'line' work bound
+to =Ctrl-k= ... cut to the end of the line, fine, but giving it a
+prefixed number will cut multiple lines, but not the full text of the
+current line...like why would you ever do that?
+
+* Cut Line or Region
+
+  Hitting =Ctrl-w= cuts the text from the point to the mark...but do
+  you remember where that fucker is? Probably not, and may not be what
+  you want, so let's cut the current line ... all of it ... no matter
+  where the point is. This idea, came from [[http://ergoemacs.org/emacs/emacs_copy_cut_current_line.html#rnd_elisp_doc][ErgoEmacs]], but with a
+  little modification:
+
+  First, let's define a function that returns the first and last text
+  positions based on if the region is "on" and what the mode is.
+
+  #+BEGIN_SRC elisp
+    (defun ha/get-line-or-region (&optional num)
+      "Return a 'cons' containing the start and end text positions."
+      (cond
+       ((use-region-p)  (list (region-beginning)        (region-end)))
+       (num             (list (line-beginning-position) (line-end-position (1+ num))))
+       (t               (list (line-beginning-position) (line-end-position)))))
+  #+END_SRC
+
+  Hrm. Do I want to cut by lines? Perhaps if I am in org-mode, I would
+  rather cut the entire paragraph? Of course, in that case, only if I
+  am not on a billeted line.
+
+  Now, we can use this function to cop the text and bind it:
+
+  #+BEGIN_SRC elisp
+    (defun ha/copy-line-or-region ()
+      "Copy current line or text selection.  If prefix argument is given, copies that many lines."
+      (interactive)
+      (apply 'kill-ring-save (ha/get-line-or-region current-prefix-arg)))
+
+    (global-set-key (kbd "M-w") 'ha/copy-line-or-region)
+  #+END_SRC
+
+  And put on the cut ring:
+
+  #+BEGIN_SRC elisp
+    (defun ha/cut-line-or-region ()
+      "Cut current line or text selection.  If prefix argument is given, copies that many lines."
+      (interactive)
+      (apply 'kill-region (ha/get-line-or-region current-prefix-arg)))
+
+    (global-set-key (kbd "C-w") 'ha/cut-line-or-region)
+  #+END_SRC
+
+* Technical Artifacts
+
+  Make sure that we can simply =require= this library.
+
+#+BEGIN_SRC elisp
+  (provide 'init-fixes)
+#+END_SRC
+
+  Before you can build this on a new system, make sure that you put
+  the cursor over any of these properties, and hit: =C-c C-c=
+
+#+DESCRIPTION: A literate programming version of my Emacs Initialization for Graphical Clients
+#+PROPERTY:    results silent
+#+PROPERTY:    tangle ~/.emacs.d/elisp/init-fixes.el
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
