@@ -5,36 +5,64 @@
 #+TAGS:   emacs
 
 Yeah, yeah, yeah...I love Emacs, but some functions could make better
-assumptions to what you want. Case in point, is the 'line' work bound
-to =Ctrl-k= ... cut to the end of the line, fine, but giving it a
-prefixed number will cut multiple lines, but not the full text of the
-current line...like why would you ever do that?
+assumptions to what you want, and of course, we can waste any good
+bindings. For instance, a function may require a region to be selected
+before working, but a keybinding shouldn't. It should make good
+assumptions, where the 'region' would simply override those assumptions.
+
+Case in point, is the 'line' work bound to =Ctrl-k= ... cut to the end
+of the line, fine, but giving it a prefixed number will cut multiple
+lines, but not the full text of the current line...like why would you
+ever do that?
+
+*Note:* I want to look at the old Tiny Tools project and steal their
+ deletion code.
 
 * Cut Line or Region
 
   Hitting =Ctrl-w= cuts the text from the point to the mark...but do
   you remember where that fucker is? Probably not, and may not be what
-  you want, so let's cut the current line ... all of it ... no matter
+  you want, so /unless the region is currently active and
+  highlighted/, let's cut the current line ... all of it ... no matter
   where the point is. This idea, came from [[http://ergoemacs.org/emacs/emacs_copy_cut_current_line.html#rnd_elisp_doc][ErgoEmacs]], but with a
-  little modification:
+  little modification.
 
   First, let's define a function that returns the first and last text
-  positions based on if the region is "on" and what the mode is.
+  positions based on if the region is "on" and what the mode is. That
+  is, if I'm in =org-mode=, I probably don't want to cut/copy the
+  line, but the paragraph or other structural element.
 
   #+BEGIN_SRC elisp
     (defun ha/get-line-or-region (&optional num)
-      "Return a 'cons' containing the start and end text positions."
+      "Return a list containing the start and ending text positions
+    of the active region.  If the region isn't active, make a good
+    guess about the structure where the start and end of the current
+    line is the default. If a prefix number is given, it returns the
+    position that includes that many lines or other structural
+    elements."
       (cond
        ((use-region-p)  (list (region-beginning)        (region-end)))
+       ((string-equal major-mode "org-mode")
+        (list (ha/get-org-element 'org-backward-paragraph '< num)
+              (ha/get-org-element 'org-forward-paragraph '> num)))
        (num             (list (line-beginning-position) (line-end-position (1+ num))))
        (t               (list (line-beginning-position) (line-end-position)))))
+
+    (defun ha/get-org-element (f p &optional num)
+      "Strange little function.  F is a function to call in an saved
+    excursion to move the cursor around and get its state. P is a
+    predicate on whether NUM should be given to F, since number could
+    be nil.  Written to make 'ha/get-line-or-region' easier to read."
+      (save-excursion
+        (if (and num (funcall p num 0))
+            (dotimes (i (abs num))
+                     (funcall f))
+          (funcall f))
+        (point)))
   #+END_SRC
 
-  Hrm. Do I want to cut by lines? Perhaps if I am in org-mode, I would
-  rather cut the entire paragraph? Of course, in that case, only if I
-  am not on a billeted line.
-
-  Now, we can use this function to cop the text and bind it:
+  Now, we can use this function to copy the text and bind it to our
+  normal key chord:
 
   #+BEGIN_SRC elisp
     (defun ha/copy-line-or-region ()
@@ -43,6 +71,8 @@ current line...like why would you ever do that?
       (apply 'kill-ring-save (ha/get-line-or-region current-prefix-arg)))
 
     (global-set-key (kbd "M-w") 'ha/copy-line-or-region)
+    (global-set-key (kbd "a-c") 'ha/copy-line-or-region)
+    (global-set-key (kbd "s-c") 'ha/copy-line-or-region)
   #+END_SRC
 
   And put on the cut ring:
@@ -54,7 +84,201 @@ current line...like why would you ever do that?
       (apply 'kill-region (ha/get-line-or-region current-prefix-arg)))
 
     (global-set-key (kbd "C-w") 'ha/cut-line-or-region)
+    (global-set-key (kbd "a-x") 'ha/cut-line-or-region)
+    (global-set-key (kbd "s-x") 'ha/cut-line-or-region)
   #+END_SRC
+
+* Better Newline
+
+   Since =paredit= and other modes automatically insert final
+   characters like semi-colons and parenthesis, what I really want is
+   to hit return from the /end of the line/. Pretty simple function.
+
+#+BEGIN_SRC elisp
+  (defun newline-for-code ()
+    "Inserts a newline character, but from the end of the current line."
+    (interactive)
+    (move-end-of-line 1)
+    (newline-and-indent))
+#+END_SRC
+
+   And we can bind that to the free, /Meta-Return/:
+
+#+BEGIN_SRC elisp
+  (global-set-key (kbd "M-RET") 'newline-for-code)
+#+END_SRC
+
+   Remember, this works everywhere /except/ for org-mode.
+
+* Join Lines
+
+   I like how =M-SPC= removes all but one space, and =M-\= removes all
+   spaces. Would be nice to remove all /newlines/ in the same way.
+
+   Sure, =C-x C-o= removes all following newlines, so if at the end of
+   the first line that should be /joined/, then this acts somewhat
+   like =M-SPC=.
+
+#+BEGIN_SRC elisp
+  (defun join-lines ()
+    "If at the end of the line, will join the following line to the
+    end of this one...unless it is blank, in which case, it will
+    keep joining lines until the next line with text is
+    connected."
+    (interactive)
+
+    ;; Move to the the beginning of the white space before attempting
+    ;; this process. This allows us to join lines even if we are in the
+    ;; middle of some empty lines.
+    (re-search-backward "[^[:space:]\\r\\n]")
+    (forward-char)
+
+    ;; Just in case we have some trailing whitespace we can't see, let's
+    ;; just get rid of it. Won't do anything if in the middle of a line,
+    ;; or if there is not trailing whitespace.
+    (delete-trailing-whitespace (point) (point-at-eol))
+
+    ;; While we are at the end of the line, join a line, remove the
+    ;; whitespace, and keep on going until we're through...
+    (while (eq (point-at-eol) (point))
+      (delete-char 1)
+      (delete-trailing-whitespace (point) (point-at-eol))))
+
+  (global-set-key (kbd "C-RET") 'join-lines)
+#+END_SRC
+
+   I would like to have =M-RET= remove the lines similar to the way
+   =M-SPC= works, but that is already bound in =org-mode= to making a
+   special header, so I'll just bind it to Control.
+
+* Better Movement
+
+   The [[https://github.com/doitian/iy-go-to-char][iy-go-to-char]] project allows a quick search for a particular
+   character. In [[http://www.youtube.com/watch?v%3DNXTf8_Arl1w][Episode 6]] of [[http://www.emacsrocks.com][EmacsRocks]], [[http://twitter.com/emacsrocks][Magnar Sveen]] pulls it all
+   together and makes a compelling case for micro-optimizations.
+   We'll see if I can remember to use the feature.
+
+#+BEGIN_SRC elisp
+  (when (autofeaturep 'iy-go-to-char)
+    (require 'iy-go-to-char)
+    (global-set-key (kbd "C-`") 'iy-go-to-char)
+    (global-set-key (kbd "<f13>") 'iy-go-to-char)
+    (global-set-key (kbd "C-~") 'iy-go-to-char-backward))
+#+END_SRC
+
+   To use, type =C-`= and then a character, number or other symbol to
+   jump to. Typing most things will bugger out of its "state" and
+   start editing, however, typing:
+
+   - =;= will jump to the next occurrence of that letter
+   - =,= jumps backwards
+   - =C-w= cuts from where the cursor started and where it ended.
+   - =M-w= copies that region
+
+* Better Beginning of Line
+
+   This [[http://emacsredux.com/blog/2013/05/22/smarter-navigation-to-the-beginning-of-a-line/][Emacs Redux article]] has a great suggestion for having =C-a= go
+   to the beginning of the line's content instead of the actual
+   beginning of the line. Hit =C-a= a second to get to the actual
+   beginning.
+
+#+BEGIN_SRC elisp
+  (defun smarter-move-beginning-of-line (arg)
+    "Move point back to indentation of beginning of line.
+
+  Move point to the first non-whitespace character on this line.
+  If point is already there, move to the beginning of the line.
+  Effectively toggle between the first non-whitespace character and
+  the beginning of the line.
+
+  If ARG is not nil or 1, move forward ARG - 1 lines first.  If
+  point reaches the beginning or end of the buffer, stop there."
+    (interactive "^p")
+    (setq arg (or arg 1))
+
+    ;; Move lines first
+    (when (/= arg 1)
+      (let ((line-move-visual nil))
+        (forward-line (1- arg))))
+
+    (let ((orig-point (point)))
+      (back-to-indentation)
+      (when (= orig-point (point))
+        (move-beginning-of-line 1))))
+
+  ;; remap C-a to `smarter-move-beginning-of-line'
+  (global-set-key [remap move-beginning-of-line]
+                  'smarter-move-beginning-of-line)
+#+END_SRC
+
+* Next and Previous File
+
+   Sometimes it is obvious what is the /next file/ based on the one
+   I'm currently reading. For instance, in my journal entries, the
+   filename is a number that can be incremented. Same with
+   presentation files...
+
+#+BEGIN_SRC elisp
+  (defun split-string-with-number (string)
+    "Returns a list of three components of the string, the first is
+  the text prior to any numbers, the second is the embedded number,
+  and the third is the rest of the text in the string."
+    (let* ((start (string-match "[0-9]+" string))
+           (end (string-match "[^0-9]+" string start)))
+      (if start
+          (list (substring string 0 start)
+                (substring string start end)
+                (if end  (substring string end)  "")))))
+#+END_SRC
+
+   Which means that the following defines this function:
+
+#+BEGIN_SRC elisp :tangle no
+(split-string-with-number "abc42xyz")  ;; ("abc" "42" "xyz")
+(split-string-with-number "42xyz")     ;; ("" "42" "xyz")
+(split-string-with-number "abc42")     ;; ("abc" "42" "")
+(split-string-with-number "20140424")  ;; ("" "20140424" "")
+(split-string-with-number "abcxyz")    ;; nil
+#+END_SRC
+
+   Given this splitter function, we create a function that takes some
+   sort of operator and return a new filename based on the conversion
+   that happens:
+
+#+BEGIN_SRC elisp
+  (defun find-file-number-change (f)
+    (let* ((filename (buffer-file-name))
+           (parts    (split-string-with-number
+                      (file-name-base filename)))
+           (new-name (number-to-string
+                      (funcall f (string-to-number (nth 1 parts))))))
+       (concat (file-name-directory filename)
+               (nth 0 parts)
+               new-name
+               (nth 2 parts))))
+#+END_SRC
+
+   And this allows us to create two simple functions that can load the
+   "next" and "previous" files:
+
+#+BEGIN_SRC elisp
+  (defun find-file-increment ()
+    "Takes the current buffer, and loads the file that is 'one
+  more' than the file contained in the current buffer. This
+  requires that the current file contain a number that can be
+  incremented."
+    (interactive)
+    (find-file (find-file-number-change '1+)))
+
+  (defun find-file-decrement ()
+    "Takes the current buffer, and loads the file that is 'one
+  less' than the file contained in the current buffer. This
+  requires that the current file contain a number that can be
+  decremented."
+    (interactive)
+    (find-file (find-file-number-change '1-)))
+#+END_SRC
+
 
 * Technical Artifacts
 
