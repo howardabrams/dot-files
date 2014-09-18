@@ -8,6 +8,8 @@
    Here are all the packages related to Clojure that I use. Note
    my migration from [[https://github.com/clojure-emacs/nrepl.el][nrepl]] to [[https://github.com/clojure-emacs/cider][Cider]].
 
+* Supporting Packages
+
 #+BEGIN_SRC elisp
   (packages-install '( clojure-mode
                        clojure-cheatsheet
@@ -34,6 +36,8 @@
                ;; Two under-bars are used as "stuff to do" in the Koans
                (highlight-phrase "__" 'hi-red-b)))
 #+END_SRC
+
+* Compojure
 
    According to the [[https://github.com/weavejester/compojure/wiki][Compojure Wiki]], the following code makes their
    macros look prettier:
@@ -420,7 +424,6 @@
 
      (defun 4clojure-start-session ()
        (interactive)
-       (4clojure-login "geekdad")
        (4clojure-open-question
         (ha-4clojure-last-project ha-4clojure-place-file)))
 
