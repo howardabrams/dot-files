@@ -25,7 +25,7 @@
 (require 'org)         ;; The org-mode goodness
 (require 'ob)          ;; org-mode export system
 (require 'ob-tangle)   ;; org-mode tangling process
-(require 'sh-funcs)    ;; My special functions for doing scripts
+(require 'shell-script-funcs)    ;; My special functions for doing scripts
 
 ;; Need to get the directory to my 'dot-files' source code. While
 ;; developing, we just evaluate this buffer, so 'buffer-file-name' is
@@ -58,6 +58,10 @@ encironment (or updates an existing system)."
   ;; Just link the entire directory instead of copying the snippets:
   (ha/mksymlink  "${dot-files-src}/snippets"
                  "${user-emacs-directory}/snippets")
+
+  ;; Some Elisp files are just symlinked instead of tangled...
+  (ha/mksymlinks "${dot-files-src}/bin/[a-z]*"
+                 "${HOME}/bin")
 
   ;; Yeah, this makes me snicker every time I see it.
   (ha/mksymlink  "${dot-files-src}/vimrc" "${HOME}/.vimrc")
