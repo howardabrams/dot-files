@@ -316,12 +316,19 @@ brew linkapps
 *** Web Browsing
 
     For v24.4, I'm intrigued with EWW, but [[http://w3m.sourceforge.net][w3m]] works really well.
+    The one I use is the one I've loaded ...
 
-    #+BEGIN_SRC elisp :tangle no
-    (when (fboundp 'eww)
-      (global-set-key (kbd "<f9> b") 'eww)
-      (global-set-key (kbd "<f9> l") 'eww-follow-link)
-      (global-set-key (kbd "<f9> u") 'eww-follow-url))
+    #+BEGIN_SRC elisp
+      (when (fboundp 'eww)
+        (setq browse-url-browser-function 'eww-browse-url)
+
+        (defun eww-search (term)
+          (interactive "sSearch terms: ")
+          (eww-browse-url (concat "http://www.google.com/search?gbv=1&source=hp&hl=en&ie=ISO-8859-1&btnG=Google+Search&q=" term)))
+
+        (global-set-key (kbd "<f9> G") 'eww)
+        (global-set-key (kbd "<f9> b") 'eww-follow-link)
+        (global-set-key (kbd "<f9> S") 'eww-search))
     #+END_SRC
 
     The following set up functions from [[http://www.emacswiki.org/emacs/emacs-w3m][emacs-w3m]]:
@@ -330,6 +337,7 @@ brew linkapps
     (when (fboundp 'w3m)
       (setq browse-url-browser-function 'w3m-browse-url)
       (setq w3m-use-cookies t)
+      (global-set-key (kbd "<f9> G") 'w3m-goto-url)
       (global-set-key (kbd "<f9> b") 'browse-url-at-point)
       (global-set-key (kbd "<f9> S") 'w3m-search))
     #+END_SRC
