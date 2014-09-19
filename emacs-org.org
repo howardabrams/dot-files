@@ -41,10 +41,10 @@ Emacs love affair. Make sure the latest packages are installed:
    anything else:
 
 #+BEGIN_SRC elisp
-  (if (autofeaturep 'org-journal)
-      (progn
-        (require 'org-journal)
-        (setq org-journal-dir "~/journal/")))
+  (setq org-journal-dir "~/journal/")
+
+  (when (autofeaturep 'org-journal)
+        (require 'org-journal))
 #+END_SRC
 
    All my journal entries will be formatted using org-mode:
@@ -69,12 +69,15 @@ Emacs love affair. Make sure the latest packages are installed:
     A function to easily load today (and yesterday's) journal entry.
 
 #+BEGIN_SRC elisp
-  (defun journal-file-today ()
-    "Creates and load a file based on today's date."
-    (interactive)
+  (defun get-journal-file-today ()
+    "Return filename for today's journal entry."
     (let ((daily-name (format-time-string "%Y%m%d")))
-      (find-file (expand-file-name
-                  (concat "~/journal/" daily-name)))))
+      (expand-file-name (concat org-journal-dir daily-name))))
+
+  (defun journal-file-today ()
+    "Create and load a journal file based on today's date."
+    (interactive)
+    (find-file (get-journal-file-today)))
 #+END_SRC
 
     Since I sometimes (not often) forget to create
@@ -86,7 +89,7 @@ Emacs love affair. Make sure the latest packages are installed:
     (let ((daily-name (format-time-string "%Y%m%d"
        (time-subtract (current-time) (days-to-time 1)))))
       (find-file (expand-file-name
-                  (concat "~/journal/" daily-name)))))
+                  (concat org-journal-dir daily-name)))))
 #+END_SRC
 
 I really would really like to read what I did last year "at this
@@ -305,30 +308,16 @@ should be. After calling this function, call 'meeting-done' to reset the environ
   (global-set-key (kbd "C-c c") 'org-capture)
 #+END_SRC
 
-   This will bring up a list of /note capturing templates/:
+   This will bring up a list of /note capturing templates/. I actually
+   have this information stored in my [[file:emacs-local.org::*Org%20Configuration][system-specific "local" configuration]]
+   file.
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC elisp :tangle no
   (setq org-capture-templates
-        '(("n" "Thought or Note" entry (file "~/Technical/general-notes.org")
+        '(("n" "Thought or Note"  entry (file "~/technical/personal.org")
            "* %i%?\n    %a" :empty-lines 1)
-
-          ("w" "General Sprint Note" entry (file+headline (current-sprint-file) "Work Issues")
-           "*** %i%?" :empty-lines 1)
-          ("m" "Meeting Notes" entry (file+headline (current-sprint-file) "Meeting Notes")
-           "** %i%?\n\n   Met on %t: \n\n" :empty-lines 1)
-          ("s" "Scrum Status" entry (file+headline (current-sprint-file) "Scrum Status")
-           "** %t\n\n   - Howard:\n   - Jeff:\n   - Hotta:\n   - Sachin:\n\n" :empty-lines 1)
-          ("r" "Retrospective Status" entry (file+headline (current-sprint-file) "Status/Accomplishments")
-           "*** %i%?\n  Linked: %a" :empty-lines 1)
-          ("g" "Retrospective Goodness" entry (file+headline (current-sprint-file) "Keep Doing (Good)")
-           "*** %i%?" :empty-lines 1)
-          ("b" "Retrospective Badness" entry (file+headline (current-sprint-file) "Stop Doing (Bad)")
-           "*** %i%?" :empty-lines 1)
-          ("i" "Retrospective Improvement" entry (file+headline (current-sprint-file) "Start Doing (Improvements)")
-           "*** %i%?" :empty-lines 1)
-          ("x" "Note for Next Sprint" entry (file+headline (current-sprint-file) "Notes for Next Sprint")
-           "*** %i%?" :empty-lines 1)
-
+          ("j" "Journal Note"     entry (file (get-journal-file-today))
+           "* %?" :empty-lines 1)
           ("p" "Personal Journal" entry (file+datetree "~/Technical/personal.org")
            "* Projects\n\n  %i%?\n\n  %a" :empty-lines 1)))
 
