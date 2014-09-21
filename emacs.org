@@ -108,6 +108,13 @@ brew linkapps
   (add-to-list 'load-path (concat user-emacs-directory "elisp"))
 #+END_SRC
 
+   Load up my special collection of enhancements to Emacs Lisp:
+
+   #+BEGIN_SRC elisp
+   (require 'init-support)
+   (require 'cl)
+   #+END_SRC
+
 * Package Initialization
 ** Package Manager
 
@@ -140,22 +147,9 @@ brew linkapps
    so this is mine.
 
 #+BEGIN_SRC elisp
-  (defun filter (condp lst)
-    "Emacs Lisp doesn’t come with a ‘filter’ function to keep elements that satisfy
-  a conditional and excise the elements that do not satisfy it. One can use ‘mapcar’
-  to iterate over a list with a conditional, and then use ‘delq’ to remove the ‘nil’
-  values."
-    (delq nil
-          (mapcar (lambda (x) (and (funcall condp x) x)) lst)))
-
-  (defun inverse-filter (condp lst)
-    "A filter function, but returns a list of the entries that don't match the predicate."
-    (delq nil
-          (mapcar (lambda (x) (and (not (funcall condp x)) x)) lst)))
-
   (defun packages-install (packages)
     "Given a list of packages, this will install them from the standard locations."
-    (let ((to-install (inverse-filter 'package-installed-p packages)))
+    (let ((to-install (remove-if-not 'package-installed-p packages)))
       (when to-install
         (package-refresh-contents)
         (dolist (it to-install)
@@ -1228,7 +1222,11 @@ brew install ag
      (when (fboundp 'global-prettify-symbols-mode)
          (defconst lisp--prettify-symbols-alist
            '(("lambda"  . ?λ)
-             ("." . ?•)))
+             ("curry"   . ?»)
+             ("rcurry"  . ?«)
+             ("comp"    . ?∘)
+             ("compose" . ?∘)
+             ("."       . ?•)))
 
          (global-prettify-symbols-mode 1))
    #+END_SRC
