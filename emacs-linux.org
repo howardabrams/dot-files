@@ -43,6 +43,15 @@ Linux.
   Perhaps I would want to tie into the Linux notification system.
   Then again, maybe not.
 
+* Locate
+
+  While I use Apple Spotlight for indexing my text files on the Mac,
+  on Linux, we use =recoll= ...
+
+  #+BEGIN_SRC elisp
+    (setq locate-command "recoll")
+  #+END_SRC
+
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.

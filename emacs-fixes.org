@@ -71,7 +71,7 @@ ever do that?
       (apply 'kill-ring-save (ha/get-line-or-region current-prefix-arg)))
 
     (global-set-key (kbd "M-w") 'ha/copy-line-or-region)
-    (global-set-key (kbd "a-c") 'ha/copy-line-or-region)
+    (global-set-key (kbd "A-c") 'ha/copy-line-or-region)
     (global-set-key (kbd "s-c") 'ha/copy-line-or-region)
   #+END_SRC
 
@@ -84,7 +84,7 @@ ever do that?
       (apply 'kill-region (ha/get-line-or-region current-prefix-arg)))
 
     (global-set-key (kbd "C-w") 'ha/cut-line-or-region)
-    (global-set-key (kbd "a-x") 'ha/cut-line-or-region)
+    (global-set-key (kbd "A-x") 'ha/cut-line-or-region)
     (global-set-key (kbd "s-x") 'ha/cut-line-or-region)
   #+END_SRC
 
@@ -277,8 +277,12 @@ ever do that?
   decremented."
     (interactive)
     (find-file (find-file-number-change '1-)))
-#+END_SRC
 
+  (global-set-key (kbd "C-c f +") 'find-file-increment)
+  (global-set-key (kbd "C-c f n") 'find-file-increment)
+  (global-set-key (kbd "C-c f -") 'find-file-decrement)
+  (global-set-key (kbd "C-c f p") 'find-file-decrement)
+#+END_SRC
 
 * Technical Artifacts
 

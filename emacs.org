@@ -653,10 +653,11 @@ brew linkapps
          (find-file file)))
    #+END_SRC
 
-   The trick, as always, is finding the correct keybinding:
+   The trick, as always, is finding the correct keybinding... but I
+   have the =C-c f= as prefix for loading all sorts of files...
 
    #+BEGIN_SRC elisp
-   (global-set-key (kbd "C-x C-S-f") 'ha/find-file-as-root)
+   (global-set-key (kbd "C-c f r") 'ha/find-file-as-root)
    #+END_SRC
 
 ** IDO (Interactively DO Things)
@@ -743,7 +744,7 @@ brew install ag
 
 #+BEGIN_SRC elisp
   (setq locate-command "mdfind")  ;; Use Mac OS X's Spotlight
-  (global-set-key (kbd "C-x C-l") 'locate)
+  (global-set-key (kbd "C-c f l") 'locate)
 #+END_SRC
 
    The following function wraps =locate-with-filter= to only grab
@@ -754,7 +755,7 @@ brew install ag
     (interactive "sSearch string: ")
     (locate-with-filter search-string ".org$"))
 
-  (global-set-key (kbd "C-x C-L") 'locate-org-files)
+  (global-set-key (kbd "C-c f o") 'locate-org-files)
 #+END_SRC
 
    We /could/ limit the location that Spotlight request searches:
@@ -811,7 +812,7 @@ brew install ag
   (require 'recentf)
   (recentf-mode 1)
   (setq recentf-max-menu-items 25)
-  (global-set-key (kbd "C-x C-r") 'recentf-open-files)
+  (global-set-key (kbd "C-c f f") 'recentf-open-files)
 #+END_SRC
 
 ** Backup Settings
