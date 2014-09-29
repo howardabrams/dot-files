@@ -633,6 +633,7 @@ brew linkapps
    #+BEGIN_EXAMPLE
    /vagrant:collectd-server:/var/chef/cache/chef-stacktrace.out
    #+END_EXAMPLE*
+
 ** Editing Root Files
 
    According to [[http://emacs-fu.blogspot.com/2013/03/editing-with-root-privileges-once-more.html][Emacs Fu]], we can use the wonderful Tramp to edit
