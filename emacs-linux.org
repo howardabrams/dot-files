@@ -21,6 +21,7 @@ Linux.
     (global-set-key (kbd "s-f") 'isearch-forward-regexp)
 
     (global-set-key (kbd "s-o") 'ido-find-file)
+    (global-set-key (kbd "s-s") 'save-buffer)
     (global-set-key (kbd "s-+") 'text-scale-increase)
     (global-set-key (kbd "s--") 'text-scale-decrease)
     (global-set-key (kbd "s-l") 'goto-line)
