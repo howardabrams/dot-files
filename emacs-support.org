@@ -76,7 +76,7 @@ filter function.
       (cl-reduce (lambda (f g)
                    (lexical-let ((f f) (g g))
                      (lambda (&rest arguments)
-                       (funcall f (apply g arguments)))))
+                       (funcall f (apply g arguments)))))))
   #+END_SRC
 * Technical Artifacts
 

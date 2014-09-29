@@ -139,6 +139,7 @@ brew linkapps
 
 #+BEGIN_SRC elisp
   (package-initialize)
+  (package-refresh-contents)
 #+END_SRC
 
    Not sure why the package management system doesn't come with a
@@ -149,7 +150,7 @@ brew linkapps
 #+BEGIN_SRC elisp
   (defun packages-install (packages)
     "Given a list of packages, this will install them from the standard locations."
-    (let ((to-install (remove-if-not 'package-installed-p packages)))
+    (let ((to-install (inverse-filter 'package-installed-p packages)))
       (when to-install
         (package-refresh-contents)
         (dolist (it to-install)
@@ -170,13 +171,13 @@ brew linkapps
                    dired-details
                    color-identifiers-mode  ;; Color variables differently
                    epl
+                   env-var-import
                    esh-buf-stack
                    expand-region
                    flx
                    flx-ido
                    flycheck
                    flycheck-color-mode-line
-                   flyspell
                    git-blame
                    git-commit-mode
                    git-gutter-fringe
@@ -185,11 +186,13 @@ brew linkapps
                    gitignore-mode
                    graphviz-dot-mode
                    hungry-delete
+                   ido-vertical-mode
                    iy-go-to-char
                    key-chord
                    magit
                    markdown-mode
                    multiple-cursors
+                   paredit
                    redo+             ;; If not installed, edit mac-key-mode
                    relative-line-numbers
                    smex

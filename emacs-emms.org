@@ -17,7 +17,14 @@ Emacs at work instead of using iTunes like the good lord intended.
   brew install mplayer
   #+END_EXAMPLE
 
+  Install the EMMS package:
+
+#+BEGIN_SRC elisp
+  (packages-install '( emms ))
+#+END_SRC
+
   Load up the system and the players.
+
   #+BEGIN_SRC elisp
     (require 'emms-setup)
     (emms-standard)
