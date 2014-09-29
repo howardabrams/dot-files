@@ -4,6 +4,12 @@
 #+DATE:   [2014-02-28 Fri]
 #+TAGS:   emacs
 
+* Needed Packages
+
+#+BEGIN_SRC elisp
+  (packages-install '( powerline ))
+#+END_SRC
+
 * PowerLine
 
   The [[http://www.emacswiki.org/emacs/PowerLine][PowerLine]] project can really clean up the mode line, but I'm
