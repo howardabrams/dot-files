@@ -376,6 +376,47 @@ should be. After calling this function, call 'meeting-done' to reset the environ
   (setq org-export-html-with-timestamp nil)
 #+END_SRC
 
+* Narrowing and Widening
+
+  After reading [[http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html][this article]], I decided to expand how I narrow/widen
+  buffer sections in org-mode. This is specific to org-mode, as I
+  often like to see the surrounding code using =fancy-narrow= as
+  explained in my [[file:emacs.org::*Expand%20Region][Expand Region]] section.
+
+  #+BEGIN_SRC elisp
+    (defun org-narrow-or-widen-dwim (p)
+      "If the buffer is narrowed, it widens. Otherwise, it narrows intelligently.
+    Intelligently means: region, org-src-block, org-subtree, or defun,
+    whichever applies first.
+    Narrowing to org-src-block actually calls `org-edit-src-code'.
+
+    With prefix P, don't widen, just narrow even if buffer is already
+    narrowed."
+      (interactive "P")
+      (declare (interactive-only))
+      (cond ((and (buffer-narrowed-p) (not p)) (widen))
+            ((region-active-p)
+             (narrow-to-region (region-beginning) (region-end)))
+            ((derived-mode-p 'org-mode)
+             (cond ((ignore-errors (org-edit-src-code))
+                    (delete-other-windows))
+                   ((org-at-block-p)
+                    (org-narrow-to-block))
+                   (t (org-narrow-to-subtree))))
+            (t (narrow-to-defun))))
+
+    (global-set-key (kbd "C-x n o") 'org-narrow-or-widen-dwim)
+  #+END_SRC
+
+    According to [[http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html][the narrow-widen article]], we can have =C-x C-s= get
+    out of editing org-mode source code blocks:
+
+    #+BEGIN_SRC elisp
+      (eval-after-load 'org-src
+        '(define-key org-src-mode-map
+           "\C-x\C-s" #'org-edit-src-exit))
+    #+END_SRC
+
 
 * Presentations
 
