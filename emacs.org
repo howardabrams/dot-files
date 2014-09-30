@@ -440,7 +440,7 @@ brew linkapps
 
         (require 'fancy-narrow)
 
-        (defun ha-highlight-block ()
+        (defun ha/highlight-block ()
           "Highlights a 'block' in a buffer defined by the first blank
            line before and after the current cursor position. Uses the
            'fancy-narrow' mode to high-light the block."
@@ -453,7 +453,7 @@ brew linkapps
             (fancy-narrow-to-region beg end)
             (goto-char cur)))
 
-        (defun ha-highlight-section (num)
+        (defun ha/highlight-section (num)
           "If some of the buffer is highlighted with the 'fancy-narrow'
            mode, then un-highlight it by calling 'fancy-widen'.
 
@@ -467,9 +467,11 @@ brew linkapps
            ((fancy-narrow-active-p) (fancy-widen))
            ((> num 1)               (ha-highlight-block))
            ((region-active-p)       (fancy-narrow-to-region (region-beginning) (region-end)))
+           ;; Want to do something special in org-mode? Probably...
+           ;; ((derived-mode-p 'org-mode) ...)
            (t                       (fancy-narrow-to-defun))))
 
-        (global-set-key (kbd "C-M-+") 'ha-highlight-section))
+        (global-set-key (kbd "C-M-+") 'ha/highlight-section))
     #+END_SRC
 
 ** Block Wrappers
