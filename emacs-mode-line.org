@@ -10,6 +10,35 @@
   (packages-install '( powerline ))
 #+END_SRC
 
+* Which Function Mode
+
+  While this might make my mode line a bit too cluttered, I like
+  having the name of the function (or org-mode header) on the line:
+
+  #+BEGIN_SRC elisp
+  (setq which-func-unknown "")
+  (which-function-mode 1)
+  #+END_SRC
+
+  Let's "fix" the output of the function based on my mode line:
+
+  #+BEGIN_SRC elisp
+    (setq which-func-format
+          `(" "
+            (:propertize which-func-current local-map
+                         (keymap
+                          (mode-line keymap
+                                     (mouse-3 . end-of-defun)
+                                     (mouse-2 . narrow-to-defun)
+                                     (mouse-1 . beginning-of-defun)))
+                         face which-func
+                         mouse-face mode-line-highlight
+                         help-echo "mouse-1: go to beginning\n\
+    mouse-2: toggle rest visibility\n\
+    mouse-3: go to end")
+            " "))
+  #+END_SRC
+
 * PowerLine
 
   The [[http://www.emacswiki.org/emacs/PowerLine][PowerLine]] project can really clean up the mode line, but I'm
@@ -25,6 +54,7 @@
   #+BEGIN_SRC elisp
   (custom-set-faces
    '(mode-line-buffer-id ((t (:foreground "#008000" :bold t))))
+   '(which-func ((t (:foreground "#008000"))))
    '(mode-line ((t (:foreground "#008000" :background "#dddddd" :box nil))))
    '(mode-line-inactive ((t (:foreground "#008000" :background "#bbbbbb" :box nil)))))
   #+END_SRC
@@ -79,6 +109,7 @@
                             (powerline-simpler-vc-mode (powerline-vc face1))))
                           (rhs
                            (list
+                            (powerline-raw mode-line-misc-info face1 'r)
                             (powerline-raw global-mode-string face1 'r)
                             (powerline-raw "%4l" face1 'r)
                             (powerline-raw ":" face1)
