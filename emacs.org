@@ -254,6 +254,48 @@ brew linkapps
   (setq-default tab-always-indent 'complete)
 #+END_SRC
 
+** Aggressive Auto Indention
+
+   Automatically indent without use of the tab found in [[http://endlessparentheses.com/permanent-auto-indentation.html][this article]],
+   and seems to be quite helpful for many types of programming
+   languages.
+
+   To begin, we create a function that can indent a function by
+   calling =indent-region= on the beginning and ending points of a
+   function.
+
+   #+BEGIN_SRC elisp
+     (defun indent-defun ()
+       "Indent current defun.
+     Do nothing if mark is active (to avoid deactivaing it), or if
+     buffer is not modified (to avoid creating accidental
+     modifications)."
+       (interactive)
+       (unless (or (region-active-p)
+                   buffer-read-only
+                   (null (buffer-modified-p)))
+         (let ((l (save-excursion (beginning-of-defun 1) (point)))
+               (r (save-excursion (end-of-defun 1) (point))))
+           (cl-letf (((symbol-function 'message) #'ignore))
+             (indent-region l r)))))
+   #+END_SRC
+
+   Next, create a hook that will call the =indent-defun= with every
+   command call:
+
+   #+BEGIN_SRC elisp
+     (defun activate-aggressive-indent ()
+       "Locally add `ha/indent-defun' to `post-command-hook'."
+       (add-hook 'post-command-hook
+                 'indent-defun nil 'local))
+   #+END_SRC
+
+   The trick is to add the following to each programming hook:
+
+   #+BEGIN_SRC elisp
+      (add-hook 'emacs-lisp-mode-hook 'activate-aggressive-indent)
+   #+END_SRC
+
 * Display Settings
 
    I've been using Emacs for many years, and appreciate a certain
