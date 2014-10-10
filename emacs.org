@@ -1576,19 +1576,27 @@ brew install ag
 ** Load up the Local Configuration
 
   Before we finish, we need to check if there is a local file for us
-  to load and evaluate:
+  to load and evaluate.
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp :tangle no
   (let ((local-file "~/.emacs.d/elisp/init-local.el"))
     (when (file-exists-p local-file)
       (load-file local-file)
       (message "Loaded machine-specific settings: %s" local-file)))
-#+END_SRC
+  #+END_SRC
+
+  However, we can assume that the local file has been tangled and
+  provides the =init-local= key:
+
+  #+BEGIN_SRC elisp
+  (catch 'error
+    (require 'init-local))
+  #+END_SRC
 
   After the first load, we can reload this with a require:
 
   #+BEGIN_SRC elisp
-  (provide 'init-main)
+    (provide 'init-main))
   #+END_SRC
 
   Before you can build this on a new system, make sure that you put
