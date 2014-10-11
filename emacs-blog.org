@@ -1,68 +1,232 @@
-#+TITLE:  Blogging with Emacs and org-page
+#+TITLE:  Blogging with Emacs
 #+AUTHOR: Howard
 #+EMAIL:  howard.abrams@gmail.com
 #+DATE:   2014 Apr 13
 #+TAGS:   emacs blog website
 
-After playing around with [[https://github.com/kelvinh/org-page][org-page]], I've decided to lease it for a
-while. Which amounts to doing the following:
+Before attempting any more heavy-weight blogging design, I am going to
+attempt nothing more than the standard org-mode export features
+coupled with some magic available to JavaScript.
 
-#+BEGIN_SRC elisp :tangle no
-  (let ((repo "~/Google Drive/howardism-web"))
-    (make-directory repo)
-    (op/new-repository repo))
-#+END_SRC
+* Requirements? Goals?
 
-Of course, we need to make sure that our [[file:~/Work/Personal/gitolite-admin/conf/gitolite.conf::repo%20website-howardism][Git server]] supports this new
-repository.
+  What do I want from my website?
+
+  * Static web pages with minimal HTML content
+    * Easier for disabled people
+    * Easier to render on mobile devices
+    * Easier to view on text-based browsers, which I enjoy more
+  * Colors and Layout?
+    * Surely we can do most everything possible with CSS
+    * If not, then jQuery can come to the rescue
+  * Buttons after the article:
+    * Share could bring up a submenu of options, which would be nicer looking
+    * Comment should call my "Commenting" service
+    * Search needs to physically be above, but in the DOM it should
+      come after the article... you know, content first
+
+* Export Locations
+
+   The brilliance of =org-mode= is the ability to publish your notes
+   as HTML files into a web server. See [[http://orgmode.org/worg/org-tutorials/org-publish-html-tutorial.html][these instructions]]. I've
+   transitioned over to the new =ox= exporter, see [[http://orgmode.org/worg/org-8.0.html][these instructions]].
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'org-page)
-    (require 'org-page)
+  (require 'ox-html)
+  (require 'ox-publish)
+  (require 'htmlize)     ;; Gotta package-install this for code highlights
 
-    (setq op/repository-directory "~/Google Drive/howardism-web")
-    (setq op/site-main-title "howardisms")
-    (setq op/site-sub-title "Slay dragons with Lisp and Philosophy.")
+  (setq org-mode-publishing-directory (concat (getenv "HOME") "/Public/"))
 
-    (setq op/site-domain "http://www.howardism.org/")
-    (setq op/personal-github-link "https://github.org/howardabrams")
+  (setq org-publish-project-alist
+        '(("all"
+           :components ("blog-content" "blog-static" "org-notes" "blog-rss"))
 
-    ;; The op/template-directory is calculated from the "theme" and the
-    ;; 'file-name-as-directory' (which is actually useless, since that
-    ;; points into the MELPA directory story. So this should be complete
-    ;; overridden.
-    ; (setq op/template-directory
-    ;      "~/Google Drive/howardism-web-theme/mdo/templates")
+          ("blog-content"
+           :base-directory "~/Dropbox/website/"
+           :base-extension "org"
+           :publishing-directory org-mode-publishing-directory
+           :recursive t
+           :publishing-function org-html-publish-to-html
+           ;; :preparation-function org-mode-blog-prepare
+           :export-with-tags nil
+           :headline-levels 4
+           :auto-preamble t
+           :auto-sitemap t
+           :sitemap-title "Howardisms"
+           :section-numbers nil
+           :table-of-contents     nil
+           :with-toc nil
+           :with-author nil
+           :with-creator nil
+           :with-tags nil
 
-    ;;; for commenting, you can choose either disqus or duoshuo
-    (setq op/personal-disqus-shortname "howardabrams")
-    ;; (setq op/personal-duoshuo-shortname "your_duoshuo_shortname")
+           :html-doctype "html5"
+           :html-preamble org-mode-blog-preamble
+           :html-preamble org-mode-blog-postamble
+           ;; :html-postamble "<hr><div id='comments'></div>"
+           :html-head  "<link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+              <link href='http://fonts.googleapis.com/css?family=Source+Serif+Pro:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+              <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro:400,700' rel='stylesheet' type='text/css'>
+              <link rel=\"stylesheet\" href=\"/css/styles.css\" type=\"text/css\"/>\n"
+           :html-head-extra "<script src=\"/js/magic.js\"></script>
+              <link rel=\"shortcut icon\" href=\"/favicon.ico\">
+              <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1\" />"
+           :html-html5-fancy t
+           :html-head-include-default-style nil
+           )
 
-    ;;; the configuration below are optional
-    ;; (setq op/personal-google-analytics-id "your_google_analytics_id")
-  )
+          ("blog-static"
+           :base-directory       "~/Dropbox/website/"
+           :base-extension       "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+           :publishing-directory org-mode-publishing-directory
+           :recursive            t
+           :publishing-function  org-publish-attachment
+           )
+
+          ("org-notes"
+           :base-directory        "~/Dropbox/org/technical/"
+           :base-extension        "org"
+           :publishing-directory  (concat org-mode-publishing-directory "/notes/")
+           :recursive             t
+           :publishing-function org-html-publish-to-html
+           :headline-levels       4             ; Just the default for this project.
+           :auto-preamble         t
+           :auto-sitemap          t             ; Generate sitemap.org automagically...
+           :makeindex             t
+           :section-numbers       nil
+           :table-of-contents     nil
+           :with-author nil
+           :with-creator nil
+           :with-tags nil
+           :style "<link rel=\"stylesheet\" href=\"../css/styles.css\" type=\"text/css\"/> <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js\" type=\"text/javascript\"></script> <link href=\"http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/smoothness/jquery-ui.css\" type=\"text/css\" rel=\"stylesheet\" />    <script src=\"https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js\" type=\"text/javascript\"></script> <script =\"text/javascript\" src=\"js/magic.js\"></script>"
+           )
+
+          ("org-notes-static"
+           :base-directory       "~/Dropbox/org/technical/"
+           :base-extension       "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+           :publishing-directory (concat org-mode-publishing-directory "/other/")
+           :recursive            t
+           :publishing-function  org-publish-attachment
+           )
+
+          ("blog-rss"
+           :base-directory "~/Dropbox/website/"
+           :base-extension "org"
+           :rss-image-url "http://howardism.org/img/rss.png"
+           :publishing-directory org-mode-publishing-directory
+           :publishing-function (org-rss-publish-to-rss)
+           :html-link-home "http://www.howardism.org/"
+           :html-link-use-abs-url t
+           :with-toc nil
+           :exclude ".*"
+           :include ("index.org"))))
+
+  (defun org-mode-blog-preamble (options)
+    "The function that creates the preamble top section for the blog.
+  OPTIONS contains the property list from the org-mode export."
+    (let ((base-directory (plist-get options :base-directory)))
+      (org-babel-with-temp-filebuffer (expand-file-name "top-bar.html" base-directory) (buffer-string))))
+
+  (defun org-mode-blog-postamble (options)
+    "The function that creates the postamble, or bottom section for the blog.
+  OPTIONS contains the property list from the org-mode export."
+    (let ((base-directory (plist-get options :base-directory)))
+      (org-babel-with-temp-filebuffer (expand-file-name "bottom.html" base-directory) (buffer-string))))
+
+  (defun org-mode-blog-prepare ()
+    "`index.org' should always be exported so touch the file before publishing."
+    (let* ((base-directory (plist-get project-plist :base-directory))
+           (buffer (find-file-noselect (expand-file-name "index.org" base-directory) t)))
+      (with-current-buffer buffer
+        (set-buffer-modified-p t)
+        (save-buffer 0))
+      (kill-buffer buffer)))
+
+  (setq org-src-fontify-natively t)
 #+END_SRC
 
-* Other Variables
+   I really, really would like to affect the output of the
+   exported/published HTML files to make them /prettier/.
 
-  Like most good Emacs packages, =org-page= has a pretty good
-  collection of [[https://github.com/kelvinh/org-page/blob/master/op-vars.el][customizable variables]].
+#+BEGIN_SRC elisp :tangle no
+  (setq org-html-style "<link rel='stylesheet' href='http://www.howardism.org/styles/org-export-html-style.css' type='text/css'/>
+  <script src='http://use.edgefonts.net/source-sans-pro.js'></script>
+  <script src='http://use.edgefonts.net/source-code-pro.js'></script>")
+#+END_SRC
 
-* Theme
+** Publishing as Presentation
 
-  The default theme that comes with =org-page= is pretty descent, and
-  should be sufficient just to customize the CSS file only. However,
-  the =mdo= theme (see the =op/theme= variable) is pulling its
-  contents directly from the MELPA downloaded distribution:
-  =~/.emacs.d/elpa/org-page-20140330.2032/themes/mdo/=
+    Out of all [[http://orgmode.org/worg/org-tutorials/non-beamer-presentations.html][the ideas]] online, I prefer using [[http://meyerweb.com/eric/tools/s5/][S5]], and by loading
+    [[https://github.com/eschulte/org-S5/blob/master/org-export-as-s5.el][this code]], we can issue =org-export-as-s5=:
 
-  I could create my own based on his, and then modify the
-  =op/template-directory= which points directly into the themes
-  directory.
+#+BEGIN_SRC elisp
+  (autoload 'org-export-as-s5 "org-export-as-s5"
+            "Module extension for Presentations for Org-Mode." t nil)
+#+END_SRC
 
-  In particular, check out the =container.mustache= file which holds
-  the basic layout of a page.
+    And let's tie this to a keystroke to make it easier to use:
+
+#+BEGIN_SRC elisp
+  (global-set-key (kbd "<f9> p") 'org-export-as-s5)
+#+END_SRC
+
+** Publish as Markdown
+
+    Using the [[http://orgmode.org/worg/org-contrib/org-export-generic.php][org-export-generic]] feature, we can export to Markdown
+    using =C-c C-e g M=:
+
+#+BEGIN_SRC elisp :tangle no
+  (require 'org-export-generic)
+
+  (org-set-generic-type
+   "Markdown"
+   '(:file-suffix ".markdown"
+     :key-binding ?M
+     :title-format "%s\n"
+     :title-suffix ?=
+     :body-header-section-numbers t
+     :body-header-section-number-format "%s) "
+     :body-section-header-prefix ("\n## " "\n### " "\n#### " "\n##### " "\n###### ")
+     :body-section-header-format  "%s"
+     :body-section-header-suffix  "\n\n"
+     :todo-keywords-export        t
+     :body-line-format            "  %s\n"
+     :body-tags-export            t
+     :body-tags-prefix            " <tags>"
+     :body-tags-suffix            "</tags>\n"
+     ;;:body-section-prefix       "<secprefix>\n"
+     ;;:body-section-suffix       "</secsuffix>\n"
+     :body-line-export-preformated        t
+     :body-line-fixed-prefix      "<pre>\n"
+     :body-line-fixed-suffix      "\n</pre>\n"
+     :body-line-fixed-format      "%s\n"
+     :body-list-prefix            "\n"
+     :body-list-suffix            "\n"
+     :body-list-format            "  * %s\n"
+     ;;:body-number-list-prefix   "<ol>\n"
+     ;;:body-number-list-suffix   "</ol>\n"
+     ;;:body-number-list-format   "<li>%s</li>\n"
+     ;;:body-number-list-leave-number     t
+     :body-list-checkbox-todo     "[_] "
+     :body-list-checkbox-todo-end ""
+     :body-list-checkbox-done     "[X] "
+     :body-list-checkbox-done-end ""
+     :body-line-format            "%s"
+     :body-line-wrap               79
+     :body-text-prefix            ""
+     :body-text-suffix            ""
+     ))
+#+END_SRC
+
+
 * Technical Artifacts
+
+  Offer up the Elisp goodness to others:
+
+  #+BEGIN_SRC elisp
+  (provide 'init-blog)
+  #+END_SRC
 
   Before you can build this on a new system, make sure that you put
   the cursor over any of these properties, and hit: =C-c C-c=
