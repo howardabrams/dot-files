@@ -127,7 +127,10 @@ other systems with a graphical front-end.
      '(org-block-background
        ((t (:background "#FFFFEA"))))
      '(org-block-end-line
-       ((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))))
+       ((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF"))))
+
+     '(mode-line-buffer-id ((t (:foreground "#005000" :bold t))))
+     '(which-func ((t (:foreground "#008000")))))
 
      ;; Looks like the minibuffer issues are only for v23
      ; (set-face-foreground 'minibuffer "black")
@@ -143,7 +146,10 @@ other systems with a graphical front-end.
      '(org-block-background
        ((t (:background "#111111"))))
      '(org-block-end-line
-       ((t (:foreground "#008ED1" :background "#002E41")))))
+       ((t (:foreground "#008ED1" :background "#002E41"))))
+
+     '(mode-line-buffer-id ((t (:foreground "black" :bold t))))
+     '(which-func ((t (:foreground "green")))))
 
      ;; Looks like the minibuffer issues are only for v23
      ; (set-face-foreground 'minibuffer "white")
