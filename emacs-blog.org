@@ -25,17 +25,32 @@ coupled with some magic available to JavaScript.
     * Search needs to physically be above, but in the DOM it should
       come after the article... you know, content first
 
-* Export Locations
+* Prerequisites
+
+  Need the following extra packages:
+
+  #+BEGIN_SRC elisp
+    (packages-install '( org-plus-contrib
+                         htmlize ))
+  #+END_SRC
+
+  And then require them:
+
+  #+BEGIN_SRC elisp
+  (require 'ox-html)
+  (require 'ox-publish)
+  (require 'ox-rss)
+  (require 'htmlize)     ;; Gotta package-install this for code highlights
+  #+END_SRC
+
+* Blog Publishing Settings
 
    The brilliance of =org-mode= is the ability to publish your notes
    as HTML files into a web server. See [[http://orgmode.org/worg/org-tutorials/org-publish-html-tutorial.html][these instructions]]. I've
    transitioned over to the new =ox= exporter, see [[http://orgmode.org/worg/org-8.0.html][these instructions]].
 
 #+BEGIN_SRC elisp
-  (require 'ox-html)
-  (require 'ox-publish)
-  (require 'htmlize)     ;; Gotta package-install this for code highlights
-
+  (setq org-mode-websrc-directory (concat (getenv "HOME") "/Dropbox/website"))
   (setq org-mode-publishing-directory (concat (getenv "HOME") "/Public/"))
 
   (setq org-publish-project-alist
@@ -43,12 +58,12 @@ coupled with some magic available to JavaScript.
            :components ("blog-content" "blog-static" "org-notes" "blog-rss"))
 
           ("blog-content"
-           :base-directory "~/Dropbox/website/"
+           :base-directory org-mode-websrc-directory
            :base-extension "org"
            :publishing-directory org-mode-publishing-directory
            :recursive t
            :publishing-function org-html-publish-to-html
-           ;; :preparation-function org-mode-blog-prepare
+           :preparation-function org-mode-blog-prepare
            :export-with-tags nil
            :headline-levels 4
            :auto-preamble t
@@ -77,8 +92,8 @@ coupled with some magic available to JavaScript.
            )
 
           ("blog-static"
-           :base-directory       "~/Dropbox/website/"
-           :base-extension       "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+           :base-directory       org-mode-websrc-directory
+           :base-extension       "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|svg"
            :publishing-directory org-mode-publishing-directory
            :recursive            t
            :publishing-function  org-publish-attachment
@@ -111,7 +126,7 @@ coupled with some magic available to JavaScript.
            )
 
           ("blog-rss"
-           :base-directory "~/Dropbox/website/"
+           :base-directory org-mode-websrc-directory
            :base-extension "org"
            :rss-image-url "http://howardism.org/img/rss.png"
            :publishing-directory org-mode-publishing-directory
