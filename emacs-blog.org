@@ -50,7 +50,7 @@ coupled with some magic available to JavaScript.
    transitioned over to the new =ox= exporter, see [[http://orgmode.org/worg/org-8.0.html][these instructions]].
 
 #+BEGIN_SRC elisp
-  (setq org-mode-websrc-directory (concat (getenv "HOME") "/Dropbox/website"))
+  (setq org-mode-websrc-directory "~/Dropbox/website")
   (setq org-mode-publishing-directory (concat (getenv "HOME") "/Public/"))
 
   (setq org-publish-project-alist
@@ -58,7 +58,7 @@ coupled with some magic available to JavaScript.
            :components ("blog-content" "blog-static" "org-notes" "blog-rss"))
 
           ("blog-content"
-           :base-directory org-mode-websrc-directory
+           :base-directory "~/Dropbox/website"
            :base-extension "org"
            :publishing-directory org-mode-publishing-directory
            :recursive t
@@ -84,7 +84,8 @@ coupled with some magic available to JavaScript.
               <link href='http://fonts.googleapis.com/css?family=Source+Serif+Pro:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
               <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro:400,700' rel='stylesheet' type='text/css'>
               <link rel=\"stylesheet\" href=\"/css/styles.css\" type=\"text/css\"/>\n"
-           :html-head-extra "<script src=\"/js/magic.js\"></script>
+           :html-head-extra "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js\"></script>
+              <script src=\"/js/magic.js\"></script>
               <link rel=\"shortcut icon\" href=\"/favicon.ico\">
               <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1\" />"
            :html-html5-fancy t
@@ -92,12 +93,24 @@ coupled with some magic available to JavaScript.
            )
 
           ("blog-static"
-           :base-directory       org-mode-websrc-directory
+           :base-directory       "~/Dropbox/website" ;; org-mode-websrc-directory
            :base-extension       "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|svg"
            :publishing-directory org-mode-publishing-directory
            :recursive            t
            :publishing-function  org-publish-attachment
            )
+
+          ("blog-rss"
+           :base-directory "~/Dropbox/website" ; org-mode-websrc-directory
+           :base-extension "org"
+           :rss-image-url "http://howardism.org/img/rss.png"
+           :publishing-directory org-mode-publishing-directory
+           :publishing-function (org-rss-publish-to-rss)
+           :html-link-home "http://www.howardism.org/"
+           :html-link-use-abs-url t
+           :with-toc nil
+           :exclude ".*"
+           :include ("index.org"))
 
           ("org-notes"
            :base-directory        "~/Dropbox/org/technical/"
@@ -123,19 +136,7 @@ coupled with some magic available to JavaScript.
            :publishing-directory (concat org-mode-publishing-directory "/other/")
            :recursive            t
            :publishing-function  org-publish-attachment
-           )
-
-          ("blog-rss"
-           :base-directory org-mode-websrc-directory
-           :base-extension "org"
-           :rss-image-url "http://howardism.org/img/rss.png"
-           :publishing-directory org-mode-publishing-directory
-           :publishing-function (org-rss-publish-to-rss)
-           :html-link-home "http://www.howardism.org/"
-           :html-link-use-abs-url t
-           :with-toc nil
-           :exclude ".*"
-           :include ("index.org"))))
+           )))
 
   (defun org-mode-blog-preamble (options)
     "The function that creates the preamble top section for the blog.
@@ -169,6 +170,8 @@ coupled with some magic available to JavaScript.
   <script src='http://use.edgefonts.net/source-sans-pro.js'></script>
   <script src='http://use.edgefonts.net/source-code-pro.js'></script>")
 #+END_SRC
+
+* Other Publishing
 
 ** Publishing as Presentation
 
@@ -253,4 +256,4 @@ coupled with some magic available to JavaScript.
 #+PROPERTY:    comments org
 #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
 #+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
-#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.j
