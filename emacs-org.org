@@ -77,25 +77,31 @@ Emacs love affair. Make sure the latest packages are installed:
   (defun journal-file-today ()
     "Create and load a journal file based on today's date."
     (interactive)
-    (find-file (get-journal-file-today)))
+    (find-file (get-journal-file-today))
+    (if (equal "" (buffer-string))
+        (insert (format-time-string org-journal-date-format))))
 
   (global-set-key (kbd "C-c f j") 'journal-file-today)
 #+END_SRC
 
-    Since I sometimes (not often) forget to create
+    Since I sometimes (not often) forget to create a journal entry,
+    and need to re-write history.
 
 #+BEGIN_SRC elisp
-  (defun get-journal-file-yesterday ()
-    "Return filename for yesterday's journal entry."
-    (let ((daily-name (format-time-string "%Y%m%d" (time-subtract (current-time) (days-to-time 1)))))
-      (expand-file-name (concat org-journal-dir daily-name))))
+    (defun get-journal-file-yesterday ()
+      "Return filename for yesterday's journal entry."
+      (let ((daily-name (format-time-string "%Y%m%d" (time-subtract (current-time) (days-to-time 1)))))
+        (expand-file-name (concat org-journal-dir daily-name))))
 
-  (defun journal-file-yesterday ()
-    "Creates and load a file based on yesterday's date."
-    (interactive)
-    (find-file (get-journal-file-yesterday)))
+    (defun journal-file-yesterday ()
+      "Creates and load a file based on yesterday's date."
+      (interactive)
+      (find-file (get-journal-file-yesterday))
+      (if (equal "" (buffer-string))
+          (insert (format-time-string org-journal-date-format
+                                      (time-subtract (current-time) (days-to-time 1))))))
 
-  (global-set-key (kbd "C-c f y") 'journal-file-yesterday)
+    (global-set-key (kbd "C-c f y") 'journal-file-yesterday)
 #+END_SRC
 
 I really would really like to read what I did last year "at this
