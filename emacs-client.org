@@ -215,14 +215,6 @@ other systems with a graphical front-end.
   (global-set-key (kbd "C-S-z") 'redo)
 #+END_SRC
 
-* Mode Line
-
-    My [[file:emacs-mode-line.org][mode-line code]] is now more complex in order to make it more simpler.
-
-#+BEGIN_SRC elisp
-  (require 'init-mode-line)
-#+END_SRC
-
 * Window Size
 
    Hrm ... I'm always increasing the window size, so I might as well
