@@ -189,12 +189,12 @@ brew linkapps
                    ido-vertical-mode
                    iy-go-to-char
                    key-chord
+                   linum-relative
                    magit
                    markdown-mode
                    multiple-cursors
                    paredit
                    redo+             ;; If not installed, edit mac-key-mode
-                   relative-line-numbers
                    smex
                    thesaurus
                    undo-tree
@@ -317,6 +317,14 @@ brew linkapps
 #+END_SRC
 
    Most of the display settings actually come from the [[file:emacs-mac.org][Mac initialization file]].
+
+** Mode Line
+
+    My [[file:emacs-mode-line.org][mode-line code]] is now more complex in order to make it more simpler.
+
+#+BEGIN_SRC elisp
+  (require 'init-mode-line)
+#+END_SRC
 
 * Key Bindings
 ** Function Key Definitions
@@ -1638,7 +1646,7 @@ brew install ag
   After the first load, we can reload this with a require:
 
   #+BEGIN_SRC elisp
-    (provide 'init-main))
+    (provide 'init-main)
   #+END_SRC
 
   Before you can build this on a new system, make sure that you put
