@@ -54,6 +54,8 @@ other systems with a graphical front-end.
   (global-set-key (kbd "<f9> 3") "⅓")
   (global-set-key (kbd "<f9> 4") "¼")
 
+  (global-set-key (kbd "<f9> '") "’")
+  (global-set-key (kbd "<f9> \"") "‘")
 
   (global-set-key (kbd "<f9> 8") "•")
   (global-set-key (kbd "<f9> *") "°")
