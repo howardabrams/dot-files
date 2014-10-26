@@ -902,6 +902,19 @@ brew install ag
     We won't turn that on until I am fully using the next version.
 
 * Completion
+** Auto Insertion
+
+   Just beginning to get a collection of templates to automatically
+   insert if a blank file is loaded.
+
+   #+BEGIN_SRC elisp
+     (add-hook 'find-file-hook 'auto-insert)
+     (auto-insert-mode 1)
+   #+END_SRC
+
+   This line will create the =auto-insert-alist= variable that I can
+   add to later.
+
 ** Auto Complete
 
    This feature scans the code and suggests completions for what you
