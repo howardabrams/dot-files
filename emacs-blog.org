@@ -87,8 +87,9 @@ coupled with some magic available to JavaScript.
                   <link rel=\"stylesheet\" href=\"/css/styles.css\" type=\"text/css\"/>\n"
                :html-head-extra "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js\"></script>
                   <script src=\"/js/magic.js\"></script>
-                  <link rel=\"shortcut icon\" href=\"/favicon.ico\">
-                  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1\" />"
+                  <link rel=\"icon\" href=\"/img/dragon.svg\">
+                  <link rel=\"shortcut icon\" href=\"/img/dragon-head.png\">
+                  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />"
                :html-html5-fancy t
                :html-head-include-default-style nil
                )
@@ -104,7 +105,7 @@ coupled with some magic available to JavaScript.
               ("blog-rss"
                :base-directory "~/Dropbox/website" ; org-mode-websrc-directory
                :base-extension "org"
-               :rss-image-url "http://howardism.org/img/rss.png"
+               :rss-image-url "http://howardism.org/img/dragon-head.png"
                :publishing-directory org-mode-publishing-directory
                :publishing-function (org-rss-publish-to-rss)
                :html-link-home "http://www.howardism.org/"
