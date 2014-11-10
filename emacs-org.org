@@ -553,8 +553,8 @@ should be. After calling this function, call 'meeting-done' to reset the environ
    ; (setq org-src-fontify-natively t)
    (setq org-src-tab-acts-natively t)
 
-   (global-set-key (kbd "<f9> S-f") 'org-src-fontify-buffer)
-   (global-set-key (kbd "<f9> f") 'org-src-fontify-block)
+   (define-key personal-global-map (kbd "S-f") 'org-src-fontify-buffer)
+   (define-key personal-global-map (kbd "f") 'org-src-fontify-block)
 #+END_SRC
 
     Normally, fontifying the individual code blocks makes it

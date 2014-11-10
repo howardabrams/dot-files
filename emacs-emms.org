@@ -47,7 +47,7 @@ Emacs at work instead of using iTunes like the good lord intended.
   Finally, stop should be a bit quicker to hit:
 
   #+BEGIN_SRC elisp
-  (global-set-key (kbd "<f9> s") 'emms-stop)
+  (define-key personal-global-map (kbd "s") 'emms-stop)
   #+END_SRC
 
 * Radio Stations
@@ -70,7 +70,7 @@ Emacs at work instead of using iTunes like the good lord intended.
   Might as well make it easy to kick up the tunes...
 
   #+BEGIN_SRC elisp
-  (global-set-key (kbd "<f9> j") 'jazz)
+  (define-key personal-global-map (kbd "j") 'jazz)
   #+END_SRC
 
 * Technical Artifacts

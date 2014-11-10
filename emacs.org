@@ -327,6 +327,7 @@ brew linkapps
 #+END_SRC
 
 * Key Bindings
+
 ** Function Key Definitions
 
    Clearly, the most important keybindings are the function keys,
@@ -357,7 +358,10 @@ brew linkapps
     The F9 prefix is scattered about my config files.
 
     #+BEGIN_SRC elisp
-      (global-set-key (kbd "<f9> b") 'bury-buffer)
+      (define-prefix-command 'personal-global-map)
+      (global-set-key (kbd "<f9>") 'personal-global-map)
+
+      (define-key personal-global-map (kbd "b") 'bury-buffer)
     #+END_SRC
 
 *** Web Browsing
@@ -373,9 +377,9 @@ brew linkapps
           (interactive "sSearch terms: ")
           (eww-browse-url (concat "http://www.google.com/search?gbv=1&source=hp&hl=en&ie=ISO-8859-1&btnG=Google+Search&q=" term)))
 
-        (global-set-key (kbd "<f9> G") 'eww)
-        (global-set-key (kbd "<f9> b") 'eww-follow-link)
-        (global-set-key (kbd "<f9> S") 'eww-search))
+        (define-key personal-global-map (kbd "G") 'eww)
+        (define-key personal-global-map (kbd "b") 'eww-follow-link)
+        (define-key personal-global-map (kbd "S") 'eww-search))
     #+END_SRC
 
     The following set up functions from [[http://www.emacswiki.org/emacs/emacs-w3m][emacs-w3m]]:
@@ -384,9 +388,9 @@ brew linkapps
     (when (fboundp 'w3m)
       (setq browse-url-browser-function 'w3m-browse-url)
       (setq w3m-use-cookies t)
-      (global-set-key (kbd "<f9> G") 'w3m-goto-url)
-      (global-set-key (kbd "<f9> b") 'browse-url-at-point)
-      (global-set-key (kbd "<f9> S") 'w3m-search))
+      (define-key personal-global-map (kbd "G") 'w3m-goto-url)
+      (define-key personal-global-map (kbd "b") 'browse-url-at-point)
+      (define-key personal-global-map (kbd "S") 'w3m-search))
     #+END_SRC
 
     While browsing, remember the following:
@@ -417,10 +421,10 @@ brew linkapps
         (hs-minor-mode t)
         (hs-hide-all))
 
-      (global-set-key (kbd "<f9> H") 'ha-hs-hide-all)
-      (global-set-key (kbd "<f9> h") 'hs-hide-block)
-      (global-set-key (kbd "<f9> V") 'hs-show-all)
-      (global-set-key (kbd "<f9> v") 'hs-show-block)
+      (define-key personal-global-map (kbd "H") 'ha-hs-hide-all)
+      (define-key personal-global-map (kbd "h") 'hs-hide-block)
+      (define-key personal-global-map (kbd "V") 'hs-show-all)
+      (define-key personal-global-map (kbd "v") 'hs-show-block)
     #+END_SRC
 
     While 'S' does make sense for /showing/, I'm already using that
@@ -475,11 +479,10 @@ brew linkapps
     Wherever you are in a file, and whatever the type of file, you
     can slowly increase a region selection by logical segments.
 
-#+BEGIN_SRC elisp
-  (when (autofeaturep 'expand-region)
-        (require 'expand-region)
-        (global-set-key (kbd "C-=") 'er/expand-region))
-#+END_SRC
+    #+BEGIN_SRC elisp
+      (require 'expand-region)
+      (global-set-key (kbd "C-=") 'er/expand-region)
+    #+END_SRC
 
     This works really well with other commands, including
     [[https://github.com/Bruce-Connor/fancy-narrow][fancy-narrow]], where I can visually high-light a section of a
@@ -948,13 +951,17 @@ brew install ag
 
 ** Abbreviation Mode
 
-   Using the built-in [[http://www.emacswiki.org/emacs/AbbrevMode][Abbreviation Mode]], but setting it up only for
-   the text modes:
+   Using the built-in [[http://www.emacswiki.org/emacs/AbbrevMode][Abbreviation Mode]], and setting it up globally.
 
-#+BEGIN_SRC elisp
-  (add-hook 'text-mode-hook (lambda () (abbrev-mode 1)))
-  (add-hook 'jabber-chat-mode-hook (lambda () (abbrev-mode 1)))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (setq-default abbrev-mode t)
+   #+END_SRC
+
+   Stop asking whether to save newly added abbrev when quitting Emacs.
+
+   #+BEGIN_SRC elisp
+     (setq save-abbrevs nil)
+   #+END_SRC
 
    While you can make abbreviations in situ, I figured I should
    /pre-load/ a bunch that I use, but make a distinction between
@@ -963,28 +970,26 @@ brew install ag
 
 #+BEGIN_SRC elisp
   (define-abbrev-table 'global-abbrev-table
-    '(("HA" "Howard Abrams")
-      ("func" "function")
-      ("CS" "CoffeeScript")))
+    '(("8ha" "Howard Abrams")
+      ("8fun" "function")
+
+      ("8d" "\\([0-9]+?\\)")
+      ("8str" "\\([^\"]+?\\)\"")))
 #+END_SRC
 
-   This allows me to write =ha= as =Howard Abrams=, and if I want to
-   write =HA=, I just don't put a space or some punctuation behind
-   it. The trick, however, is remembering what works.
-
-   However, I really want most of those to just be during the text and
-   org-mode, not everywhere:
+   This allows me to write =8ha= as =Howard Abrams=.
 
    #+BEGIN_SRC elisp
      (define-abbrev-table 'text-mode-abbrev-table
        '(("HALF" "½")
          ("THIRD" "⅓")
          ("QUARTER" "¼")
-         ("CCB" "CI x CD x BP")
-         ("OS" "OpenStack")
-         ("NG" "AngularJS")
-         ("JS" "JavaScript")
-         ("WD" "Workday")
+
+         ("8js" "JavaScript")
+         ("8cs" "CoffeeScript")
+         ("8os" "OpenStack")
+         ("8ng" "AngularJS")
+         ("8wd" "Workday")
          ("btw" "by the way")
          ("note" "*Note:*")))
    #+END_SRC
@@ -1207,15 +1212,14 @@ brew install ag
     Begin with =C-c r= then type the regexp. To see the highlighted
     matches, type =C-c a= before you hit 'Return' to accept it.
 
-#+BEGIN_SRC elisp
-  (when (autofeaturep 'visual-regexp)
+  #+BEGIN_SRC elisp
     (require 'visual-regexp)
     (define-key global-map (kbd "C-c r") 'vr/replace)
     (define-key global-map (kbd "C-c q") 'vr/query-replace)
 
     ;; if you use multiple-cursors, this is for you:
-    (define-key global-map (kbd "C-c m") 'vr/mc-mark))
-#+END_SRC
+    (define-key global-map (kbd "C-c m") 'vr/mc-mark)
+  #+END_SRC
 
 ** Flycheck
 
@@ -1371,7 +1375,7 @@ brew install ag
 #+BEGIN_SRC elisp
   (require 'magit)
   (global-set-key (kbd "M-C-g") 'magit-status)
-  (global-set-key (kbd "<f9> g") 'magit-status)
+  (define-key personal-global-map (kbd "g") 'magit-status)
 #+END_SRC
 
    I like having Magit to run in a /full screen/ mode, and took this

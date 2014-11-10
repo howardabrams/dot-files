@@ -40,37 +40,39 @@ other systems with a graphical front-end.
   Some of my frequently used Unicode characters:
 
 #+BEGIN_SRC elisp
-  (global-set-key (kbd "<f9> <up>") "↑")
-  (global-set-key (kbd "<f9> <down>") "↓")
-  (global-set-key (kbd "<f9> <left>") "←")
-  (global-set-key (kbd "<f9> <right>") "→")
+  (define-key personal-global-map (kbd "b") 'bury-buffer)
 
-  (global-set-key (kbd "<f9> !") "¹")
-  (global-set-key (kbd "<f9> @") "²")
-  (global-set-key (kbd "<f9> #") "³")
-  (global-set-key (kbd "<f9> $") "⁴")
+  (define-key personal-global-map (kbd "<up>") "↑")
+  (define-key personal-global-map (kbd "<down>") "↓")
+  (define-key personal-global-map (kbd "<left>") "←")
+  (define-key personal-global-map (kbd "<right>") "→")
 
-  (global-set-key (kbd "<f9> 2") "½")
-  (global-set-key (kbd "<f9> 3") "⅓")
-  (global-set-key (kbd "<f9> 4") "¼")
+  (define-key personal-global-map (kbd "!") "¹")
+  (define-key personal-global-map (kbd "@") "²")
+  (define-key personal-global-map (kbd "#") "³")
+  (define-key personal-global-map (kbd "$") "⁴")
 
-  (global-set-key (kbd "<f9> '") "’")
-  (global-set-key (kbd "<f9> \"") "‘")
+  (define-key personal-global-map (kbd "2") "½")
+  (define-key personal-global-map (kbd "3") "⅓")
+  (define-key personal-global-map (kbd "4") "¼")
 
-  (global-set-key (kbd "<f9> 8") "•")
-  (global-set-key (kbd "<f9> *") "°")
-  (global-set-key (kbd "<f9> -") "—")
-  (global-set-key (kbd "<f9> .") "…")
-  (global-set-key (kbd "<f9> ;") "😜")
-  (global-set-key (kbd "<f9> )") "😀")
+  (define-key personal-global-map (kbd "'") "’")
+  (define-key personal-global-map (kbd "\"") "‘")
 
-  (global-set-key (kbd "<f9> x") "𝑥")
-  (global-set-key (kbd "<f9> y") "𝑦")
-  (global-set-key (kbd "<f9> A") "α")
-  (global-set-key (kbd "<f9> B") "β")
-  (global-set-key (kbd "<f9> L") "λ")
-  (global-set-key (kbd "<f9> P") "π")
-  (global-set-key (kbd "<f9> T") "θ")
+  (define-key personal-global-map (kbd "8") "•")
+  (define-key personal-global-map (kbd "*") "°")
+  (define-key personal-global-map (kbd "-") "—")
+  (define-key personal-global-map (kbd ".") "…")
+  (define-key personal-global-map (kbd ";") "😜")
+  (define-key personal-global-map (kbd ")") "😀")
+
+  (define-key personal-global-map (kbd "x") "𝑥")
+  (define-key personal-global-map (kbd "y") "𝑦")
+  (define-key personal-global-map (kbd "A") "α")
+  (define-key personal-global-map (kbd "B") "β")
+  (define-key personal-global-map (kbd "L") "λ")
+  (define-key personal-global-map (kbd "P") "π")
+  (define-key personal-global-map (kbd "T") "θ")
 #+END_SRC
 
 * Font Settings
@@ -172,22 +174,22 @@ other systems with a graphical front-end.
     (org-src-color-blocks-light))
 
   ;; During the day, we use the "standard" theme:
-  (global-set-key (kbd "<f9> d") 'color-theme-my-default)
+  (define-key personal-global-map (kbd "d") 'color-theme-my-default)
 
   ;; A good late-night scheme that isn't too harsh
-  (global-set-key (kbd "<f9> l") (lambda () (interactive)
+  (define-key personal-global-map (kbd "l") (lambda () (interactive)
                                    (color-theme-sanityinc-tomorrow-eighties)
                                    (powerline-reset)
                                    (org-src-color-blocks-dark)))
 
   ;; Programming late into the night
-  (global-set-key (kbd "<f9> m") (lambda () (interactive)
+  (define-key personal-global-map (kbd "m") (lambda () (interactive)
                                    (color-theme-sanityinc-tomorrow-bright)
                                    (powerline-reset)
                                    (org-src-color-blocks-dark)))
 
   ;; Too harsh? Use the late night theme
-  (global-set-key (kbd "<f9> n") (lambda () (interactive)
+  (define-key personal-global-map (kbd "n") (lambda () (interactive)
                                    (color-theme-sanityinc-tomorrow-night)
                                    (powerline-reset)
                                    (org-src-color-blocks-dark)))

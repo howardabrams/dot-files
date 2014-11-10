@@ -12,7 +12,7 @@ Let's load it up if it is installed.
   (when (autofeaturep 'elfeed)
     (require 'elfeed)
 
-    (global-set-key (kbd "<f9> r") 'elfeed))
+    (define-key personal-global-map (kbd "r") 'elfeed))
 #+END_SRC
 
 * The Feeds
