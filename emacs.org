@@ -27,10 +27,10 @@
    While I often use [[http://emacsformacosx.com/builds][Emacs for Mac]], lately, I've been building from
    [[http://brew.sh/][Homebrew]] with the following:
 
-#+BEGIN_SRC sh :tangle no
-brew install emacs --HEAD --cocoa --srgb
-brew linkapps
-#+END_SRC
+   #+BEGIN_EXAMPLE
+     brew install emacs --cocoa --srgb --with-gnutls
+     brew linkapps
+   #+END_EXAMPLE
 
    Not only does this install the latest version of Emacs in
    =/usr/local/bin/emacs=, but it also links a GUI version in
