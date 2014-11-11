@@ -422,13 +422,22 @@
         (hs-hide-all))
 
       (define-key personal-global-map (kbd "H") 'ha-hs-hide-all)
-      (define-key personal-global-map (kbd "h") 'hs-hide-block)
-      (define-key personal-global-map (kbd "V") 'hs-show-all)
-      (define-key personal-global-map (kbd "v") 'hs-show-block)
+      (define-key personal-global-map (kbd "B") 'hs-hide-block)
+      (define-key personal-global-map (kbd "M-V") 'hs-show-all)
+      (define-key personal-global-map (kbd "V") 'hs-show-block)
     #+END_SRC
 
     While 'S' does make sense for /showing/, I'm already using that
     for 'Stop'. Besides, 'viewing' isn't a bad mnemonic.
+
+*** Easy Highlighting
+
+    I like the ability to highlight random text.
+
+    #+BEGIN_SRC elisp
+      (define-key personal-global-map (kbd "h") 'highlight-regexp)
+      (define-key personal-global-map (kbd "u") 'unhighlight-regexp)
+    #+END_SRC
 
 ** Other Key Bindings
 
