@@ -23,7 +23,8 @@ Let's load it up if it is installed.
 
 #+BEGIN_SRC elisp
   (setq elfeed-feeds
-        '("http://endlessparentheses.com/atom.xml" ;; Emacs Blog
+        '("http://www.howardism.org/index.xml"     ;; My Blog
+          "http://endlessparentheses.com/atom.xml" ;; Emacs Blog
           "http://www.masteringemacs.org/feed/"    ;; Emacs Blog
           "http://emacs-fu.blogspot.com/feeds/posts/default"
           "http://emacsredux.com/atom.xml"         ;; Emacs Blog
@@ -32,6 +33,7 @@ Let's load it up if it is installed.
           "https://medium.com/feed/@hlship/"       ;; Programming
           "http://gigasquidsoftware.com/atom.xml"  ;; Clojure
           "http://blog.fogus.me/feed/"      ;; Programming
++          "http://steve-yegge.blogspot.com/atom.xml"
           "http://www.rkn.io/feed.xml"))    ;; Programming
 #+END_SRC
 
