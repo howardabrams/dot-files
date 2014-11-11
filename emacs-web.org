@@ -43,10 +43,9 @@
   Changing web buffers with HTML and CSS style-sheets, can
   automatically update a browser with [[https://github.com/netguy204/imp.el][impatient-mode]]:
 
-#+BEGIN_SRC elisp
-  (when (autofeaturep 'impatient-mode)
-    (require 'impatient-mode))
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (require 'impatient-mode nil t)
+  #+END_SRC
 
   Simply turn on the =impatient-mode= for any buffer that should be
   /served/ and then pop over to http://localhost:8888/imp/
@@ -60,8 +59,7 @@
   it attempts to render HTML, CSS or JavaScript.
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'simple-httpd)
-    (require 'simple-httpd)
+  (when (require 'simple-httpd nil t)
     (setq httpd-port 8888)
     (setq httpd-root "~/technical")
     (httpd-start))

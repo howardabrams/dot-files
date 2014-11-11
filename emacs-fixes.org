@@ -159,8 +159,7 @@ ever do that?
    We'll see if I can remember to use the feature.
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'iy-go-to-char)
-    (require 'iy-go-to-char)
+  (when (require 'iy-go-to-char nil t)
     (global-set-key (kbd "C-`") 'iy-go-to-char)
     (global-set-key (kbd "<f13>") 'iy-go-to-char)
     (global-set-key (kbd "C-~") 'iy-go-to-char-backward))

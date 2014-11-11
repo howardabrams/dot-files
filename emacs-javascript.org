@@ -111,10 +111,8 @@
        * =uw= is =unwrap=: Replaces the parent statement with the selected region.
 
 #+BEGIN_SRC elisp
-  (if (autofeaturep 'js2-refactor)
-      (progn
-        (require 'js2-refactor)
-        (js2r-add-keybindings-with-prefix "C-c C-m")))
+  (when (require 'js2-refactor nil t)
+        (js2r-add-keybindings-with-prefix "C-c C-m"))
 #+END_SRC
 
 * JavaScript REPL
@@ -216,7 +214,10 @@
     script that loads up my special 'coughy' environment
 
  #+BEGIN_SRC elisp
-  (setq coffee-command (concat (getenv "HOME") "/bin/coughy"))
+   (when (require 'coffee-mode nil t)
+     (let ((my-coffee-command (concat (getenv "HOME") "/bin/coughy")))
+       (if (file-exists-p my-coffee-command)
+           (setq coffee-command my-coffee-command))))
  #+END_SRC
 
 * Technical Artifacts

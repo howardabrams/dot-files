@@ -43,8 +43,7 @@ Emacs love affair. Make sure the latest packages are installed:
 #+BEGIN_SRC elisp
   (setq org-journal-dir "~/journal/")
 
-  (when (autofeaturep 'org-journal)
-        (require 'org-journal))
+  (require 'org-journal nil t)
 #+END_SRC
 
    All my journal entries will be formatted using org-mode:
@@ -465,19 +464,16 @@ should be. After calling this function, call 'meeting-done' to reset the environ
    [[https://github.com/hakimel/reveal.js/][reveal.js]] and [[https://github.com/yjwen/org-reveal][org-reveal]].
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'ox-reveal)
-    (require 'ox-reveal)
+  (when (require 'ox-reveal nil t)
 
-    (setq org-reveal-root (concat "file://" (getenv "HOME") "/Other/reveal.js"))
-
+    (setq org-reveal-root (concat "file://" (getenv "HOME") "/Public/reveal.js"))
     (setq org-reveal-postamble "Howard Abrams"))
 #+END_SRC
 
    Displaying the headers using various bullets are nice for my presentations.
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'org-bullets)
-    (require 'org-bullets)
+  (when (require 'org-bullets nil t)
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 #+END_SRC
 

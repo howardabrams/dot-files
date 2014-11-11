@@ -9,9 +9,7 @@ collection of articles in Emacs (see [[http://nullprogram.com/blog/2013/09/04/][
 Let's load it up if it is installed.
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'elfeed)
-    (require 'elfeed)
-
+  (when (require 'elfeed nil t)
     (define-key personal-global-map (kbd "r") 'elfeed))
 #+END_SRC
 

@@ -75,8 +75,7 @@
   Currently using [[https://github.com/jorgenschaefer/pyvenv][pyvenv]]
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'virtualenvwrapper)
-    (require 'virtualenvwrapper)
+  (when (require 'virtualenvwrapper nil t)
     ;; (venv-initialize-interactive-shells) ;; if you want interactive shell support
     (venv-initialize-eshell) ;; if you want eshell support
     (setq venv-location (concat (getenv "HOME") "/.virtualenvs/")))
@@ -106,8 +105,7 @@
     Flymake package, however, I am now using Flycheck for that.
 
 #+BEGIN_SRC elisp :tangle no
-  (when (autofeaturep 'flymake-python-pyflakes)
-        (require 'flymake-python-pyflakes)
+  (when (require 'flymake-python-pyflakes nil t)
         (add-hook 'python-mode-hook 'flymake-python-pyflakes-load))
 #+END_SRC
 
@@ -137,19 +135,12 @@
 
 * Nose
 
-    Unit test and code coverage tool for Python now comes to Emacs
-    with [[http://ivory.idyll.org/articles/nose-intro.html][Python Nose]].
+  Unit test and code coverage tool for Python now comes to Emacs
+  with [[http://ivory.idyll.org/articles/nose-intro.html][Python Nose]].
 
-#+BEGIN_SRC elisp
-  (if (autofeaturep 'nose)
-        (progn
-         (require 'nose)
-
-         ;;   Include this line only for people with non-eco non-global test
-         ;;   runners... like the Python Koans:
-         (add-to-list 'nose-project-names
-                      "~/Google\ Drive/python_koans/python2")))
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (require 'nose nil t)
+  #+END_SRC
 
 * Jedi
 
@@ -165,7 +156,7 @@
     - =C-c d= to show the function documentation
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'jedi)
+  (when (require 'jedi nil t)
         (add-hook 'python-mode-hook 'jedi:setup)
         (add-hook 'python-mode-hook 'jedi:ac-setup)
         (setq jedi:setup-keys t)
@@ -220,14 +211,12 @@
 
 * Debugging
 
-    Use the [[https://pypi.python.org/pypi/virtualenv][virtualenv]] world of goodness, but only if it is installed.
-    This allows me to =M-x virtualenv-workon= and specify the virtual
-    environment to run all the Python gunk from within Emacs.
+  Use the [[https://pypi.python.org/pypi/virtualenv][virtualenv]] world of goodness, but only if it is installed.
+  This allows me to =M-x virtualenv-workon= and specify the virtual
+  environment to run all the Python gunk from within Emacs.
 
-#+BEGIN_SRC elisp
-  (if (autofeaturep 'virtualenv)
-      (progn
-          (require 'virtualenv)))
+  #+BEGIN_SRC elisp
+  (require 'virtualenv nil t)
 #+END_SRC
 
 * IPython
@@ -238,10 +227,8 @@
    - ein
 
 #+BEGIN_SRC elisp :tangle no
-  (if (autofeaturep 'ein)
-        (progn
-          (require 'ein)
-          (setq ein:use-auto-complete t)))
+  (when (require 'ein nil t)
+    (setq ein:use-auto-complete t))
 #+END_SRC
 
    After starting the IPython notebook server,

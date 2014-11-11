@@ -167,7 +167,6 @@
   (packages-install
                  '(auto-complete
                    ack-and-a-half
-                   ag
                    dired-details
                    color-identifiers-mode  ;; Color variables differently
                    epl
@@ -181,14 +180,12 @@
                    git-blame
                    git-commit-mode
                    git-gutter-fringe
-                   git-messenger
                    gitconfig-mode
                    gitignore-mode
                    graphviz-dot-mode
                    hungry-delete
                    ido-vertical-mode
                    iy-go-to-char
-                   key-chord
                    linum-relative
                    magit
                    markdown-mode
@@ -200,31 +197,6 @@
                    undo-tree
                    visual-regexp
                    yasnippet))
-#+END_SRC
-
-** Package Verification
-
-   The =(require)= is a problem if the library isn't available, and if
-   it isn't available, then this file dies and doesn't complete.
-   Seems like it would be nice to wrap the configuration of a package
-   in a block that is ignored if the package isn't available.
-
-   The following code was found [[http://stackoverflow.com/questions/7790382/how-to-determine-whether-a-package-is-installed-in-elisp][in this discussion]], but I believe
-   I'll be phasing this out now that I can simply install a long list
-   of packages when I start.
-
-#+BEGIN_SRC elisp
-  (defun autofeaturep (feature)
-    "For a feature symbol 'foo, return a result equivalent to:
-  (or (featurep 'foo-autoloads) (featurep 'foo))
-  Does not support subfeatures."
-    (catch 'result
-      (let ((feature-name (symbol-name feature)))
-        (unless (string-match "-autoloads$" feature-name)
-          (let ((feature-autoloads (intern-soft (concat feature-name "-autoloads"))))
-            (when (and feature-autoloads (featurep feature-autoloads))
-              (throw 'result t))))
-        (featurep feature))))
 #+END_SRC
 
 * Variables
@@ -476,8 +448,7 @@
    default keybindings, so I set up the suggested:
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'multiple-cursors)
-        (require 'multiple-cursors)
+  (when (require 'multiple-cursors nil t)
         (global-set-key (kbd "C->") 'mc/mark-next-like-this)
         (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
         (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
@@ -498,10 +469,7 @@
     buffer. Great for code-reviews and other presentations.
 
     #+BEGIN_SRC elisp
-      (when (autofeaturep 'fancy-narrow)
-
-        (require 'fancy-narrow)
-
+      (when (require 'fancy-narrow nil t)
         (defun ha/highlight-block ()
           "Highlights a 'block' in a buffer defined by the first blank
            line before and after the current cursor position. Uses the
@@ -626,7 +594,7 @@
    Still...
 
    #+BEGIN_SRC elisp
-     (when (autofeaturep 'projectile)
+     (when (require 'projectile nil t)
        (require 'projectile)
        (projectile-global-mode))
    #+END_SRC
@@ -645,8 +613,7 @@
     simple asterisk.
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'dired-details)
-    (require 'dired-details)
+  (when (require 'dired-details nil t)
     (dired-details-install)
     (setq dired-details-hidden-string "* "))
 #+END_SRC
@@ -790,8 +757,7 @@ brew install ag
    The [[https://github.com/jhelwig/ack-and-a-half][ack-and-a-half]] project requires the following:
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'ack-and-a-half)
-    (require 'ack-and-a-half)
+  (when (require 'ack-and-a-half nil t)
 
     ;; Create shorter aliases
     (defalias 'ack 'ack-and-a-half)
@@ -933,8 +899,7 @@ brew install ag
    are typing. Useful at times ... annoying at others.
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'auto-complete-config)
-    (require 'auto-complete-config)
+  (when (require 'auto-complete-config nil t)
     (add-to-list 'ac-dictionary-directories (concat user-emacs-directory "ac-dict"))
 
     (set-default 'ac-sources
@@ -1097,11 +1062,10 @@ brew install ag
    while editing my expressive literary style in my text files.
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'thesaurus)
-    (require 'thesaurus)
+  (when (require 'thesaurus nil t)
     (thesaurus-set-bhl-api-key-from-file "~/.emacs.d/bighugelabs.apikey.txt")
 
-    (define-key global-map (kbd "C-x t") 'thesaurus-choose-synonym-and-replace))
+    (define-key personal-global-map (kbd "t") 'thesaurus-choose-synonym-and-replace))
 #+END_SRC
 
 * Miscellaneous Settings
@@ -1152,7 +1116,7 @@ brew install ag
     quickly pop to it.
 
 #+BEGIN_SRC elisp
-  (if (not (autofeaturep 'linum-relative))
+  (if (not (require 'linum-relative nil t))
 
       ;; If this isn't installed, we'll just toggle between showing and
       ;; not showing the line numbers.
@@ -1161,11 +1125,9 @@ brew install ag
         (global-set-key (kbd "s-k") 'linum-mode))   ;; For Linux
 
     ;; Otherwise, let's take advantage of the relative line numbering:
-    (require 'linum-relative)
-
     (defun linum-new-mode ()
       "If line numbers aren't displayed, then display them.
-  Otherwise, toggle between absolute and relative numbers."
+       Otherwise, toggle between absolute and relative numbers."
       (interactive)
       (if linum-mode
           (linum-relative-toggle)
@@ -1235,9 +1197,7 @@ brew install ag
     [[https://github.com/flycheck/flycheck][Flycheck]] seems to be quite superior to good ol' Flymake.
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'flycheck)
-    (require 'flycheck)
-
+  (when (require 'flycheck nil t)
     (add-hook 'after-init-hook #'global-flycheck-mode))
 #+END_SRC
 
@@ -1268,8 +1228,7 @@ brew install ag
    comments with the TODO or FIXME keywords:
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'fic-mode)
-    (require 'fic-mode)
+  (when (require 'fic-mode nil t)
     (add-hook 'js2-mode-hook 'turn-on-fic-mode)
     (add-hook 'coffee-mode-hook 'turn-on-fic-mode)
     (add-hook 'python-mode-hook 'turn-on-fic-mode)
@@ -1414,44 +1373,25 @@ brew install ag
    windowing versions of Emacs.
 
 #+BEGIN_SRC elisp
-  (if (autofeaturep 'git-gutter-fringe)
-      (when (window-system)
-          (require 'git-gutter-fringe)
-          (global-git-gutter-mode +1)
-          (setq-default indicate-buffer-boundaries 'left)
-          (setq-default indicate-empty-lines +1)))
+  (if (window-system)
+      (when (require 'git-gutter-fringe nil t)
+        (global-git-gutter-mode +1)
+        (setq-default indicate-buffer-boundaries 'left)
+        (setq-default indicate-empty-lines +1)))
 #+END_SRC
 
-   Git blame makes the history of a buffer pretty obvious... maybe a
-   tad too obvious.
-   Git Messenger shows the blame line as a popup.
+   To see a /blame mode/, use either =vc-annotate= (=C-x v g=) or
+   =magit-blame-mode=.
 
-#+BEGIN_SRC elisp
-  (when (autofeaturep 'git-blame)
-    ;; (require 'git-blame)
-    (autoload 'git-blame-mode "git-blame"
-             "Minor mode for incremental blame for Git." t))
-
-  (when (autofeaturep 'git-messenger)
-    (require 'git-messenger)
-    (global-set-key (kbd "C-x v p") 'git-messenger:popup-message))
-#+END_SRC
-
-   Perhaps we can do Github pull requests from within Emacs, after
-   reading [[http://endlessparentheses.com/merging-github-pull-requests-from-emacs.html][this blog entry]].
+   Perhaps we can do [[https://github.com/sigma/magit-gh-pulls][Github pull requests]] from within Emacs, after
+   reading [[http://endlessparentheses.com/merging-github-pull-requests-from-emacs.html][this blog entry]]. Just do =# g g= in Magit to list the pull
+   requests.
 
    #+BEGIN_SRC elisp
-     (when (autofeaturep 'magit-gh-pulls-mode)
-       (eval-after-load 'magit
-         '(define-key magit-mode-map "#gg"
-            (defun endless/load-gh-pulls-mode ()
-              "Start `magit-gh-pulls-mode' only after a manual request."
-              (interactive)
-              (require 'magit-gh-pulls)
-              (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls)
-              (magit-gh-pulls-mode 1)
-              (magit-gh-pulls-reload)))))
+     (when (require 'magit-gh-pulls nil t)
+           (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls))
    #+END_SRC
+
 ** Markdown
 
    Don't use Markdown nearly as much as I used to, but I'm surprised
@@ -1568,8 +1508,7 @@ brew install ag
    bits of the Emacs window are accessible and whatnot.
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'circe)
-    (require 'init-irc))
+  (require 'circe nil t)
 #+END_SRC
 
 ** Chatting
@@ -1578,8 +1517,7 @@ brew install ag
    not. To begin, make sure you =brew install gnutls=
 
 #+BEGIN_SRC elisp
-  (when (autofeaturep 'jabber)
-    (require 'jabber)
+  (when (require 'jabber nil t)
     (setq starttls-use-gnutls t
           starttls-gnutls-program "gnutls-cli"
           starttls-extra-arguments '("--starttls" "--insecure"))
@@ -1602,7 +1540,7 @@ brew install ag
     (define-key jabber-chat-mode-map [escape]
       'my-jabber-chat-delete-or-bury)
 
-    (when (autofeaturep 'autosmiley)
+    (when (require 'autosmiley nil t)
       (add-hook 'jabber-chat-mode-hook 'autosmiley-mode)))
 #+END_SRC
 
