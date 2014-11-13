@@ -694,8 +694,10 @@
    Bind these to the standard ' and " keys:
 
    #+BEGIN_SRC elisp
-     (define-key org-mode-map "\"" 'ha/round-quotes)
-     (define-key org-mode-map "'" 'ha/round-single-quotes)
+     (add-hook 'org-mode-hook
+               (lambda ()
+                 (define-key org-mode-map "\"" 'ha/round-quotes)
+                 (define-key org-mode-map  "'" 'ha/round-single-quotes)))
    #+END_SRC
 
 * Loading and Finding Files
