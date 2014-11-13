@@ -411,6 +411,47 @@
       (define-key personal-global-map (kbd "u") 'unhighlight-regexp)
     #+END_SRC
 
+*** Controlling Windows
+
+    Often, while on my laptop, I want the current window to be ‘large
+    enough for work’, and this is bound to =<f9> .= (period).
+
+    #+BEGIN_SRC elisp
+      (define-key personal-global-map (kbd ",") 'ha/window-standard-size)
+    #+END_SRC
+
+    If I've enlarged the window, I can restore that window to its
+    original size, so this requires a /buffer local variable/:
+
+    #+BEGIN_SRC elisp
+      (make-variable-buffer-local 'window-width-original)
+    #+END_SRC
+
+    Now a function that either changes the width to 80, or back to the
+    original size if already at 80.
+
+    #+BEGIN_SRC elisp
+      (defun ha/window-standard-size (arg)
+        "Sets the size of the current window to 80 characters, unless
+      it already is 80 characters, in which case, set it back to its
+      previous size. A prefix ARG can be given to set the window to a
+      particular width."
+        (interactive "p")
+
+        ;; If not already set, let's store the current window width in our
+        ;; buffer-local variable.
+        (if (not (local-variable-p 'window-width-original))
+            (setq window-width-original (window-width)))
+
+        ;; The 'goal' is 80 unless we get a better argument, C-u 60 ...
+        (let* ((goal-width (if (> arg 8) arg 80))
+               (new-width (- goal-width (window-width))))
+
+          (if (= new-width 0)    ; Already enlarged? Restore:
+              (enlarge-window-horizontally (- window-width-original goal-width))
+            (enlarge-window-horizontally new-width))))
+    #+END_SRC
+
 ** Other Key Bindings
 
    After picking up an Advantage Kinesis, I decided that I wanted to
