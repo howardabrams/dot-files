@@ -584,6 +584,79 @@
       (surround nil nil txt)))
 #+END_SRC
 
+** Round Quotes
+
+   While reading [[http://endlessparentheses.com/prettify-your-quotation-marks.html][this article]], I became intrigued with the idea of
+   using real “quotes” in my org-mode files, but instead of inserting
+   both pairs with the cursor in the middle, I decided that I would
+   insert an /open/ quote unless an /open/ quote had already been
+   inserted previously in the paragraph.
+
+   Whether inserting “double” or ‘single’ quotes, the behavior is
+   similar, so we will create a function for the behavior and pass in
+   the strings to match:
+
+   #+BEGIN_SRC elisp
+     (defun ha/matching-quotes (open close normal override)
+       "Insert OPEN or CLOSE depending whether paragraph contains a dangling OPEN character before.
+     Inserts a straight NORMAL charactedr With prefix argument OVERRIDE.  If
+     inside a code-block, simply calls `self-insert-command'."
+
+       ;; If a prefix is given or we are in org-mode in a source block,
+       ;; we just do the regular thing and print " as normal.
+       (if (or override
+               (and (derived-mode-p 'org-mode) (org-in-src-block-p)))
+           (call-interactively 'self-insert-command)
+
+         ;; Otherwise we need to figure out the beginning of the paragraph
+         ;; And if there has been an opened quote in that paragraph:
+         (let* ((quote-regexp (concat "[" open close "]"))  ; Look like: "[‘’]"
+                (paragraph-beginning (save-excursion
+                                       (org-backward-paragraph)
+                                       (point)))
+                (opened-quote      (save-excursion
+                                     (re-search-backward quote-regexp paragraph-beginning t)
+                                     (looking-at open))))
+
+           ;; Currently on a closed round quote, skip it.
+           (if (looking-at (concat close "[/=_\\*]?"))
+               (goto-char (match-end 0))
+             (if (or opened-quote (looking-back "[A-Za-z]"))
+                 (insert close)
+               (insert open))))))
+   #+END_SRC
+
+   Create two functions that match the quote styles, by passing in the
+   following Unicode characters:
+
+   - =DOUBLE COMMA QUOTATION MARK=
+   - =DOUBLE TURNED COMMA QUOTATION MARK=
+   - =SINGLE COMMA QUOTATION MARK=
+   - =SINGLE TURNED COMMA QUOTATION MARK=
+
+   #+BEGIN_SRC elisp
+     (defun ha/round-quotes (regular)
+       "Insert “ or ” depending whether paragraph contains a dangling “ character before.
+     With prefix argument REGULAR, insert a straight \" character, i.e. C-1 \".  If
+     inside a code-block, simply calls `self-insert-command'."
+       (interactive "P")
+       (ha/matching-quotes "“" "”" "\"" regular))
+
+     (defun ha/round-single-quotes (regular)
+       "Insert ‘ or ’ depending whether paragraph contains a dangling ‘ character before.
+     With prefix argument REGULAR, insert a straight ' character, i.e. C-1 '.  If
+     inside a code-block, simply calls `self-insert-command'."
+       (interactive "P")
+       (ha/matching-quotes "‘" "’" "'" regular))
+   #+END_SRC
+
+   Bind these to the standard ' and " keys:
+
+   #+BEGIN_SRC elisp
+     (define-key org-mode-map "\"" 'ha/round-quotes)
+     (define-key org-mode-map "'" 'ha/round-single-quotes)
+   #+END_SRC
+
 * Loading and Finding Files
 ** Projectile
 
