@@ -299,7 +299,6 @@
 #+END_SRC
 
 * Key Bindings
-
 ** Function Key Definitions
 
    Clearly, the most important keybindings are the function keys,
@@ -699,6 +698,41 @@
                  (define-key org-mode-map "\"" 'ha/round-quotes)
                  (define-key org-mode-map  "'" 'ha/round-single-quotes)))
    #+END_SRC
+
+** Kill Entire Lines
+
+   According to [[http://endlessparentheses.com/kill-entire-line-with-prefix-argument.html][this article]], killing the rest of the line is fine,
+   but =C-3 C-k= kills only 2½ lines. Not so useful.
+
+   This creates a macro that moves to the beginning of the line and
+   then calls a function given to it. Quite an interesting approach:
+
+  #+BEGIN_SRC elisp
+    (defmacro bol-with-prefix (function)
+      "Define a new function which calls FUNCTION.
+    Except it moves to beginning of line before calling FUNCTION when
+    called with a prefix argument. The FUNCTION still receives the
+    prefix argument."
+      (let ((name (intern (format "ha/%s-BOL" function))))
+        `(progn
+           (defun ,name (p)
+             ,(format
+               "Call `%s', but move to the beginning of the line when called with a prefix argument."
+               function)
+             (interactive "P")
+             (when p
+               (forward-line 0))
+             (call-interactively ',function))
+           ',name)))
+  #+END_SRC
+
+  And we re-bind them to functions that use them.
+
+  #+BEGIN_SRC elisp :results silent
+    (global-set-key [remap paredit-kill] (bol-with-prefix paredit-kill))
+    (global-set-key [remap org-kill-line] (bol-with-prefix org-kill-line))
+    (global-set-key [remap kill-line] (bol-with-prefix kill-line))
+  #+END_SRC
 
 * Loading and Finding Files
 ** Projectile

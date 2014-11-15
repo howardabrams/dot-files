@@ -1,4 +1,3 @@
-#!/usr/local/bin/emacs
 ;;; build -- Set up all the dot-files for updating system
 
 ;;; Commentary:
@@ -41,8 +40,7 @@
 ;; The Script Part ... here we do all the building and compilation work.
 
 (defun ha/build-dot-files ()
-  "Takes all my 'dot files' in this directory and deploys a new
-encironment (or updates an existing system)."
+  "Compile and deploy 'init files' in this directory."
   (interactive)
 
   ;; Initially create some of the destination directories
@@ -70,7 +68,8 @@ encironment (or updates an existing system)."
   (mapc 'byte-compile-file
         (ha/get-files "${user-emacs-directory}/elisp/*.el" t))
 
-  (message "Finished building dot-files- Restart Emacs."))
+  (message "Finished building dot-files- Resetting Emacs.")
+  (require 'init-main))
 
 
 (defun ha/tangle-file (file)
@@ -82,15 +81,13 @@ encironment (or updates an existing system)."
 
 
 (defun ha/tangle-files (path)
-  "Given a directory, PATH, of 'org-mode' files, tangle the source
-code out of all literate programming files."
+  "Given a directory, PATH, of 'org-mode' files, tangle source code out of all literate programming files."
   (interactive "D")
   (mapc 'ha/tangle-file (ha/get-files path)))
 
 
 (defun ha/get-dot-files ()
-  "Pulls and builds the latest from the Github repository.  We
-then load the resulting Lisp code."
+  "Pull and build latest from the Github repository.  Load the resulting Lisp code."
   (interactive)
   (let ((git-results
          (shell-command (concat "cd " dot-files-src "; git pull"))))
