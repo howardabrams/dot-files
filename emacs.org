@@ -472,6 +472,22 @@
   (winner-mode 1)
 #+END_SRC
 
+** Unfill Paragraph
+
+   Unfilling a paragraph joins all the lines in a paragraph into a
+   single line. Taken from [[http://www.emacswiki.org/UnfillParagraph][here]].
+
+   #+BEGIN_SRC elisp
+    (defun unfill-paragraph ()
+      "Takes a multi-line paragraph and makes it into a single line of text."
+      (interactive)
+      (let ((fill-column (point-max)))
+        (fill-paragraph nil)))
+
+    ;; Handy key definition
+    (define-key global-map "\M-Q" 'unfill-paragraph)
+   #+END_SRC
+
 ** General Behavior Fixes
 
    The subtle changes I've been making to Emacs behavior has grown
