@@ -715,6 +715,20 @@
                  (define-key org-mode-map  "'" 'ha/round-single-quotes)))
    #+END_SRC
 
+   The downside of using single quotes, like ’ is that the ispell
+   dictionary doesn’t recognize it as an apostrophe.
+
+   #+BEGIN_SRC elisp
+     (add-to-list 'ispell-local-dictionary-alist '(nil
+                                                   "[[:alpha:]]"
+                                                   "[^[:alpha:]]"
+                                                   "['’]"
+                                                   t
+                                                   ("-d" "en_US")
+                                                   nil
+                                                   iso-8859-1))
+   #+END_SRC
+
 ** Kill Entire Lines
 
    According to [[http://endlessparentheses.com/kill-entire-line-with-prefix-argument.html][this article]], killing the rest of the line is fine,
