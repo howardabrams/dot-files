@@ -719,14 +719,15 @@
    dictionary doesn’t recognize it as an apostrophe.
 
    #+BEGIN_SRC elisp
-     (add-to-list 'ispell-local-dictionary-alist '(nil
+   (eval-after-load "ispell"
+     '(add-to-list 'ispell-local-dictionary-alist '(nil
                                                    "[[:alpha:]]"
                                                    "[^[:alpha:]]"
                                                    "['’]"
                                                    t
                                                    ("-d" "en_US")
                                                    nil
-                                                   iso-8859-1))
+                                                   iso-8859-1)))
    #+END_SRC
 
 ** Kill Entire Lines
