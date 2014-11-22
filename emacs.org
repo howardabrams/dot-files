@@ -731,6 +731,19 @@
 
 ** Kill Entire Lines
 
+   While =C-k= kills text to the end of the line, what about killing
+   text before the point?
+
+   #+BEGIN_SRC elisp
+     (defun ha/kill-line-before ()
+       "Kills text from the current cursor position to the beginning
+     of the current line."
+       (interactive)
+       (kill-region (point-at-bol) (point)))
+
+     (global-set-key (kbd "C-S-K") 'ha/kill-line-before)
+   #+END_SRC
+
    According to [[http://endlessparentheses.com/kill-entire-line-with-prefix-argument.html][this article]], killing the rest of the line is fine,
    but =C-3 C-k= kills only 2½ lines. Not so useful.
 
