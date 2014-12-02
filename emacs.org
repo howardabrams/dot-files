@@ -723,11 +723,11 @@
      '(add-to-list 'ispell-local-dictionary-alist '(nil
                                                    "[[:alpha:]]"
                                                    "[^[:alpha:]]"
-                                                   "['’]"
+                                                   "['‘’]"
                                                    t
                                                    ("-d" "en_US")
                                                    nil
-                                                   iso-8859-1)))
+                                                   utf-8)))
    #+END_SRC
 
 ** Kill Entire Lines
@@ -772,10 +772,12 @@
 
   And we re-bind them to functions that use them.
 
-  #+BEGIN_SRC elisp :results silent
+  #+BEGIN_SRC elisp
     (global-set-key [remap paredit-kill] (bol-with-prefix paredit-kill))
     (global-set-key [remap org-kill-line] (bol-with-prefix org-kill-line))
     (global-set-key [remap kill-line] (bol-with-prefix kill-line))
+
+    (global-set-key (kbd "C-k") (bol-with-prefix kill-line))
   #+END_SRC
 
 * Loading and Finding Files
@@ -943,21 +945,30 @@ brew install homebrew/dupes/grep
 
    I also use [[http://beyondgrep.com][ack]] and the [[http://geoff.greer.fm/2011/12/27/the-silver-searcher-better-than-ack/][Silver Searcher]] (but for different uses).
 
-#+BEGIN_EXAMPLE
-brew install ack
-brew install ag
-#+END_EXAMPLE
+  #+BEGIN_EXAMPLE
+    brew install ack
+    brew install ag
+  #+END_EXAMPLE
 
    The [[https://github.com/jhelwig/ack-and-a-half][ack-and-a-half]] project requires the following:
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
   (when (require 'ack-and-a-half nil t)
+    ;; Odd, but it appears we now need to add the ack executable to the
+    ;; arguments list:
+    (setq ack-and-a-half-arguments '("ack"))
+
+    ;; Not sure why org mode isn’t something we can limit searches:
+    (add-to-list 'ack-and-a-half-mode-type-default-alist '(org-mode "org"))
 
     ;; Create shorter aliases
     (defalias 'ack 'ack-and-a-half)
     (defalias 'ack-same 'ack-and-a-half-same)
     (defalias 'ack-find-file 'ack-and-a-half-find-file)
-    (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same))
+    (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same)
+
+    (define-key personal-global-map (kbd "A") 'ack-and-a-half)
+    (define-key personal-global-map (kbd "a") 'ack-and-a-half-same))
 #+END_SRC
 
    However, I need an /indexing/ approach to searching through my
