@@ -365,7 +365,7 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 
     %i
 
-    [[%F][Read more...]]" :empty-lines 1)))
+    [[%F][Read more...]" :empty-lines 1)))
 
   ;; General notes go into this file:
   (setq org-default-notes-file "~/personal/@SUMMARY.org")
