@@ -335,50 +335,6 @@
       (define-key personal-global-map (kbd "b") 'bury-buffer)
     #+END_SRC
 
-*** Web Browsing
-
-    For v24.4, I'm intrigued with EWW, but [[http://w3m.sourceforge.net][w3m]] works really well.
-    The one I use is the one I've loaded ...
-
-    #+BEGIN_SRC elisp
-      (when (fboundp 'eww)
-        (setq browse-url-browser-function 'eww-browse-url)
-
-        (defun eww-search (term)
-          (interactive "sSearch terms: ")
-          (eww-browse-url (concat "http://www.google.com/search?gbv=1&source=hp&hl=en&ie=ISO-8859-1&btnG=Google+Search&q=" term)))
-
-        (define-key personal-global-map (kbd "G") 'eww)
-        (define-key personal-global-map (kbd "b") 'eww-follow-link)
-        (define-key personal-global-map (kbd "S") 'eww-search))
-    #+END_SRC
-
-    The following set up functions from [[http://www.emacswiki.org/emacs/emacs-w3m][emacs-w3m]]:
-
-    #+BEGIN_SRC elisp
-    (when (fboundp 'w3m)
-      (setq browse-url-browser-function 'w3m-browse-url)
-      (setq w3m-use-cookies t)
-      (define-key personal-global-map (kbd "G") 'w3m-goto-url)
-      (define-key personal-global-map (kbd "b") 'browse-url-at-point)
-      (define-key personal-global-map (kbd "S") 'w3m-search))
-    #+END_SRC
-
-    While browsing, remember the following:
-
-    - TAB to jump from link to link.
-    - RETURN to follow a link
-    - SPACE to move down the page
-    - b to move up the page
-    - B to move back in the history
-    - M to open the URL in Firefox
-    - I to open the image if it didn't show up correctly
-    - c to copy the URL of the current page in the kill ring.
-    - u to copy the URL of the link in the kill ring.
-    - a to bookmark this page
-    - v to look at the bookmarks
-    - s to look through the page history for this session.
-
 *** Auto Hiding Functions
 
     Big, structured file, like source code, hide all of the functions,
@@ -1223,32 +1179,39 @@ brew install ag
 
 ** Spell Checking
 
-   I like spell checking with [[http://www.emacswiki.org/emacs/FlySpell][FlySpell]], which uses =ispell=.
+   I like spell checking with [[http://www.emacswiki.org/emacs/FlySpell][FlySpell]], which uses =ispell=. Setting
+   this to the /American/ dictionary seems to make it work better with
+   Homebrew.
 
-   To build a dictionary hash (seems important now), do this:
+   #+BEGIN_SRC elisp
+     (setq ispell-dictionary "american")
+   #+END_SRC
 
-#+BEGIN_SRC sh :tangle no
-  touch ~/.dictionary.txt
-  buildhash ~/.dictionary.txt /usr/local/lib/english.aff ~/.dictionary.txt.hash
-#+END_SRC
+   To build a /personal/ dictionary hash (seems important now), do
+   this:
+
+   #+BEGIN_SRC sh :tangle no
+     touch ~/.dictionary.txt
+     buildhash ~/.dictionary.txt /usr/local/lib/english.aff ~/.dictionary.txt.hash
+   #+END_SRC
 
    Then, we can use it like:
 
-#+BEGIN_SRC elisp
-  (setq ispell-personal-dictionary
-      (concat (getenv "HOME") "/.dictionary.txt"))
+   #+BEGIN_SRC elisp
+     (setq ispell-personal-dictionary
+         (concat (getenv "HOME") "/.dictionary.txt"))
+   #+END_SRC
 
-  (dolist (hook '(text-mode-hook org-mode-hook))
-    (add-hook hook (lambda () (flyspell-mode 1))))
-#+END_SRC
+   Seems like I would want this automatically turned on for all text
+   modes (but not for log files).
 
-   If I find any =text-mode= derived mode that I don't want to
-   spell-check, then I need to use the following:
+   #+BEGIN_SRC elisp
+     (dolist (hook '(text-mode-hook org-mode-hook))
+       (add-hook hook (lambda () (flyspell-mode 1))))
 
-#+BEGIN_SRC elisp :tangle no
-  (dolist (hook '(change-log-mode-hook log-edit-mode-hook org-agenda-mode-hook))
-    (add-hook hook (lambda () (flyspell-mode -1))))
-#+END_SRC
+     (dolist (hook '(change-log-mode-hook log-edit-mode-hook org-agenda-mode-hook))
+       (add-hook hook (lambda () (flyspell-mode -1))))
+   #+END_SRC
 
 ** Online Thesaurus
 
@@ -1688,6 +1651,15 @@ brew install ag
 #+END_SRC
 
 * Applications
+** Web Browsing
+
+   This section became involved, and has moved on to [[file:emacs-browser.org][emacs-browser]]
+   file.
+
+   #+BEGIN_SRC elisp
+   (require 'init-browser)
+   #+END_SRC
+
 ** EShell
 
   See [[file:emacs-eshell.org][emacs-eshell.el]] for details of configuring and using EShell.

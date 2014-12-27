@@ -1,0 +1,186 @@
+#+TITLE:  Browsing the Web with Emacs
+#+AUTHOR: Howard
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2014 Dec 14
+#+TAGS:   emacs
+
+I like the =w3m= browsing experience well enough, and reading
+technical pages in Emacs is a good workflow. Except that I need to
+hide lots of useless text for various web pages.
+
+* EWW?
+
+  For v24.4, I'm intrigued with EWW, but [[http://w3m.sourceforge.net][w3m]] works really well.
+  The one I use is the one I've loaded ...
+
+  #+BEGIN_SRC elisp
+      (when (fboundp 'eww)
+        (setq browse-url-browser-function 'eww-browse-url)
+
+        (defun eww-search (term)
+          (interactive "sSearch terms: ")
+          (eww-browse-url (concat "http://www.google.com/search?gbv=1&source=hp&hl=en&ie=ISO-8859-1&btnG=Google+Search&q=" term)))
+
+        (define-key personal-global-map (kbd "G") 'eww)
+        (define-key personal-global-map (kbd "b") 'eww-follow-link)
+        (define-key personal-global-map (kbd "S") 'eww-search))
+  #+END_SRC
+
+* W3M?
+
+  The following set up functions from [[http://www.emacswiki.org/emacs/emacs-w3m][emacs-w3m]]:
+
+  #+BEGIN_SRC elisp
+    (when (fboundp 'w3m)
+      (setq browse-url-browser-function 'w3m-browse-url)
+      (setq w3m-use-cookies t)
+      (define-key personal-global-map (kbd "G") 'w3m-goto-url)
+      (define-key personal-global-map (kbd "b") 'browse-url-at-point)
+      (define-key personal-global-map (kbd "S") 'w3m-search))
+  #+END_SRC
+
+  While browsing, remember the following:
+
+    - TAB to jump from link to link.
+    - RETURN to follow a link
+    - SPACE to move down the page
+    - b to move up the page
+    - B to move back in the history
+    - M to open the URL in Firefox
+    - I to open the image if it didn't show up correctly
+    - c to copy the URL of the current page in the kill ring.
+    - u to copy the URL of the link in the kill ring.
+    - a to bookmark this page
+    - v to look at the bookmarks
+    - s to look through the page history for this session.
+
+* External Web Browsing
+
+  Sometimes the URL needs to be in Firefox, et. al:
+
+  #+BEGIN_SRC elisp
+    (define-key w3m-mode-map (kbd "x") 'w3m-view-url-with-external-browser)
+  #+END_SRC
+
+  Most of the time, I would like to use built-in Emacs browser, but
+  not always, so maybe I could have a function that switches between
+  the browser options?
+
+  #+BEGIN_SRC elisp
+    (defun ha-switch-default-browser ()
+      "Switches the default browser between the internal and external web browser."
+      (interactive)
+      ;;         | Variable                  | Function
+      (if (equal browse-url-browser-function 'browse-url-default-browser)
+          (if (fboundp 'w3m)
+              (setq browse-url-browser-function 'w3m-browse-url)
+            (setq browse-url-browser-function 'eww-browse-url))
+        (setq browse-url-browser-function 'browse-url-default-browser))
+
+      ;; Now we need to display the current setting. The variables are
+      ;; pretty typical and have the goodies, but I just need to get rid
+      ;; of the word "url" or "browser", and the results are pretty close:
+      (message "Browser set to: %s"
+               (car
+                (filter (lambda (x)
+                          (if (or (equal "url" x)
+                                  (equal "browse" x)
+                                  (equal "browser" x))
+                              nil
+                            t))
+                        (split-string (format "%s" browse-url-browser-function) "-")))))
+
+    (define-key personal-global-map (kbd "w") 'ha-switch-default-browser)
+    #+END_SRC
+
+* Web Page Cleanup
+
+  Navigating some sites in a text browser is a bit painful, but we
+  could have some functions that either move the cursor passed the
+  header to the start of the content, or actually remove some of the
+  content.
+
+** Google Search
+
+  Don’t need to actually remove stuff when search in Google, as I
+  really just need to jump ahead and skip the header:
+
+#+BEGIN_SRC elisp
+  (defun w3m-skip-in-google ()
+    "For a Google Search, skip to the first result."
+    (beginning-of-buffer)
+    (search-forward-regexp "[0-9, ]+ results")
+    (forward-line 2)
+    (recenter-top-bottom 0))
+#+END_SRC
+
+** Stack Overflow
+
+   Without a clear enough label, searching for the start of content
+   will always be fragile. We’ll look for the start of the first column.
+
+#+BEGIN_SRC elisp
+  (defun w3m-skip-in-stackoverflow ()
+      (beginning-of-buffer)
+      (search-forward-regexp "^   ")
+      (previous-line 2)
+      (recenter-top-bottom 0)))
+#+END_SRC
+
+   Stack Overflow has a lot of text that isn’t helpful to someone in a
+   text-based browser, so I would like to remove the voting and other
+   parts. Not sure how to do it, since the columns are of variable width.
+
+** ClojureDocs
+
+   The [[http://clojuredocs.org/][clojuredocs.org]] website has a big header, but doesn’t include a
+   link to jump to the content, so let’s try to figure that out for
+   most function definitions:
+
+   #+BEGIN_SRC elisp
+     (defun w3m-skip-in-clojuredocs()
+       "When viewing the Clojuredocs, we can skip to the meat of the
+     function description by looking for the label, ‘Available since’,
+     and finding the function name just before that."
+       (beginning-of-buffer)
+       (search-forward-regexp "Available since")
+       (previous-line 4)
+       (recenter-top-bottom 0))
+   #+END_SRC
+
+** Web Site Dispatch Function
+
+  Add a hook to the =w3m-display-functions= to match the URL to see
+  which function we need to call:
+
+  #+BEGIN_SRC elisp
+    (defun w3m-hide-stuff (url)
+      "Call screen cleaning functions for the W3M based on the URL."
+      (interactive)
+      (cond ((string-match "google\.com/search" url) (w3m-skip-in-google))
+            ((string-match "clojuredocs.org" url) (w3m-skip-in-clojuredocs))
+            ((string-match "stackoverflow.com" url) (w3m-skip-in-stackoverflow))
+            ))
+
+    (add-hook 'w3m-display-functions 'w3m-hide-stuff)
+  #+END_SRC
+
+* Technical Artifacts
+
+  Make sure that we can simply =require= this library.
+
+  #+BEGIN_SRC elisp
+    (provide 'init-browser)
+  #+END_SRC
+
+  Before you can build this on a new system, make sure that you put
+  the cursor over any of these properties, and hit: =C-c C-c=
+
+#+DESCRIPTION: A literate programming version of my Emacs Initialization for browsing the web
+#+PROPERTY:    results silent
+#+PROPERTY:    tangle ~/.emacs.d/elisp/init-browser.el
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
