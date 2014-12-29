@@ -59,7 +59,10 @@ hide lots of useless text for various web pages.
   Sometimes the URL needs to be in Firefox, et. al:
 
   #+BEGIN_SRC elisp
-    (define-key w3m-mode-map (kbd "x") 'w3m-view-url-with-external-browser)
+    (add-hook 'w3m-mode
+              (lambda ()
+                (define-key w3m-mode-map (kbd "x")
+                  'w3m-view-url-with-external-browser)))
   #+END_SRC
 
   Most of the time, I would like to use built-in Emacs browser, but
@@ -123,8 +126,8 @@ hide lots of useless text for various web pages.
   (defun w3m-skip-in-stackoverflow ()
       (beginning-of-buffer)
       (search-forward-regexp "^   ")
-      (previous-line 2)
-      (recenter-top-bottom 0)))
+      (forward-line -2)
+      (recenter-top-bottom 0))
 #+END_SRC
 
    Stack Overflow has a lot of text that isn’t helpful to someone in a
@@ -144,7 +147,7 @@ hide lots of useless text for various web pages.
      and finding the function name just before that."
        (beginning-of-buffer)
        (search-forward-regexp "Available since")
-       (previous-line 4)
+       (forward-line -4)
        (recenter-top-bottom 0))
    #+END_SRC
 
