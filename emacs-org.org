@@ -355,6 +355,8 @@ should be. After calling this function, call 'meeting-done' to reset the environ
            "* %?\n\n  %i\n\n  See: %a" :empty-lines 1)
           ("j" "Journal Note"     entry (file (get-journal-file-today))
            "* %?\n\n  %i\n\n  From: %a" :empty-lines 1)
+          ("t" "Task Card"        entry (file "~/personal/tasks.org")
+           "* %?\n\n  %i\n\n  From: %a" :empty-lines 1)
           ("w" "Website Announcement" entry
            (file+function "~/website/index.org" ha/first-header)
            "* %?
@@ -376,23 +378,6 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 
    Just remember, at some point to hit =C-c C-w= to /refile/ that note
    in the appropriate place.
-
-* Checking Things Off
-
-   When I check off an item as done, sometimes I want to add some
-   details about the completion (this is really only helpful when I'm
-   consulting).
-
-   With this setting, each time you turn an entry from a TODO state
-   into the DONE state, a line 'CLOSED: [timestamp]' will be inserted
-   just after the headline. If you turn the entry back into a TODO
-   item through further state cycling, that line will be removed
-   again.
-
-#+BEGIN_SRC elisp
-  ; (setq org-log-done 'time)
-  (setq org-log-done 'note)
-#+END_SRC
 
 * Export Settings
 
