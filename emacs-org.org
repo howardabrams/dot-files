@@ -441,8 +441,6 @@ should be. After calling this function, call 'meeting-done' to reset the environ
         '(define-key org-src-mode-map
            "\C-x\C-s" #'org-edit-src-exit))
     #+END_SRC
-
-
 * Presentations
 
    Currently generating presentations from my org-mode files using
@@ -492,20 +490,27 @@ should be. After calling this function, call 'meeting-done' to reset the environ
    allows org-mode to not only interpret source code blocks, but
    evaluate them and tangle them out to a file.
 
-#+BEGIN_SRC elisp
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((sh         . t)
-   (js         . t)
-   (emacs-lisp . t)
-   (perl       . t)
-   (scala      . t)
-   (clojure    . t)
-   (python     . t)
-   (dot        . t)
-   (css        . t)
-   (plantuml   . t)))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (org-babel-do-load-languages
+      'org-babel-load-languages
+      '((sh         . t)
+        (js         . t)
+        (emacs-lisp . t)
+        (perl       . t)
+        (scala      . t)
+        (clojure    . t)
+        (python     . t)
+        (ruby       . t)
+        (dot        . t)
+        (css        . t)
+        (plantuml   . t)))
+   #+END_SRC
+
+   Make the code pretty:
+
+   #+BEGIN_SRC elisp
+     (setq org-src-fontify-natively t)
+   #+END_SRC
 
    I want CoffeeScript to be supported in org-mode, but I need to do
    it myself at the moment.
