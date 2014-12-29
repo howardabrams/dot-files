@@ -324,6 +324,14 @@
   (global-set-key (kbd "<f8>") 'ido-switch-buffer)
 #+END_SRC
 
+   I like [[https://github.com/KMahoney/kpm-list][kpm-list]] a bit better than =ibuffer=, but I really don’t use
+   either more than =ido-switch-buffer=. Still:
+
+   #+BEGIN_SRC elisp
+   (if (require 'kpm-list nil t)
+       (global-set-key (kbd "S-<f8>") 'kpm-list)
+     (global-set-key (kbd "S-<f8>") 'ibuffer))
+   #+END_SRC
 *** F9 Helpers
 
     The F9 prefix is scattered about my config files.
@@ -1034,7 +1042,7 @@ brew install homebrew/dupes/grep
     With version 24.4 of Emacs, we can save all files when Emacs
     looses frame focus.
 
-#+BEGIN_SRC elisp :tangle no
+#+BEGIN_SRC elisp
   (add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
 #+END_SRC
 
