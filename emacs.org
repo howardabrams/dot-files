@@ -902,26 +902,22 @@
    I use the standard [[http://emacswiki.org/emacs/GrepMode#toc1][grep package]] in Emacs, but need a later
    version of Gnu Grep. On Mac OS X, run these two commands:
 
-#+BEGIN_EXAMPLE
-brew tap homebrew/dupes
-brew install homebrew/dupes/grep
-#+END_EXAMPLE
+   #+BEGIN_EXAMPLE
+   brew tap homebrew/dupes
+   brew install homebrew/dupes/grep
+   #+END_EXAMPLE
 
    I also use [[http://beyondgrep.com][ack]] and the [[http://geoff.greer.fm/2011/12/27/the-silver-searcher-better-than-ack/][Silver Searcher]] (but for different uses).
 
-  #+BEGIN_EXAMPLE
+   #+BEGIN_EXAMPLE
     brew install ack
     brew install ag
-  #+END_EXAMPLE
+   #+END_EXAMPLE
 
    The [[https://github.com/jhelwig/ack-and-a-half][ack-and-a-half]] project requires the following:
 
   #+BEGIN_SRC elisp
   (when (require 'ack-and-a-half nil t)
-    ;; Odd, but it appears we now need to add the ack executable to the
-    ;; arguments list:
-    (setq ack-and-a-half-arguments '("ack"))
-
     ;; Not sure why org mode isn’t something we can limit searches:
     (add-to-list 'ack-and-a-half-mode-type-default-alist '(org-mode "org"))
 
