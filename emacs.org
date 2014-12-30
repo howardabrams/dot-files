@@ -356,8 +356,8 @@
         (hs-minor-mode t)
         (hs-hide-all))
 
-      (define-key personal-global-map (kbd "H") 'ha-hs-hide-all)
-      (define-key personal-global-map (kbd "B") 'hs-hide-block)
+      (define-key personal-global-map (kbd "M-H") 'ha-hs-hide-all)
+      (define-key personal-global-map (kbd "H") 'hs-hide-block)
       (define-key personal-global-map (kbd "M-V") 'hs-show-all)
       (define-key personal-global-map (kbd "V") 'hs-show-block)
     #+END_SRC
@@ -927,7 +927,7 @@
     (defalias 'ack-find-file 'ack-and-a-half-find-file)
     (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same)
 
-    (define-key personal-global-map (kbd "A") 'ack-and-a-half)
+    (define-key personal-global-map (kbd "M-a") 'ack-and-a-half)
     (define-key personal-global-map (kbd "a") 'ack-and-a-half-same))
 #+END_SRC
 
