@@ -335,49 +335,63 @@ should be. After calling this function, call 'meeting-done' to reset the environ
    working on. This is called a "capture", and is bound to the
    following key:
 
-#+BEGIN_SRC elisp
-  (global-set-key (kbd "C-c c") 'org-capture)
-#+END_SRC
+   #+BEGIN_SRC elisp
+    (global-set-key (kbd "C-c c") 'org-capture)
+   #+END_SRC
 
    This will bring up a list of /note capturing templates/. I actually
-   have this information stored in my [[file:emacs-local.org::*Org%20Configuration][system-specific "local" configuration]]
-   file.
+   override this in my [[file:emacs-local.org::*Org%20Configuration][system-specific "local" configuration]] file.
 
-#+BEGIN_SRC elisp :tangle no
-  (defun ha/first-header ()
-      (goto-char (point-min))
-      (search-forward-regexp "^\* ")
-      (beginning-of-line 1)
-      (point))
+   #+BEGIN_SRC elisp
+     (defun ha/first-header ()
+         (goto-char (point-min))
+         (search-forward-regexp "^\* ")
+         (beginning-of-line 1)
+         (point))
 
-  (setq org-capture-templates
-        '(("n" "Thought or Note"  entry (file "~/personal/@SUMMARY.org")
-           "* %?\n\n  %i\n\n  See: %a" :empty-lines 1)
-          ("j" "Journal Note"     entry (file (get-journal-file-today))
-           "* %?\n\n  %i\n\n  From: %a" :empty-lines 1)
-          ("t" "Task Card"        entry (file "~/personal/tasks.org")
-           "* %?\n\n  %i\n\n  From: %a" :empty-lines 1)
-          ("w" "Website Announcement" entry
-           (file+function "~/website/index.org" ha/first-header)
-           "* %?
-    :PROPERTIES:
-    :PUBDATE: %t
-    :END:
-    #+HTML: <div class=\"date\">%<%e %b %Y></div>
+     (setq org-capture-templates
+           '(("n" "Thought or Note"  entry (file "~/personal/@SUMMARY.org")
+              "* %?\n\n  %i\n\n  See: %a" :empty-lines 1)
+             ("j" "Journal Note"     entry (file (get-journal-file-today))
+              "* %?\n\n  %i\n\n  From: %a" :empty-lines 1)
+             ("t" "Task Card"        entry
+              (file+function "~/personal/tasks.org" ha/first-header)
+              "* %?\n\n  %i\n\n  From: %a" :empty-lines 1)
+             ("w" "Website Announcement" entry
+              (file+function "~/website/index.org" ha/first-header)
+              "* %?
+       :PROPERTIES:
+       :PUBDATE: %t
+       :END:
+       ,#+HTML: <div class=\"date\">%<%e %b %Y></div>
 
-    %i
+       %i
 
-    [[%F][Read more...]" :empty-lines 1)))
+       [[%F][Read more...]" :empty-lines 1)))
 
-  ;; General notes go into this file:
-  (setq org-default-notes-file "~/personal/@SUMMARY.org")
-#+END_SRC
+     ;; General notes go into this file:
+     (setq org-default-notes-file "~/personal/@SUMMARY.org")
+   #+END_SRC
 
    After you have selected the template, you type in your note and hit
    =C-c C-c= to store it in the file listed above.
 
    Just remember, at some point to hit =C-c C-w= to /refile/ that note
    in the appropriate place.
+
+* Org and Trello
+
+  Using [[https://github.com/org-trello/org-trello][org-trello]] to sync particular org-mode files with [[https://trello.com/b/Kp6XZg2b][trello.com]]
+
+  #+BEGIN_SRC elisp
+    (defun ha/org-trello-sync ()
+      (interactive)
+      (when (require 'org-trello nil t)
+        (org-trello-mode 1)
+        (org-trello/sync-buffer t)))
+
+    (global-set-key (kbd "S-<f1>") 'ha/org-trello-sync)
+  #+END_SRC
 
 * Export Settings
 
