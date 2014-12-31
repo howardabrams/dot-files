@@ -127,11 +127,13 @@ ls >> #<buffer emacs-eshell.org>
    Eshell. Like ‘ll’:
 
    #+BEGIN_SRC elisp
-     (if (file-exists-p "/usr/local/bin/gls")
-         (setq ls "/usr/local/bin/gls")
-       (setq ls "/bin/ls"))
-
-     (eshell/alias "ll" (concat ls " -AlohG --color=always"))
+     (add-hook 'eshell-mode-hook
+               (lambda ()
+                 ;; The 'ls' executable requires the Gnu version on the Mac
+                 (let ((ls (if (file-exists-p "/usr/local/bin/gls")
+                               "/usr/local/bin/gls"
+                             "/bin/ls")))
+                   (eshell/alias "ll" (concat ls " -AlohG --color=always")))))
    #+END_SRC
 
    To make things more consistent between different hosts, I will
@@ -208,7 +210,7 @@ ls >> #<buffer emacs-eshell.org>
 
 #+BEGIN_SRC elisp
   (add-hook 'eshell-mode-hook
-     '(lambda nil
+     (lambda ()
         (add-to-list 'eshell-visual-commands "ssh")
         (add-to-list 'eshell-visual-commands "tail")))
 #+END_SRC
