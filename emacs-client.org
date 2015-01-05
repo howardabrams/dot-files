@@ -35,46 +35,6 @@ other systems with a graphical front-end.
           (delete-window (selected-window)))))
 #+END_SRC
 
-* Unicode Characters
-
-  Some of my frequently used Unicode characters:
-
-#+BEGIN_SRC elisp
-  (define-key personal-global-map (kbd "b") 'bury-buffer)
-
-  (define-key personal-global-map (kbd "<up>") "↑")
-  (define-key personal-global-map (kbd "<down>") "↓")
-  (define-key personal-global-map (kbd "<left>") "←")
-  (define-key personal-global-map (kbd "<right>") "→")
-
-  (define-key personal-global-map (kbd "!") "¹")
-  (define-key personal-global-map (kbd "@") "²")
-  (define-key personal-global-map (kbd "#") "³")
-  (define-key personal-global-map (kbd "$") "⁴")
-
-  (define-key personal-global-map (kbd "2") "½")
-  (define-key personal-global-map (kbd "3") "⅓")
-  (define-key personal-global-map (kbd "4") "¼")
-
-  (define-key personal-global-map (kbd "'") "’")
-  (define-key personal-global-map (kbd "\"") "‘")
-
-  (define-key personal-global-map (kbd "8") "•")
-  (define-key personal-global-map (kbd "*") "°")
-  (define-key personal-global-map (kbd "-") "—")
-  (define-key personal-global-map (kbd ".") "…")
-  (define-key personal-global-map (kbd ";") "😜")
-  (define-key personal-global-map (kbd ")") "😀")
-
-  (define-key personal-global-map (kbd "x") "𝑥")
-  (define-key personal-global-map (kbd "y") "𝑦")
-  (define-key personal-global-map (kbd "A") "α")
-  (define-key personal-global-map (kbd "B") "β")
-  (define-key personal-global-map (kbd "L") "λ")
-  (define-key personal-global-map (kbd "P") "π")
-  (define-key personal-global-map (kbd "T") "θ")
-#+END_SRC
-
 * Font Settings
 
    I love syntax highlighting.

@@ -332,7 +332,7 @@
        (global-set-key (kbd "S-<f8>") 'kpm-list)
      (global-set-key (kbd "S-<f8>") 'ibuffer))
    #+END_SRC
-*** F9 Helpers
+*** F2 and F9 Helpers
 
     The F9 prefix is scattered about my config files.
 
@@ -341,6 +341,21 @@
       (global-set-key (kbd "<f9>") 'personal-global-map)
 
       (define-key personal-global-map (kbd "b") 'bury-buffer)
+    #+END_SRC
+
+    The F2 prefix will be used for entering extra phrases and
+    characters.
+
+    #+BEGIN_SRC elisp
+      (define-prefix-command 'f2-global-map)
+      (global-set-key (kbd "<f2>") 'f2-global-map)
+    #+END_SRC
+
+    Unlike the *F9* bindings, all the *F2* key-bindings happen in one
+    [[file:emacs-f2.org][library file]]:
+
+    #+BEGIN_SRC elisp
+      (require 'init-f2)
     #+END_SRC
 
 *** Auto Hiding Functions
