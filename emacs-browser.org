@@ -197,7 +197,9 @@ hide lots of useless text for various web pages.
 
   #+BEGIN_SRC elisp
     (when (and (fboundp 'w3m) (require 'ace-link nil t))
-      (define-key w3m-mode-map "o" 'ace-link-eww))
+      (add-hook 'w3m-mode
+                (lambda ()
+                  (define-key w3m-mode-map "o" 'ace-link-eww))))
   #+END_SRC
 
 * Better Navigation
