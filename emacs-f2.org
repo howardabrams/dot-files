@@ -40,6 +40,7 @@ phrases I want to type a bit too often.
   (define-key f2-global-map (kbd ";") "😉")
   (define-key f2-global-map (kbd ")") "☺")
 
+  (define-key f2-global-map (kbd "e") "𝑒")
   (define-key f2-global-map (kbd "f") "𝑓")
   (define-key f2-global-map (kbd "x") "𝑥")
   (define-key f2-global-map (kbd "y") "𝑦")
@@ -59,7 +60,27 @@ phrases I want to type a bit too often.
 
   #+BEGIN_SRC elisp
   (define-key f2-global-map (kbd "=") "≡")
+  (define-key f2-global-map (kbd ":") "≔")
   (define-key f2-global-map (kbd "~") "≝")
+  #+END_SRC
+
+  Most math, however, should be based on the meta prefix:
+
+  #+BEGIN_SRC elisp
+  (define-key f2-global-map (kbd "M-.") "∴")  ; Therefore
+  (define-key f2-global-map (kbd "M-,") "∵")  ; Therefore
+  (define-key f2-global-map (kbd "M-t") "⊢")  ; Turnstile ... to assert
+  (define-key f2-global-map (kbd "M-T") "≜")  ; Should be a triangle over equal sign
+  (define-key f2-global-map (kbd "M-n") "∅")  ; Empty Set
+  (define-key f2-global-map (kbd "M-e") "∃")  ; There exists
+  (define-key f2-global-map (kbd "M-E") "∄")  ; There does not exist
+  (define-key f2-global-map (kbd "M-i") "∩")  ; Intersection
+  (define-key f2-global-map (kbd "M-u") "∪")  ; Union
+  (define-key f2-global-map (kbd "M-6") "⋀")  ; Conjunction
+  (define-key f2-global-map (kbd "M-^") "⋁")  ; Disjunction
+  (define-key f2-global-map (kbd "M-*") "✕")  ; Multiply
+  (define-key f2-global-map (kbd "M-/") "÷")  ; Divide
+  (define-key f2-global-map (kbd "M-!") "¬")  ; Logical Not
   #+END_SRC
 
 * Favorite Phrases
