@@ -24,7 +24,10 @@
 (require 'org)         ;; The org-mode goodness
 (require 'ob)          ;; org-mode export system
 (require 'ob-tangle)   ;; org-mode tangling process
-(require 'shell-script-funcs)    ;; My special functions for doing scripts
+
+;; My special functions for doing script are not in a loadable location.
+(require 'shell-script-funcs
+         (concat (file-name-directory (buffer-file-name)) "shell-script-funcs.el"))
 
 ;; Need to get the directory to my 'dot-files' source code. While
 ;; developing, we just evaluate this buffer, so 'buffer-file-name' is
