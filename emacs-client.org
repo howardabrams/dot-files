@@ -61,7 +61,7 @@ other systems with a graphical front-end.
 
 #+BEGIN_SRC elisp
   (set-frame-font my/font-family)
-  (set-face-attribute 'default nil :font my/font-family :height 160)
+  (set-face-attribute 'default nil :font my/font-family :height 120)
   (set-face-font 'default my/font-family)
 #+END_SRC
 
@@ -181,15 +181,7 @@ other systems with a graphical front-end.
 
 * Window Size
 
-   Hrm ... I'm always increasing the window size, so I might as well
-   just have it default to the size I want:
-
-#+BEGIN_SRC elisp
-  (add-to-list 'default-frame-alist '(height . 46))
-  (add-to-list 'default-frame-alist '(width . 80))
-#+END_SRC
-
-   However, I often want to put the window fullscreen:
+  I often want to put the window fullscreen:
 
 #+BEGIN_SRC elisp
   (defun frame-fullscreen ()
