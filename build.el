@@ -24,7 +24,8 @@
 (require 'org)         ;; The org-mode goodness
 (require 'ob)          ;; org-mode export system
 (require 'ob-tangle)   ;; org-mode tangling process
-(require 'shell-script-funcs)    ;; My special functions for doing scripts
+(require 'shell-script-funcs "/home/howard/Work/dot-files/emacs.d/shell-script-funcs.el")
+;; My special functions for doing scripts
 
 ;; Need to get the directory to my 'dot-files' source code. While
 ;; developing, we just evaluate this buffer, so 'buffer-file-name' is
