@@ -229,14 +229,20 @@ hide lots of useless text for various web pages.
     (add-hook 'eww-mode-hook
               (lambda ()
                 (define-key eww-mode-map "j" 'oww-down)
-                (define-key eww-mode-map "k" 'oww-up)
-                (define-key eww-mode-map "l" 'forward-char)
-                (define-key eww-mode-map "h" 'backward-char)))
+                (define-key eww-mode-map "k" 'oww-up)))
 
     (add-hook 'w3m-mode-hook
               (lambda ()
                 (define-key w3m-mode-map "j" 'oww-down)
                 (define-key w3m-mode-map "k" 'oww-up)))
+  #+END_SRC
+
+* EWW End of Images
+
+  Don´t care, when I´m in Emacs, to bother with images:
+
+  #+BEGIN_SRC elisp
+  (setq shr-blocked-images ".*")
   #+END_SRC
 
 * Technical Artifacts
