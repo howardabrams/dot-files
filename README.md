@@ -9,56 +9,13 @@ different computers and share with the world.
 What's in this project?
 -----------------------
 
-Startup scripts for [Emacs][3] and [Zsh][6]. Specifically:
+Mostly startup scripts for [Emacs][3] and [Zsh][6]. If you are
+interested in how I configure Emacs, start with [emacs.org][7].
+While the *configuration files* look like a document, that is the
+basis for my Emacs Lisp code.
 
-<!-- Why yes, it is a shame that I can't do multimarkdown or org-mode tables -->
-<!-- But the end results are sure purdy. -->
-<table><thead><tr>
-<th>Source</th>
-<th>Destination</th>
-<th>Contents</th></tr></thead>
-<tbody>
-<tr><td>
-   <a href="http://howardabrams.com/projects/dot-files/emacs.html"><code>emacs.org</code></a>
-</td><td>
-   <a href="results/emacs.el"><code>.emacs-ext.el</code></a>
-</td><td>
-  "Sourced" in from the <code>.emacs</code> file
-</td></tr><tr><td>
-  <a href="http://howardabrams.com/projects/dot-files/profile.html"><code>profile.org</code></a>
-</td><td>
-   <a href="results/profile"><code>.profile</code></a>
-</td><td>
-  My General Profile
-</td></tr><tr><td>
-  <a href="http://howardabrams.com/projects/dot-files/zsh-theme.html"><code>zsh-theme.org</code></a>
-</td><td>
-   <a href="results/happiness.zsh-theme"><code>.oh-my-zsh/themes</code></a>
-</td><td>
-  My ZShell "theme" 
-</td></tr><tr><td>
-  <a href="http://howardabrams.com/projects/dot-files/zsh-env.html"><code>zsh-env.org</code></a>
-</td><td>
-   <a href="results/zshenv"><code>.zshenv</code></a>
-</td><td>
-  Global Zsh environment variables
-</td></tr><tr><td>
-  <a href="http://howardabrams.com/projects/dot-files/zsh-rc.html"><code>zsh-rc.org</code></a>
-</td><td>
-   <a href="results/zshrc"><code>.zshrc</code></a>
-</td><td>
-  Zsh functions ... calls <code>sh-funcs.sh</code>
-</td></tr><tr><td>
-  <a href="http://howardabrams.com/projects/dot-files/sh-functions.html"><code>sh-functions.org</code></a>
-</td><td>
-   <a href="results/sh-functions.sh"><code>.sh-funcs.sh</code></a>
-</td><td>
-  Global functions and aliases
-</td></tr></tbody></table>
-
-
-Why is there a source for your scripts?
-----------------------------------
+Where is the Code?
+------------
 
 My scripts and other dot files usually use blurbs and blippets from
 multiple sources on these here intertubes, and I find that when I get
@@ -69,18 +26,16 @@ So I use a [literate programming][0] approach based on the
 [Babel Project][1] (which is built on [org-mode][2] which, incidently,
 only runs in [Emacs][3]). Each source file is *tangled* out to the
 destination in my home directory.
-  
+
 Can I use your files?
 ---------------------
 
 You may, as this collection is under a [creative commons license][4].
-However, you probably don't want to take the files (or even fork this
-project), since you probably don't have a neck-beard and use Emacs.
-
+However, you probably don't want to take complete files (or even fork this
+project), as I have amassed a quite a bit of Lisp code for my environment.
 Instead, gander through the documented output for the files, and copy
-and paste anything that you find interesting. My Zsh prompt, er,
-*theme* will be contributed back to the [Oh My Zsh][5] project, so I
-don't know if it is worthy of being committed.
+and paste anything that you find interesting.
+
 
   [0]: http://en.wikipedia.org/wiki/Literate_programming
   [1]: http://orgmode.org/worg/org-contrib/babel/intro.html
@@ -89,3 +44,4 @@ don't know if it is worthy of being committed.
   [4]: http://creativecommons.org/licenses/by/3.0/
   [5]: https://github.com/robbyrussell/oh-my-zsh
   [6]: http://zsh.sourceforge.net
+  [7]: https://github.com/howardabrams/dot-files/blob/master/emacs.org
