@@ -54,13 +54,13 @@ coupled with some magic available to JavaScript.
   (setq org-mode-publishing-directory (concat (getenv "HOME") "/Public/"))
 
   (setq org-publish-project-alist
-        '(("all"
+        `(("all"
            :components ("blog-content" "blog-static" "org-notes" "blog-rss"))
 
           ("blog-content"
-           :base-directory       org-mode-websrc-directory
+           :base-directory       ,org-mode-websrc-directory
            :base-extension       "org"
-           :publishing-directory org-mode-publishing-directory
+           :publishing-directory ,org-mode-publishing-directory
            :recursive            t
            :publishing-function  org-html-publish-to-html
            :preparation-function org-mode-blog-prepare
@@ -96,18 +96,18 @@ coupled with some magic available to JavaScript.
            )
 
           ("blog-static"
-           :base-directory       org-mode-websrc-directory
+           :base-directory       ,org-mode-websrc-directory
            :base-extension       "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|svg"
-           :publishing-directory org-mode-publishing-directory
+           :publishing-directory ,org-mode-publishing-directory
            :recursive            t
            :publishing-function  org-publish-attachment
            )
 
           ("blog-rss"
-           :base-directory        org-mode-websrc-directory
+           :base-directory        ,org-mode-websrc-directory
            :base-extension        "org"
            :rss-image-url         "http://howardism.org/img/dragon-head.png"
-           :publishing-directory  org-mode-publishing-directory
+           :publishing-directory  ,org-mode-publishing-directory
            :publishing-function   (org-rss-publish-to-rss)
            :html-link-home        "http://www.howardism.org/"
            :html-link-use-abs-url t
@@ -118,7 +118,7 @@ coupled with some magic available to JavaScript.
           ("org-notes"
            :base-directory        "~/technical/"
             :base-extension       "org"
-            :publishing-directory (concat org-mode-publishing-directory "/notes/")
+            :publishing-directory ,(concat org-mode-publishing-directory "/notes/")
             :recursive            t
             :publishing-function  org-html-publish-to-html
             :headline-levels      4             ; Just the default for this project.
@@ -136,7 +136,7 @@ coupled with some magic available to JavaScript.
           ("org-notes-static"
            :base-directory       "~/technical/"
            :base-extension       "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
-           :publishing-directory (concat org-mode-publishing-directory "/other/")
+           :publishing-directory ,(concat org-mode-publishing-directory "/other/")
            :recursive            t
            :publishing-function  org-publish-attachment
            )))
