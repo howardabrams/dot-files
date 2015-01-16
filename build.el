@@ -27,7 +27,7 @@
 
 ;; My special functions for doing script are not in a loadable location.
 (require 'shell-script-funcs
-         (concat (file-name-directory (buffer-file-name)) "shell-script-funcs.el"))
+         (concat (file-name-directory (buffer-file-name)) "emacs.d/shell-script-funcs.el"))
 
 ;; Need to get the directory to my 'dot-files' source code. While
 ;; developing, we just evaluate this buffer, so 'buffer-file-name' is
@@ -72,7 +72,7 @@
         (ha/get-files "${user-emacs-directory}/elisp/*.el" t))
 
   (message "Finished building dot-files- Resetting Emacs.")
-  (require 'init-main))
+  (require 'init-main (ha/get-path "${user-emacs-directory}elisp/init-main.el")))
 
 
 (defun ha/tangle-file (file)
