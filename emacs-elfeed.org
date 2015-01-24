@@ -33,7 +33,7 @@ Let's load it up if it is installed.
           "https://medium.com/feed/@hlship/"       ;; Programming
           "http://gigasquidsoftware.com/atom.xml"  ;; Clojure
           "http://blog.fogus.me/feed/"      ;; Programming
-+          "http://steve-yegge.blogspot.com/atom.xml"
+          "http://steve-yegge.blogspot.com/atom.xml"
           "http://www.rkn.io/feed.xml"))    ;; Programming
 #+END_SRC
 
