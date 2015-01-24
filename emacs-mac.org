@@ -26,18 +26,18 @@ then, only during a graphical run.
     (require 'mac-key-mode)
     (mac-key-mode)
 
-    (define-key mac-key-mode-map [(alt o)] 'ido-find-file)
+    (define-key mac-key-mode-map (kbd "A-o") 'ido-find-file)
 
     ;; I'd rather selectively bind Meta-I to my italics function,
     ;; instead of showing the file in the Finder.
     (define-key mac-key-mode-map (kbd "A-i") nil)
-    (define-key mac-key-mode-map [(alt 2)] 'mac-key-show-in-finder)
+    (define-key mac-key-mode-map (kbd "A-2") 'mac-key-show-in-finder)
 
-    (define-key mac-key-mode-map [(alt +)] 'text-scale-increase)
-    (define-key mac-key-mode-map [(alt _)] 'text-scale-decrease)
-    (define-key mac-key-mode-map [(alt l)] 'goto-line)
-    (define-key mac-key-mode-map [(alt w)] 'bury-buffer)
-    (define-key mac-key-mode-map [(meta alt w)] 'kill-this-buffer))
+    (define-key mac-key-mode-map (kbd "A-+") 'text-scale-increase)
+    (define-key mac-key-mode-map (kbd "A-_") 'text-scale-decrease)
+    (define-key mac-key-mode-map (kbd "A-l") 'goto-line)
+    (define-key mac-key-mode-map (kbd "A-w") 'bury-buffer)
+    (define-key mac-key-mode-map (kbd "A-M-w") 'kill-this-buffer))
 #+END_SRC
 
    Since the default ls for the Mac isn't so good, I always have the
@@ -68,8 +68,8 @@ then, only during a graphical run.
 
 #+BEGIN_SRC elisp
     (unless (boundp 'aquamacs-version)
-      (define-key mac-key-mode-map [(alt z)] 'undo-tree-undo)
-      (define-key mac-key-mode-map [(alt S-z)] 'undo-tree-redo))
+      (define-key mac-key-mode-map (kbd "A-z") 'undo-tree-undo)
+      (define-key mac-key-mode-map (kbd "A-S-z") 'undo-tree-redo))
 #+END_SRC
 
 * Dash
