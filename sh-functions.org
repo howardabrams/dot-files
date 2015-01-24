@@ -411,15 +411,14 @@ export LESS='-R'
 * Git Helpers
 ** Tab Completion
 
-   Complete expected git commands by pressing the tab key for Bash.
-   I don't use this anymore since Zsh has a better module for this.
+   Complete expected git (and others) commands by pressing the tab key
+   for Bash.
 
-#+BEGIN_SRC sh :tangle no
-if [ -e $GIT_HOME/contrib/completion/git-completion.bash -a "$0" = "-bash" ]
-then
-    . $GIT_HOME/contrib/completion/git-completion.bash
-fi
-#+END_SRC
+   #+BEGIN_SRC sh
+     if [ -f `brew --prefix`/etc/bash_completion ]; then
+         . `brew --prefix`/etc/bash_completion
+     fi
+   #+END_SRC
 
 ** Whitespace Removers
 
