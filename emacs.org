@@ -389,6 +389,37 @@
       (define-key personal-global-map (kbd "u") 'unhighlight-regexp)
     #+END_SRC
 
+    May get specific highlights automatically for certain files. We
+    begin by highlighting lines in *.log files.
+
+    #+BEGIN_SRC elisp
+      (defun highlite-it ()
+        "Highlight certain lines in specific files. Currently, only log files are supported."
+        (interactive)
+        (when (equal "log" (file-name-extension (buffer-file-name)))
+              (hi-lock-mode 1)
+              (highlight-lines-matching-regexp "ERROR:" 'hi-red-b)
+              (highlight-lines-matching-regexp "NOTE:" 'hi-blue-b)))
+
+      (add-hook 'find-file-hook 'highlite-it)
+    #+END_SRC
+
+    Turn on specific word groupings for specific occasions. We begin
+    with highlighting keywords I use during note-taking sessions at
+    the end of a sprint.
+
+    #+BEGIN_SRC elisp
+      (defun ha/sprint-retrospective-highlighting ()
+        "Highlights the good, the bad and the improvements to make when taking notes."
+        (interactive)
+        (hi-lock-mode t)
+        (highlight-lines-matching-regexp "^   - " 'hi-black-b)
+        (highlight-phrase "TODO:?" 'hi-black-b)
+        (highlight-regexp "(?Good)?:?" 'hi-green-b)
+        (highlight-regexp "(?Bad)?:?" 'hi-red-b)
+        (highlight-regexp "Imp\\(rove\\)?:" 'hi-blue-b))
+    #+END_SRC
+
 *** Controlling Windows
 
     Often, while on my laptop, I want the current window to be ‘large
