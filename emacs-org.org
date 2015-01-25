@@ -349,13 +349,19 @@ should be. After calling this function, call 'meeting-done' to reset the environ
          (beginning-of-line 1)
          (point))
 
+     ;; General notes go into this file:
+     (setq org-default-notes-file "~/personal/@SUMMARY.org")
+     (setq org-default-tasks-file "~/personal/tasks.org")
+
      (setq org-capture-templates
-           '(("n" "Thought or Note"  entry (file "~/personal/@SUMMARY.org")
+           '(("n" "Thought or Note"  entry
+              (file org-default-notes-file)
               "* %?\n\n  %i\n\n  See: %a" :empty-lines 1)
-             ("j" "Journal Note"     entry (file (get-journal-file-today))
+             ("j" "Journal Note"     entry
+              (file (get-journal-file-today))
               "* %?\n\n  %i\n\n  From: %a" :empty-lines 1)
-             ("t" "Task Card"        entry
-              (file+function "~/personal/tasks.org" ha/first-header)
+             ("t" "Task Entry"        entry
+              (file+function org-default-tasks-file ha/first-header)
               "* %?\n\n  %i\n\n  From: %a" :empty-lines 1)
              ("w" "Website Announcement" entry
               (file+function "~/website/index.org" ha/first-header)
@@ -369,8 +375,6 @@ should be. After calling this function, call 'meeting-done' to reset the environ
 
        [[%F][Read more...]" :empty-lines 1)))
 
-     ;; General notes go into this file:
-     (setq org-default-notes-file "~/personal/@SUMMARY.org")
    #+END_SRC
 
    After you have selected the template, you type in your note and hit
