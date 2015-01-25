@@ -315,14 +315,31 @@
    - *F9* - My other meta key for changing colors and other odd
      bindings that I actually don't use that often
 
-#+BEGIN_SRC elisp
-  (global-set-key (kbd "<f5>") 'repeat)
-  (global-set-key (kbd "<f6>") 'repeat-complex-command)
-  (global-set-key (kbd "<f7>") 'other-window)
-  (global-set-key (kbd "S-<f7>")
-                  '(lambda () "Previous Window" (interactive) (other-window -1)))
-  (global-set-key (kbd "<f8>") 'ido-switch-buffer)
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (global-set-key (kbd "<f5>") 'repeat)
+     (global-set-key (kbd "<f6>") 'repeat-complex-command)
+     (global-set-key (kbd "<f7>") 'other-window)
+     (global-set-key (kbd "<f8>") 'ido-switch-buffer)
+
+     (require 'ace-jump-mode)
+     (define-key global-map (kbd "S-<f7>") 'ace-jump-mode)
+   #+END_SRC
+
+   Set up [[https://github.com/abo-abo/ace-window][ace-window]] mode:
+
+   #+BEGIN_SRC elisp
+     (when (require 'ace-window nil t)
+           (global-set-key (kbd "<f7>") 'ace-window)
+           (global-set-key (kbd "C-<f7>") (lambda () (interactive) (ace-window 4)))
+           (global-set-key (kbd "M-<f7>") (lambda () (interactive) (ace-window 8)))
+   #+END_SRC
+
+   At some point, I will want to choose window labels based on the
+   right hand (since F7) is on the left side of my keyboards.
+
+   #+BEGIN_SRC elisp :tangle no
+   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+   #+END_SRC
 
    I like [[https://github.com/KMahoney/kpm-list][kpm-list]] a bit better than =ibuffer=, but I really don’t use
    either more than =ido-switch-buffer=. Still:
