@@ -331,7 +331,7 @@
      (when (require 'ace-window nil t)
            (global-set-key (kbd "<f7>") 'ace-window)
            (global-set-key (kbd "C-<f7>") (lambda () (interactive) (ace-window 4)))
-           (global-set-key (kbd "M-<f7>") (lambda () (interactive) (ace-window 8)))
+           (global-set-key (kbd "M-<f7>") (lambda () (interactive) (ace-window 8))))
    #+END_SRC
 
    At some point, I will want to choose window labels based on the
