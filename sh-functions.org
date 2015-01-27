@@ -70,7 +70,7 @@ and global variables are stored in =.profile= and =.zsh_profile=.
   or Ports, via: =port install coreutils=
 
 #+BEGIN_SRC sh
-  if type gls 2>&1 >/dev/null
+  if which gls >/dev/null 2>&1
   then
       alias ls="gls --color"
       alias ll="gls --color -olhA"
@@ -415,7 +415,8 @@ export LESS='-R'
    for Bash.
 
    #+BEGIN_SRC sh
-     if [ -f `brew --prefix`/etc/bash_completion ]; then
+     if [ -n "$ON_A_MAC" ] && [ -f `brew --prefix`/etc/bash_completion ]
+     then
          . `brew --prefix`/etc/bash_completion
      fi
    #+END_SRC

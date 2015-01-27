@@ -13,7 +13,12 @@ a shell-slut, and dabble between Zshell and Fish.
   Make sure that [[http://brew.sh/][Homebrew]] is both installed and configured correctly.
 
 #+BEGIN_SRC sh
-  if [ ! -d /usr/local/Cellar ]
+  if which osascript >/dev/null 2>&1
+  then
+    export ON_A_MAC=1
+  fi
+
+  if [ ! -d /usr/local/Cellar -a -n "$ON_A_MAC" ]
   then
     echo "ZOMG! No Homebrew installed! Installing now..."
     ruby -e "`curl -fsSL https://raw.github.com/mxcl/homebrew/go/install`"
