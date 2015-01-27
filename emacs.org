@@ -980,18 +980,22 @@
    The [[https://github.com/jhelwig/ack-and-a-half][ack-and-a-half]] project requires the following:
 
   #+BEGIN_SRC elisp
-  (when (require 'ack-and-a-half nil t)
-    ;; Not sure why org mode isn’t something we can limit searches:
-    (add-to-list 'ack-and-a-half-mode-type-default-alist '(org-mode "org"))
+    (when (require 'ack-and-a-half nil t)
+      ;; This value sometimes gets set to null... hrm.
+      (unless ack-and-a-half-executable
+        (setq ack-and-a-half-executable "/usr/local/bin/ack"))
 
-    ;; Create shorter aliases
-    (defalias 'ack 'ack-and-a-half)
-    (defalias 'ack-same 'ack-and-a-half-same)
-    (defalias 'ack-find-file 'ack-and-a-half-find-file)
-    (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same)
+      ;; Not sure why org mode isn’t something we can limit searches:
+      (add-to-list 'ack-and-a-half-mode-type-default-alist '(org-mode "org"))
 
-    (define-key personal-global-map (kbd "M-a") 'ack-and-a-half)
-    (define-key personal-global-map (kbd "a") 'ack-and-a-half-same))
+      ;; Create shorter aliases
+      (defalias 'ack 'ack-and-a-half)
+      (defalias 'ack-same 'ack-and-a-half-same)
+      (defalias 'ack-find-file 'ack-and-a-half-find-file)
+      (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same)
+
+      (define-key personal-global-map (kbd "M-a") 'ack-and-a-half)
+      (define-key personal-global-map (kbd "a") 'ack-and-a-half-same))
 #+END_SRC
 
    However, I need an /indexing/ approach to searching through my
