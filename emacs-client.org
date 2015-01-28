@@ -179,27 +179,33 @@ other systems with a graphical front-end.
   (global-set-key (kbd "C-S-z") 'redo)
 #+END_SRC
 
-* Window Size
+* Frame and Window Size
 
   I often want to put the window fullscreen:
 
-#+BEGIN_SRC elisp
-  (defun frame-fullscreen ()
-    "Set the frame window to cover the full screen."
-    (interactive)
-    (set-frame-parameter nil 'fullscreen 'fullboth))
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (defun frame-fullscreen ()
+      "Set the frame window to cover the full screen."
+      (interactive)
+      (set-frame-parameter nil 'fullscreen 'fullboth))
+  #+END_SRC
 
-   Not sure if this *toggle* is a good feature or not.
+  When I am using my large monitors with a full-screen Emacs session
+  with two or three side-by-side windows, I want set them to a fixed
+  width:
 
-#+BEGIN_SRC elisp
-  (defun toggle-fullscreen ()
-    "Toggle full screen"
-    (interactive)
-    (set-frame-parameter
-       nil 'fullscreen
-       (when (not (frame-parameter nil 'fullscreen)) 'fullboth)))
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (defun set-window-width (&optional width)
+      "Sets the size of the current window to a specific width.
+    If no width is specified, it defaults to ~ 80 characters."
+      (interactive "p")
+      (save-excursion
+        (if (not width)
+            (setq width 78))
+        (if (> (window-width) width)
+            (shrink-window-horizontally (- (window-width) width))
+          (enlarge-window-horizontally (- width (window-width))))))
+  #+END_SRC
 
    The bell is pretty obnoxious when it dings during scrolling.
 
