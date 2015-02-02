@@ -12,8 +12,8 @@ Emacs at work instead of using iTunes like the good lord intended.
   To begin, install all the goodness:
 
   #+BEGIN_EXAMPLE
-  brew install mpg321
-  brew install mpg123
+  # brew install mpg321
+  # brew install mpg123
   brew install mplayer
   #+END_EXAMPLE
 
@@ -44,33 +44,50 @@ Emacs at work instead of using iTunes like the good lord intended.
     (setq emms-source-file-default-directory "~/Music/")
   #+END_SRC
 
-  Finally, stop should be a bit quicker to hit:
-
-  #+BEGIN_SRC elisp
-  (define-key personal-global-map (kbd "s") 'emms-stop)
-  #+END_SRC
-
 * Radio Stations
 
   Perhaps the easiest approach is just to have some radio stations
   wrapped up in some easy-to-functions, for instance:
 
-  #+BEGIN_SRC elisp
-    (defun jazz ()
+  #+BEGIN_SRC elisp :tangle no
+    (defun play-smooth-jazz ()
       "Start up some nice Jazz"
       (interactive)
       (emms-play-streamlist "http://thejazzgroove.com/itunes.pls"))
-
-    (defun trance ()
-      "Play an Internet music stream of electronica."
-      (interactive)
-      (emms-play-streamlist "http://www.1.fm/tunein/trance64k.pls"))
   #+END_SRC
 
-  Might as well make it easy to kick up the tunes...
+  And then bind it to some key, however, I’m sure I will start picking
+  up a larger and larger collection of radio stations that fit my
+  mood, so I might as well create a prefix for these:
 
   #+BEGIN_SRC elisp
-  (define-key personal-global-map (kbd "j") 'jazz)
+    (define-prefix-command 'personal-music-map)
+    (global-set-key (kbd "<f9> m") 'personal-music-map)
+  #+END_SRC
+
+  Since each radio station is just a string to the stream as some key
+  association, I can walk over a list. Gotta use =lexical-let= to
+  create a /good-enough/ closure:
+
+  #+BEGIN_SRC elisp
+    (dolist (el
+             '(("a" . "http://stereoscenic.com/pls/pill-hi-mp3.pls") ;; Ambient
+               ("t" . "http://www.1.fm/tunein/trance64k.pls")        ;; Trance
+               ("j" . "http://thejazzgroove.com/itunes.pls")))       ;; Jazz
+      (lexical-let ((keystroke (car el))
+                    (stream    (cdr el)))
+        (define-key personal-music-map (kbd keystroke)
+          (lambda ()
+            (interactive)
+            (emms-play-streamlist stream)))))
+  #+END_SRC
+
+* Controlling the Music
+
+  Stopping should be a bit quicker to hit:
+
+  #+BEGIN_SRC elisp
+  (define-key personal-music-map (kbd "s") 'emms-stop)
   #+END_SRC
 
 * Technical Artifacts
