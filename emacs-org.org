@@ -278,35 +278,6 @@ should be. After calling this function, call 'meeting-done' to reset the environ
           (local-set-key (kbd "s-=") 'org-text-code)))
 #+END_SRC
 
-   When pasting certain kinds of links, the "text" may be obvious.
-
-#+BEGIN_SRC elisp
-  (defun org-generate-link-description (url description)
-    (cond
-     ((string-match "jira.workday" url)
-      (replace-regexp-in-string "https://jira.+/browse/" "" url))
-     ((string-match "crucible.workday" url)
-      (replace-regexp-in-string "https://crucible.+/cru/" "" url))
-     (t description)))
-
-  (setq org-make-link-description-function 'org-generate-link-description)
-#+END_SRC
-
-   I'm often typing Jira entries that match a particular link pattern.
-
-#+BEGIN_SRC elisp
-  (defun jira-link (b e)
-    "Wraps the region with an org-mode link."
-    (interactive "r")
-    (save-restriction
-      (narrow-to-region b e)
-      (let ((jiraid (buffer-substring (point-min) (point-max))))
-        (goto-char (point-min))
-        (insert "[[https://jira.workday.com/browse/" jiraid "][")
-        (goto-char (point-max))
-        (insert "]]"))))
-#+END_SRC
-
 * Speed Keys
 
    If point is at the beginning of a headline or code block in
