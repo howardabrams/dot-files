@@ -1,0 +1,214 @@
+#+TITLE:  Ruby Configuration for Emacs
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@workday.com
+#+DATE:   2014 Nov 24
+#+TAGS:   emacs ruby
+
+We begin by stealing a typical Ruby environment from [[https://github.com/bbatsov/prelude/blob/master/modules/prelude-ruby.el][Prelude]].
+
+* Ruby Installation
+
+  I like having everything Ruby controlled by RVM:
+
+  #+BEGIN_EXAMPLE
+  curl -sSL https://get.rvm.io | bash
+  . "~/.rvm/scripts/rvm"
+  rvm install ruby-latest
+  rvm --ruby-version use latest
+  #+END_EXAMPLE
+
+  The change to use RVM is tied to Bash (in the =~/.bash_profile=), so
+  to use the system-supplied Ruby, I just call =sh=.
+
+* Supporting Packages
+
+  Starting to collect the Ruby packages that make the most sense for
+  my work-flow and development style:
+
+  #+BEGIN_SRC elisp
+    (packages-install '( ruby-tools
+                         inf-ruby
+                         rvm
+                         yari
+                         robe
+                         rubocop
+                         smartparens ))
+  #+END_SRC
+
+  Notice that I’m not using [[https://github.com/zenspider/enhanced-ruby-mode][enh-ruby-mode]], as I have found that the
+  updated =ruby-mode= that is standard in Emacs 24.4 is quite good.
+
+* Ruby Mode and File Extensions
+
+  Many odd files need to associated with any Ruby mode:
+
+  #+BEGIN_SRC elisp
+    (when (require 'ruby-mode nil t)
+      (add-to-list 'auto-mode-alist '("\\.rb$"          . ruby-mode))
+      (add-to-list 'interpreter-mode-alist '("ruby"     . ruby-mode))
+      (add-to-list 'auto-mode-alist '("\\.rake\\'"      . ruby-mode))
+      (add-to-list 'auto-mode-alist '("Rakefile\\'"     . ruby-mode))
+      (add-to-list 'auto-mode-alist '("\\.gemspec\\'"   . ruby-mode))
+      (add-to-list 'auto-mode-alist '("\\.ru\\'"        . ruby-mode))
+      (add-to-list 'auto-mode-alist '("Gemfile\\'"      . ruby-mode))
+      (add-to-list 'auto-mode-alist '("Guardfile\\'"    . ruby-mode))
+      (add-to-list 'auto-mode-alist '("Capfile\\'"      . ruby-mode))
+      (add-to-list 'auto-mode-alist '("\\.thor\\'"      . ruby-mode))
+      (add-to-list 'auto-mode-alist '("\\.rabl\\'"      . ruby-mode))
+      (add-to-list 'auto-mode-alist '("Thorfile\\'"     . ruby-mode))
+      (add-to-list 'auto-mode-alist '("Vagrantfile\\'"  . ruby-mode))
+      (add-to-list 'auto-mode-alist '("\\.jbuilder\\'"  . ruby-mode))
+      (add-to-list 'auto-mode-alist '("Podfile\\'"      . ruby-mode))
+      (add-to-list 'auto-mode-alist '("\\.podspec\\'"   . ruby-mode))
+      (add-to-list 'auto-mode-alist '("Puppetfile\\'"   . ruby-mode))
+      (add-to-list 'auto-mode-alist '("Berksfile\\'"    . ruby-mode))
+      (add-to-list 'auto-mode-alist '("Appraisals\\'"   . ruby-mode)))
+  #+END_SRC
+
+* Customizations
+
+  Create a function that will set the default values for the
+  =ruby-mode=, and tie that to the =ruby-mode-hoook=:
+
+  #+BEGIN_SRC elisp
+    (defun ha/ruby-mode-defaults ()
+      ;; It hate subwords
+      (superword-mode +1))
+      (setq-default ruby-indent-level 2)
+      (setq-default ruby-indent-tabs-mode nil)
+
+    (add-hook 'ruby-mode-hook 'ha/ruby-mode-defaults)
+  #+END_SRC
+
+* Ruby Virtual Manager (RVM)
+
+
+  Using the [[http://github.com/senny/rvm.el][RVM Integration]] for Emacs.
+
+  #+BEGIN_SRC elisp
+    (when (require 'rvm nil t)
+      (rvm-use-default)  ;; Start with the Default RVM
+      (define-key personal-global-map (kbd "R")
+                  'rvm-activate-corresponding-ruby))
+  #+END_SRC
+
+  When jumping from project to project, need to run the command:
+  =rvm-activate-corresponding-ruby= ... which must be done before
+  starting an Eshell (that is, if you’re into that sort of thing).
+
+* Ruby Functional Doc
+
+  The [[http://www.emacswiki.org/cgi-bin/emacs/YARI][Yari]] project attempts to hook Ruby calls to the =ri= project.
+
+  #+BEGIN_SRC elisp
+    (when (require 'yari nil t)
+      (add-hook 'ruby-mode-hook
+                (lambda ()
+                  (local-set-key [f1] 'yari))))
+  #+END_SRC
+
+  Now, place point on some function, and hit =F1= to see the glory.
+  In order for this to work, we need to generate the missing docs:
+
+  #+BEGIN_EXAMPLE
+  gem rdoc --all --ri --no-rdoc
+  rvm docs generate all
+  #+END_EXAMPLE
+
+  And we may have to do this for every change to RVM.
+
+* Ruby REPL
+
+  I am not sure I can learn a new language without a REPL connected to
+  my editor, and for Ruby, this is [[https://github.com/nonsequitur/inf-ruby][inf-ruby]]:
+
+  #+BEGIN_SRC elisp
+  (require 'inf-ruby)
+  (add-hook 'ruby-mode-hook 'inf-ruby-minor-mode)
+  #+END_SRC
+
+  To start eval-ing, do: =M-x inf-ruby=  ... or: =C-c C-s=
+
+  I usually use =expand-regions= in order to send a region to this
+  REPL with =ruby-send-region= (=C-c i=).
+
+  #+BEGIN_SRC elisp
+    (add-hook 'ruby-mode-hook
+              (lambda ()
+                (local-set-key (kbd "C-c i") 'ruby-send-region)))
+  #+END_SRC
+
+* Smart Parens
+
+  Can I get the same wonder from *paredit* and Lisp in my Ruby using
+  [[https://github.com/Fuco1/smartparens][smartparens]]? I think so, but I don’t want to turn it on globally
+  just yet.
+
+
+  #+BEGIN_SRC elisp
+    (when (require 'smartparens-config nil t)
+          (require 'smartparens-ruby)
+
+      (add-hook 'ruby-mode-hook 'smartparens-mode))
+  #+END_SRC
+
+* Rubocop
+
+  The lint-like style checker of choice for Ruby is [[https://github.com/bbatsov/rubocop][Rubocop]].
+  The [[https://github.com/bbatsov/rubocop-emacs][rubocop.el]] mode should just work with [[https://github.com/flycheck/flycheck][Flycheck]].
+
+  #+BEGIN_SRC elisp
+    (when (require 'rubocop nil t)
+      (add-hook 'ruby-mode-hook 'rubocop-mode))
+  #+END_SRC
+
+  Install it with: =gem install rubocop=
+
+* Robe
+
+  [[https://github.com/dgutov/robe][Robe]] is a “code assistance” tool. One must install the following
+  before this will work:
+
+  #+BEGIN_EXAMPLE
+  gem install pry pry-doc
+  #+END_EXAMPLE
+
+  #+BEGIN_SRC elisp
+    (when (require 'robe nil t)
+      (add-hook 'ruby-mode-hook 'robe-mode)
+      (add-hook 'robe-mode-hook 'ac-robe-setup)
+
+      (defadvice inf-ruby-console-auto (before activate-rvm-for-robe activate)
+        (rvm-activate-corresponding-ruby)))
+  #+END_SRC
+
+  To kick things off, run =robe-start=.
+
+* Ruby Tools
+
+  The little refactoring available with [[https://github.com/rejeep/ruby-tools.el][Ruby Tools]] looks interesting.
+
+  #+BEGIN_SRC elisp
+    (when (require 'ruby-tools nil t)
+      (add-hook 'ruby-mode-hook 'ruby-tools-mode))
+  #+END_SRC
+
+* Technical Artifacts
+
+  Make sure that we can simply =require= this library.
+
+#+BEGIN_SRC elisp
+  (provide 'init-ruby)
+#+END_SRC
+
+  Before you can build this on a new system, make sure that you put
+  the cursor over any of these properties, and hit: =C-c C-c=
+
+#+DESCRIPTION: A literate programming version of my Emacs Initialization for Ruby
+#+PROPERTY:    results silent
+#+PROPERTY:    tangle ~/.emacs.d/elisp/init-ruby.el
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
