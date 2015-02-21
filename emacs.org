@@ -1255,6 +1255,18 @@
   (yas-global-mode 1)
 #+END_SRC
 
+   Helper function so that we can automatically expand a snippet
+   programmatically, which makes it easier to do this with
+   auto-insert:
+
+   #+BEGIN_SRC elisp
+     (defun yas--expand-by-uuid (mode uuid)
+       "Exapnd snippet template in MODE by its UUID"
+       (yas-expand-snippet
+        (yas--template-content
+         (yas--get-template-by-uuid mode uuid))))
+   #+END_SRC
+
    Inside the =snippets= directory should be directories for each
    mode, e.g.  =clojure-mode= and =org-mode=. This connects the mode
    with the snippets.
@@ -1491,21 +1503,41 @@
 
 ** Emacs Lisp
 
-   Gotta load me up my wonderful world of Paredit.
+   Sure, everything here is in Emacs Lisp, but this section helps me write more of that.
 
-#+BEGIN_SRC elisp
-  (require 'paredit)
-#+END_SRC
+*** Paredit
 
-   The most important change to Emacs Lisp is colorizing the
-   variables:
+    Gotta load me up my wonderful world of Paredit, which is used for
+    more than just Emacs Lisp.
 
-#+BEGIN_SRC elisp
-  (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode)
+    #+BEGIN_SRC elisp
+      (require 'paredit)
+    #+END_SRC
 
-  (when (featurep 'paredit)
-    (add-hook 'emacs-lisp-mode-hook (lambda () (paredit-mode t))))
-#+END_SRC
+    The most important change to Emacs Lisp is colorizing the
+    variables:
+
+    #+BEGIN_SRC elisp
+      (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode)
+
+      (when (featurep 'paredit)
+        (add-hook 'emacs-lisp-mode-hook (lambda () (paredit-mode t))))
+    #+END_SRC
+
+*** Auto Insert
+
+    Most of my Emacs Lisp code is =org-mode= format, but I have times
+    where I might as well insert some goodies:
+
+    #+BEGIN_SRC elisp
+      (eval-after-load 'autoinsert
+        '(define-auto-insert
+           '("\\.el" . "Emacs Lisp")
+           '(lambda ()
+               (yas--expand-by-uuid 'emacs-lisp-mode "header"))))
+    #+END_SRC
+
+*** Prettify Symbols
 
    Might as well pretty up the lambdas, and other functions using the
    new 24.4 prettify-symbols-mode:
