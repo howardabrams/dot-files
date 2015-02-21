@@ -73,6 +73,20 @@
 #+END_SRC
 
 * General Settings
+** My Directory Location
+
+   Normally, the =user-emacs-directory= stores everything in a
+   =.emacs.d= directory in the home directory, however, Aquamacs
+   overrides that, and since I now feel the need to use these settings
+   for both editors (sure feels like XEmacs all over again).
+
+   Any way, I have a new global variable for that:
+
+   #+BEGIN_SRC elisp
+     (defconst ha/emacs-directory (concat (getenv "HOME") "/.emacs.d/"))
+
+     (defun ha/emacs-subdirectory (d) (expand-file-name d ha/emacs-directory))
+   #+END_SRC
 
 ** Directory Structure
 
@@ -81,7 +95,7 @@
 
 #+BEGIN_SRC elisp
   (let* ((subdirs '("elisp" "backups" "snippets" "ac-dict"))
-         (fulldirs (mapcar (lambda (d) (concat user-emacs-directory d)) subdirs)))
+         (fulldirs (mapcar (lambda (d) (ha/emacs-subdirectory d)) subdirs)))
     (dolist (dir fulldirs)
       (when (not (file-exists-p dir))
         (message "Make directory: %s" dir)
@@ -94,7 +108,7 @@
    menu system is "good enough", but I want it in its own file:
 
 #+BEGIN_SRC elisp
-  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+  (setq custom-file (expand-file-name "custom.el" ha/emacs-directory))
   (when (file-exists-p custom-file)
     (load custom-file))
 #+END_SRC
@@ -105,7 +119,7 @@
    personal stash at: =$HOME/.emacs.d/elisp=
 
 #+BEGIN_SRC elisp
-  (add-to-list 'load-path (concat user-emacs-directory "elisp"))
+  (add-to-list 'load-path (ha/emacs-subdirectory "elisp"))
 #+END_SRC
 
    Load up my special collection of enhancements to Emacs Lisp:
@@ -1083,7 +1097,7 @@
 #+BEGIN_SRC elisp
   (setq backup-directory-alist
         `(("." . ,(expand-file-name
-                   (concat user-emacs-directory "backups")))))
+                   (ha/emacs-subdirectory "backups")))))
 #+END_SRC
 
    Make backups of files, even when they're in version control
@@ -1132,7 +1146,7 @@
 
 #+BEGIN_SRC elisp
   (when (require 'auto-complete-config nil t)
-    (add-to-list 'ac-dictionary-directories (concat user-emacs-directory "ac-dict"))
+    (add-to-list 'ac-dictionary-directories (ha/emacs-subdirectory "ac-dict"))
 
     (set-default 'ac-sources
                  '(ac-source-abbrev
@@ -1246,7 +1260,7 @@
    with the snippets.
 
 #+BEGIN_SRC elisp
-    (add-to-list 'yas-snippet-dirs (concat user-emacs-directory "snippets"))
+    (add-to-list 'yas-snippet-dirs (ha/emacs-subdirectory "snippets"))
 #+END_SRC
 
    [[https://code.google.com/p/js2-mode/][js2-mode]] is good, but its name means that Yas' won't automatically
@@ -1256,7 +1270,7 @@
     (add-hook 'js2-mode-hook '(lambda ()
                                 (make-local-variable 'yas-extra-modes)
                                 (add-to-list 'yas-extra-modes 'js-mode)
-                                (yas-minor-mode 1))))
+                                (yas-minor-mode 1)))
 #+END_SRC
 
 ** Spell Checking
@@ -1509,16 +1523,6 @@
              ("."       . ?•)))
 
          (global-prettify-symbols-mode 1))
-   #+END_SRC
-
-   Let's see if it works ... granted, this will only show up when
-   editing it as a Lisp code:
-
-   #+BEGIN_SRC clojure :tangle no
-     (lambda ()
-       (if (and (== 4 4.0) (!= 4 5))
-           '()
-         '(4 5)))
    #+END_SRC
 
    Words with dashes don't separate words in Lisp:

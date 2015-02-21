@@ -25,7 +25,7 @@
 (require 'ob)          ;; org-mode export system
 (require 'ob-tangle)   ;; org-mode tangling process
 
-;; My special functions for doing script are not in a loadable location.
+;; My special functions for doing script are not in a loadable location.q
 (require 'shell-script-funcs
          (concat (file-name-directory (buffer-file-name)) "emacs.d/shell-script-funcs.el"))
 
@@ -35,10 +35,12 @@
 ;; 'load-file-name':
 (defconst dot-files-src  (if load-file-name
                              (file-name-directory load-file-name)
-                             (file-name-directory (buffer-file-name))))
+                           (file-name-directory (buffer-file-name))))
+
+(defconst ha/emacs-directory (concat (getenv "HOME") "/.emacs.d/"))
 
 ;; Where all of the .el files will live and play:
-(defconst dest-elisp-dir (ha/get-path "${user-emacs-directory}/elisp"))
+(defconst dest-elisp-dir (ha/get-path "${ha/emacs-directory}/elisp"))
 
 ;; The Script Part ... here we do all the building and compilation work.
 
@@ -48,17 +50,17 @@
 
   ;; Initially create some of the destination directories
   (ha/mkdir "$HOME/.oh-my-zsh/themes")
-  (ha/mkdir "${user-emacs-directory}/elisp")
+  (ha/mkdir "${ha/emacs-directory}/elisp")
 
   (ha/tangle-files "${dot-files-src}/*.org")
 
   ;; Some Elisp files are just symlinked instead of tangled...
   (ha/mksymlinks "${dot-files-src}/emacs.d/*.el"
-                 "${user-emacs-directory}/elisp")
+                 "${ha/emacs-directory}/elisp")
 
   ;; Just link the entire directory instead of copying the snippets:
   (ha/mksymlink  "${dot-files-src}/snippets"
-                 "${user-emacs-directory}/snippets")
+                 "${ha/emacs-directory}/snippets")
 
   ;; Some Elisp files are just symlinked instead of tangled...
   (ha/mksymlinks "${dot-files-src}/bin/[a-z]*"
@@ -69,7 +71,7 @@
 
   ;; All of the .el files I've eithe tangled or linked should be comp'd:
   (mapc 'byte-compile-file
-        (ha/get-files "${user-emacs-directory}/elisp/*.el" t))
+        (ha/get-files "${ha/emacs-directory}/elisp/*.el" t))
 
   (message "Finished building dot-files- Resetting Emacs.")
   (require 'init-main (ha/get-path "${user-emacs-directory}elisp/init-main.el")))

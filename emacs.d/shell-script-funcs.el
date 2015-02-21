@@ -18,10 +18,6 @@
   "Return value of a variable or environment variable specified by VAR-NAME."
   (or (getenv var-name) (eval (read var-name))))
 
-;; (ha/getvar "user-emacs-directory")
-;; (ha/getvar "HOME")
-
-
 (defun ha/substr-variables (str)
   "Replace shell-like '$VAR' and '${variables}' in STR with the equivalent environment variables or Elisp variables.  For instance: $HOME/.emacs.d could return /home/howard/.emacs.d -- Keep in mind that this is just a string, it does not do any validation to see if any files exist."
 
@@ -46,7 +42,6 @@
 ;; (ha/substr-variables "$HOME/.emacs.d/elisp/*.el")
 ;; (ha/substr-variables "~/.emacs.d/elisp/*.el")
 ;; (ha/substr-variables "${user-emacs-directory}elisp/*.el")
-
 
 (defun ha/get-files (path &optional full)
   "Return list of files that match the glob pattern, PATH.  Allowing shell-like variable substitution from the environment, like $HOME, or from variables defined by `setq'.  If FULL is specified, return absolute pathnames for each file."
