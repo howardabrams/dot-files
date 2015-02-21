@@ -58,28 +58,14 @@ Emacs at work instead of using iTunes like the good lord intended.
 
   And then bind it to some key, however, I’m sure I will start picking
   up a larger and larger collection of radio stations that fit my
-  mood, so I might as well create a prefix for these:
+  mood, so I might as well create a prefix for these using my snazzy
+  =define-sequence= macro:
 
   #+BEGIN_SRC elisp
-    (define-prefix-command 'personal-music-map)
-    (global-set-key (kbd "<f9> m") 'personal-music-map)
-  #+END_SRC
-
-  Since each radio station is just a string to the stream as some key
-  association, I can walk over a list. Gotta use =lexical-let= to
-  create a /good-enough/ closure:
-
-  #+BEGIN_SRC elisp
-    (dolist (el
-             '(("a" . "http://stereoscenic.com/pls/pill-hi-mp3.pls") ;; Ambient
-               ("t" . "http://www.1.fm/tunein/trance64k.pls")        ;; Trance
-               ("j" . "http://thejazzgroove.com/itunes.pls")))       ;; Jazz
-      (lexical-let ((keystroke (car el))
-                    (stream    (cdr el)))
-        (define-key personal-music-map (kbd keystroke)
-          (lambda ()
-            (interactive)
-            (emms-play-streamlist stream)))))
+    (define-sequence 'personal-music-map "<f9> m" 'emms-play-streamlist
+      '(("a" "http://stereoscenic.com/pls/pill-hi-mp3.pls") ;; Ambient
+        ("t" "http://www.1.fm/tunein/trance64k.pls")        ;; Trance
+        ("j" "http://thejazzgroove.com/itunes.pls")))       ;; Jazz
   #+END_SRC
 
 * Controlling the Music

@@ -78,6 +78,32 @@ filter function.
                      (lambda (&rest arguments)
                        (funcall f (apply g arguments)))))))
   #+END_SRC
+
+* Key Sequences
+
+  As I wrote in [[http://www.howardism.org/Technical/Emacs/lists-and-key-sequences.html][key sequences essay]], the following macro makes it
+  trivial to create a key sequence, like what I have in [[file:emacs-client.org::*Color%20Theme][emacs-client]]
+  initialization file.
+
+  #+BEGIN_SRC elisp
+    (defmacro define-sequence (map-name prefix func seqs)
+      "Define a collection of key sequences associated with MAP-NAME
+    and begin with PREFIX that call a function, FUNC.  The SEQS is a
+    list where each element is a list that begins with a final key
+    binding. The rest of the list is given as parameters to the
+    function, FUNC."
+      `(progn
+         (define-prefix-command ,map-name)
+         (global-set-key (kbd ,prefix) ,map-name)
+         (dolist (el ,seqs)
+           (lexical-let ((keystroke (car el))
+                         (the-rest  (cdr el)))
+             (define-key ,map-name (kbd keystroke)
+               (lambda ()
+                 (interactive)
+                 (apply ,func the-rest)))))))
+  #+END_SRC
+
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.
