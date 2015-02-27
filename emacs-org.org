@@ -28,11 +28,12 @@ Emacs love affair. Make sure the latest packages are installed:
    Initialization of Org Mode by hooking it into YASnippets, which
    should allow me to easily add templates to my files.
 
-#+BEGIN_SRC elisp
-  (add-hook 'org-mode-hook
-            '(lambda ()
-               (yas/minor-mode-on)))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (add-hook 'org-mode-hook 'turn-on-auto-fill)
+     (add-hook 'org-mode-hook
+               '(lambda ()
+                  (yas-minor-mode-on)))
+   #+END_SRC
 
 * Journaling
 
