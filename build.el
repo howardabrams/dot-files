@@ -27,7 +27,8 @@
 
 ;; My special functions for doing script are not in a loadable location.q
 (require 'shell-script-funcs
-         (concat (file-name-directory (buffer-file-name)) "emacs.d/shell-script-funcs.el"))
+         (concat (file-name-directory (buffer-file-name))
+                 "elisp/shell-script-funcs.el"))
 
 ;; Need to get the directory to my 'dot-files' source code. While
 ;; developing, we just evaluate this buffer, so 'buffer-file-name' is
