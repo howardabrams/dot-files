@@ -110,12 +110,13 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
   Now, place point on some function, and hit =F1= to see the glory.
   In order for this to work, we need to generate the missing docs:
 
-  #+BEGIN_EXAMPLE
-  gem rdoc --all --ri --no-rdoc
-  rvm docs generate all
-  #+END_EXAMPLE
+  #+BEGIN_SRC sh :tangle no
+    gem rdoc --all --ri --no-rdoc
+    rvm docs generate all
+  #+END_SRC
 
-  And we may have to do this for every change to RVM.
+  And we may have to do this for every change to RVM. Seems that
+  =dash-at-point= is more effective (=C-c d=), however.
 
 * Ruby REPL
 
@@ -141,9 +142,8 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
 * Smart Parens
 
   Can I get the same wonder from *paredit* and Lisp in my Ruby using
-  [[https://github.com/Fuco1/smartparens][smartparens]]? I think so, but I don’t want to turn it on globally
-  just yet.
-
+  [[https://github.com/Fuco1/smartparens][smartparens]]? Not really, as it isn’t as pedantic as
+  =paredit=. Still, it may be good enough for Ruby:
 
   #+BEGIN_SRC elisp
     (when (require 'smartparens-config nil t)
@@ -166,12 +166,15 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
 
 * Robe
 
-  [[https://github.com/dgutov/robe][Robe]] is a “code assistance” tool. One must install the following
-  before this will work:
+  [[https://github.com/dgutov/robe][Robe]] is a “code assistance” tool, that pretty much only works with
+  methods (and doesn’t seem to work well with direct functions). One
+  must install the following before this will work:
 
-  #+BEGIN_EXAMPLE
-  gem install pry pry-doc
-  #+END_EXAMPLE
+  #+BEGIN_SRC sh :tangle no
+    gem install pry pry-doc
+  #+END_SRC
+
+  Once started with =robe-start=, we should get code completion:
 
   #+BEGIN_SRC elisp
     (when (require 'robe nil t)
@@ -182,7 +185,12 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
         (rvm-activate-corresponding-ruby)))
   #+END_SRC
 
-  To kick things off, run =robe-start=.
+  With a complex Ruby project, one should evaluate the entire Ruby
+  file (=C-c C-l=), and then run:
+
+  - =robe-jump= to go to the method’s definition
+  - =robe-ask= will act like jump, but asks for the method first
+  - =robe-doc= displays the method documentation (doesn’t seem to be as useful as =dash-at-point=).
 
 * Ruby Tools
 
@@ -192,6 +200,20 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
     (when (require 'ruby-tools nil t)
       (add-hook 'ruby-mode-hook 'ruby-tools-mode))
   #+END_SRC
+
+  The primary key-bindings operate on the /thing/ the cursor is on,
+  e.g. a string, a symbol, etc.
+
+  - =C-‘= converts the thing into a single-quoted string
+  - =C-“= converts the thing into a double-quoted string
+  - =C-:= converts the thing into a symbol
+
+  Other options:
+
+  - =C-;= clears the string
+  - Inside a string the =#= key will insert a variable interpolation
+    if the string is double-quoted (this is actually what I use this
+    package the most)
 
 * Technical Artifacts
 
