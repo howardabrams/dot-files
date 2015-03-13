@@ -1,8 +1,9 @@
 #+TITLE:  Ruby Configuration for Emacs
 #+AUTHOR: Howard Abrams
-#+EMAIL:  howard.abrams@workday.com
+#+EMAIL:  howard.abrams@gmail.com
 #+DATE:   2014 Nov 24
 #+TAGS:   emacs ruby
+#+PROPERTY: header-args:sh :results silent
 
 We begin by stealing a typical Ruby environment from [[https://github.com/bbatsov/prelude/blob/master/modules/prelude-ruby.el][Prelude]].
 
@@ -10,12 +11,12 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
 
   I like having everything Ruby controlled by RVM:
 
-  #+BEGIN_EXAMPLE
-  curl -sSL https://get.rvm.io | bash
-  . "~/.rvm/scripts/rvm"
-  rvm install ruby-latest
-  rvm --ruby-version use latest
-  #+END_EXAMPLE
+  #+BEGIN_SRC sh :tangle no
+    curl -sSL "https://get.rvm.io" | bash
+    . "~/.rvm/scripts/rvm"
+    rvm install ruby-latest
+    rvm --ruby-version use latest
+  #+END_SRC
 
   The change to use RVM is tied to Bash (in the =~/.bash_profile=), so
   to use the system-supplied Ruby, I just call =sh=.
