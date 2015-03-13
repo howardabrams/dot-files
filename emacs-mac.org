@@ -77,14 +77,22 @@ then, only during a graphical run.
    The [[http://kapeli.com/][Dash product]] is nice, and [[https://github.com/Kapeli/dash-at-point][this project]] allows Emacs to open
    Dash for documentation of anything with a =C-c d= keystroke:
 
-#+BEGIN_SRC elisp
-  (autoload 'dash-at-point "dash-at-point"
-            "Search the word at point with Dash." t nil)
-  (global-set-key (kbd "C-c d") 'dash-at-point)
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (autoload 'dash-at-point "dash-at-point"
+       "Search the word at point with Dash." t nil)
+     (global-set-key (kbd "C-c d") 'dash-at-point)
+     (global-set-key (kbd "C-c e") 'dash-at-point-with-docset)
+   #+END_SRC
 
-   Note: I checked out the code elsewhere, and created a symlink from
-   my =~/.emacs.d/elisp= directory to the =dash-as-point.el= file.
+   Let’s tie some of my most-used language modes with particular docsets:
+
+   #+BEGIN_SRC elisp
+     (add-to-list 'dash-at-point-mode-alist '(clojure-mode . "clojure"))
+     (add-to-list 'dash-at-point-mode-alist '(ruby-mode . "ruby"))
+     (add-to-list 'dash-at-point-mode-alist '(python-mode . "python2"))
+     (add-to-list 'dash-at-point-mode-alist '(sh-mode . "bash"))
+     (add-to-list 'dash-at-point-mode-alist '(emacs-lisp-mode . "elisp"))
+   #+END_SRC
 
 * Notifications
 
