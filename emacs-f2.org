@@ -21,6 +21,8 @@ phrases I want to type a bit too often.
   (define-key f2-global-map (kbd "S-<left>") "⇐")
   (define-key f2-global-map (kbd "S-<right>") "⇒")
 
+  (define-key f2-global-map (kbd "c") "▯")   ;; Representation of a cursor
+
   (define-key f2-global-map (kbd "!") "¹")
   (define-key f2-global-map (kbd "@") "²")
   (define-key f2-global-map (kbd "#") "³")
@@ -40,11 +42,7 @@ phrases I want to type a bit too often.
   (define-key f2-global-map (kbd ";") "😉")
   (define-key f2-global-map (kbd ")") "☺")
 
-  (define-key f2-global-map (kbd "e") "𝑒")
-  (define-key f2-global-map (kbd "f") "𝑓")
-  (define-key f2-global-map (kbd "x") "𝑥")
-  (define-key f2-global-map (kbd "y") "𝑦")
-  (define-key f2-global-map (kbd "A") "α")
+  (define-key f2-global-map (kbd "A") "α")   ;; Lowercase Greek is uppercase
   (define-key f2-global-map (kbd "B") "β")
   (define-key f2-global-map (kbd "E") "ε")
   (define-key f2-global-map (kbd "L") "λ")
@@ -52,6 +50,54 @@ phrases I want to type a bit too often.
   (define-key f2-global-map (kbd "M") "μ")
   (define-key f2-global-map (kbd "T") "θ")
 #+END_SRC
+
+* Italic and Bold Letters
+
+  For mathematical and other equations, I like to be able to enter
+  bold and italic letters, but instead of a series of calls and the
+  matching glyph, I can create a function that uses the =lexical-let=
+  to return a lambda expression suitable for passing on to =mapcar*=:
+
+  #+BEGIN_SRC elisp
+    (defun ha/letter-mapping (key-prefix)
+      (lexical-let ((keyprefix key-prefix))
+        (lambda (chr glyph)
+          (define-key f2-global-map
+            (kbd (concat keyprefix (string chr))) (string glyph)))))
+  #+END_SRC
+
+  The mathematical italic Capital A in Unicode is U+1D434 and Z is U+1D44D.
+  A sequence mapping the letters ‘A’ to ‘Z’ are /zipped/ together:
+
+  #+BEGIN_SRC elisp
+  (mapcar* (ha/letter-mapping "M-")
+           (number-sequence 65 90)
+           (number-sequence #x01D434 #x01D44D))
+  #+END_SRC
+
+  So 𝐴 is entered with a =F2 M-A=
+
+  Do the same thing with the lower case letters, were
+  Lowercase italic a is U+1D44E and z is U+1D467:
+
+  #+BEGIN_SRC elisp
+  (mapcar* (ha/letter-mapping "M-")
+           (number-sequence 97 122)
+           (number-sequence #x01D44E #x01D467))
+  #+END_SRC
+
+  We’ll bind both the Meta and Control keys for the bold and italic expressions.
+  Where capital bold A is U+1D468, and lower bold a is U+1D482:
+
+  #+BEGIN_SRC elisp
+  (mapcar* (ha/letter-mapping "C-M-")
+           (number-sequence 65 90)
+           (number-sequence #x01D468 #x01D481))
+
+  (mapcar* (ha/letter-mapping "C-M-")
+           (number-sequence 97 122)
+           (number-sequence #x01D482 #x01D49B))
+  #+END_SRC
 
 * Math Symbols
 
