@@ -433,22 +433,45 @@ should be. After calling this function, call 'meeting-done' to reset the environ
     #+END_SRC
 * Presentations
 
-   Currently generating presentations from my org-mode files using
-   [[https://github.com/hakimel/reveal.js/][reveal.js]] and [[https://github.com/yjwen/org-reveal][org-reveal]].
+  Generate presentations from my org-mode files using [[https://github.com/hakimel/reveal.js/][reveal.js]] and
+  [[https://github.com/yjwen/org-reveal][org-reveal]]. Just download and make the results available to the HTML output:
 
-#+BEGIN_SRC elisp
-  (when (require 'ox-reveal nil t)
+  #+BEGIN_SRC elisp
+     (when (require 'ox-reveal nil t)
+       (setq org-reveal-root (concat "file://" (getenv "HOME") "/Public/reveal.js"))
+       (setq org-reveal-postamble "Howard Abrams"))
+  #+END_SRC
 
-    (setq org-reveal-root (concat "file://" (getenv "HOME") "/Public/reveal.js"))
-    (setq org-reveal-postamble "Howard Abrams"))
-#+END_SRC
+  A quick way to display an org-mode file is using [[https://github.com/takaxp/org-tree-slide][org-tree-slide]].
+  The only downside is the default key-binding for moving to the next
+  section is =C->= ... hardly easy to find during a presentation.
 
-   Displaying the headers using various bullets are nice for my presentations.
+  #+BEGIN_SRC elisp
+     (when (require 'org-tree-slide nil t)
+       (add-hook 'org-tree-slide-mode (lambda ()
+          (define-key org-mode-map (kbd "<f1>") 'org-tree-slide-move-next-tree))))
+  #+END_SRC
 
-#+BEGIN_SRC elisp
-  (when (require 'org-bullets nil t)
-    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
-#+END_SRC
+  * org-tree-slide-move-next-tree (C->)
+  * org-tree-slide-move-previous-tree (C-<)
+  * org-tree-slide-content (C-x s c)
+
+  Displaying the headers using various bullets are nice for my presentations.
+
+  #+BEGIN_SRC elisp
+    (when (require 'org-bullets nil t)
+          (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+  #+END_SRC
+
+  Here is my approach for quickly making the initial asterisks for
+  listing items and whatnot, appear as Unicode bullets (without
+  actually affecting the text file or the behavior).
+
+  #+BEGIN_SRC elisp
+    (font-lock-add-keywords 'org-mode
+       '(("^ +\\([-*]\\) "
+              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+  #+END_SRC
 
 * MobileOrg
 
