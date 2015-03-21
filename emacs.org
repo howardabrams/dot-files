@@ -436,7 +436,7 @@
         "Highlights the good, the bad and the improvements to make when taking notes."
         (interactive)
         (hi-lock-mode t)
-        (highlight-lines-matching-regexp "^   - " 'hi-black-b)
+        (highlight-lines-matching-regexp "^   [-*] " 'hi-black-b)
         (highlight-phrase "TODO:?" 'hi-black-b)
         (highlight-regexp "(?Good)?:?" 'hi-green-b)
         (highlight-regexp "(?Bad)?:?" 'hi-red-b)
@@ -738,21 +738,6 @@
                (lambda ()
                  (define-key org-mode-map "\"" 'ha/round-quotes)
                  (define-key org-mode-map  "'" 'ha/round-single-quotes)))
-   #+END_SRC
-
-   The downside of using single quotes, like ’ is that the ispell
-   dictionary doesn’t recognize it as an apostrophe.
-
-   #+BEGIN_SRC elisp
-   (eval-after-load "ispell"
-     '(add-to-list 'ispell-local-dictionary-alist '(nil
-                                                   "[[:alpha:]]"
-                                                   "[^[:alpha:]]"
-                                                   "['‘’]"
-                                                   t
-                                                   ("-d" "en_US")
-                                                   nil
-                                                   utf-8)))
    #+END_SRC
 
 ** Kill Entire Lines
@@ -1227,82 +1212,6 @@
     (add-to-list 'ac-modes m))
 #+END_SRC
 
-** Abbreviation Mode
-
-   Using the built-in [[http://www.emacswiki.org/emacs/AbbrevMode][Abbreviation Mode]], and setting it up globally.
-
-   #+BEGIN_SRC elisp
-     (setq-default abbrev-mode t)
-   #+END_SRC
-
-   Stop asking whether to save newly added abbrev when quitting Emacs.
-
-   #+BEGIN_SRC elisp
-     (setq save-abbrevs nil)
-   #+END_SRC
-
-   While you can make abbreviations in situ, I figured I should
-   /pre-load/ a bunch that I use, but make a distinction between
-   abbreviations that would be available globally, and in particular
-   modes (especially the text modes, like org-mode):
-
-#+BEGIN_SRC elisp
-  (define-abbrev-table 'global-abbrev-table
-    '(("8ha" "Howard Abrams")
-      ("8fun" "function")
-
-      ("8d" "\\([0-9]+?\\)")
-      ("8str" "\\([^\"]+?\\)\"")))
-#+END_SRC
-
-   This allows me to write =8ha= as =Howard Abrams=.
-
-   #+BEGIN_SRC elisp
-     (define-abbrev-table 'text-mode-abbrev-table
-       '(("HALF" "½")
-         ("THIRD" "⅓")
-         ("QUARTER" "¼")
-
-         ("8js" "JavaScript")
-         ("8cs" "CoffeeScript")
-         ("8os" "OpenStack")
-         ("8ng" "AngularJS")
-         ("8wd" "Workday")
-         ("btw" "by the way")
-         ("note" "*Note:*")))
-   #+END_SRC
-
-   *Note:* Capitalizing the first letter, i.e. =Btw=, expands the
-   abbreviation with an initial capital, i.e. =By the way= ... Sweet.
-
-*** Spelling Correction with Abbreviation Mode
-
-    According to [[http://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][this discussion]], we can correct a misspelled word
-    with =C-x C-i= and it will use the abbreviation mode to
-    automatically correct that word...as long as you misspell it the
-    same way each time.
-
-    #+BEGIN_SRC elisp
-      (define-key ctl-x-map "\C-i" 'endless/ispell-word-then-abbrev)
-
-      (defun endless/ispell-word-then-abbrev (p)
-        "Call `ispell-word'. Then create an abbrev for the correction made.
-      With prefix P, create local abbrev. Otherwise it will be global."
-        (interactive "P")
-        (let ((bef (downcase (or (thing-at-point 'word) ""))) aft)
-          (call-interactively 'ispell-word)
-          (setq aft (downcase (or (thing-at-point 'word) "")))
-          (unless (string= aft bef)
-            (message "\"%s\" now expands to \"%s\" %sally"
-                     bef aft (if p "loc" "glob"))
-            (define-abbrev
-              (if p global-abbrev-table local-abbrev-table)
-              bef aft))))
-
-      (setq save-abbrevs t)
-      (setq-default abbrev-mode t)
-    #+END_SRC
-
 ** Yasnippets
 
    The [[https://github.com/capitaomorte/yasnippet][yasnippet project]] allows me to create snippets of code that
@@ -1343,30 +1252,80 @@
                                 (yas-minor-mode 1)))
 #+END_SRC
 
+** Abbreviation Mode
+
+   Using the built-in [[http://www.emacswiki.org/emacs/AbbrevMode][Abbreviation Mode]], and setting it up globally.
+
+   #+BEGIN_SRC elisp
+     (setq-default abbrev-mode t)
+   #+END_SRC
+
+   Stop asking whether to save newly added abbrev when quitting Emacs.
+
+   #+BEGIN_SRC elisp
+     (setq save-abbrevs nil)
+   #+END_SRC
+
+   While you can make abbreviations in situ, I figured I should
+   /pre-load/ a bunch that I use, but make a distinction between
+   abbreviations that would be available globally, and in particular
+   modes (especially the text modes, like org-mode):
+   \([^"]+?\)"
+   #+BEGIN_SRC elisp
+     (define-abbrev-table 'global-abbrev-table
+         '(("8ha" "Howard Abrams")
+           ("8fun" "function")
+           ("8l" "lambda")))
+   #+END_SRC
+
+   This allows me to write =8ha= as =Howard Abrams=.
+
+   #+BEGIN_SRC elisp
+     (define-abbrev-table 'text-mode-abbrev-table
+       '(("8js" "JavaScript")
+         ("8cs" "CoffeeScript")
+         ("8os" "OpenStack")
+         ("8ng" "AngularJS")
+         ("8wd" "Workday")
+         ("btw" "by the way")
+         ("note" "*Note:*")))
+   #+END_SRC
+
+   *Note:* Capitalizing the first letter, i.e. =Btw=, expands the
+   abbreviation with an initial capital, i.e. =By the way= ... Sweet.
+
+*** Spelling Correction with Abbreviation Mode
+
+    According to [[http://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][this discussion]], we can correct a misspelled word
+    with =C-x C-i= and it will use the abbreviation mode to
+    automatically correct that word...as long as you misspell it the
+    same way each time.
+
+    #+BEGIN_SRC elisp
+      (define-key ctl-x-map "\C-i" 'endless/ispell-word-then-abbrev)
+
+      (defun endless/ispell-word-then-abbrev (p)
+        "Call `ispell-word'. Then create an abbrev for the correction made.
+      With prefix P, create local abbrev. Otherwise it will be global."
+        (interactive "P")
+        (let ((bef (downcase (or (thing-at-point 'word) ""))) aft)
+          (call-interactively 'ispell-word)
+          (setq aft (downcase (or (thing-at-point 'word) "")))
+          (unless (string= aft bef)
+            (message "\"%s\" now expands to \"%s\" %sally"
+                     bef aft (if p "loc" "glob"))
+            (define-abbrev
+              (if p global-abbrev-table local-abbrev-table)
+              bef aft))))
+
+      (setq save-abbrevs t)
+      (setq-default abbrev-mode t)
+    #+END_SRC
+
 ** Spell Checking
 
-   I like spell checking with [[http://www.emacswiki.org/emacs/FlySpell][FlySpell]], which uses =ispell=. Setting
-   this to the /American/ dictionary seems to make it work better with
-   Homebrew.
-
-   #+BEGIN_SRC elisp
-     (setq ispell-dictionary "american")
-   #+END_SRC
-
-   To build a /personal/ dictionary hash (seems important now), do
-   this:
-
-   #+BEGIN_SRC sh :tangle no
-     touch ~/.dictionary.txt
-     buildhash ~/.dictionary.txt /usr/local/lib/english.aff ~/.dictionary.txt.hash
-   #+END_SRC
-
-   Then, we can use it like:
-
-   #+BEGIN_SRC elisp
-     (setq ispell-personal-dictionary
-         (concat (getenv "HOME") "/.dictionary.txt"))
-   #+END_SRC
+   I like spell checking with [[http://www.emacswiki.org/emacs/FlySpell][FlySpell]], which uses the built-in
+   spell-check settings of [[https://www.gnu.org/software/ispell/][ispell]].
 
    Seems like I would want this automatically turned on for all text
    modes (but not for log files).
@@ -1378,6 +1337,89 @@
      (dolist (hook '(change-log-mode-hook log-edit-mode-hook org-agenda-mode-hook))
        (add-hook hook (lambda () (flyspell-mode -1))))
    #+END_SRC
+
+   The downside of using single quotes, like ’ is that the ispell
+   dictionary doesn’t recognize it as an apostrophe, so don’t is often
+   looked at as incorrect.
+
+   #+BEGIN_SRC elisp
+   (eval-after-load "ispell"
+     '(add-to-list 'ispell-local-dictionary-alist '(nil
+                                                   "[[:alpha:]]"
+                                                   "[^[:alpha:]]"
+                                                   "['‘’]"
+                                                   t
+                                                   ("-d" "en_US")
+                                                   nil
+                                                   utf-8)))
+   #+END_SRC
+
+   Just not sure which of the three major spell checking systems to
+   use. Currently, liking [[*ASpell][ASpell]] at this point.
+
+*** ISpell
+
+    Setting this to the /American/ dictionary seems to make it work
+    better with Homebrew.
+
+    #+BEGIN_SRC elisp :tangle no
+     (setq ispell-dictionary "american")
+    #+END_SRC
+
+   To build a /personal/ dictionary hash (seems important now), do
+   this:
+
+   #+BEGIN_SRC sh :tangle no
+     touch ~/.dictionary.txt
+     buildhash ~/.ispell-personal.dict /usr/local/lib/english.aff ~/.dictionary.txt.hash
+   #+END_SRC
+
+   Then, we can use it like:
+
+   #+BEGIN_SRC elisp :tangle no
+     (setq ispell-personal-dictionary
+         (concat (getenv "HOME") "/.ispell-personal.dict"))
+   #+END_SRC
+
+*** ASpell
+
+    Seems that the [[http://aspell.net/][ASpell]] is better supported than the old ISpell.
+
+    #+BEGIN_SRC sh :tangle no
+    brew install aspell
+    #+END_SRC
+
+    And then configure it with the following:
+
+    #+BEGIN_SRC elisp
+      (setq ispell-program-name "aspell")
+      (setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_US"))
+      (setq ispell-dictionary "american")
+    #+END_SRC
+
+    To get Flyspell to work with Aspell, I need to do this:
+
+    #+BEGIN_SRC elisp
+    (setq ispell-list-command "--list")
+    #+END_SRC
+
+*** Hunspell
+
+    Hunspell supposedly works better with internationalization and
+    ligatures, so maybe we will try it sometime. If I do, this is what
+    I need to set up:
+
+    #+BEGIN_SRC sh :tangle no
+    brew install hunspell
+    #+END_SRC
+
+    Download [[http://archive.services.openoffice.org/pub/mirror/OpenOffice.org/contrib/dictionaries/en_US.zip][this dictionary archive]] and unzip it in ~/Library/Spelling
+
+    #+BEGIN_SRC elisp :tangle no
+    (setq ispell-program-name "hunspell")
+    (setq ispell-extra-args '("-d en_US"))
+    (setq ispell-dictionary "en_US")
+    #+END_SRC
 
 ** Online Thesaurus
 
