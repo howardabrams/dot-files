@@ -128,28 +128,6 @@ other systems with a graphical front-end.
 
    #+BEGIN_SRC elisp
      (deftheme ha/org-theme "Sub-theme to beautify org mode")
-
-     (let* ((sans-font (cond ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
-                             ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
-                             ((x-list-fonts "Verdana")         '(:font "Verdana"))
-                             ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
-                             (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
-            (base-font-color  (face-foreground 'default nil 'default))
-            (background-color (face-background 'default nil 'default))
-            (primary-color    (face-foreground 'mode-line nil))
-            (secondary-color  (face-background 'secondary-selection nil 'region))
-            (headline        `(:inherit default :weight bold :foreground ,base-font-color)))
-       (custom-theme-set-faces 'ha/org-theme
-                               `(org-agenda-structure ((t (:inherit default ,@sans-font :height 2.0 :underline nil))))
-                               `(org-level-8 ((t (,@headline ,@sans-font))))
-                               `(org-level-7 ((t (,@headline ,@sans-font))))
-                               `(org-level-6 ((t (,@headline ,@sans-font))))
-                               `(org-level-5 ((t (,@headline ,@sans-font))))
-                               `(org-level-4 ((t (,@headline ,@sans-font :height 1.1))))
-                               `(org-level-3 ((t (,@headline ,@sans-font :height 1.25))))
-                               `(org-level-2 ((t (,@headline ,@sans-font :height 1.5))))
-                               `(org-level-1 ((t (,@headline ,@sans-font :height 1.75))))
-                               `(org-document-title ((t (,@headline ,@sans-font :height 1.5 :underline nil))))))
    #+END_SRC
 
    Since I’m using the Powerline project, switching my Emacs color
@@ -159,11 +137,33 @@ other systems with a graphical front-end.
    We put all of these requirements in a single function call:
 
   #+BEGIN_SRC elisp
-     (defun ha/change-theme (theme org-block-style)
-       "Changes the color scheme and reset the mode line."
-       (funcall theme)
-       (powerline-reset)
-       (funcall org-block-style))
+    (defun ha/change-theme (theme org-block-style)
+      "Changes the color scheme and reset the mode line."
+      (funcall theme)
+      (powerline-reset)
+      (funcall org-block-style)
+
+      (let* ((sans-font (cond ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
+                              ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
+                              ((x-list-fonts "Verdana")         '(:font "Verdana"))
+                              ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
+                              (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
+             (base-font-color  (face-foreground 'default nil 'default))
+             (background-color (face-background 'default nil 'default))
+             (primary-color    (face-foreground 'mode-line nil))
+             (secondary-color  (face-background 'secondary-selection nil 'region))
+             (headline        `(:inherit default :weight bold :foreground ,base-font-color)))
+        (custom-theme-set-faces 'ha/org-theme
+                                `(org-agenda-structure ((t (:inherit default ,@sans-font :height 2.0 :underline nil))))
+                                `(org-level-8 ((t (,@headline ,@sans-font))))
+                                `(org-level-7 ((t (,@headline ,@sans-font))))
+                                `(org-level-6 ((t (,@headline ,@sans-font))))
+                                `(org-level-5 ((t (,@headline ,@sans-font))))
+                                `(org-level-4 ((t (,@headline ,@sans-font :height 1.1))))
+                                `(org-level-3 ((t (,@headline ,@sans-font :height 1.25))))
+                                `(org-level-2 ((t (,@headline ,@sans-font :height 1.5))))
+                                `(org-level-1 ((t (,@headline ,@sans-font :height 1.75))))
+                                `(org-document-title ((t (,@headline ,@sans-font :height 1.5 :underline nil)))))))
   #+END_SRC
 
    And the default startup goes to...night...unless I'm at work, and
