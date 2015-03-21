@@ -374,16 +374,8 @@
       (define-key personal-global-map (kbd "b") 'bury-buffer)
     #+END_SRC
 
-    The F2 prefix will be used for entering extra phrases and
-    characters.
-
-    #+BEGIN_SRC elisp
-      (define-prefix-command 'f2-global-map)
-      (global-set-key (kbd "<f2>") 'f2-global-map)
-    #+END_SRC
-
-    Unlike the *F9* bindings, all the *F2* key-bindings happen in one
-    [[file:emacs-f2.org][library file]]:
+    Unlike the *F9* bindings, all the *F2* key-bindings happen in a
+    single [[file:emacs-f2.org][library file]]:
 
     #+BEGIN_SRC elisp
       (require 'init-f2)

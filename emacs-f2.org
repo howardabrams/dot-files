@@ -7,6 +7,11 @@
 The *F2* is used to enter odd characters not normally available or
 phrases I want to type a bit too often.
 
+    #+BEGIN_SRC elisp
+      (define-prefix-command 'f2-global-map)
+      (global-set-key (kbd "<f2>") 'f2-global-map)
+    #+END_SRC
+
 * Unicode Characters
 
   Some of my frequently used Unicode characters:
@@ -21,22 +26,15 @@ phrases I want to type a bit too often.
   (define-key f2-global-map (kbd "S-<left>") "⇐")
   (define-key f2-global-map (kbd "S-<right>") "⇒")
 
-  (define-key f2-global-map (kbd "c") "▯")   ;; Representation of a cursor
-
-  (define-key f2-global-map (kbd "!") "¹")
-  (define-key f2-global-map (kbd "@") "²")
-  (define-key f2-global-map (kbd "#") "³")
-  (define-key f2-global-map (kbd "$") "⁴")
-
-  (define-key f2-global-map (kbd "2") "½")
-  (define-key f2-global-map (kbd "3") "⅓")
-  (define-key f2-global-map (kbd "4") "¼")
+  (define-key f2-global-map (kbd "p") "▯")   ;; Representation of a cursor
 
   (define-key f2-global-map (kbd "'") "’")
   (define-key f2-global-map (kbd "\"") "‘")
 
   (define-key f2-global-map (kbd "8") "•")
   (define-key f2-global-map (kbd "*") "°")
+  (define-key f2-global-map (kbd "d") "†")
+  (define-key f2-global-map (kbd "D") "‡")
   (define-key f2-global-map (kbd "-") "—")
   (define-key f2-global-map (kbd ".") "…")
   (define-key f2-global-map (kbd ";") "😉")
@@ -50,6 +48,29 @@ phrases I want to type a bit too often.
   (define-key f2-global-map (kbd "M") "μ")
   (define-key f2-global-map (kbd "T") "θ")
 #+END_SRC
+
+  Most key-bindings accept a string that will be inserted, but some
+  strings (notably those with Unicode symbols that refer to numbers),
+  actually become a prefix, so a little closure should do the trick:
+
+  #+BEGIN_SRC elisp
+  (defun ha/insert (ch)
+    (lexical-let ((chr ch))
+       (lambda () (interactive) (insert chr))))
+  #+END_SRC
+
+  Key-bindings for special numeric symbols:
+
+  #+BEGIN_SRC elisp
+  (define-key f2-global-map (kbd "!") (ha/insert "¹"))
+  (define-key f2-global-map (kbd "@") (ha/insert "²"))
+  (define-key f2-global-map (kbd "#") (ha/insert "³"))
+  (define-key f2-global-map (kbd "$") (ha/insert "⁴"))
+
+  (define-key f2-global-map (kbd "2") (ha/insert "½"))
+  (define-key f2-global-map (kbd "3") (ha/insert "⅓"))
+  (define-key f2-global-map (kbd "4") (ha/insert "¼"))
+  #+END_SRC
 
 * Italic and Bold Letters
 
