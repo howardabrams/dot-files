@@ -160,30 +160,38 @@ Emacs love affair. Make sure the latest packages are installed:
     this function that I can easily call to eliminate distractions
     during a meeting.
 
-#+BEGIN_SRC elisp
-(defun meeting-notes ()
-  "Call this after creating an org-mode heading for where the notes for the meeting
-should be. After calling this function, call 'meeting-done' to reset the environment."
-  (interactive)
-  (outline-mark-subtree)                              ;; Select org-mode section
-  (narrow-to-region (region-beginning) (region-end))  ;; Only show that region
-  (deactivate-mark)
-  (delete-other-windows)                              ;; Get rid of other windows
-  (text-scale-set 2)                                  ;; Text is now readable by others
-  (global-set-key (kbd "<f6>") 'meeting-done)
-  (message "When finished taking your notes, press <F6>"))
-#+END_SRC
+    #+BEGIN_SRC elisp
+      (defun meeting-notes ()
+        "Call this after creating an org-mode heading for where the notes for the meeting
+      should be. After calling this function, call 'meeting-done' to reset the environment."
+        (interactive)
+        (outline-mark-subtree)                              ;; Select org-mode section
+        (narrow-to-region (region-beginning) (region-end))  ;; Only show that region
+        (deactivate-mark)
+        (delete-other-windows)                              ;; Get rid of other windows
+        (text-scale-set 2)                                  ;; Text is now readable by others
+        (fringe-mode 0)
+        (when (require 'olivetti nil t)
+           (olivetti-mode 1)
+           (olivetti-set-width 110)
+           (olivetti-toggle-hide-modeline))
+        (message "When finished taking your notes, run meeting-done."))
+    #+END_SRC
 
     Of course, I need an 'undo' feature when the meeting is over...
 
-#+BEGIN_SRC elisp
-(defun meeting-done ()
-  "Attempt to 'undo' the effects of taking meeting notes."
-  (interactive)
-  (widen)                                       ;; Opposite of narrow-to-region
-  (text-scale-set 0)                            ;; Reset the font size increase
-  (winner-undo))                                ;; Put the windows back in place
-#+END_SRC
+    #+BEGIN_SRC elisp
+      (defun meeting-done ()
+        "Attempt to 'undo' the effects of taking meeting notes."
+        (interactive)
+        (widen)                                       ;; Opposite of narrow-to-region
+        (text-scale-set 0)                            ;; Reset the font size increase
+        (fringe-mode 1)
+        (when (require 'olivetti nil t)
+            (olivetti-toggle-hide-modeline)
+            (olivetti-mode 0))
+        (winner-undo))                                ;; Put the windows back in place
+    #+END_SRC
 
 ** Org-Mode Colors
 
