@@ -1666,6 +1666,29 @@
 
    *Note:*: Need to change this to work with the v24.4 super-word.
 
+*** Insert Comment of Eval
+
+    While writing and documenting Emacs Lisp code, it would be helpful
+    to insert the results of evaluation of an s-expression directly
+    into the code as a comment:
+
+    #+BEGIN_SRC elisp
+      (defun eval-and-comment-output ()
+        "Add the output of the sexp as a comment after the sexp"
+        (interactive)
+        (save-excursion
+          (end-of-line)
+          (condition-case nil
+              (princ (concat " ; -> " (pp-to-string (eval (preceding-sexp))))
+                     (current-buffer))
+            (error (message "Invalid expression")))))
+    #+END_SRC
+
+    And since it is Emacs Lisp, let’s bind globally:
+
+    #+BEGIN_SRC elisp
+      (global-set-key (kbd "C-x e") 'eval-and-comment-output)
+    #+END_SRC
 ** Clojure
 
    See [[file:emacs-clojure.org][emacs-clojure.el]] for details on working with [[http://clojure.org][Clojure]].
