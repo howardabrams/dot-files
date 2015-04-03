@@ -441,45 +441,90 @@ Emacs love affair. Make sure the latest packages are installed:
     #+END_SRC
 * Presentations
 
-  Generate presentations from my org-mode files using [[https://github.com/hakimel/reveal.js/][reveal.js]] and
-  [[https://github.com/yjwen/org-reveal][org-reveal]]. Just download and make the results available to the HTML output:
+  I alternated between the browser-based presentation tool, [[https://github.com/hakimel/reveal.js/][reveal.js]]
+  and staying in Emacs with [[https://github.com/takaxp/org-tree-slide][org-tree-slide]].
 
-  #+BEGIN_SRC elisp
-     (when (require 'ox-reveal nil t)
-       (setq org-reveal-root (concat "file://" (getenv "HOME") "/Public/reveal.js"))
-       (setq org-reveal-postamble "Howard Abrams"))
-  #+END_SRC
+** Reveal
 
-  A quick way to display an org-mode file is using [[https://github.com/takaxp/org-tree-slide][org-tree-slide]].
-  The only downside is the default key-binding for moving to the next
-  section is =C->= ... hardly easy to find during a presentation.
+   Generate presentations from my org-mode files using
+   [[https://github.com/yjwen/org-reveal][org-reveal]]. Just download and make the results available to the
+   HTML output:
 
-  #+BEGIN_SRC elisp
-     (when (require 'org-tree-slide nil t)
-       (add-hook 'org-tree-slide-mode (lambda ()
-          (define-key org-mode-map (kbd "<f1>") 'org-tree-slide-move-next-tree))))
-  #+END_SRC
+   #+BEGIN_SRC elisp
+      (when (require 'ox-reveal nil t)
+        (setq org-reveal-root (concat "file://" (getenv "HOME") "/Public/reveal.js"))
+        (setq org-reveal-postamble "Howard Abrams"))
+   #+END_SRC
 
-  * org-tree-slide-move-next-tree (C->)
-  * org-tree-slide-move-previous-tree (C-<)
-  * org-tree-slide-content (C-x s c)
+** Tree Slide
 
-  Displaying the headers using various bullets are nice for my presentations.
+   A quick way to display an org-mode file is using [[https://github.com/takaxp/org-tree-slide][org-tree-slide]].
+   The only downside is the default key-binding for moving to the next
+   section is =C->= ... hardly easy to find during a presentation.
 
-  #+BEGIN_SRC elisp
-    (when (require 'org-bullets nil t)
-          (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
-  #+END_SRC
+   * org-tree-slide-move-next-tree (C->)
+   * org-tree-slide-move-previous-tree (C-<)
+   * org-tree-slide-content (C-x s c)
 
-  Here is my approach for quickly making the initial asterisks for
-  listing items and whatnot, appear as Unicode bullets (without
-  actually affecting the text file or the behavior).
+   Perhaps we can create a function that sets everything at once:
 
-  #+BEGIN_SRC elisp
-    (font-lock-add-keywords 'org-mode
-       '(("^ +\\([-*]\\) "
-              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-  #+END_SRC
+   #+BEGIN_SRC elisp
+     (deftheme ha/org-tree-slide-theme "Sub-theme to hide org code blocks")
+
+     (defun ha/present-it ()
+       (interactive)
+       (when (require 'demo-it nil t)
+         (demo-it-presentation (buffer-file-name))
+         (org-tree-slide-simple-profile)
+         (define-key org-mode-map (kbd "<f1>") 'org-tree-slide-move-next-tree)
+         (define-key org-mode-map (kbd "S-<f1>") 'org-tree-slide-move-previous-tree))
+
+        (when (require 'olivetti nil t)
+           (olivetti-mode 1)
+           (olivetti-set-width 110))
+
+        (setq ha/present-it-restoration '(
+           (face-foreground 'org-block-begin-line nil 'default)
+        ))
+
+       (let ((fgc (face-background 'org-block-begin-line nil 'default)))
+         (setq-default line-spacing 12)
+         (custom-theme-set-faces 'ha/org-tree-slide-theme
+                                 `(org-block-begin-line ((t (:foreground ,fgc :height 0.5 :line-height 1 :invisible t))))
+                                 `(org-block-end-line   ((t (:foreground ,fgc :height 0.2 :line-height 1 :invisible t))))))
+       (fringe-mode '(0 . 0)))
+   #+END_SRC
+
+   And we need an “undo” for this weird presentation:
+
+   #+BEGIN_SRC elisp
+     (defun ha/present-stop ()
+       (interactive)
+       (demo-it-end)
+       (setq-default line-spacing 2)
+       (let ((fgc (car ha/present-it-restoration)))
+         (custom-theme-set-faces 'ha/org-tree-slide-theme
+                                 `(org-block-begin-line ((t (:foreground ,fgc :height 1.0 :line-height 1.0 :invisible nil))))
+                                 `(org-block-end-line   ((t (:foreground ,fgc :height 1.0 :line-height 1.0 :invisible nil))))))
+       (olivetti-mode 0))
+   #+END_SRC
+
+   Displaying the headers using various bullets are nice for my presentations.
+
+   #+BEGIN_SRC elisp
+     (when (require 'org-bullets nil t)
+           (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+   #+END_SRC
+
+   Here is my approach for quickly making the initial asterisks for
+   listing items and whatnot, appear as Unicode bullets (without
+   actually affecting the text file or the behavior).
+
+   #+BEGIN_SRC elisp
+     (font-lock-add-keywords 'org-mode
+        '(("^ +\\([-*]\\) "
+               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+   #+END_SRC
 
 * MobileOrg
 
