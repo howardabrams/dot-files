@@ -201,79 +201,6 @@
       (load-library "clojuredocs"))
 #+END_SRC
 
-* Paredit
-
-    One of the cooler features of Emacs is the [[http://emacswiki.org/emacs/ParEdit][ParEdit mode]] which
-    keeps all parenthesis balanced in Lisp-oriented languages.
-    See this [[http://www.emacswiki.org/emacs/PareditCheatsheet][cheatsheet]].
-
-#+BEGIN_SRC elisp
-  (require 'paredit)
-#+END_SRC
-
-    Associate the following Lisp-based modes with ParEdit:
-
-#+BEGIN_SRC elisp
-  (defun turn-on-paredit () (paredit-mode t))
-#+END_SRC
-
-    Associate the following Lisp-based modes with ParEdit:
-
-#+BEGIN_SRC elisp
-  (add-hook 'emacs-lisp-mode-hook       'turn-on-paredit)
-  (add-hook 'lisp-mode-hook             'turn-on-paredit)
-  (add-hook 'lisp-interaction-mode-hook 'turn-on-paredit)
-  (add-hook 'scheme-mode-hook           'turn-on-paredit)
-  (add-hook 'clojure-mode-hook          'turn-on-paredit)
-  (add-hook 'cider-repl-mode-hook       'turn-on-paredit)
-  (add-hook 'sibiliant-mode-hook        'turn-on-paredit)
-#+END_SRC
-
-    Note, without the helpful =turn-on-paredit= function defined
-    above, I'd have to do something like:
-
-#+BEGIN_SRC elisp :tangle no
-  (add-hook 'clojure-mode-hook (lambda () (paredit-mode +1)))
-#+END_SRC
-
-* Electric Returns
-
-    According to [[http://www.emacswiki.org/emacs/ParEdit#toc4][the ParEdit documentation]], we can allow a Return
-    keypress to insert a couple of indented newlines, if within an
-    s-expression. While within =paredit=, simply press =)= to shrink
-    back up the extra whitespace.
-
-    First, define a regular expression where we trigger this behavior:
-
-#+BEGIN_SRC elisp
-  (defvar electrify-return-match
-      "[\]}\)\"]"
-      "If this regexp matches the text after the cursor, do an \"electric\" return.")
-#+END_SRC
-
-    Next, encapsulate the behavior in a function:
-
-#+BEGIN_SRC elisp
-  (defun electrify-return-if-match (arg)
-      "If the text after the cursor matches `electrify-return-match' then
-    open and indent an empty line between the cursor and the text.  Move the
-    cursor to the new line."
-      (interactive "P")
-      (let ((case-fold-search nil))
-        (if (looking-at electrify-return-match)
-            (save-excursion (newline-and-indent)))
-        (newline arg)
-        (indent-according-to-mode)))
-#+END_SRC
-
-    Finally, bind the function to a key:
-
-#+BEGIN_SRC elisp
-  (add-hook 'paredit-mode-hook
-          (lambda ()
-            (local-set-key (kbd "RET") 'electrify-return-if-match)))
-#+END_SRC
-
 * Auto Completion
 
     Basic auto completion taken from [[http://fgiasson.com/blog/index.php/2014/05/22/my-optimal-gnu-emacs-settings-for-developing-clojure-so-far/][these instructions]]:
@@ -348,17 +275,11 @@
   (setq org-babel-clojure-backend 'cider)
   (require 'cider)
 #+END_SRC
-* New Key Bindings
 
-  That =<F2>= key is just aching to be more useful, so why not have
-  some better Clojure integration. I really should bind these to the
-  Clojure mode.
+* asdf
 
   #+BEGIN_SRC elisp
-    ;; (global-set-key (kbd "<f2> c") 'cider-jack-in)
-
-    (eval-after-load 'cider
-      '(define-key clojure-mode-map (kbd "<f2> c") 'cider-jack-in))
+    (require 'cider-eval-sexp-fu)
   #+END_SRC
 
 * 4Clojure

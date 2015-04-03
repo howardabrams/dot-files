@@ -1520,15 +1520,6 @@
   (add-hook 'before-save-hook 'delete-trailing-whitespace)
 #+END_SRC
 
-** Uniquify
-
-    Get rid of silly <1> and <2> to buffers with the same file name,
-    using [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Uniquify.html][uniquify]].
-
-#+BEGIN_SRC elisp
-  (require 'uniquify)
-#+END_SRC
-
 ** Better Searching and Visual Regular Expressions
 
     Only after you've started an =isearch-forward= do you wish you had
@@ -1605,23 +1596,65 @@
 
    Sure, everything here is in Emacs Lisp, but this section helps me write more of that.
 
+   The most important change to Emacs Lisp is colorizing the
+   variables:
+
+   #+BEGIN_SRC elisp
+      (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode)
+   #+END_SRC
+
 *** Paredit
 
-    Gotta load me up my wonderful world of Paredit, which is used for
-    more than just Emacs Lisp.
+    One of the cooler features of Emacs is the [[http://emacswiki.org/emacs/ParEdit][ParEdit mode]] which
+    keeps all parenthesis balanced in Lisp-oriented languages.
+    See this [[http://www.emacswiki.org/emacs/PareditCheatsheet][cheatsheet]].
 
     #+BEGIN_SRC elisp
       (require 'paredit)
     #+END_SRC
 
-    The most important change to Emacs Lisp is colorizing the
-    variables:
+    Associate the following Lisp-based modes with ParEdit:
 
     #+BEGIN_SRC elisp
-      (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode)
+      (defun turn-on-paredit () (paredit-mode t))
+    #+END_SRC
 
-      (when (featurep 'paredit)
-        (add-hook 'emacs-lisp-mode-hook (lambda () (paredit-mode t))))
+    Associate the following Lisp-based modes with ParEdit:
+
+    #+BEGIN_SRC elisp
+      (add-hook 'emacs-lisp-mode-hook       'turn-on-paredit)
+      (add-hook 'lisp-mode-hook             'turn-on-paredit)
+      (add-hook 'lisp-interaction-mode-hook 'turn-on-paredit)
+      (add-hook 'scheme-mode-hook           'turn-on-paredit)
+      (add-hook 'clojure-mode-hook          'turn-on-paredit)
+      (add-hook 'cider-repl-mode-hook       'turn-on-paredit)
+      (add-hook 'sibiliant-mode-hook        'turn-on-paredit)
+    #+END_SRC
+
+    According to [[http://www.emacswiki.org/emacs/ParEdit#toc4][the ParEdit documentation]], we can allow a Return
+    keypress to insert a couple of indented newlines, if within an
+    s-expression. While within =paredit=, simply press =)= to shrink
+    back up the extra whitespace.
+
+    #+BEGIN_SRC elisp :tangle no
+      (defun electrify-return-if-match (arg)
+            "If the text after the cursor matches `electrify-return-match' then
+          open and indent an empty line between the cursor and the text.  Move the
+          cursor to the new line."
+            (interactive "P")
+            (let ((case-fold-search nil))
+              (if (looking-at "[\]}\)\"]")
+                  (save-excursion (newline-and-indent)))
+              (newline arg)
+              (indent-according-to-mode)))
+    #+END_SRC
+
+    Finally, bind the function to a key:
+
+    #+BEGIN_SRC elisp :tangle no
+      (add-hook 'paredit-mode-hook
+                (lambda ()
+                  (local-set-key (kbd "RET") 'electrify-return-if-match)))
     #+END_SRC
 
 *** Auto Insert
