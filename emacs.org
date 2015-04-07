@@ -282,6 +282,34 @@
       (add-hook 'emacs-lisp-mode-hook 'activate-aggressive-indent)
    #+END_SRC
 
+** Encrypting Files
+
+   Synchronize notes formatted in org-mode across multiple computers
+   with cloud storage services, like Dropbox? Those files are /cached/
+   in various other storage facilities... so, I use symmetric key
+   encryption with [[http://en.wikipedia.org/wiki/Pretty_Good_Privacy][PGP]].
+
+   To get started on the Mac, install the goodies:
+
+   #+BEGIN_SRC sh :tangle no
+     brew install gpg
+   #+END_SRC
+
+   Now, any file loaded with a =gpg= extension, e.g. =some.org.gpg=,
+   will prompt for a password (and then use =org-mode=).  Since these
+   files are for my eyes only, I don’t need the key-ring prompt:
+
+   #+BEGIN_SRC elisp
+     (setq epa-file-select-keys 2)
+   #+END_SRC
+
+   If you trust your Emacs session on your computer, you can have
+   Emacs cache the password. Not sure I do...
+
+   #+BEGIN_SRC elisp
+     (setq epa-file-cache-passphrase-for-symmetric-encryption t)
+   #+END_SRC
+
 * Display Settings
 
    I've been using Emacs for many years, and appreciate a certain
