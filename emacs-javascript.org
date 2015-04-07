@@ -70,16 +70,13 @@
 
 * FlyMake and JSHint
 
-   While editing JavaScript is baked into Emacs, it is kinda cool to
-   have it give you red sections based on [[http://www.jshint.com/][jshint]].
-   This is now done with Flycheck, and we now don't use [[http://www.emacswiki.org/emacs/FlymakeJavaScript][FlyMake]].
+   While editing JavaScript is baked into Emacs, it is quite important
+   to have [[http://flycheck.readthedocs.org/][flycheck]] validate the source based on [[http://www.jshint.com/][jshint]], and [[https://github.com/eslint/eslint][eslint]].
+   Let’s prefer =eslint=:
 
-#+BEGIN_SRC elisp :tangle no
-  (autoload 'flymake-jshint "flymake-jshint"
-    "Error and linting support mode for JavaScript." t nil)
-
+#+BEGIN_SRC elisp
   (add-hook 'js-mode-hook
-            (lambda () (flymake-mode 1)))
+            (lambda () (flycheck-select-checker "javascript-eslint")))
 #+END_SRC
 
    Now load and edit a JavaScript file, like [[file:~/jshint-code-test.js][jshint-code-test.js]].
