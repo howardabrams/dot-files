@@ -502,6 +502,8 @@ Emacs love affair. Make sure the latest packages are installed:
        (interactive)
        (demo-it-end)
        (setq-default line-spacing 2)
+        (when (require 'olivetti nil t)
+           (olivetti-mode nil))
        (let ((fgc (car ha/present-it-restoration)))
          (custom-theme-set-faces 'ha/org-tree-slide-theme
                                  `(org-block-begin-line ((t (:foreground ,fgc :height 1.0 :line-height 1.0 :invisible nil))))
