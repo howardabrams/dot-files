@@ -380,24 +380,24 @@ Emacs love affair. Make sure the latest packages are installed:
 * Export Settings
 
     To make the =org-mode= export defaults closer to my liking
-    (without having to put specific #+PROPERTY commands), start by
-    =describe-variable= the =org-export-plist-vars= variable.
+    (without having to put specific #+PROPERTY commands), I get rid of
+    the postamble, and then configure the default fonts.
 
-    This returns the list of variables that can be customized:
+    #+BEGIN_SRC elisp
+    (setq org-html-postamble nil)
 
-#+BEGIN_SRC elisp
-  (setq org-export-with-section-numbers nil)
-  (setq org-export-with-toc nil)
-  (setq org-export-skip-text-before-1st-heading nil)
-
-  (setq org-export-html-postamble nil) ;; don't need any gunk at end
-
-  (setq org-export-creator-info nil)
-  (setq org-export-email-info nil)
-  (setq org-export-author-info nil)
-  (setq org-export-time-stamp-file nil)
-  (setq org-export-html-with-timestamp nil)
-#+END_SRC
+    (setq org-html-head-extra "
+       <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+       <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro:400,700' rel='stylesheet' type='text/css'>
+       <style type='text/css'>
+          body {
+             font-family: 'Source Sans Pro', sans-serif;
+          }
+          pre, code {
+             font-family: 'Source Code Pro', monospace;
+          }
+       </style>")
+    #+END_SRC
 
 * Narrowing and Widening
 
