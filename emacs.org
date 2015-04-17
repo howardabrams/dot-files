@@ -7,20 +7,6 @@
   This is my =.emacs= file, written using [[http://www.orgmode.org][org-mode]], so that I can
   organize it and take notes on all the complexity.
 
-#+BEGIN_HTML
-  <p>
-    You can download the <a href="dot-emacs.org">original org-mode
-    file</a> or view the <a href="dot-emacs.el">tangled end results</a>.
-  </p>
-#+END_HTML
-
-  If you are playing around with the =org-mode= version, note:
-
-  - The =tab= key opens/close a particular section
-  - Shift + =tab= cycles between the outline and full text
-  - Render it with:  =C-c C-v t=
-  - Creates a file:  =~/.emacs-ext.el=
-
 ** Emacs Executable
 
    This file is really a /script/ that requires version 24 of Emacs.
@@ -47,7 +33,7 @@
     (load-file "~/.emacs.d/elisp/init-main.el")
 
     (when (window-system)
-      (require 'init-mac))
+      (require 'init-client))
 
     (server-start))
 #+END_EXAMPLE
@@ -55,22 +41,6 @@
    *Note:* I only load this from a "normal" Emacs distribution, which allows
    me to play around with [[http://aquamacs.org/][Aquamacs]] and [[http://eschulte.github.io/emacs-starter-kit/][Starter Kits]] for recommendations
    to people new to Emacs.
-
-** Editing Warning
-
-  Begin this initialization script with a warning not to edit the
-  generated file:
-
-#+NAME: Note
-#+BEGIN_SRC elisp :comments off
-  ;;; ------------------------------------------
-  ;;; Do not edit the generated file, as it has
-  ;;; been generated, as a tangled file, by the
-  ;;; fandifluous org-mode.
-  ;;;
-  ;;; Source: ~/Work/dot-files/emacs.org
-  ;;; ------------------------------------------
-#+END_SRC
 
 * General Settings
 ** My Directory Location
