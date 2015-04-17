@@ -65,13 +65,20 @@
 ;; (ha/get-files "/foo/bar/*")  => nil
 
 
-(defun ha/get-path (path)
-  "Return a file specification based on PATH.  We should expand this function so that glob patterns work when specifying the parent, but shouldn't worry about matching any particular file."
-  (ha/substr-variables path))
+(defun ha/get-path (path &rest extra)
+  "Return a file specification based on PATH.  We should expand this function so that glob patterns work when specifying the parent, but shouldn't worry about matching any particular file.  All EXTRA parameters are appended separated with / characters."
+  (let ((file-parts (cons (ha/substr-variables path) extra)))
+    (mapconcat 'identity file-parts "/")))
 
-;; (ha/get-path "$HOME/.emacs.d/elisp/*.el" t)
-;; (ha/get-path "/foo/bar" t)
-
+;; (ha/get-path "/home/bar") ;=> "/home/bar"
+;; (ha/get-path "$HOME/.emacs.d/elisp/*.el") ;=> "/home/howard/.emacs.d/elisp/*.el"
+;; (ha/get-path "/foo/bar" "baz")
+;;
+;; (let ((blah "blah-blah") )
+;;   (ha/get-path "/home/${blah}/flubber")) ;=> /home/blah-blah/flubber
+;;
+;; (let ((blah "blah-blah") )
+;;   (ha/get-path "/home/flubber" blah)) ;=> /home/flubber/blah-blah
 
 ;; ----------------------------------------------------------------------
 
@@ -104,6 +111,11 @@
   "Create one or more directories specified by PATH, which can contain embedded environment variables and Emacs variables, e.g. '$HOME/Work/foobar'."
   (mapc (lambda (dir) (make-directory dir t)) (ha/get-files path)))
 
+(defun ha/copy-files (from to files)
+  "Copy some files FROM a directory TO another directory, where FILES is a list of names."
+  (mapcar (lambda (file)
+            (copy-file (ha/get-path from file)
+                       (ha/get-path to) t))     files))
 
 (provide 'shell-script-funcs)
 ;;; shell-script-funcs ends here
