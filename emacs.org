@@ -191,6 +191,7 @@
                    flx-ido
                    flycheck
                    flycheck-color-mode-line
+                   ggtags
                    git-blame
                    git-commit-mode
                    git-gutter-fringe
@@ -1575,19 +1576,54 @@
 #+END_SRC
 
 * Programming Languages
-** Fixme in Comments
 
-   Wanting to play around with the concept of highlighting certain
-   comments with the TODO or FIXME keywords:
+  All programming languages require some sort of tagging. I am now
+  using [[http://www.gnu.org/software/global/][Gnu Global]], and the [[https://github.com/leoliu/ggtags#install-global-and-plugins][ggtags]] interface. Looks like I need
+  [[http://ctags.sourceforge.net][Exuberant Ctags]], but I can install with Homebrew:
 
-#+BEGIN_SRC elisp
-  (when (require 'fic-mode nil t)
-    (add-hook 'js2-mode-hook 'turn-on-fic-mode)
-    (add-hook 'coffee-mode-hook 'turn-on-fic-mode)
-    (add-hook 'python-mode-hook 'turn-on-fic-mode)
-    (add-hook 'clojure-mode-hook 'turn-on-fic-mode)
-    (add-hook 'emacs-lisp-mode-hook 'turn-on-fic-mode))
-#+END_SRC
+  #+BEGIN_SRC sh
+    brew install --HEAD ctags
+  #+END_SRC
+
+  While Homebrew contains Gnu Global, the version doesn’t include the
+  Exuberant Ctags option, so I need to install with that option:
+
+  #+BEGIN_SRC sh
+    brew install global --with-exuberant-ctags
+  #+END_SRC
+
+  If not, copy the configuration, and [[file:~/.globalrc][edit it]]:
+
+  #+BEGIN_SRC sh
+    cp /usr/local/etc/gtags.conf $HOME/.globalrc
+  #+END_SRC
+
+  Finally, turn it on for every programming mode:
+
+  #+BEGIN_SRC elisp
+  (add-hook 'prog-mode-hook
+          (lambda ()
+              (ggtags-mode 1)))
+  #+END_SRC
+
+  Now, use the following keys:
+
+  - M-. To find the tag at point to jump to the function’s definition when
+    the point is over a function call. It is a dwim-type function.
+  - M-, (pop-tag-mark) – jump back to where you were.
+  - M-? (=find-tag=) – find a tag, that is, use the Tags file to look
+    up a definition. If there are multiple tags in the project with
+    the same name, use `C-u M-.’ to go to the next match.
+  - M-x tags-search – regexp-search through the source files indexed
+    by a tags file (a bit like =grep=)
+  - M-x tags-query-replace – query-replace through the source files indexed by a tags file
+  - M-x tags-apropos – list all tags in a tags file that match a regexp
+  - M-x list-tags – list all tags defined in a source file
+
+  Other helpful movement commands I need to remember:
+
+  - C-M-a - Jump to the start of a function
+  - C-M-e - Jump to the end of a function
 
 ** Emacs Lisp
 
