@@ -73,18 +73,18 @@
   [[http://eigenhombre.com/clojure/2014/07/05/emacs-customization-for-clojure/?utm_source%3Ddlvr.it&utm_medium%3Dtwitter][blog entry]] for the idea.
 
 #+BEGIN_SRC elisp
-  (defun cider-eval-last-sexp-and-append ()
-    "Evaluate the expression preceding point and append result."
-    (interactive)
-    (let* ((last-sexp (if (region-active-p)
-                         (buffer-substring (region-beginning) (region-end))
-                       (cider-last-sexp)))
-           (last-results (cider-eval-and-get-value last-sexp)))
+    (defun cider-eval-last-sexp-and-append ()
+      "Evaluate the expression preceding point and append result."
+      (interactive)
+      (let* ((last-sexp (if (region-active-p)
+                           (buffer-substring (region-beginning) (region-end))
+                         (cider-last-sexp)))
+             (last-results (cider-eval-and-get-value last-sexp)))
 
-      (with-current-buffer (current-buffer)
-        (comment-indent)
-        (insert " => ")
-        (insert (prin1-to-string last-results)))))
+        (with-current-buffer (current-buffer)
+          (comment-indent)
+          (insert " => ")
+          (insert (prin1-to-string last-results)))))
 #+END_SRC
 
   When demonstrating Clojure, I find it is a better approach is to send
@@ -227,7 +227,7 @@
 
 #+BEGIN_SRC elisp :toggle no
   (eval-after-load "cider"
-    '(define-key cider-mode-map (kbd "C-c C-d") 'ac-nrepl-popup-doc))
+    '(define-key cider-mode-map (kbd "C-c C-d") 'ac-cider-popup-doc))
 #+END_SRC
 
 * ElDoc
