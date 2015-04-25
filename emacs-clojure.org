@@ -214,7 +214,7 @@
 
     The CIDER-specific configuration for auto completion:
 
-#+BEGIN_SRC elisp :toggle no
+#+BEGIN_SRC elisp
   (require 'ac-cider)
   (add-hook 'cider-mode-hook 'ac-flyspell-workaround)
   (add-hook 'cider-mode-hook 'ac-cider-setup)
@@ -276,10 +276,18 @@
   (require 'cider)
 #+END_SRC
 
-* asdf
+* New Key Bindings
 
   #+BEGIN_SRC elisp
     (require 'cider-eval-sexp-fu)
+  #+END_SRC
+
+  Pulling up the documentation for a Clojure function is
+  indispensible.
+
+  #+BEGIN_SRC elisp
+  (eval-after-load "cider"
+    '(define-key cider-mode-map (kbd "C-c C-d") 'cider-doc))
   #+END_SRC
 
 * 4Clojure
