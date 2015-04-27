@@ -11,16 +11,30 @@
 
    This file is really a /script/ that requires version 24 of Emacs.
    While I often use [[http://emacsformacosx.com/builds][Emacs for Mac]], lately, I've been building from
-   [[http://brew.sh/][Homebrew]] with the following:
+   [[http://brew.sh/][Homebrew]] with the following dependency:
 
-   #+BEGIN_EXAMPLE
-     brew install emacs --cocoa --srgb --with-gnutls
-     brew linkapps
-   #+END_EXAMPLE
+   #+BEGIN_SRC sh :tangle no
+     brew cask install xquartz
+   #+END_SRC
+
+   And then built from source especially for the Mac:
+
+   #+BEGIN_SRC sh :tangle no
+     brew install emacs --HEAD --use-git-head --with-cocoa \
+           --with-gnutls --srgb --with-librsvg --with-ns
+
+     brew linkapps emacs
+   #+END_SRC
 
    Not only does this install the latest version of Emacs in
    =/usr/local/bin/emacs=, but it also links a GUI version in
-   =/Application/Emacs.app=. Goody.
+   =/Application/Emacs.app=.
+
+   All Homebrew options for Emacs can be seen with the command:
+
+   #+BEGIN_SRC sh :tangle no
+     brew options emacs
+   #+END_SRC
 
 ** Loading this File
 
@@ -1148,25 +1162,6 @@
   (setq vc-make-backup-files t)
 #+END_SRC
 
-** Save Place
-
-    The [[http://www.emacswiki.org/emacs/SavePlace][Save Place]] mode will... well, save your place in between
-    Emacs sessions.
-
-#+BEGIN_SRC elisp
-  (require 'saveplace)
-  (setq-default save-place t)
-#+END_SRC
-
-    With version 24.4 of Emacs, we can save all files when Emacs
-    looses frame focus.
-
-#+BEGIN_SRC elisp
-  (add-hook 'focus-out-hook (lambda () (save-some-buffers t)))
-#+END_SRC
-
-    We won't turn that on until I am fully using the next version.
-
 * Word Smithing
 ** Auto Insertion
 
@@ -1551,20 +1546,20 @@
   using [[http://www.gnu.org/software/global/][Gnu Global]], and the [[https://github.com/leoliu/ggtags#install-global-and-plugins][ggtags]] interface. Looks like I need
   [[http://ctags.sourceforge.net][Exuberant Ctags]], but I can install with Homebrew:
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC sh :tangle no
     brew install --HEAD ctags
   #+END_SRC
 
   While Homebrew contains Gnu Global, the version doesn’t include the
   Exuberant Ctags option, so I need to install with that option:
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC sh :tangle no
     brew install global --with-exuberant-ctags
   #+END_SRC
 
   If not, copy the configuration, and [[file:~/.globalrc][edit it]]:
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC sh :tangle no
     cp /usr/local/etc/gtags.conf $HOME/.globalrc
   #+END_SRC
 
