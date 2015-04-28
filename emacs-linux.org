@@ -53,6 +53,44 @@ Linux.
     (setq locate-command "recoll")
   #+END_SRC
 
+* Applications
+
+** GNU Global
+
+   While I can use Homebrew to install Gnu Global on the Mac, on
+   Linux, I may need to do things old school:
+
+   First, ctags:
+
+   #+BEGIN_SRC sh :tangle no
+     if [ -d ~/Other/ctags ]
+     then
+       cd ~/Other
+       wget http://prdownloads.sourceforge.net/ctags/ctags-5.8.tar.gz
+       tar xfz ctags-5.8.tar.gz
+     fi
+     cd ~/Other/ctags
+
+    ./configure && make && make install
+   #+END_SRC
+
+   And then Gnu Global:
+
+   #+BEGIN_SRC sh :tangle no
+    if [ ! -d ~/Other/global-6.4 ]
+    then
+        cd ~/Other
+        wget http://tamacom.com/global/global-6.4.tar.gz
+        tar xfz global-6.4.tar.gz
+    fi
+    cd ~/Other/global-6.4
+
+    ./configure --with-exuberant-ctags=/usr/local/bin/ctags
+    make && make install
+   #+END_SRC
+
+   Now, the code in [[file:emacs.org::*Programming%20Languages][emacs.org]] should work like a charm.
+
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.
