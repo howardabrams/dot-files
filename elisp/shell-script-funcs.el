@@ -96,11 +96,8 @@
   (let ((orig-file (ha/get-path orig))
         (link-file (ha/get-path link)))
 
-    (if (file-symlink-p link-file)
-        (delete-file link-file))
-    ;; (message "%s -> %s" orig-file link-file)
-    (make-symbolic-link orig-file link-file t)))
-
+    (if (not (file-symlink-p link-file))
+        (make-symbolic-link orig-file link-file t))))
 
 (defun ha/mksymlinks (files dest)
   "Create an absolute symbolic link for each file specified in FILES into the directory, DEST (where each link will have the same name).  Both parameters can be specified with glob patterns and embedded environment and Emacs variables, e.g. '$HOME/.emacs.d/*.el'."
