@@ -18,6 +18,10 @@ else
     fi
 fi
 
+function available {
+    which $* 2>&1 >/dev/null
+}
+
 while getopts "b:c:m:" o $*
 do
     case "$o" in
@@ -48,10 +52,19 @@ then
 fi
 
 # echo $MESSAGE
-afplay $AUDIO
-say $MESSAGE
+if available aplay
+then
+    aplay $AUDIO
+else
+    afplay $AUDIO
+fi
 
-if type terminal-notifier >/dev/null 2>&1
+if available say
+then
+    say $MESSAGE
+fi
+
+if available terminal-notifier
 then
     terminal-notifier -message "$MESSAGE" -title "Process Complete"
 fi
