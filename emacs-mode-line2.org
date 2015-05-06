@@ -54,7 +54,7 @@ creating a better mode line in Emacs.
   Make sure that we can simply =require= this library.
 
 #+BEGIN_SRC elisp
-  (provide 'init-mode-line)
+  (provide 'init-mode-line2)
 #+END_SRC
 
   Before you can build this on a new system, make sure that you put
@@ -63,7 +63,7 @@ creating a better mode line in Emacs.
   *Note:*: We are not using this file. If I want to switch, change the
   =tangle= line below to: =~/.emacs.d/elisp/init-mode-line.el=
 
-#+PROPERTY:    tangle no
+#+PROPERTY:    tangle ~/.emacs.d/elisp/init-mode-line2.el
 #+DESCRIPTION: A literate programming version of my Emacs ModeLine Initialization
 #+PROPERTY:    results silent
 #+PROPERTY:    eval no-export
