@@ -305,9 +305,6 @@
   (setq initial-scratch-message "") ;; Uh, I know what Scratch is for
   (setq visible-bell t)             ;; Get rid of the beeps
 
-  (unless (window-system)
-    (menu-bar-mode 0))              ;; No menus... but only in text mode
-
   (when (window-system)
     (tool-bar-mode 0)               ;; Toolbars were only cool with XEmacs
     (when (fboundp 'horizontal-scroll-bar-mode)
