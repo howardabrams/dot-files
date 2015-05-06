@@ -29,6 +29,9 @@ Let's load it up if it is installed.
           "http://emacs-fu.blogspot.com/feeds/posts/default"
           "http://emacsredux.com/atom.xml"         ;; Emacs Blog
           "http://www.lunaryorn.com/feed.atom"     ;; Emacs Blog
+          "http://swannodette.github.com/atom.xml" ;; David Nolen, duh.
+          "http://batsov.com/atom.xml"             ;; Bozhidar Batsov
+          "http://twogreenleaves.org/index.php?feed=rss"
 
           "https://medium.com/feed/@hlship/"       ;; Programming
           "http://gigasquidsoftware.com/atom.xml"  ;; Clojure
