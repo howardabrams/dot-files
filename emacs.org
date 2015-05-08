@@ -183,6 +183,8 @@
                    gitignore-mode
                    graphviz-dot-mode
                    hungry-delete
+                   htmlize
+                   hydra
                    ido-vertical-mode
                    iy-go-to-char
                    linum-relative
@@ -1794,45 +1796,52 @@
 
    Git is [[http://emacswiki.org/emacs/Git][already part of Emacs]]. However, [[http://philjackson.github.com/magit/magit.html][Magit]] is sweet.
 
-#+BEGIN_SRC elisp
-  (require 'magit)
-  (global-set-key (kbd "M-C-g") 'magit-status)
-  (define-key personal-global-map (kbd "g") 'magit-status)
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (require 'magit)
+     (global-set-key (kbd "M-C-g") 'magit-status)
+     (define-key personal-global-map (kbd "g") 'magit-status)
+   #+END_SRC
+
+   Changing files under Git control now changes Emacs buffers to
+   reflect this:
+
+   #+BEGIN_SRC elisp
+     (setq magit-last-seen-setup-instructions "1.4.0")
+   #+END_SRC
 
    I like having Magit to run in a /full screen/ mode, and took this
    =defadvice= idea from [[https://github.com/magnars/.emacs.d/blob/master/setup-magit.el][Sven Magnars]]:
 
-#+BEGIN_SRC elisp
-  (defadvice magit-status (around magit-fullscreen activate)
-    (window-configuration-to-register :magit-fullscreen)
-    ad-do-it
-    (delete-other-windows))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (defadvice magit-status (around magit-fullscreen activate)
+       (window-configuration-to-register :magit-fullscreen)
+       ad-do-it
+       (delete-other-windows))
+   #+END_SRC
 
    Now, we have to have the =q= command recover the window session
    that was stored in a window register:
 
-#+BEGIN_SRC elisp
-  (defun magit-quit-session ()
-    "Restores the previous window configuration and kills the magit buffer"
-    (interactive)
-    (kill-buffer)
-    (jump-to-register :magit-fullscreen))
+   #+BEGIN_SRC elisp
+     (defun magit-quit-session ()
+       "Restores the previous window configuration and kills the magit buffer"
+       (interactive)
+       (kill-buffer)
+       (jump-to-register :magit-fullscreen))
 
-  (define-key magit-status-mode-map (kbd "q") 'magit-quit-session)
-#+END_SRC
+     (define-key magit-status-mode-map (kbd "q") 'magit-quit-session)
+   #+END_SRC
 
    I install and use the [[https://github.com/syohex/emacs-git-gutter-fringe][Git Gutter Fringe]] as it works better with
    windowing versions of Emacs.
 
-#+BEGIN_SRC elisp
-  (if (window-system)
-      (when (require 'git-gutter-fringe nil t)
-        (global-git-gutter-mode +1)
-        (setq-default indicate-buffer-boundaries 'left)
-        (setq-default indicate-empty-lines +1)))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (if (window-system)
+         (when (require 'git-gutter-fringe nil t)
+           (global-git-gutter-mode +1)
+           (setq-default indicate-buffer-boundaries 'left)
+           (setq-default indicate-empty-lines +1)))
+   #+END_SRC
 
    To see a /blame mode/, use either =vc-annotate= (=C-x v g=) or
    =magit-blame-mode=.
