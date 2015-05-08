@@ -506,6 +506,13 @@
      (global-set-key (kbd "C-M-<right>") 'end-of-buffer)
    #+END_SRC
 
+   Why isn’t =imenu= bound?
+
+   #+BEGIN_SRC elisp
+     (global-set-key (kbd "M-s f") 'imenu)
+     (global-set-key (kbd "M-s M-f") 'imenu)
+   #+END_SRC
+
    Better jumping around the buffer with [[https://github.com/winterTTr/ace-jump-mode][ace-jump-mode]] and friends.
 
    #+BEGIN_SRC elisp
@@ -531,6 +538,15 @@
     whatever is at point, but you need to =C-s= to jump to next match.
   - =M-s _= ... =isearch-forward-symbol=
 
+  Using [[https://github.com/abo-abo/avy][avy]] as an /extension/ to the normal =isearch=, so that if I
+  type a search phrase, I can then type =C-'= to kick off
+  =avy-isearch=, and jump to the one that I want. Little change to the
+  mental flow.
+
+  #+BEGIN_SRC elisp
+    (when (require 'avy nil t)
+     (define-key isearch-mode-map (kbd "C-'") 'avy-isearch))
+  #+END_SRC
 ** Unfill Paragraph
 
    Unfilling a paragraph joins all the lines in a paragraph into a
