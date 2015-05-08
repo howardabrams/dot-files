@@ -10,6 +10,7 @@ Emacs love affair. Make sure the latest packages are installed:
 #+BEGIN_SRC elisp
   (packages-install '( org
                        org-plus-contrib
+                       org-bullets
                        ox-reveal
                        org-journal
                        plantuml-mode
