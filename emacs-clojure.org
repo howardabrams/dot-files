@@ -276,11 +276,13 @@
   (require 'cider)
 #+END_SRC
 
-* New Key Bindings
+  But we will evaluate in a particular =cider-connection= with:
 
   #+BEGIN_SRC elisp
-    (require 'cider-eval-sexp-fu)
+    (global-set-key (kbd "C-c j") 'cider-eval-last-sexp)
   #+END_SRC
+
+* New Key Bindings
 
   Pulling up the documentation for a Clojure function is
   indispensible.
