@@ -1,0 +1,190 @@
+#+TITLE:  Reading and Sending Email in Emacs
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2015 Apr 27
+#+TAGS:   emacs technical
+
+To goals of Email in Emacs. First, to be able to easily send org-mode
+files to colleagues, and second, to be able to quickly read the newest
+email messages that arrive on my GMail account.
+
+* OfflineIMAP
+
+  Followed [[https://gist.github.com/areina/3879626][these instructions]] to get =offlineimap= working. First:
+
+  #+BEGIN_SRC sh :tangle no
+  sudo apt-get install offlineimap
+  #+END_SRC
+
+  Then:
+    - Created [[file:~/.offlineimaprc][~/.offlineimaprc]], and changed the following:
+      - =folderfilter = lambda folder: folder.startswith('INBOX')=
+      - =maxage = 7=
+    - Created [[file:~/.offlineimap.py][.offlineimap.py]] shell script to return the password.
+    - Set up both smtp and imap in [[file:~/.authinfo][.authinfo]] file.
+
+  The first time I ran it, it takes a while to download the latest
+  email messages. After this point, I can put it in a =cronjob=.
+
+* MU4E
+
+  Using [[http://www.djcbsoftware.nl/code/mu/mu4e.html][mu4e]], which required cloning the [[https://github.com/djcb/mu][Github repo]], and building it
+  from source. First, install the dependencies:
+
+  #+BEGIN_SRC sh :tangle no
+    sudo apt-get install libgmime-2.6 libxapian-dev
+  #+END_SRC
+
+  And build it and install it in =/usr/local= (which includes
+  installing =mu4e= in the =[[file:/usr/local/share/emacs/site-lisp/mu4e/][site-lisp]]=:
+
+  #+BEGIN_SRC sh :tangle no
+    autoreconf -i && ./configure && make && sudo make install
+  #+END_SRC
+
+  Finally, combine these into a single cronjob:
+
+  #+BEGIN_SRC sh :tangle no
+    offlineimap && mu index --maildir=~/Maildir
+  #+END_SRC
+
+  Now, we just have to require it:
+
+  #+BEGIN_SRC elisp
+    (require 'mu4e nil t)
+  #+END_SRC
+
+  Point it to the full binary of the =mu=:
+
+  #+BEGIN_SRC elisp
+    (setq mu4e-mu-binary "/usr/local/bin/mu")
+  #+END_SRC
+
+  And connect it to the drop-off location for =offlineimap=:
+
+  #+BEGIN_SRC elisp
+    (setq mu4e-maildir (expand-file-name "~/Maildir"))
+  #+END_SRC
+
+  I’m only download the INBOX, but otherwise, I would set these:
+
+  #+BEGIN_SRC elisp :tangle no
+    (setq mu4e-drafts-folder "/[Gmail].Drafts")
+    (setq mu4e-sent-folder   "/[Gmail].Sent Mail")
+    ((setq  )etq mu4e-trash-folder  "/[Gmail].Trash")
+  #+END_SRC
+
+  *Note:* Don't save message to =Sent Messages=, as =GMail/IMAP= will
+  take care of this:
+
+  #+BEGIN_SRC elisp
+    (setq mu4e-sent-messages-behavior 'delete)
+  #+END_SRC
+
+  Wonder if these would be handy shortcuts:
+
+  #+BEGIN_SRC elisp
+    (setq mu4e-maildir-shortcuts
+          '(("/INBOX"             . ?i)
+            ("/[Gmail].Sent Mail" . ?s)
+            ("/[Gmail].Trash"     . ?t)))
+  #+END_SRC
+
+  Allow for updating mail using 'U' in the main view:
+
+  #+BEGIN_SRC elisp
+    (setq mu4e-get-mail-command "offlineimap")
+  #+END_SRC
+
+  However, I’m not sure if using that command will automatically index
+  it or not.
+
+* Sending Email
+
+  To send to GMail, we need to install TLS:
+
+  #+BEGIN_SRC sh :tangle no
+    sudo apt-get install gnutls-bin
+  #+END_SRC
+
+  Require and set to use the TLS:
+
+  #+BEGIN_SRC elisp
+    (require 'starttls)
+    (setq starttls-use-gnutls t)
+  #+END_SRC
+
+  Now, configure the SMTP subsystem:
+
+  #+BEGIN_SRC elisp
+    (require 'smtpmail)
+
+    (setq send-mail-function            'smtpmail-send-it
+          message-send-mail-function    'smtpmail-send-it
+          smtpmail-auth-credentials     (expand-file-name "~/.authinfo")
+          smtpmail-stream-type          'tls
+          smtpmail-smtp-server          "smtp.gmail.com"
+          smtpmail-smtp-service         465)
+  #+END_SRC
+
+  To send email to an Exchange server, change the port:
+
+  #+BEGIN_SRC elisp :tangle no
+      (setq send-mail-function  'smtpmail-send-it
+          smtpmail-smtp-server  "outlook.office365.com"
+          smtpmail-stream-type  'starttls
+          smtpmail-smtp-service 587)
+  #+END_SRC
+
+  To send a normal text message, type =C-x m= and fill out the fields.
+  Hit =C-c C-c= to send it. Problems, you might want to turn on debugging:
+
+  #+BEGIN_SRC elisp :tangle no
+    (setq starttls-use-gnutls t)
+    (setq smtpmail-debug-info t)
+    (setq smtpmail-debug-verb t)
+  #+END_SRC
+
+* Org-Mime
+
+  To send /formatted =org-mode= files/, like this, first, install the
+  =org-plus-contrib= package from ELPA (but *do not* install the
+  =org-mime= package, as that is old and broken, see [[http://lists.gnu.org/archive/html/emacs-orgmode/2014-05/msg00311.html][this discussion]]
+  for details.
+
+  Require this =[[http://orgmode.org/worg/org-contrib/org-mime.html][org-mime]]= system (that is part of =org-plus-contrib=):
+
+  #+BEGIN_SRC elisp
+    (require 'org-mime nil t)
+  #+END_SRC
+
+  This gives us a new function, =org-mime-org-buffer-htmlize= which
+  allows us to send the entire buffer (or region) as email.
+
+  If your =org-mode= file contains =BEGIN_SRC= blocks (like what is
+  the literate point, otherwise), then you’ll need to install and use
+  this the [[http://emacswiki.org/emacs/Htmlize][htmlize project]]:
+
+  #+BEGIN_SRC elisp
+    (require 'htmlize nil t)
+  #+END_SRC
+
+* Technical Artifacts
+
+  Make sure that we can simply =require= this library.
+
+#+BEGIN_SRC elisp
+  (provide 'init-mail)
+#+END_SRC
+
+  Before you can build this on a new system, make sure that you put
+  the cursor over any of these properties, and hit: =C-c C-c=
+
+#+DESCRIPTION: A literate programming version of my Emacs Initialization of Web Programming
+#+PROPERTY:    results silent
+#+PROPERTY:    tangle ~/.emacs.d/elisp/init-mail.el
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
