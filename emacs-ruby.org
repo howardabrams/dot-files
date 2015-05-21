@@ -22,7 +22,7 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
   rbenv global 1.9.3-p550
   #+END_SRC
 
-  See
+  See the [[*Ruby%20Virtual%20Manager][Ruby Virtual Manager]] section below.
 
 * Supporting Packages
 
@@ -67,6 +67,13 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
       (add-to-list 'auto-mode-alist '("Puppetfile\\'"   . ruby-mode))
       (add-to-list 'auto-mode-alist '("Berksfile\\'"    . ruby-mode))
       (add-to-list 'auto-mode-alist '("Appraisals\\'"   . ruby-mode)))
+  #+END_SRC
+
+  Use [[http://web-mode.org/][web-mode]] for dealing with ERB templates:
+
+  #+BEGIN_SRC elisp
+    (when (require 'web-mode nil t)
+      (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode)))
   #+END_SRC
 
 * Customizations
