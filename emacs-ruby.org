@@ -3,23 +3,26 @@
 #+EMAIL:  howard.abrams@gmail.com
 #+DATE:   2014 Nov 24
 #+TAGS:   emacs ruby
-#+PROPERTY: header-args:sh :results silent
+#+PROPERTY: header-args:sh :results silent :tangle no
 
 We begin by stealing a typical Ruby environment from [[https://github.com/bbatsov/prelude/blob/master/modules/prelude-ruby.el][Prelude]].
 
 * Ruby Installation
 
-  I like having everything Ruby controlled by RVM:
+  I like having everything Ruby controlled by [[https://github.com/sstephenson/rbenv][rbenv]]. I install it with [[https://github.com/sstephenson/rbenv#homebrew-on-mac-os-x][Homebrew]]:
 
-  #+BEGIN_SRC sh :tangle no
-    curl -sSL "https://get.rvm.io" | bash
-    . "~/.rvm/scripts/rvm"
-    rvm install ruby-latest
-    rvm --ruby-version use latest
+  #+BEGIN_SRC sh
+  brew install rbenv ruby-build
   #+END_SRC
 
-  The change to use RVM is tied to Bash (in the =~/.bash_profile=), so
-  to use the system-supplied Ruby, I just call =sh=.
+  And then install a Ruby version and set it to be used globally:
+
+  #+BEGIN_SRC sh
+  rbenv install 1.9.3-p550
+  rbenv global 1.9.3-p550
+  #+END_SRC
+
+  See
 
 * Supporting Packages
 
@@ -29,7 +32,7 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
   #+BEGIN_SRC elisp
     (packages-install '( ruby-tools
                          inf-ruby
-                         rvm
+                         rbenv
                          yari
                          robe
                          rubocop
@@ -81,21 +84,30 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
     (add-hook 'ruby-mode-hook 'ha/ruby-mode-defaults)
   #+END_SRC
 
-* Ruby Virtual Manager (RVM)
+* Ruby Virtual Manager
 
-
-  Using the [[http://github.com/senny/rvm.el][RVM Integration]] for Emacs.
+  Using the [[https://github.com/senny/rbenv.el][RBEnv integration]] for Emacs, but I typically do not
+  install its world in my home directory, so this needs to be set
+  first:
 
   #+BEGIN_SRC elisp
-    (when (require 'rvm nil t)
-      (rvm-use-default)  ;; Start with the Default RVM
+    (setq rbenv-installation-dir "/usr/local/var/rbenv")
+  #+END_SRC
+
+  Then load and configure the interface:
+
+  #+BEGIN_SRC elisp
+    (when (require 'rbenv nil t)
+      (global-rbenv-mode)
+      (rbenv-use-global)
+
       (define-key personal-global-map (kbd "R")
-                  'rvm-activate-corresponding-ruby))
+                  'rbenv-use-corresponding))
   #+END_SRC
 
   When jumping from project to project, need to run the command:
-  =rvm-activate-corresponding-ruby= ... which must be done before
-  starting an Eshell (that is, if you’re into that sort of thing).
+  =rbenv-use= ... which must be done before starting an Eshell (that
+  is, if you’re into that sort of thing).
 
 * Ruby Functional Doc
 
