@@ -18,11 +18,11 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
   And then install a Ruby version and set it to be used globally:
 
   #+BEGIN_SRC sh
-  rbenv install 1.9.3-p550
-  rbenv global 1.9.3-p550
+    rbenv install 1.9.3-p550
+    rbenv global 1.9.3-p550
   #+END_SRC
 
-  See the [[*Ruby%20Virtual%20Manager][Ruby Virtual Manager]] section below.
+  See the [[#ruby-virtual-manager][Ruby Virtual Manager]] section below.
 
 * Supporting Packages
 
@@ -98,6 +98,7 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
   first:
 
   #+BEGIN_SRC elisp
+    (setq rbenv-executable "/usr/local/bin/rbenv")
     (setq rbenv-installation-dir "/usr/local/var/rbenv")
   #+END_SRC
 
