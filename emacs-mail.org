@@ -209,6 +209,34 @@ email messages that arrive on my GMail account.
             '(( "From" . "no.?reply\\|DAEMON\\|daemon\\|facebookmail\\|twitter")))))
   #+END_SRC
 
+  Along with some other useful =mu4e= settings, I [[https://github.com/mardukbp/dotfiles/blob/master/emacs.d/mb-mu4e.el][found this function]] to
+  add the sender to the =bbdb= database:
+
+  #+BEGIN_SRC elisp
+    (defun mu4e-add-bbdb (field)
+      (interactive "sField (f)rom / (t)o / (c)c: ")
+      (let* ((fieldsym (cond
+                        ((string-prefix-p "f" field t) :from)
+                        ((string-prefix-p "t" field t) :to)
+                        ((string-prefix-p "c" field t) :cc)))
+             (tuple (mu4e-field-at-point fieldsym))
+             (name (car (car tuple)))
+             (addr (cdr (car tuple))))
+        (bbdb-create-internal name nil nil nil addr)))
+
+    (defun mu4e-add-bbdb-sender ()
+      (interactive)
+      (mu4e-add-bbdb "f"))
+
+    (defun mu4e-add-bbdb-from ()
+      (interactive)
+      (mu4e-add-bbdb "f"))
+
+    (defun mu4e-add-bbdb-to ()
+      (interactive)
+      (mu4e-add-bbdb "t"))
+  #+END_SRC
+
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.
