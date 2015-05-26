@@ -163,8 +163,11 @@
 
 #+BEGIN_SRC elisp
   (packages-install
-                 '(auto-complete
-                   ack-and-a-half
+                 '(ack-and-a-half
+                   avy
+                   company
+                   company-quickhelp
+                   company-math
                    dired-details
                    color-identifiers-mode  ;; Color variables differently
                    epl
@@ -547,6 +550,7 @@
     (when (require 'avy nil t)
      (define-key isearch-mode-map (kbd "C-'") 'avy-isearch))
   #+END_SRC
+
 ** Unfill Paragraph
 
    Unfilling a paragraph joins all the lines in a paragraph into a
@@ -1215,33 +1219,26 @@
 
 ** Auto Complete
 
-   This feature scans the code and suggests completions for what you
-   are typing. Useful at times ... annoying at others.
+   Using [[http://company-mode.github.io/][company-mode]] for all my auto completion needs.
 
-#+BEGIN_SRC elisp
-  (when (require 'auto-complete-config nil t)
-    (add-to-list 'ac-dictionary-directories (ha/emacs-subdirectory "ac-dict"))
+   #+BEGIN_SRC elisp
+     (add-hook 'after-init-hook 'global-company-mode)
+   #+END_SRC
 
-    (set-default 'ac-sources
-                 '(ac-source-abbrev
-                   ac-source-dictionary
-                   ac-source-yasnippet
-                   ac-source-words-in-buffer
-                   ac-source-words-in-same-mode-buffers
-                   ac-source-semantic))
+   If the [[https://www.github.com/expez/company-quickhelp][company-quickhelp]] is installed, let’s take advantage of it:
 
-    (ac-config-default)
-    (global-auto-complete-mode t))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (company-quickhelp-mode 1)
+   #+END_SRC
 
-   Note that we specify where a dictionary lives for each specific
-   language, and if for some reason, a mode isn't getting the "AC"
-   minor mode, you can add to it with this magic:
+   This also requires [[https://github.com/pitkali/pos-tip/blob/master/pos-tip.el][pos-tip]].
 
-#+BEGIN_SRC elisp :tangle no
-  (dolist (m '(python-mode js2-mode clojure-mode))
-    (add-to-list 'ac-modes m))
-#+END_SRC
+   And I really like [[https://github.com/vspinu/company-math][this idea]] of being able to easily insert math
+   symbols based on LaTeX keywords:
+
+   #+BEGIN_SRC elisp
+   (add-to-list 'company-backends 'company-math-symbols-unicode)
+   #+END_SRC
 
 ** Yasnippets
 
