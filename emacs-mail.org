@@ -169,6 +169,31 @@ email messages that arrive on my GMail account.
     (require 'htmlize nil t)
   #+END_SRC
 
+  We just need to touch up a bit of the CSS that is sent:
+
+  #+BEGIN_SRC elisp
+  (add-hook 'org-mime-html-hook
+          (lambda ()
+            (org-mime-change-element-style
+             "pre" "margin-left: 2em;")))
+  #+END_SRC
+
+  According to [[http://orgmode.org/worg/org-contrib/org-mime.html#sec-2-2][this example]], all block-quotes are trimmed down:
+
+  #+BEGIN_SRC elisp
+  (add-hook 'org-mime-html-hook
+          (lambda ()
+            (org-mime-change-element-style
+             "blockquote" "border-left: 2px solid gray; padding-left: 4px;")))
+  #+END_SRC
+
+  The final trick is to give it a nicer keystroke. Since =C-x m= sends
+  a blank email, how about Shift-M?
+
+  #+BEGIN_SRC elisp
+    (global-set-key (kbd "C-x M") 'org-mime-org-buffer-htmlize)
+  #+END_SRC
+
 * Address Book
 
   Using the /Insidious Big Brother Database/ ([[http://bbdb.sourceforge.net/bbdb.html][BBDB]]) for the basics of
