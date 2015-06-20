@@ -285,7 +285,7 @@
 * New Key Bindings
 
   Pulling up the documentation for a Clojure function is
-  indispensible.
+  indispensable.
 
   #+BEGIN_SRC elisp
   (eval-after-load "cider"

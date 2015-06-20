@@ -5,70 +5,15 @@
 #+TAGS:   emacs
 
 My frustration with shells makes me enjoy Emacs Shell, but there are
-some significant differences to address.
-
-* Introduction
-
-  Sure /most/ things /just work/ as I would expect, and typing =dired=
-  (or my =d= alias), can be good for altering file names and things.
-  However, after reading the manual, I realize I need to remember the
-  advantages and differences.
-
-** Looping over Files
-
-   First, "shell work" goes between curly braces. For instance, the
-   following shell command:
-
-#+BEGIN_SRC sh :tangle no
-for FILE in *.xpm
-do
-   f=`basename $FILE`
-   convert $f.xpm $f.png
-done
-#+END_SRC
-
-   Would become the following in EShell:
-
-#+BEGIN_SRC sh :tangle no
-for f in *.xpm(:r) { convert $f.xpm $f.png }
-#+END_SRC
-
-   Here we also see that the =(:r)= modifies the glob pattern to strip
-   off the extension.
-
-** Calling Lisp
-
-   The following two commands seem to be the same:
-
-#+BEGIN_EXAMPLE
-$ (message "Hello")
-$ message "Hello"
-#+END_EXAMPLE
-
-   In other words, you can just call Emacs functions through a
-   lispy-approach, or with a more shell-ish. However, you can not do
-   non-Emacs functions, like =echo=, in parens.
-
-** Interacting with Emacs
-
-   The following command will append the list of files at the end of this
-   buffer (remember to not use a single =>= or the buffer will be overwritten.
-
-#+BEGIN_EXAMPLE
-ls >> #<buffer emacs-eshell.org>
-#+END_EXAMPLE
-
-   Remember that piping to =/etc/clip= will put the output into the clipboard.
+some significant differences to address. To this end, I [[http://www.howardism.org/Technical/Emacs/eshell-fun.html][documented most features]].
 
 * Eshell-Specific Packages
 
-  While EShell is built into the Emacs (and has been for
-  freakin'ever), I have a few packages I think would be nice to use.
+  While EShell is built into the Emacs, I want to always install [[*Stack%20the%20Buffer][esh-buf-stack]].
 
-#+BEGIN_SRC elisp
-  (packages-install '( esh-buf-stack
-                       ))
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (packages-install '( esh-buf-stack ))
+  #+END_SRC
 
 * Basics
 
@@ -76,72 +21,57 @@ ls >> #<buffer emacs-eshell.org>
 
    Need the correct PATH even if we start Emacs from the GUI:
 
-#+BEGIN_SRC elisp
-  (setenv "PATH"
-          (concat
-           "/usr/local/bin:/usr/local/sbin:"
-           (getenv "PATH")))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (setenv "PATH"
+             (concat
+              "/usr/local/bin:/usr/local/sbin:"
+              (getenv "PATH")))
+   #+END_SRC
 
 ** Pager Setup
 
    If any program wants to pause the output through the =$PAGER=
    variable, well, we don't really need that:
 
-#+BEGIN_SRC elisp
-  (setenv "PAGER" "cat")
-#+END_SRC
-
-   For my money, I like to output stuff to a separate buffer, but the
-   syntax is a bit cumbersome, so I set the default, allowing me to
-   run a command and output the results to #'blah
-
    #+BEGIN_SRC elisp
-   (setq eshell-buffer-shorthand t)
+     (setenv "PAGER" "cat")
    #+END_SRC
 
 * Aliases
 
-   Gotta have some [[http://www.emacswiki.org/emacs/EshellAlias][shell aliases]], right?
+  Gotta have some [[http://www.emacswiki.org/emacs/EshellAlias][shell aliases]], right?
 
-#+BEGIN_SRC elisp
-  (defalias 'e 'find-file)
-  (defalias 'ff 'find-file)
-  (defalias 'emacs 'find-file)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (defalias 'e 'find-file)
+    (defalias 'ff 'find-file)
+    (defalias 'emacs 'find-file)
+  #+END_SRC
 
-   Replacing the window with the new buffer may not be what I want.
+  Replacing the window with the new buffer may not be what I want.
 
-#+BEGIN_SRC elisp
-  (defalias 'ee 'find-file-other-window)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (defalias 'ee 'find-file-other-window)
+  #+END_SRC
 
-   Pull up dired, but without parameters, just use the current directory.
+  Pull up dired, but without parameters, just use the current directory.
 
-#+BEGIN_SRC elisp
-  (defun eshell/d (&rest args)
-    (dired (pop args) "."))
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (defun eshell/d (&rest args)
+      (dired (pop args) "."))
+  #+END_SRC
 
-   Some of my favorite bash aliases, can be even more helpful in
-   Eshell. Like ‘ll’:
+  Some of my favorite bash aliases, can be even more helpful in
+  Eshell. Like ‘ll’:
 
-   #+BEGIN_SRC elisp
-     (add-hook 'eshell-mode-hook
-               (lambda ()
-                 ;; The 'ls' executable requires the Gnu version on the Mac
-                 (let ((ls (if (file-exists-p "/usr/local/bin/gls")
-                               "/usr/local/bin/gls"
-                             "/bin/ls")))
-                   (eshell/alias "ll" (concat ls " -AlohG --color=always")))))
-   #+END_SRC
-
-   To make things more consistent between different hosts, I will
-   prefer the internal Emacs Eshell commands to the external versions.
-
-   #+BEGIN_SRC elisp
-     (setq eshell-prefer-lisp-functions t)
-   #+END_SRC
+  #+BEGIN_SRC elisp
+    (add-hook 'eshell-mode-hook
+              (lambda ()
+                ;; The 'ls' executable requires the Gnu version on the Mac
+                (let ((ls (if (file-exists-p "/usr/local/bin/gls")
+                              "/usr/local/bin/gls"
+                            "/bin/ls")))
+                  (eshell/alias "ll" (concat ls " -AlohG --color=always")))))
+  #+END_SRC
 
 ** Git
 
@@ -149,47 +79,47 @@ ls >> #<buffer emacs-eshell.org>
    =alias= doesn't pull in the current working directory, so I make it
    a function, instead:
 
-#+BEGIN_SRC elisp
-  (defun eshell/gst (&rest args)
-      (magit-status (pop args) nil)
-      (eshell/echo))   ;; The echo command suppresses output
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (defun eshell/gst (&rest args)
+         (magit-status (pop args) nil)
+         (eshell/echo))   ;; The echo command suppresses output
+   #+END_SRC
 
    What about =gd= to call the Diff command?
 
-#+BEGIN_SRC elisp
-(defalias 'gd 'magit-diff-unstaged)
-(defalias 'gds 'magit-diff-staged)
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (defalias 'gd 'magit-diff-unstaged)
+     (defalias 'gds 'magit-diff-staged)
+   #+END_SRC
 
 ** Find File
 
    We should have an "f" alias for searching the current directory for
    a file, and a "ef" for editing that file.
 
-#+BEGIN_SRC elisp
-  (defun eshell/f (filename &optional dir)
-    "Searches in the current directory for files that match the
-  given pattern. A simple wrapper around the standard 'find'
-  function."
-    (let ((cmd (concat
-                "find " (or dir ".")
-                "      -not -path '*/.git*'"
-                " -and -not -path '*node_modules*'"
-                " -and -not -path '*classes*'"
-                " -and "
-                " -type f -and "
-                "-iname '" filename "'")))
-      (message cmd)
-      (shell-command-to-string cmd)))
+   #+BEGIN_SRC elisp
+     (defun eshell/f (filename &optional dir)
+       "Searches in the current directory for files that match the
+     given pattern. A simple wrapper around the standard 'find'
+     function."
+       (let ((cmd (concat
+                   "find " (or dir ".")
+                   "      -not -path '*/.git*'"
+                   " -and -not -path '*node_modules*'"
+                   " -and -not -path '*classes*'"
+                   " -and "
+                   " -type f -and "
+                   "-iname '" filename "'")))
+         (message cmd)
+         (shell-command-to-string cmd)))
 
-  (defun eshell/ef (filename &optional dir)
-    "Searches for the first matching filename and loads it into a
-  file to edit."
-    (let* ((files (eshell/f filename dir))
-           (file (car (s-split "\n" files))))
-      (find-file file)))
-#+END_SRC
+     (defun eshell/ef (filename &optional dir)
+       "Searches for the first matching filename and loads it into a
+     file to edit."
+       (let* ((files (eshell/f filename dir))
+              (file (car (s-split "\n" files))))
+         (find-file file)))
+   #+END_SRC
 
    Typing =find= in Eshell runs the =find= function, which doesn’t do
    what I expect, and creating an alias is ineffective in overriding
@@ -202,29 +132,74 @@ ls >> #<buffer emacs-eshell.org>
          (shell-command-to-string cmd)))
    #+END_SRC
 
+* Predicate Filters and Modifiers
+
+  The =T= predicate filter allows me to limit file results that have
+  have internal =org-mode= tags. For instance, files that have a
+  =#+TAGS:= header with a =mac= label will be given to the =grep=
+  function:
+
+  #+BEGIN_SRC sh
+     $ grep brew *.org(T'mac')
+  #+END_SRC
+
+  To extend Eshell, we need a two-part function.
+  1. Parse the Eshell buffer to look for the parameter
+     (and move the point past the parameter).
+  2. A predicate function that takes a file as a parameter.
+
+  For the first step, we have our function /called/ as it helps
+  /parse/ the text at this time.  Based on what it sees, it returns
+  the predicate function used to filter the files:
+
+  #+BEGIN_SRC elisp
+    (defun eshell-org-file-tags ()
+      "Helps the eshell parse the text the point is currently on,
+    looking for parameters surrounded in single quotes. Returns a
+    function that takes a FILE and returns nil if the file given to
+    it doesn't contain the org-mode #+TAGS: entry specified."
+
+      (if (looking-at "'\\([^)']+\\)'")
+          (let* ((tag (match-string 1))
+                 (reg (concat "^#\\+TAGS:.* " tag "\\b")))
+            (goto-char (match-end 0))
+
+            `(lambda (file)
+               (with-temp-buffer
+                 (insert-file-contents file)
+                 (re-search-forward ,reg nil t 1))))
+        (error "The `T' predicate takes an org-mode tag value in single quotes.")))
+  #+END_SRC
+
+  Add it to the =eshell-predicate-alist= as the =T= tag:
+
+  #+BEGIN_SRC elisp
+    (add-to-list 'eshell-predicate-alist '(?T . (eshell-org-file-tags)))
+  #+END_SRC
+
 * Visual Executables
 
-   Eshell would get somewhat confused if I ran the following commands
-   directly through the normal Elisp library, as these need the better
-   handling of ansiterm:
+  Eshell would get somewhat confused if I ran the following commands
+  directly through the normal Elisp library, as these need the better
+  handling of ansiterm:
 
-#+BEGIN_SRC elisp
-  (add-hook 'eshell-mode-hook
-     (lambda ()
-        (add-to-list 'eshell-visual-commands "ssh")
-        (add-to-list 'eshell-visual-commands "tail")))
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (add-hook 'eshell-mode-hook
+       (lambda ()
+          (add-to-list 'eshell-visual-commands "ssh")
+          (add-to-list 'eshell-visual-commands "tail")))
+  #+END_SRC
 
 * Ignoring Directories
 
-   Great shell with some good tweaks taken from [[https://github.com/eschulte/emacs24-starter-kit/blob/master/starter-kit-eshell.org][the Starter Kit]]
-   project. Ignoring the =.git= directories seem like a good idea.
+  Great shell with some good tweaks taken from [[https://github.com/eschulte/emacs24-starter-kit/blob/master/starter-kit-eshell.org][the Starter Kit]]
+  project. Ignoring the =.git= directories seem like a good idea.
 
-#+BEGIN_SRC elisp :tangle no
-  (setq eshell-cmpl-cycle-completions nil
-        eshell-save-history-on-exit t
-        eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
-#+END_SRC
+  #+BEGIN_SRC elisp :tangle no
+    ((setq  )etq eshell-cmpl-cycle-completions nil
+          eshell-save-history-on-exit t
+          eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
+  #+END_SRC
 
 * Special Prompt
 
@@ -291,10 +266,10 @@ ls >> #<buffer emacs-eshell.org>
   Break up the directory into a "parent" and a "base":
 
   #+BEGIN_SRC elisp
-  (defun split-directory-prompt (directory)
-    (if (string-match-p ".*/.*" directory)
-        (list (file-name-directory directory) (file-name-base directory))
-      (list "" directory)))
+    (defun split-directory-prompt (directory)
+      (if (string-match-p ".*/.*" directory)
+          (list (file-name-directory directory) (file-name-base directory))
+        (list "" directory)))
   #+END_SRC
 
   Now tie it all together with a prompt function can color each of the
@@ -332,87 +307,93 @@ ls >> #<buffer emacs-eshell.org>
 
 * Stack the Buffer
 
-    One of the few things I miss about ZShell is the ability to easily
-    save off a half-finished command for later invocation. I now have
-    =M-q= functionality:
+  One of the few things I miss about ZShell is the ability to easily
+  save off a half-finished command for later invocation. I now have
+  =M-q= functionality with [[https://github.com/tom-tan/esh-buf-stack][esh-buf-stack]]:
 
-#+BEGIN_SRC elisp
-  (when (require 'esh-buf-stack nil t)
-    (setup-eshell-buf-stack)
-    (add-hook 'eshell-mode-hook
-              (lambda () (local-set-key (kbd "M-q") 'eshell-push-command))))
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (when (require 'esh-buf-stack nil t)
+      (setup-eshell-buf-stack)
+      (add-hook 'eshell-mode-hook
+                (lambda () (local-set-key (kbd "M-q") 'eshell-push-command))))
+  #+END_SRC
+
+  If half-way through typing a long command and need something else,
+  just =M-q= to hide it, type the new command, and continue where I
+  left off.
 
 * Shell Here
 
   If I make an alias that closes a window easily, I can have a quick
   "x" alias that quickly exits and [[file:emacs.org::*Macintosh][closes the window]].
 
-#+BEGIN_SRC elisp
-  (defun eshell/x ()
-    "Closes the EShell session and gets rid of the EShell window."
-    (kill-buffer)
-    (delete-window))
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (defun eshell/x ()
+      "Closes the EShell session and gets rid of the EShell window."
+      (kill-buffer)
+      (delete-window))
+  #+END_SRC
 
   Now making little Shells whenever I need them makes sense:
 
-#+BEGIN_SRC elisp
-  (defun eshell-here ()
-    "Opens up a new shell in the directory associated with the
-  current buffer's file. The eshell is renamed to match that
-  directory to make multiple eshell windows easier."
-    (interactive)
-    (let* ((parent (if (buffer-file-name)
-                       (file-name-directory (buffer-file-name))
-                     default-directory))
-           (height (/ (window-total-height) 3))
-           (name   (car (last (split-string parent "/" t)))))
-      (split-window-vertically (- height))
-      (other-window 1)
-      (eshell "new")
-      (rename-buffer (concat "*eshell: " name "*"))
+  #+BEGIN_SRC elisp
+    (defun eshell-here ()
+      "Opens up a new shell in the directory associated with the
+    current buffer's file. The eshell is renamed to match that
+    directory to make multiple eshell windows easier."
+      (interactive)
+      (let* ((parent (if (buffer-file-name)
+                         (file-name-directory (buffer-file-name))
+                       default-directory))
+             (height (/ (window-total-height) 3))
+             (name   (car (last (split-string parent "/" t)))))
+        (split-window-vertically (- height))
+        (other-window 1)
+        (eshell "new")
+        (rename-buffer (concat "*eshell: " name "*"))
 
-      (insert (concat "ls"))
-      (eshell-send-input)))
+        (insert (concat "ls"))
+        (eshell-send-input)))
 
-  (global-set-key (kbd "C-!") 'eshell-here)
-#+END_SRC
+    (global-set-key (kbd "C-!") 'eshell-here)
+  #+END_SRC
 
 * Better Command Line History
 
   On [[http://www.reddit.com/r/emacs/comments/1zkj2d/advanced_usage_of_eshell/][this discussion]] a little gem for using IDO to search back through
-  the history, instead of =M-r=. Also, while =M-p= cycles through the
-  history, =M-P= actually moves up the history in the buffer. Seems
-  reasonable.
+  the history, instead of =M-R= to display the history in a selectable
+  buffer.
 
-#+BEGIN_SRC elisp
-  (add-hook 'eshell-mode-hook
-            (lambda ()
-              (local-set-key (kbd "M-P") 'eshell-previous-prompt)
-              (local-set-key (kbd "M-N") 'eshell-next-prompt)
-              (local-set-key (kbd "M-r")
-                     (lambda ()
-                       (interactive)
-                       (insert
-                        (ido-completing-read "Eshell history: "
-                                 (delete-dups
-                                  (ring-elements eshell-history-ring))))))
-              (local-set-key (kbd "M-S-r") 'eshell-list-history)))
-#+END_SRC
+  Also, while =M-p= cycles through the history, =M-P= actually moves
+  up the history in the buffer (easier than =C-c p= and =C-c n=?):
+
+  #+BEGIN_SRC elisp
+    (add-hook 'eshell-mode-hook
+         (lambda ()
+           (local-set-key (kbd "M-P") 'eshell-previous-prompt)
+           (local-set-key (kbd "M-N") 'eshell-next-prompt)
+           (local-set-key (kbd "M-R") 'eshell-list-history)
+           (local-set-key (kbd "M-r")
+                  (lambda ()
+                    (interactive)
+                    (insert
+                     (ido-completing-read "Eshell history: "
+                                          (delete-dups
+                                           (ring-elements eshell-history-ring))))))))
+  #+END_SRC
 
 * Smarter Shell
 
-  After reading Mickey's [[http://www.masteringemacs.org/articles/2010/12/13/complete-guide-mastering-eshell/][Mastering EShell]] article, I like the /smart/
-  approach where the cursor stays on the command (where it can be
-  re-edited). Sure, it takes a little while to get used to...
+  After reading Mickey Petersen's [[http://www.masteringemacs.org/articles/2010/12/13/complete-guide-mastering-eshell/][Mastering EShell]] article, I like the
+  /smart/ approach where the cursor stays on the command (where it can
+  be re-edited). Sure, it takes a little while to get used to...
 
-#+BEGIN_SRC elisp
-  (require 'em-smart)
-  (setq eshell-where-to-jump 'begin)
-  (setq eshell-review-quick-commands nil)
-  (setq eshell-smart-space-goes-to-end t)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (require 'em-smart)
+    (setq eshell-where-to-jump 'begin)
+    (setq eshell-review-quick-commands nil)
+    (setq eshell-smart-space-goes-to-end t)
+  #+END_SRC
 
 * Helpers
 
@@ -421,38 +402,36 @@ ls >> #<buffer emacs-eshell.org>
   =Command-1= will prompt for a shell command string and then append
   the current file to it and execute it.
 
-#+BEGIN_SRC elisp
-  (defun execute-command-on-file-buffer (cmd)
-    (interactive "sCommand to execute: ")
-    (let* ((file-name (buffer-file-name))
-           (full-cmd (concat cmd " " file-name)))
-      (shell-command full-cmd)))
+  #+BEGIN_SRC elisp
+    (defun execute-command-on-file-buffer (cmd)
+      (interactive "sCommand to execute: ")
+      (let* ((file-name (buffer-file-name))
+             (full-cmd (concat cmd " " file-name)))
+        (shell-command full-cmd)))
 
-  (defun execute-command-on-file-directory (cmd)
-    (interactive "sCommand to execute: ")
-    (let* ((dir-name (file-name-directory (buffer-file-name)))
-           (full-cmd (concat "cd " dir-name "; " cmd)))
-      (shell-command full-cmd)))
+    (defun execute-command-on-file-directory (cmd)
+      (interactive "sCommand to execute: ")
+      (let* ((dir-name (file-name-directory (buffer-file-name)))
+             (full-cmd (concat "cd " dir-name "; " cmd)))
+        (shell-command full-cmd)))
 
-  (global-set-key (kbd "A-1") 'execute-command-on-file-buffer)
-  (global-set-key (kbd "A-!") 'execute-command-on-file-directory)
-#+END_SRC
+    (global-set-key (kbd "A-1") 'execute-command-on-file-buffer)
+    (global-set-key (kbd "A-!") 'execute-command-on-file-directory)
+  #+END_SRC
+
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.
 
-#+BEGIN_SRC elisp
-  (provide 'init-eshell)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (provide 'init-eshell)
+  #+END_SRC
 
-  Before you can build this on a new system, make sure that you put
-  the cursor over any of these properties, and hit: =C-c C-c=
-
-#+DESCRIPTION: A literate programming version of my Emacs Initialization of Eshell
-#+PROPERTY:    results silent
-#+PROPERTY:    tangle ~/.emacs.d/elisp/init-eshell.el
-#+PROPERTY:    eval no-export
-#+PROPERTY:    comments org
-#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
-#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
-#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+  #+DESCRIPTION: A literate programming version of my Emacs Initialization of Eshell
+  #+PROPERTY:    results silent
+  #+PROPERTY:    tangle ~/.emacs.d/elisp/init-eshell.el
+  #+PROPERTY:    eval no-export
+  #+PROPERTY:    comments org
+  #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+  #+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+  #+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
