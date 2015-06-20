@@ -1,0 +1,103 @@
+#+TITLE:  Networking Support
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2015 May 27
+#+TAGS:   technical networking linux
+#+PROPERTY: header-args :results output
+
+This is part of my Library of Babel collection. Remember to hit the
+=C-c C-v i= to add these sections.
+
+* ifconfig
+
+  The =ifconfig= program displays all the important information, just
+  in the wrong format. Let’s fix that. First, let’s retrieve the
+  results:
+
+  #+NAME: ifconfig-data
+  #+BEGIN_SRC sh :results drawer
+  ifconfig -a
+  #+END_SRC
+
+  #+RESULTS: ifconfig-data
+  :RESULTS:
+  eth0      Link encap:Ethernet  HWaddr 08:00:27:d1:ac:10
+            inet addr:10.0.2.15  Bcast:10.0.2.255  Mask:255.255.255.0
+            inet6 addr: fe80::a00:27ff:fed1:ac10/64 Scope:Link
+            UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+            RX packets:890499 errors:0 dropped:0 overruns:0 frame:0
+            TX packets:728766 errors:0 dropped:0 overruns:0 carrier:0
+            collisions:0 txqueuelen:1000
+            RX bytes:447493268 (447.4 MB)  TX bytes:195996299 (195.9 MB)
+
+  eth1      Link encap:Ethernet  HWaddr 08:00:27:46:62:4a
+            inet addr:10.0.1.190  Bcast:10.0.1.255  Mask:255.255.255.0
+            inet6 addr: fe80::a00:27ff:fe46:624a/64 Scope:Link
+            UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+            RX packets:650949 errors:0 dropped:1354 overruns:0 frame:0
+            TX packets:95436 errors:0 dropped:0 overruns:0 carrier:0
+            collisions:0 txqueuelen:1000
+            RX bytes:154817673 (154.8 MB)  TX bytes:12490071 (12.4 MB)
+
+  lo        Link encap:Local Loopback
+            inet addr:127.0.0.1  Mask:255.0.0.0
+            inet6 addr: ::1/128 Scope:Host
+            UP LOOPBACK RUNNING  MTU:65536  Metric:1
+            RX packets:571871 errors:0 dropped:0 overruns:0 frame:0
+            TX packets:571871 errors:0 dropped:0 overruns:0 carrier:0
+            collisions:0 txqueuelen:0
+            RX bytes:68459036 (68.4 MB)  TX bytes:68459036 (68.4 MB)
+
+  :END:
+
+  Now we can use analyze each line (with the =split-string=)
+  and then pulls out either the interface or the address.
+  The =cl-loop= takes each tuple and collects it into a
+  two-dimensional list to make the table.
+
+  #+NAME: ifconfig-display
+  #+BEGIN_SRC elisp :var out=ifconfig-data :results value
+  (cl-loop for (k v) on
+           (delq nil (mapcar (lambda (line)
+                               (cond
+                                ((string-match "^\\([^ ]+\\) " line)
+                                 (match-string 1 line))
+                                ((string-match "inet addr:\\([0-9.]+\\)" line)
+                                 (match-string 1 line))))
+                             (split-string out "\n")))
+           by 'cddr collect (list k v))
+  #+END_SRC
+
+  #+RESULTS: ifconfig-display
+  | eth0 |  10.0.2.15 |
+  | eth1 | 10.0.1.190 |
+  | lo   |  127.0.0.1 |
+
+  Now we can have something to call:
+
+  #+NAME: ifconfig
+  #+BEGIN_SRC sh :post ifconfig-display(out=*this*) :results output
+    ifconfig -a
+  #+END_SRC
+
+* Network Scan
+
+  #+NAME: network-scan
+  #+BEGIN_SRC sh :var cidr="10.0.1.0/24"
+    nmap -sP $cidr | egrep -o '[0-9.]+[0-9]$'
+  #+END_SRC
+
+  #+RESULTS: network-scan
+  #+begin_example
+  10.0.1.1
+  10.0.1.60
+  10.0.1.157
+  10.0.1.158
+  10.0.1.161
+  10.0.1.163
+  10.0.1.178
+  10.0.1.185
+  10.0.1.190
+  10.0.1.193
+  10.0.1.197
+#+end_example
