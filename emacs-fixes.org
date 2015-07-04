@@ -283,6 +283,7 @@ ever do that?
         (move-beginning-of-line 1))))
 
   ;; remap C-a to `smarter-move-beginning-of-line'
+  ;; however, this doesn't work in org-mode's `org-beginning-of-line'
   (global-set-key [remap move-beginning-of-line]
                   'smarter-move-beginning-of-line)
 #+END_SRC
