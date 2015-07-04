@@ -73,6 +73,14 @@ some significant differences to address. To this end, I [[http://www.howardism.o
                   (eshell/alias "ll" (concat ls " -AlohG --color=always")))))
   #+END_SRC
 
+   I can never seem to remember that =find= and =chmod= behave
+   differently from Emacs than their Unix counterparts, so at this
+   time, I will prefer the native implementations.
+
+   #+BEGIN_SRC elisp
+     (setq eshell-prefer-lisp-functions nil)
+   #+END_SRC
+
 ** Git
 
    My =gst= command is just an alias to =magit-status=, but using the
