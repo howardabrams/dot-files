@@ -380,6 +380,12 @@ Emacs love affair. Make sure the latest packages are installed:
 
 * Export Settings
 
+  Seems some change now requires a direct load of HTML:
+
+  #+BEGIN_SRC elisp
+   (require 'ox-html)
+  #+END_SRC
+
     To make the =org-mode= export defaults closer to my liking
     (without having to put specific #+PROPERTY commands), I get rid of
     the postamble, and then configure the default fonts.
@@ -455,7 +461,7 @@ Emacs love affair. Make sure the latest packages are installed:
 
    #+BEGIN_SRC elisp
       (when (require 'ox-reveal nil t)
-        (setq org-reveal-root (concat "file://" (getenv "HOME") "/Public/reveal.js"))
+        (setq org-reveal-root (concat "file://" (getenv "HOME") "/Public/js/reveal.js"))
         (setq org-reveal-postamble "Howard Abrams"))
    #+END_SRC
 
