@@ -31,7 +31,7 @@
        (concat (getenv "HOME") (substring str 1)))
 
     ;; Variables can either be simple $BLAH or ${some-larger}...
-    (let ((s (or (string-match "${\\([^ ]*\\)}" str)
+    (let ((s (or (string-match "${\\([^ }]*\\)}" str)
                  (string-match "$\\([A-z_]*\\)" str)))
           (e (match-end 0)))
       (if (not s)             ; No $ matches?
