@@ -171,7 +171,6 @@
                    dired-details
                    color-identifiers-mode  ;; Color variables differently
                    epl
-                   env-var-import
                    esh-buf-stack
                    expand-region
                    flx
@@ -2036,24 +2035,12 @@
 
 ** Setting up the Exec Path
 
-   Make sure that =PATH= variable for finding binary files can
-   is the same as what Emacs will look for binary files. To do that,
-   we use the [[https://github.com/ajsquared/env-var-import][env-var-import]] project.
+   Make sure that =PATH= variable for finding binary files can is the
+   same as what Emacs will look for binary files. This little magic,
+   starts up a shell, gets its path, and then uses that for the
+   =exec-path=:
 
-   By default, it will only import the value of the environment
-   variable defined in =env-var-import-exec-path-var= and set
-   =exec-path= to that value. =env-var-import-exec-path-var= defaults
-   to =PATH= but is customizable.
-
-  #+BEGIN_SRC elisp
-  (require 'env-var-import)
-  (env-var-import)
-  #+END_SRC
-
-   If the =env-var-import= project isn't installed, I need to do that by
-   hand using the following code:
-
-   #+BEGIN_SRC elisp :tangle no
+   #+BEGIN_SRC elisp
      (when window-system
        (let ((path-from-shell (shell-command-to-string "/bin/bash -l -c 'echo $PATH'")))
          (setenv "PATH" path-from-shell)
