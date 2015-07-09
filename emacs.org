@@ -177,7 +177,6 @@
                    flx-ido
                    flycheck
                    flycheck-color-mode-line
-                   ggtags
                    git-blame
                    git-gutter-fringe
                    gitconfig-mode
@@ -1566,54 +1565,42 @@
 
 * Programming Languages
 
-  All programming languages require some sort of tagging. I am now
-  using [[http://www.gnu.org/software/global/][Gnu Global]], and the [[https://github.com/leoliu/ggtags#install-global-and-plugins][ggtags]] interface. Looks like I need
-  [[http://ctags.sourceforge.net][Exuberant Ctags]], but I can install with Homebrew:
+  All programming languages require some sort of tagging. but after
+  thirty years, we are still using good ol’ ctags...well,
+  [[http://ctags.sourceforge.net][Exuberant Ctags]].   Install with Homebrew:
 
   #+BEGIN_SRC sh :tangle no
     brew install --HEAD ctags
   #+END_SRC
 
-  While Homebrew contains Gnu Global, the version doesn’t include the
-  Exuberant Ctags option, so I need to install with that option:
-
-  #+BEGIN_SRC sh :tangle no
-    brew install global --with-exuberant-ctags
-  #+END_SRC
-
   On Ubuntu Linux, do:
 
   #+BEGIN_SRC sh :tangle no
-    sudo apt-get install -y exuberant-ctags global
+    sudo apt-get install -y exuberant-ctags
   #+END_SRC
 
-  If not, copy the configuration, and [[file:~/.globalrc][edit it]]:
+  *Note:* for every project, run the following command:
 
   #+BEGIN_SRC sh :tangle no
-    cp /usr/local/etc/gtags.conf $HOME/.globalrc
-  #+END_SRC
-
-  Finally, turn it on for every programming mode:
-
-  #+BEGIN_SRC elisp
-  (add-hook 'prog-mode-hook
-          (lambda ()
-              (ggtags-mode 1)))
+    ctags -e -R .
   #+END_SRC
 
   Now, use the following keys:
 
-  - M-. To find the tag at point to jump to the function’s definition when
-    the point is over a function call. It is a dwim-type function.
-  - M-, (pop-tag-mark) – jump back to where you were.
-  - M-? (=find-tag=) – find a tag, that is, use the Tags file to look
-    up a definition. If there are multiple tags in the project with
-    the same name, use `C-u M-.’ to go to the next match.
-  - M-x tags-search – regexp-search through the source files indexed
-    by a tags file (a bit like =grep=)
-  - M-x tags-query-replace – query-replace through the source files indexed by a tags file
-  - M-x tags-apropos – list all tags in a tags file that match a regexp
-  - M-x list-tags – list all tags defined in a source file
+  - M-. :: To find the tag at point to jump to the function’s
+           definition when the point is over a function call. It is a
+           dwim-type function.
+  - M-, :: jump back to where you were.
+  - M-? :: find a tag, that is, use the Tags file to look up a
+           definition. If there are multiple tags in the project with
+           the same name, use `C-u M-.’ to go to the next match.
+  - =M-x tags-search= :: regexp-search through the source files
+       indexed by a tags file (a bit like =grep=)
+  - =M-x tags-query-replace= :: query-replace through the source files
+       indexed by a tags file
+  - =M-x tags-apropos= :: list all tags in a tags file that match a
+       regexp
+  - =M-x list-tags= :: list all tags defined in a source file
 
   Other helpful movement commands I need to remember:
 
@@ -1817,7 +1804,7 @@
    Temporarily drop into Magit while looking at the file system
    (through the standard =load-file=) without actually loading a file.
 
-   #+BEGIN_SRC elisp
+   #+BEGIN_SRC elisp :tangle no
      (define-key ido-completion-map
        (kbd "C-x g") 'ido-enter-magit-status)
    #+END_SRC
