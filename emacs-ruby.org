@@ -9,17 +9,17 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
 
 * Ruby Installation
 
-  I like having everything Ruby controlled by [[https://github.com/sstephenson/rbenv][rbenv]]. I install it with [[https://github.com/sstephenson/rbenv#homebrew-on-mac-os-x][Homebrew]]:
+  I like having everything Ruby controlled by [[https://rvm.io/][RVM]]:
 
   #+BEGIN_SRC sh
-  brew install rbenv ruby-build
+    curl -sSL https://get.rvm.io | bash -s stable
   #+END_SRC
 
   And then install a Ruby version and set it to be used globally:
 
   #+BEGIN_SRC sh
-    rbenv install 1.9.3-p550
-    rbenv global 1.9.3-p550
+    rvm install 1.9.3-p550
+    rvm use 1.9.3-p550
   #+END_SRC
 
   See the [[#ruby-virtual-manager][Ruby Virtual Manager]] section below.
@@ -93,28 +93,15 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
 
 * Ruby Virtual Manager
 
-  Using the [[https://github.com/senny/rbenv.el][RBEnv integration]] for Emacs, but I typically do not
-  install its world in my home directory, so this needs to be set
-  first:
+  Using [[https://github.com/senny/rvm.el][RVM integration]] for Emacs:
 
   #+BEGIN_SRC elisp
-    (setq rbenv-executable "/usr/local/bin/rbenv")
-    (setq rbenv-installation-dir "/usr/local/var/rbenv")
-  #+END_SRC
-
-  Then load and configure the interface:
-
-  #+BEGIN_SRC elisp
-    (when (require 'rbenv nil t)
-      (global-rbenv-mode)
-      (rbenv-use-global)
-
-      (define-key personal-global-map (kbd "R")
-                  'rbenv-use-corresponding))
+    (when (require 'rvm nil t)
+      (rvm-use-default))
   #+END_SRC
 
   When jumping from project to project, need to run the command:
-  =rbenv-use= ... which must be done before starting an Eshell (that
+  =rvm-use= ... which must be done before starting an Eshell (that
   is, if you’re into that sort of thing).
 
 * Ruby Functional Doc
