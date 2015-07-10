@@ -170,6 +170,7 @@
                    company-math
                    dired-details
                    color-identifiers-mode  ;; Color variables differently
+                   ctags-update
                    epl
                    esh-buf-stack
                    expand-region
@@ -1583,6 +1584,15 @@
 
   #+BEGIN_SRC sh :tangle no
     ctags -e -R .
+  #+END_SRC
+
+  However, with the fancy new [[https://marmalade-repo.org/packages/ctags-update][ctags-update]] package, this happens
+  whenever we save a file:
+
+  #+BEGIN_SRC elisp
+    (autoload 'turn-on-ctags-auto-update-mode
+      "ctags-update" "turn on `ctags-auto-update-mode'." t)
+    (add-hook 'c-mode-common-hook  'turn-on-ctags-auto-update-mode)
   #+END_SRC
 
   Now, use the following keys:
