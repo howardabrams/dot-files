@@ -54,6 +54,8 @@ phrases I want to type a bit too often.
   actually become a prefix, so a little closure should do the trick:
 
   #+BEGIN_SRC elisp
+  (require 'cl)
+
   (defun ha/insert (ch)
     (lexical-let ((chr ch))
        (lambda () (interactive) (insert chr))))

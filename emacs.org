@@ -164,6 +164,7 @@
 #+BEGIN_SRC elisp
   (packages-install
                  '(ack-and-a-half
+                   ace-jump-mode
                    avy
                    company
                    company-quickhelp
@@ -517,15 +518,14 @@
    Better jumping around the buffer with [[https://github.com/winterTTr/ace-jump-mode][ace-jump-mode]] and friends.
 
    #+BEGIN_SRC elisp
-     (require 'ace-jump-mode)
+     (when (require 'ace-jump-mode nil t)
+       (global-set-key (kbd "C-c SPC") 'ace-jump-mode)
+       (global-set-key (kbd "C-c C-SPC") 'ace-jump-mode-pop-mark)
 
-     (global-set-key (kbd "C-c SPC") 'ace-jump-mode)
-     (global-set-key (kbd "C-c C-SPC") 'ace-jump-mode-pop-mark)
-
-     (global-set-key (kbd "M-s s") 'ace-jump-mode)   ;; Needed for org-mode files
-     (global-set-key (kbd "M-s a") 'avi-goto-char)
-     (global-set-key (kbd "M-s w") 'avi-goto-word-1)
-     (global-set-key (kbd "M-s l") 'avi-goto-line)
+       (global-set-key (kbd "M-s s") 'ace-jump-mode)   ;; Needed for org-mode files
+       (global-set-key (kbd "M-s a") 'avi-goto-char)
+       (global-set-key (kbd "M-s w") 'avi-goto-word-1)
+       (global-set-key (kbd "M-s l") 'avi-goto-line))
    #+END_SRC
 
   - =C-c SPC= ... =ace-jump-word-mode=
