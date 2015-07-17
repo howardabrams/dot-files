@@ -182,8 +182,13 @@ some significant differences to address. To this end, I [[http://www.howardism.o
   Add it to the =eshell-predicate-alist= as the =T= tag:
 
   #+BEGIN_SRC elisp
-    (add-to-list 'eshell-predicate-alist '(?T . (eshell-org-file-tags)))
+    (add-hook 'eshell-pred-load-hook (lambda ()
+      (add-to-list 'eshell-predicate-alist '(?T . (eshell-org-file-tags)))))
   #+END_SRC
+
+  *Note:* We can’t add it to the list until after we start our first
+  eshell session, so we just add it to the =eshell-pred-load-hook=
+  which is sufficient.
 
 * Visual Executables
 
