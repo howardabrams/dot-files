@@ -5,8 +5,17 @@
 #+TAGS:   emacs clojure
 
 Me like [[http://clojure.org][Clojure]], and since it is a LISP, then [[https://github.com/clojure-emacs][Emacs likes it]] too.
-Here are all the packages related to Clojure that I use. Note
-my migration from [[https://github.com/clojure-emacs/nrepl.el][nrepl]] to [[https://github.com/clojure-emacs/cider][Cider]].
+Here are all the packages related to Clojure that I use. *Note:* Since
+I use [[https://github.com/clojure-emacs/cider][Cider]] for all projects, I place the following in
+=~/.lein/profiles.clj=:
+
+#+BEGIN_SRC clojure
+  {:user {:plugins [[cider/cider-nrepl "0.10.0-SNAPSHOT"]
+                    [refactor-nrepl "1.2.0-SNAPSHOT"]]
+          :dependencies [[org.clojure/tools.nrepl "0.2.7"]]}}
+#+END_SRC
+
+Since I’m using the latest of these tools, the version numbers change regularly.
 
 * Supporting Packages
 
@@ -491,7 +500,8 @@ my migration from [[https://github.com/clojure-emacs/nrepl.el][nrepl]] to [[http
   the cursor over any of these properties, and hit: =C-c C-c=
 
 #+DESCRIPTION: A literate programming version of my Emacs Initialization of Clojure
-#+PROPERTY: header-args   :results silent
+#+PROPERTY:    header-args   :results silent
+#+PROPERTY:    header-args:clojure   :tangle no
 #+PROPERTY:    tangle ~/.emacs.d/elisp/init-clojure.el
 #+PROPERTY:    eval no-export
 #+PROPERTY:    comments org
