@@ -56,18 +56,6 @@ my migration from [[https://github.com/clojure-emacs/nrepl.el][nrepl]] to [[http
 
 * Keystrokes
 
-  While learning Clojure, I find that jumping to the next __ phrase...
-
-  #+BEGIN_SRC elisp
-    (defun clojure-next-issue ()
-      (interactive)
-      (search-forward "__")
-      (set-mark (- (point) 2))
-      (setq mark-alive t))
-
-    (global-set-key (kbd "<f9> q") 'clojure-next-issue)
-  #+END_SRC
-
   I like the idea that we can evaluate an s-expression, and have the
   results embedded into the source code as a comment. Thanks to this
   [[http://eigenhombre.com/clojure/2014/07/05/emacs-customization-for-clojure/?utm_source%3Ddlvr.it&utm_medium%3Dtwitter][blog entry]] for the idea.
@@ -92,19 +80,33 @@ my migration from [[https://github.com/clojure-emacs/nrepl.el][nrepl]] to [[http
   showing the result in the mini-buffer:
 
   #+BEGIN_SRC elisp
-  (defun cider-send-and-evaluate-sexp ()
-     "Sends the s-expression located before the point or the active
-  region to the REPL and evaluates it. Then the Clojure buffer is
-  activated as if nothing happened."
-     (interactive)
-     (if (not (region-active-p))
-         (cider-insert-last-sexp-in-repl)
-       (cider-insert-in-repl
-        (buffer-substring (region-beginning) (region-end)) nil))
-     (cider-switch-to-repl-buffer)
-     (cider-repl-closing-return)
-     (cider-switch-to-last-clojure-buffer)
-     (message ""))
+    (defun cider-send-and-evaluate-sexp ()
+      "Sends the s-expression located before the point or the active
+      region to the REPL and evaluates it. Then the Clojure buffer is
+      activated as if nothing happened."
+      (interactive)
+      (if (not (region-active-p))
+          (cider-insert-last-sexp-in-repl)
+        (cider-insert-in-repl
+         (buffer-substring (region-beginning) (region-end)) nil))
+      (cider-switch-to-repl-buffer)
+      (cider-repl-closing-return)
+      (cider-switch-to-last-clojure-buffer)
+      (message ""))
+
+    (defun cider-eval-expression-at-point-in-repl ()
+      (interactive)
+      (let ((form (cider-defun-at-point)))
+        ;; Strip excess whitespace
+        (while (string-match "\\`\s+\\|\n+\\'" form)
+          (setq form (replace-match "" t t form)))
+        (set-buffer (cider-get-repl-buffer))
+        (goto-char (point-max))
+        (insert form)
+        (cider-repl-return)))
+
+    (define-key cider-mode-map
+      (kbd "C-;") 'cider-eval-expression-at-point-in-repl)
   #+END_SRC
 
   The M-e to go forward a sentence may be useful, but not during
@@ -158,8 +160,8 @@ my migration from [[https://github.com/clojure-emacs/nrepl.el][nrepl]] to [[http
      (when (fboundp 'global-prettify-symbols-mode)
        (defconst clojure--prettify-symbols-alist
          '(("fn"   . ?λ)
-           ("->"   . ?⤷)
-           ("->>"  . ?⤶)
+           ("->"   . ?⤷)  ;; Threading for the first (into left)
+           ("->>"  . ?⤶)  ;; Threading for the last item (from right)
            ("<="   . ?≤)
            (">="   . ?≥)
            ("=="   . ?≡)  ;; Do I like this?
@@ -173,8 +175,19 @@ my migration from [[https://github.com/clojure-emacs/nrepl.el][nrepl]] to [[http
   Most LISP-based programming is better with rainbow ponies:
 
   #+BEGIN_SRC elisp
-  (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
-  (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
+    (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
+    (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
+  #+END_SRC
+
+  But the only parens I really care about are the bad ones, so let’s
+  make all those rainbow colors disappear, leaving only the bad red
+  ones:
+
+  #+BEGIN_SRC elisp
+    (when (require 'rainbow-delimiters nil t)
+      (set-face-attribute 'rainbow-delimiters-unmatched-face nil
+                        :foreground 'unspecified
+                        :inherit 'error))
   #+END_SRC
 
 * Leiningen
