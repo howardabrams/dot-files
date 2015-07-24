@@ -40,21 +40,21 @@
 
    To "load" the contents of this file, add the following to =$HOME/.emacs=:
 
-#+BEGIN_EXAMPLE
-  ;; Load our Literate Programming version of our Dot Emacs
-  ;; file, from file: ~/Work/dot-files/emacs.org
-  (unless (boundp 'aquamacs-version)
-    (load-file "~/.emacs.d/elisp/init-main.el")
+   #+BEGIN_SRC elisp :tangle no
+     ;; Load our Literate Programming version of our Dot Emacs
+     ;; file, from file: ~/Work/dot-files/emacs.org
+     (unless (boundp 'aquamacs-version)
+      (load-file "~/.emacs.d/elisp/init-main.el")
 
-    (when (window-system)
-      (require 'init-client))
+      (when (window-system)
+        (require 'init-client))
 
-    (server-start))
-#+END_EXAMPLE
+      (server-start))
+   #+END_SRC
 
-   *Note:* I only load this from a "normal" Emacs distribution, which allows
-   me to play around with [[http://aquamacs.org/][Aquamacs]] and [[http://eschulte.github.io/emacs-starter-kit/][Starter Kits]] for recommendations
-   to people new to Emacs.
+   *Note:* I only load this from a "normal" Emacs distribution, which
+   allows me to play around with [[http://aquamacs.org/][Aquamacs]] and [[http://eschulte.github.io/emacs-starter-kit/][Starter Kits]] for
+   recommendations to people new to Emacs.
 
 * General Settings
 ** My Directory Location
@@ -77,40 +77,40 @@
    In case this is the first time running this on a computer, we need
    to make sure the following directories have been created.
 
-#+BEGIN_SRC elisp
-  (let* ((subdirs '("elisp" "backups" "snippets" "ac-dict"))
-         (fulldirs (mapcar (lambda (d) (ha/emacs-subdirectory d)) subdirs)))
-    (dolist (dir fulldirs)
-      (when (not (file-exists-p dir))
-        (message "Make directory: %s" dir)
-        (make-directory dir))))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (let* ((subdirs '("elisp" "backups" "snippets" "ac-dict"))
+            (fulldirs (mapcar (lambda (d) (ha/emacs-subdirectory d)) subdirs)))
+       (dolist (dir fulldirs)
+         (when (not (file-exists-p dir))
+           (message "Make directory: %s" dir)
+           (make-directory dir))))
+   #+END_SRC
 
 ** Customization Section
 
    While I would rather program my configurations, sometimes the Emacs
    menu system is "good enough", but I want it in its own file:
 
-#+BEGIN_SRC elisp
-  (setq custom-file (expand-file-name "custom.el" ha/emacs-directory))
-  (when (file-exists-p custom-file)
-    (load custom-file))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (setq custom-file (expand-file-name "custom.el" ha/emacs-directory))
+     (when (file-exists-p custom-file)
+       (load custom-file))
+   #+END_SRC
 
 ** Setting up the Load Path
 
    Extra packages not available via the package manager go in my
    personal stash at: =$HOME/.emacs.d/elisp=
 
-#+BEGIN_SRC elisp
-  (add-to-list 'load-path (ha/emacs-subdirectory "elisp"))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (add-to-list 'load-path (ha/emacs-subdirectory "elisp"))
+   #+END_SRC
 
    Load up my special collection of enhancements to Emacs Lisp:
 
    #+BEGIN_SRC elisp
-   (require 'init-support)
-   (require 'cl)
+     (require 'init-support)
+     (require 'cl)
    #+END_SRC
 
 * Package Initialization
@@ -121,86 +121,86 @@
    so conservative, we need to add more repositories to get all the
    sweet goodness, I demand.
 
-#+BEGIN_SRC elisp
-  (require 'package)
+   #+BEGIN_SRC elisp
+     (require 'package)
 
-  (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
-                           ("gnu"       . "http://elpa.gnu.org/packages/")
-                           ("melpa"     . "http://melpa.milkbox.net/packages/")
-                           ("marmalade" . "http://marmalade-repo.org/packages/")))
-#+END_SRC
+     (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
+                              ("gnu"       . "http://elpa.gnu.org/packages/")
+                              ("melpa"     . "http://melpa.milkbox.net/packages/")
+                              ("marmalade" . "http://marmalade-repo.org/packages/")))
+   #+END_SRC
 
    While we can now do a =package-list-packages=, you can install and
    everything is good, however, we can't =require= any of these
    packages (in order to customize them in this file) until we do
    this:
 
-#+BEGIN_SRC elisp
-  (package-initialize)
-  (package-refresh-contents)
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (package-initialize)
+     (package-refresh-contents)
+   #+END_SRC
 
    Not sure why the package management system doesn't come with a
    programmatic way to specify what packages should be installed. Oh
    yeah, this is pretty new. Looks like everyone just rolls there own,
    so this is mine.
 
-#+BEGIN_SRC elisp
-  (defun packages-install (packages)
-    "Given a list of packages, this will install them from the standard locations."
-    (let ((to-install (inverse-filter 'package-installed-p packages)))
-      (when to-install
-        (package-refresh-contents)
-        (dolist (it to-install)
-            (package-install it)
-        (delete-other-windows)))))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (defun packages-install (packages)
+       "Given a list of packages, this will install them from the standard locations."
+       (let ((to-install (inverse-filter 'package-installed-p packages)))
+         (when to-install
+           (package-refresh-contents)
+           (dolist (it to-install)
+               (package-install it)
+           (delete-other-windows)))))
+   #+END_SRC
 
 ** Installing Extra Packages
 
    This means that at any point in my configuration file, I can
    specify a list of packages to make sure they are installed.
 
-#+BEGIN_SRC elisp
-  (packages-install
-                 '(ack-and-a-half
-                   ace-jump-mode
-                   avy
-                   company
-                   company-quickhelp
-                   company-math
-                   dired-details
-                   color-identifiers-mode  ;; Color variables differently
-                   ctags-update
-                   epl
-                   esh-buf-stack
-                   expand-region
-                   flx
-                   flx-ido
-                   flycheck
-                   flycheck-color-mode-line
-                   git-blame
-                   git-gutter-fringe
-                   gitconfig-mode
-                   gitignore-mode
-                   graphviz-dot-mode
-                   hungry-delete
-                   htmlize
-                   hydra
-                   ido-vertical-mode
-                   iy-go-to-char
-                   linum-relative
-                   magit
-                   markdown-mode
-                   multiple-cursors
-                   paredit
-                   redo+             ;; If not installed, edit mac-key-mode
-                   smex
-                   thesaurus
-                   undo-tree
-                   visual-regexp
-                   yasnippet))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (packages-install
+                    '(ack-and-a-half
+                      ace-jump-mode
+                      avy
+                      company
+                      company-quickhelp
+                      company-math
+                      dired-details
+                      color-identifiers-mode  ;; Color variables differently
+                      ctags-update
+                      epl
+                      esh-buf-stack
+                      expand-region
+                      flx
+                      flx-ido
+                      flycheck
+                      flycheck-color-mode-line
+                      git-blame
+                      git-gutter-fringe
+                      gitconfig-mode
+                      gitignore-mode
+                      graphviz-dot-mode
+                      hungry-delete
+                      htmlize
+                      hydra
+                      ido-vertical-mode
+                      iy-go-to-char
+                      linum-relative
+                      magit
+                      markdown-mode
+                      multiple-cursors
+                      paredit
+                      redo+             ;; If not installed, edit mac-key-mode
+                      smex
+                      thesaurus
+                      undo-tree
+                      visual-regexp
+                      yasnippet))
+   #+END_SRC
 
 * Variables
 
@@ -208,9 +208,9 @@
   problem is guessing my email address based on what computer I am using:
 
   #+BEGIN_SRC elisp
-  (if (equal "howard.abrams" user-login-name)
-      (setq user-mail-address "howard.abrams@workday.com")
-    (setq user-mail-address "howard.abrams@gmail.com"))
+    (if (equal "howard.abrams" user-login-name)
+        (setq user-mail-address "howard.abrams@workday.com")
+      (setq user-mail-address "howard.abrams@gmail.com"))
   #+END_SRC
 
 ** Tabs vs Spaces
@@ -219,14 +219,14 @@
    sure that we only have spaces. See [[http://ergoemacs.org/emacs/emacs_tabs_space_indentation_setup.html][this discussion]] for details.
 
    #+BEGIN_SRC elisp
-  (setq-default indent-tabs-mode nil)
-  (setq tab-width 2)
+     (setq-default indent-tabs-mode nil)
+     (setq tab-width 2)
    #+END_SRC
 
    Make tab key do indent first then completion.
 
    #+BEGIN_SRC elisp
-  (setq-default tab-always-indent 'complete)
+     (setq-default tab-always-indent 'complete)
    #+END_SRC
 
 ** Aggressive Auto Indention
@@ -268,7 +268,7 @@
    The trick is to add the following to each programming hook:
 
    #+BEGIN_SRC elisp
-      (add-hook 'emacs-lisp-mode-hook 'activate-aggressive-indent)
+     (add-hook 'emacs-lisp-mode-hook 'activate-aggressive-indent)
    #+END_SRC
 
 ** Encrypting Files
@@ -306,14 +306,14 @@
   with the menu items now, it is just as easy to set them here.
 
   #+BEGIN_SRC elisp
-  (setq initial-scratch-message "") ;; Uh, I know what Scratch is for
-  (setq visible-bell t)             ;; Get rid of the beeps
+    (setq initial-scratch-message "") ;; Uh, I know what Scratch is for
+    (setq visible-bell t)             ;; Get rid of the beeps
 
-  (when (window-system)
-    (tool-bar-mode 0)               ;; Toolbars were only cool with XEmacs
-    (when (fboundp 'horizontal-scroll-bar-mode)
-      (horizontal-scroll-bar-mode -1))
-    (scroll-bar-mode -1))            ;; Scrollbars are waste screen estate
+    (when (window-system)
+      (tool-bar-mode 0)               ;; Toolbars were only cool with XEmacs
+      (when (fboundp 'horizontal-scroll-bar-mode)
+        (horizontal-scroll-bar-mode -1))
+      (scroll-bar-mode -1))            ;; Scrollbars are waste screen estate
   #+END_SRC
 
   Most of the display settings actually come from the [[file:emacs-mac.org][Mac initialization file]].
@@ -323,7 +323,7 @@
    My [[file:emacs-mode-line.org][mode-line code]] is now more complex in order to make it more simpler.
 
    #+BEGIN_SRC elisp
-  (require 'init-mode-line)
+     (require 'init-mode-line)
    #+END_SRC
 
 * Key Bindings
@@ -363,17 +363,18 @@
    right hand (since F7) is on the left side of my keyboards.
 
    #+BEGIN_SRC elisp :tangle no
-   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+     (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
    #+END_SRC
 
    I like [[https://github.com/KMahoney/kpm-list][kpm-list]] a bit better than =ibuffer=, but I really don’t use
    either more than =ido-switch-buffer=. Still:
 
    #+BEGIN_SRC elisp
-   (if (require 'kpm-list nil t)
-       (global-set-key (kbd "S-<f8>") 'kpm-list)
-     (global-set-key (kbd "S-<f8>") 'ibuffer))
+     (if (require 'kpm-list nil t)
+         (global-set-key (kbd "S-<f8>") 'kpm-list)
+       (global-set-key (kbd "S-<f8>") 'ibuffer))
    #+END_SRC
+
 *** F2 and F9 Helpers
 
     The F9 prefix is scattered about my config files.
@@ -555,14 +556,14 @@
    single line. Taken from [[http://www.emacswiki.org/UnfillParagraph][here]].
 
    #+BEGIN_SRC elisp
-    (defun unfill-paragraph ()
-      "Takes a multi-line paragraph and makes it into a single line of text."
-      (interactive)
-      (let ((fill-column (point-max)))
-        (fill-paragraph nil)))
+     (defun unfill-paragraph ()
+       "Takes a multi-line paragraph and makes it into a single line of text."
+       (interactive)
+       (let ((fill-column (point-max)))
+         (fill-paragraph nil)))
 
-    ;; Handy key definition
-    (define-key global-map "\M-Q" 'unfill-paragraph)
+     ;; Handy key definition
+     (define-key global-map "\M-Q" 'unfill-paragraph)
    #+END_SRC
 
 ** General Behavior Fixes
@@ -571,7 +572,7 @@
    until I felt I should move it into [[file:emacs-fixes.org][its own source file]].
 
    #+BEGIN_SRC elisp
-   (require 'init-fixes)
+     (require 'init-fixes)
    #+END_SRC
 
 ** Multiple Cursors
@@ -581,10 +582,10 @@
    default keybindings, so I set up the suggested:
 
    #+BEGIN_SRC elisp
-  (when (require 'multiple-cursors nil t)
-        (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-        (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-        (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+     (when (require 'multiple-cursors nil t)
+           (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+           (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+           (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
    #+END_SRC
 
 ** Expand Region
@@ -593,8 +594,8 @@
    can slowly increase a region selection by logical segments.
 
    #+BEGIN_SRC elisp
-      (require 'expand-region)
-      (global-set-key (kbd "C-=") 'er/expand-region)
+     (require 'expand-region)
+     (global-set-key (kbd "C-=") 'er/expand-region)
    #+END_SRC
 
    This works really well with other commands, including
@@ -602,39 +603,39 @@
    buffer. Great for code-reviews and other presentations.
 
    #+BEGIN_SRC elisp
-      (when (require 'fancy-narrow nil t)
-        (defun ha/highlight-block ()
-          "Highlights a 'block' in a buffer defined by the first blank
-           line before and after the current cursor position. Uses the
-           'fancy-narrow' mode to high-light the block."
-          (interactive)
-          (let (cur beg end)
-            (setq cur (point))
-            (setq end (or (re-search-forward  "^\s*$" nil t) (point-max)))
-            (goto-char cur)
-            (setq beg (or (re-search-backward "^\s*$" nil t) (point-min)))
-            (fancy-narrow-to-region beg end)
-            (goto-char cur)))
+     (when (require 'fancy-narrow nil t)
+       (defun ha/highlight-block ()
+         "Highlights a 'block' in a buffer defined by the first blank
+          line before and after the current cursor position. Uses the
+          'fancy-narrow' mode to high-light the block."
+         (interactive)
+         (let (cur beg end)
+           (setq cur (point))
+           (setq end (or (re-search-forward  "^\s*$" nil t) (point-max)))
+           (goto-char cur)
+           (setq beg (or (re-search-backward "^\s*$" nil t) (point-min)))
+           (fancy-narrow-to-region beg end)
+           (goto-char cur)))
 
-        (defun ha/highlight-section (num)
-          "If some of the buffer is highlighted with the 'fancy-narrow'
-           mode, then un-highlight it by calling 'fancy-widen'.
+       (defun ha/highlight-section (num)
+         "If some of the buffer is highlighted with the 'fancy-narrow'
+          mode, then un-highlight it by calling 'fancy-widen'.
 
-           If region is active, call 'fancy-narrow-to-region'.
+          If region is active, call 'fancy-narrow-to-region'.
 
-           If given a prefix value, C-u, highlight the current
-           block (delimited by blank lines). Otherwise, called
-           'fancy-narrow-to-defun, to highlight current function."
-          (interactive "p")
-          (cond
-           ((fancy-narrow-active-p) (fancy-widen))
-           ((> num 1)               (ha-highlight-block))
-           ((region-active-p)       (fancy-narrow-to-region (region-beginning) (region-end)))
-           ;; Want to do something special in org-mode? Probably...
-           ;; ((derived-mode-p 'org-mode) ...)
-           (t                       (fancy-narrow-to-defun))))
+          If given a prefix value, C-u, highlight the current
+          block (delimited by blank lines). Otherwise, called
+          'fancy-narrow-to-defun, to highlight current function."
+         (interactive "p")
+         (cond
+          ((fancy-narrow-active-p) (fancy-widen))
+          ((> num 1)               (ha-highlight-block))
+          ((region-active-p)       (fancy-narrow-to-region (region-beginning) (region-end)))
+          ;; Want to do something special in org-mode? Probably...
+          ;; ((derived-mode-p 'org-mode) ...)
+          (t                       (fancy-narrow-to-defun))))
 
-        (global-set-key (kbd "C-M-+") 'ha/highlight-section))
+       (global-set-key (kbd "C-M-+") 'ha/highlight-section))
    #+END_SRC
 
 ** Block Wrappers
@@ -707,15 +708,15 @@
        (global-set-key (kbd "C-+") 'surround)
    #+END_SRC
 
-    To make it easier to call from other functions, let's wrap that
-    wrapper:
+       To make it easier to call from other functions, let's wrap that
+       wrapper:
 
-    #+BEGIN_SRC elisp
-  (defun surround-text (txt)
-    (if (region-active-p)
-        (surround (region-beginning) (region-end) txt)
-      (surround nil nil txt)))
-    #+END_SRC
+       #+BEGIN_SRC elisp
+         (defun surround-text (txt)
+           (if (region-active-p)
+               (surround (region-beginning) (region-end) txt)
+             (surround nil nil txt)))
+       #+END_SRC
 
 ** Round Quotes
 
@@ -814,32 +815,32 @@
    then calls a function given to it. Quite an interesting approach:
 
    #+BEGIN_SRC elisp
-    (defmacro bol-with-prefix (function)
-      "Define a new function which calls FUNCTION.
-    Except it moves to beginning of line before calling FUNCTION when
-    called with a prefix argument. The FUNCTION still receives the
-    prefix argument."
-      (let ((name (intern (format "ha/%s-BOL" function))))
-        `(progn
-           (defun ,name (p)
-             ,(format
-               "Call `%s', but move to the beginning of the line when called with a prefix argument."
-               function)
-             (interactive "P")
-             (when p
-               (forward-line 0))
-             (call-interactively ',function))
-           ',name)))
+     (defmacro bol-with-prefix (function)
+       "Define a new function which calls FUNCTION.
+     Except it moves to beginning of line before calling FUNCTION when
+     called with a prefix argument. The FUNCTION still receives the
+     prefix argument."
+       (let ((name (intern (format "ha/%s-BOL" function))))
+         `(progn
+            (defun ,name (p)
+              ,(format
+                "Call `%s', but move to the beginning of the line when called with a prefix argument."
+                function)
+              (interactive "P")
+              (when p
+                (forward-line 0))
+              (call-interactively ',function))
+            ',name)))
    #+END_SRC
 
    And we re-bind them to functions that use them.
 
    #+BEGIN_SRC elisp
-    (global-set-key [remap paredit-kill] (bol-with-prefix paredit-kill))
-    (global-set-key [remap org-kill-line] (bol-with-prefix org-kill-line))
-    (global-set-key [remap kill-line] (bol-with-prefix kill-line))
+     (global-set-key [remap paredit-kill] (bol-with-prefix paredit-kill))
+     (global-set-key [remap org-kill-line] (bol-with-prefix org-kill-line))
+     (global-set-key [remap kill-line] (bol-with-prefix kill-line))
 
-    (global-set-key (kbd "C-k") (bol-with-prefix kill-line))
+     (global-set-key (kbd "C-k") (bol-with-prefix kill-line))
    #+END_SRC
 
 ** Hydra Sequences
@@ -937,7 +938,7 @@
    output.
 
    #+BEGIN_SRC elisp
-  (setq ls-lisp-use-insert-directory-program nil)
+     (setq ls-lisp-use-insert-directory-program nil)
    #+END_SRC
 
    This enhancement to dired hides the ugly details until you hit
@@ -945,9 +946,9 @@
    simple asterisk.
 
    #+BEGIN_SRC elisp
-  (when (require 'dired-details nil t)
-    (dired-details-install)
-    (setq dired-details-hidden-string "* "))
+     (when (require 'dired-details nil t)
+       (dired-details-install)
+       (setq dired-details-hidden-string "* "))
    #+END_SRC
 
    The ability to create a dired buffer based on searching for files
@@ -955,16 +956,16 @@
    [[http://www.masteringemacs.org/articles/2011/03/25/working-multiple-files-dired/][following magic]] optimizes this approach:
 
    #+BEGIN_SRC elisp
-    (require 'find-dired)
-    (setq find-ls-option '("-print0 | xargs -0 ls -od" . "-od"))
+     (require 'find-dired)
+     (setq find-ls-option '("-print0 | xargs -0 ls -od" . "-od"))
    #+END_SRC
 
    The [[http://www.masteringemacs.org/articles/2014/04/10/dired-shell-commands-find-xargs-replacement/][dired-x project]] seems useful:
 
    #+BEGIN_SRC elisp
-      (add-hook 'dired-load-hook
-                (lambda ()
-                  (load "dired-x")))
+     (add-hook 'dired-load-hook
+               (lambda ()
+                 (load "dired-x")))
    #+END_SRC
 ** Tramp
 
@@ -1018,7 +1019,7 @@
    have the =C-c f= as prefix for loading all sorts of files...
 
    #+BEGIN_SRC elisp
-   (global-set-key (kbd "C-c f r") 'ha/find-file-as-root)
+     (global-set-key (kbd "C-c f r") 'ha/find-file-as-root)
    #+END_SRC
 
 ** IDO (Interactively DO Things)
@@ -1026,9 +1027,9 @@
    According to [[http://www.masteringemacs.org/articles/2010/10/10/introduction-to-ido-mode/][Mickey]], IDO is the greatest thing.
 
    #+BEGIN_SRC elisp
-  (setq ido-enable-flex-matching t)
-  (setq ido-everywhere t)
-  (flx-ido-mode 1)
+     (setq ido-enable-flex-matching t)
+     (setq ido-everywhere t)
+     (flx-ido-mode 1)
    #+END_SRC
 
    According to [[https://gist.github.com/rkneufeld/5126926][Ryan Kneufeld]], we could make IDO work
@@ -1036,12 +1037,12 @@
    [[https://github.com/gempesaw/ido-vertical-mode.el][ido-vertically]]:
 
    #+BEGIN_SRC elisp
-    (require 'ido-vertical-mode)
-    (ido-mode 1)
-    (ido-vertical-mode 1)
+     (require 'ido-vertical-mode)
+     (ido-mode 1)
+     (ido-vertical-mode 1)
 
-    ; I like up and down arrow keys:
-    (setq ido-vertical-define-keys 'C-n-C-p-up-and-down)
+     ; I like up and down arrow keys:
+     (setq ido-vertical-define-keys 'C-n-C-p-up-and-down)
    #+END_SRC
 
 ** SMEX
@@ -1049,22 +1050,22 @@
    Built using [[*IDO%20(Interactively%20DO%20Things)][IDO]].
 
    #+BEGIN_SRC elisp
-  (require 'smex)
-  (smex-initialize) ; Can be omitted. This might cause a (minimal) delay
+     (require 'smex)
+     (smex-initialize) ; Can be omitted. This might cause a (minimal) delay
 
-  (global-set-key (kbd "M-x") 'smex)
-  (global-set-key (kbd "M-z") 'smex)  ;; Zap to char isn't so helpful
-  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
+     (global-set-key (kbd "M-x") 'smex)
+     (global-set-key (kbd "M-z") 'smex)  ;; Zap to char isn't so helpful
+     (global-set-key (kbd "M-X") 'smex-major-mode-commands)
 
-  ;; This is our old M-x.
-  (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
+     ;; This is our old M-x.
+     (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
    #+END_SRC
 
    Not crazy about =zap-to-char= being so close to the very useful
    =M-x= sequence, so...
 
    #+BEGIN_SRC elisp
-  (global-set-key (kbd "M-z") 'smex-major-mode-commands)
+     (global-set-key (kbd "M-z") 'smex-major-mode-commands)
    #+END_SRC
 ** Grep for my Notes
 
@@ -1089,22 +1090,22 @@
    The [[https://github.com/jhelwig/ack-and-a-half][ack-and-a-half]] project requires the following:
 
    #+BEGIN_SRC elisp
-    (when (require 'ack-and-a-half nil t)
-      ;; This value sometimes gets set to null... hrm.
-      (unless ack-and-a-half-executable
-        (setq ack-and-a-half-executable "/usr/local/bin/ack"))
+     (when (require 'ack-and-a-half nil t)
+       ;; This value sometimes gets set to null... hrm.
+       (unless ack-and-a-half-executable
+         (setq ack-and-a-half-executable "/usr/local/bin/ack"))
 
-      ;; Not sure why org mode isn’t something we can limit searches:
-      (add-to-list 'ack-and-a-half-mode-type-default-alist '(org-mode "org"))
+       ;; Not sure why org mode isn’t something we can limit searches:
+       (add-to-list 'ack-and-a-half-mode-type-default-alist '(org-mode "org"))
 
-      ;; Create shorter aliases
-      (defalias 'ack 'ack-and-a-half)
-      (defalias 'ack-same 'ack-and-a-half-same)
-      (defalias 'ack-find-file 'ack-and-a-half-find-file)
-      (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same)
+       ;; Create shorter aliases
+       (defalias 'ack 'ack-and-a-half)
+       (defalias 'ack-same 'ack-and-a-half-same)
+       (defalias 'ack-find-file 'ack-and-a-half-find-file)
+       (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same)
 
-      (define-key personal-global-map (kbd "M-a") 'ack-and-a-half)
-      (define-key personal-global-map (kbd "a") 'ack-and-a-half-same))
+       (define-key personal-global-map (kbd "M-a") 'ack-and-a-half)
+       (define-key personal-global-map (kbd "a") 'ack-and-a-half-same))
    #+END_SRC
 
    However, I need an /indexing/ approach to searching through my
@@ -1112,37 +1113,37 @@
    /Spotlight/ service that is already running:
 
    #+BEGIN_SRC elisp
-  (setq locate-command "mdfind")  ;; Use Mac OS X's Spotlight
-  (global-set-key (kbd "C-c f l") 'locate)
+     (setq locate-command "mdfind")  ;; Use Mac OS X's Spotlight
+     (global-set-key (kbd "C-c f l") 'locate)
    #+END_SRC
 
    The following function wraps =locate-with-filter= to only grab
    =org-mode= files:
 
    #+BEGIN_SRC elisp
-  (defun locate-org-files (search-string)
-    (interactive "sSearch string: ")
-    (locate-with-filter search-string ".org$"))
+     (defun locate-org-files (search-string)
+       (interactive "sSearch string: ")
+       (locate-with-filter search-string ".org$"))
 
-  (global-set-key (kbd "C-c f o") 'locate-org-files)
+     (global-set-key (kbd "C-c f o") 'locate-org-files)
    #+END_SRC
 
    We /could/ limit the location that Spotlight request searches:
 
    #+BEGIN_SRC elisp :tangle no
-  (defun locate-my-org-files (search-string)
-    (let ((tech (concat (getenv "HOME") "/technical"))
-          (pers (concat (getenv "HOME") "/personal"))
-          (note (concat (getenv "HOME") "/notes"))
-          (jrnl (concat (getenv "HOME") "/journal")))
-      (-flatten (list "mdfind"
-               (if (file-exists-p tech) (list "-onlyin" tech))
-               (if (file-exists-p pers) (list "-onlyin" pers))
-               (if (file-exists-p note) (list "-onlyin" note))
-               (if (file-exists-p jrnl) (list "-onlyin" jrnl))
-               "-interpret" search-string))))
+     (defun locate-my-org-files (search-string)
+       (let ((tech (concat (getenv "HOME") "/technical"))
+             (pers (concat (getenv "HOME") "/personal"))
+             (note (concat (getenv "HOME") "/notes"))
+             (jrnl (concat (getenv "HOME") "/journal")))
+         (-flatten (list "mdfind"
+                  (if (file-exists-p tech) (list "-onlyin" tech))
+                  (if (file-exists-p pers) (list "-onlyin" pers))
+                  (if (file-exists-p note) (list "-onlyin" note))
+                  (if (file-exists-p jrnl) (list "-onlyin" jrnl))
+                  "-interpret" search-string))))
 
-  (setq locate-make-command-line 'locate-my-org-files)
+     (setq locate-make-command-line 'locate-my-org-files)
    #+END_SRC
 
    However, the problem with locate, is it doesn't show me any
@@ -1152,24 +1153,24 @@
    Just need to wrap that in a function:
 
    #+BEGIN_SRC elisp
-  (defun find-notes (words)
-    "Uses my 'find-notes' shell script as a better grep
-  utility. Not only does it show the results in a clickable list,
-  it also highlights the result, allowing us to put more context in
-  the output."
-    (interactive "sSearch for words:")
-    (let ((program (concat (getenv "HOME") "/bin/find-notes"))
-          (buffer-name (concat "*find-notes: " words "*")))
-      (call-process program nil buffer-name t words)
-      (switch-to-buffer buffer-name)
-      (read-only-mode 1)
-      (grep-mode)
-      (toggle-truncate-lines)
-      (beginning-of-buffer)
-      (dolist (word (split-string words))
-        (highlight-regexp word))))
+     (defun find-notes (words)
+       "Uses my 'find-notes' shell script as a better grep
+     utility. Not only does it show the results in a clickable list,
+     it also highlights the result, allowing us to put more context in
+     the output."
+       (interactive "sSearch for words:")
+       (let ((program (concat (getenv "HOME") "/bin/find-notes"))
+             (buffer-name (concat "*find-notes: " words "*")))
+         (call-process program nil buffer-name t words)
+         (switch-to-buffer buffer-name)
+         (read-only-mode 1)
+         (grep-mode)
+         (toggle-truncate-lines)
+         (beginning-of-buffer)
+         (dolist (word (split-string words))
+           (highlight-regexp word))))
 
-  (global-set-key (kbd "C-x C-n") 'find-notes)
+     (global-set-key (kbd "C-x C-n") 'find-notes)
    #+END_SRC
 
 ** Recent File List
@@ -1178,10 +1179,10 @@
    listing available, just not turned on.
 
    #+BEGIN_SRC elisp
-  (require 'recentf)
-  (recentf-mode 1)
-  (setq recentf-max-menu-items 25)
-  (global-set-key (kbd "C-c f f") 'recentf-open-files)
+     (require 'recentf)
+     (recentf-mode 1)
+     (setq recentf-max-menu-items 25)
+     (global-set-key (kbd "C-c f f") 'recentf-open-files)
    #+END_SRC
 
 ** Backup Settings
@@ -1190,15 +1191,26 @@
    Got it from [[http://whattheemacsd.com/init.el-02.html][this page]].
 
    #+BEGIN_SRC elisp
-  (setq backup-directory-alist
-        `(("." . ,(expand-file-name
-                   (ha/emacs-subdirectory "backups")))))
+     (setq backup-directory-alist
+           `(("." . ,(expand-file-name
+                      (ha/emacs-subdirectory "backups")))))
    #+END_SRC
 
    Make backups of files, even when they're in version control
 
    #+BEGIN_SRC elisp
-  (setq vc-make-backup-files t)
+     (setq vc-make-backup-files t)
+   #+END_SRC
+
+   And let’s make sure our files are saved if we wander off:
+
+   #+BEGIN_SRC elisp
+     (defun save-all ()
+       "Saves all dirty buffers without asking for confirmation."
+       (interactive)
+       (save-some-buffers t))
+
+     (add-hook 'focus-out-hook 'save-all)
    #+END_SRC
 
 * Word Smithing
@@ -1235,7 +1247,7 @@
    symbols based on LaTeX keywords:
 
    #+BEGIN_SRC elisp
-   (add-to-list 'company-backends 'company-math-symbols-unicode)
+     (add-to-list 'company-backends 'company-math-symbols-unicode)
    #+END_SRC
 
 ** Yasnippets
@@ -1244,8 +1256,8 @@
    can be brought into a file, based on the language.
 
    #+BEGIN_SRC elisp
-  (require 'yasnippet)
-  (yas-global-mode 1)
+     (require 'yasnippet)
+     (yas-global-mode 1)
    #+END_SRC
 
    Helper function so that we can automatically expand a snippet
@@ -1265,17 +1277,17 @@
    with the snippets.
 
    #+BEGIN_SRC elisp
-    (add-to-list 'yas-snippet-dirs (ha/emacs-subdirectory "snippets"))
+     (add-to-list 'yas-snippet-dirs (ha/emacs-subdirectory "snippets"))
    #+END_SRC
 
    [[https://code.google.com/p/js2-mode/][js2-mode]] is good, but its name means that Yas' won't automatically
    link it to its =js-mode=. This little bit of magic does the linking:
 
    #+BEGIN_SRC elisp :tangle no
-    (add-hook 'js2-mode-hook '(lambda ()
-                                (make-local-variable 'yas-extra-modes)
-                                (add-to-list 'yas-extra-modes 'js-mode)
-                                (yas-minor-mode 1)))
+     (add-hook 'js2-mode-hook '(lambda ()
+                                 (make-local-variable 'yas-extra-modes)
+                                 (add-to-list 'yas-extra-modes 'js-mode)
+                                 (yas-minor-mode 1)))
    #+END_SRC
 
 ** Abbreviation Mode
@@ -1296,7 +1308,7 @@
    /pre-load/ a bunch that I use, but make a distinction between
    abbreviations that would be available globally, and in particular
    modes (especially the text modes, like org-mode):
-   \([^"]+?\)"
+
    #+BEGIN_SRC elisp
      (define-abbrev-table 'global-abbrev-table
          '(("8ha" "Howard Abrams")
@@ -1314,7 +1326,7 @@
          ("8ng" "AngularJS")
          ("8wd" "Workday")
          ("btw" "by the way")
-         ("note" "*Note:*")))
+         ("note:" "*Note:*")))
    #+END_SRC
 
    *Note:* Capitalizing the first letter, i.e. =Btw=, expands the
@@ -1369,15 +1381,15 @@
    looked at as incorrect.
 
    #+BEGIN_SRC elisp
-   (eval-after-load "ispell"
-     '(add-to-list 'ispell-local-dictionary-alist '(nil
-                                                   "[[:alpha:]]"
-                                                   "[^[:alpha:]]"
-                                                   "['‘’]"
-                                                   t
-                                                   ("-d" "en_US")
-                                                   nil
-                                                   utf-8)))
+     (eval-after-load "ispell"
+       '(add-to-list 'ispell-local-dictionary-alist '(nil
+                                                     "[[:alpha:]]"
+                                                     "[^[:alpha:]]"
+                                                     "['‘’]"
+                                                     t
+                                                     ("-d" "en_US")
+                                                     nil
+                                                     utf-8)))
    #+END_SRC
 
    Just not sure which of the three major spell checking systems to
@@ -1389,7 +1401,7 @@
     better with Homebrew.
 
     #+BEGIN_SRC elisp
-     (setq ispell-dictionary "american")
+      (setq ispell-dictionary "american")
     #+END_SRC
 
     ASpell automatically configures a personal dictionary at:
@@ -1422,10 +1434,10 @@
    while editing my expressive literary style in my text files.
 
    #+BEGIN_SRC elisp
-  (when (require 'thesaurus nil t)
-    (thesaurus-set-bhl-api-key-from-file "~/.emacs.d/bighugelabs.apikey.txt")
+     (when (require 'thesaurus nil t)
+       (thesaurus-set-bhl-api-key-from-file "~/.emacs.d/bighugelabs.apikey.txt")
 
-    (define-key personal-global-map (kbd "t") 'thesaurus-choose-synonym-and-replace))
+       (define-key personal-global-map (kbd "t") 'thesaurus-choose-synonym-and-replace))
    #+END_SRC
 
 * Miscellaneous Settings
@@ -1436,18 +1448,18 @@
    programming modes.
 
    #+BEGIN_SRC elisp
-  (add-hook 'prog-mode-hook 'linum-mode)
+     (add-hook 'prog-mode-hook 'linum-mode)
    #+END_SRC
 
    If we make the line numbers a fixed size, then increasing or
    decreasing the font size doesn't truncate the numbers:
 
    #+BEGIN_SRC elisp
-  (defun fix-linum-size ()
-    (interactive)
-    (set-face-attribute 'linum nil :height 110))
+     (defun fix-linum-size ()
+       (interactive)
+       (set-face-attribute 'linum nil :height 110))
 
-  (add-hook 'linum-mode-hook 'fix-linum-size)
+     (add-hook 'linum-mode-hook 'fix-linum-size)
    #+END_SRC
 
    If we alternate between line numbers and no-line numbers, I also
@@ -1455,19 +1467,19 @@
    useful when giving presentations.
 
    #+BEGIN_SRC elisp
-      (defun linum-off-mode ()
-        "Toggles the line numbers as well as the fringe. This allows me
-      to maximize the screen estate."
-        (interactive)
-        (if linum-mode
-            (progn
-              (fringe-mode '(0 . 0))
-              (linum-mode -1))
-          (fringe-mode '(8 . 0))
-          (linum-mode 1)))
+     (defun linum-off-mode ()
+       "Toggles the line numbers as well as the fringe. This allows me
+     to maximize the screen estate."
+       (interactive)
+       (if linum-mode
+           (progn
+             (fringe-mode '(0 . 0))
+             (linum-mode -1))
+         (fringe-mode '(8 . 0))
+         (linum-mode 1)))
 
-        (global-set-key (kbd "A-C-K") 'linum-off-mode)
-        (global-set-key (kbd "s-C-K") 'linum-off-mode)  ;; For Linux
+       (global-set-key (kbd "A-C-K") 'linum-off-mode)
+       (global-set-key (kbd "s-C-K") 'linum-off-mode)  ;; For Linux
    #+END_SRC
 
    I'm intrigued with the [[https://github.com/coldnew/linum-relative][linum-relative]] mode (especially since I can
@@ -1476,25 +1488,25 @@
    quickly pop to it.
 
    #+BEGIN_SRC elisp
-  (if (not (require 'linum-relative nil t))
+     (if (not (require 'linum-relative nil t))
 
-      ;; If this isn't installed, we'll just toggle between showing and
-      ;; not showing the line numbers.
-      (progn
-        (global-set-key (kbd "A-k") 'linum-mode)
-        (global-set-key (kbd "s-k") 'linum-mode))   ;; For Linux
+         ;; If this isn't installed, we'll just toggle between showing and
+         ;; not showing the line numbers.
+         (progn
+           (global-set-key (kbd "A-k") 'linum-mode)
+           (global-set-key (kbd "s-k") 'linum-mode))   ;; For Linux
 
-    ;; Otherwise, let's take advantage of the relative line numbering:
-    (defun linum-new-mode ()
-      "If line numbers aren't displayed, then display them.
-       Otherwise, toggle between absolute and relative numbers."
-      (interactive)
-      (if linum-mode
-          (linum-relative-toggle)
-        (linum-mode 1)))
+       ;; Otherwise, let's take advantage of the relative line numbering:
+       (defun linum-new-mode ()
+         "If line numbers aren't displayed, then display them.
+          Otherwise, toggle between absolute and relative numbers."
+         (interactive)
+         (if linum-mode
+             (linum-relative-toggle)
+           (linum-mode 1)))
 
-    (global-set-key (kbd "A-k") 'linum-new-mode)
-    (global-set-key (kbd "s-k") 'linum-new-mode))   ;; For Linux
+       (global-set-key (kbd "A-k") 'linum-new-mode)
+       (global-set-key (kbd "s-k") 'linum-new-mode))   ;; For Linux
    #+END_SRC
 
 ** Smart Scan
@@ -1503,7 +1515,7 @@
    currently pointing. =M-p= to go backwards.
 
    #+BEGIN_SRC elisp
-  (load-library "smart-scan")
+     (load-library "smart-scan")
    #+END_SRC
 
 ** Strip Whitespace on Save
@@ -1512,7 +1524,7 @@
    trailing whitespace from the file.
 
    #+BEGIN_SRC elisp
-  (add-hook 'before-save-hook 'delete-trailing-whitespace)
+     (add-hook 'before-save-hook 'delete-trailing-whitespace)
    #+END_SRC
 
 ** Better Searching and Visual Regular Expressions
@@ -1521,10 +1533,10 @@
    regular expressions available, so why not just switch those defaults?
 
    #+BEGIN_SRC elisp
-  (global-set-key (kbd "C-s") 'isearch-forward-regexp)
-  (global-set-key (kbd "C-r") 'isearch-backward-regexp)
-  (global-set-key (kbd "C-M-s") 'isearch-forward)
-  (global-set-key (kbd "C-M-r") 'isearch-backward)
+     (global-set-key (kbd "C-s") 'isearch-forward-regexp)
+     (global-set-key (kbd "C-r") 'isearch-backward-regexp)
+     (global-set-key (kbd "C-M-s") 'isearch-forward)
+     (global-set-key (kbd "C-M-r") 'isearch-backward)
    #+END_SRC
 
    The [[https://github.com/benma/visual-regexp.el][Visual Regular Expressions]] project highlights the matches
@@ -1535,12 +1547,12 @@
    matches, type =C-c a= before you hit 'Return' to accept it.
 
    #+BEGIN_SRC elisp
-    (require 'visual-regexp)
-    (define-key global-map (kbd "C-c r") 'vr/replace)
-    (define-key global-map (kbd "C-c q") 'vr/query-replace)
+     (require 'visual-regexp)
+     (define-key global-map (kbd "C-c r") 'vr/replace)
+     (define-key global-map (kbd "C-c q") 'vr/query-replace)
 
-    ;; if you use multiple-cursors, this is for you:
-    (define-key global-map (kbd "C-c m") 'vr/mc-mark)
+     ;; if you use multiple-cursors, this is for you:
+     (define-key global-map (kbd "C-c m") 'vr/mc-mark)
    #+END_SRC
 
 ** Flycheck
@@ -1548,8 +1560,8 @@
    [[https://github.com/flycheck/flycheck][Flycheck]] seems to be quite superior to good ol' Flymake.
 
    #+BEGIN_SRC elisp
-  (when (require 'flycheck nil t)
-    (add-hook 'after-init-hook #'global-flycheck-mode))
+     (when (require 'flycheck nil t)
+       (add-hook 'after-init-hook #'global-flycheck-mode))
    #+END_SRC
 
    The most interesting aspect is that it doesn't support Clojure.
@@ -1703,23 +1715,23 @@
     This approach seems to work and looks pretty good:
 
     #+BEGIN_SRC elisp
-     (when (fboundp 'global-prettify-symbols-mode)
-         (defconst lisp--prettify-symbols-alist
-           '(("lambda"  . ?λ)
-             ("curry"   . ?»)
-             ("rcurry"  . ?«)
-             ("comp"    . ?∘)
-             ("compose" . ?∘)
-             ("."       . ?•)))
+      (when (fboundp 'global-prettify-symbols-mode)
+          (defconst lisp--prettify-symbols-alist
+            '(("lambda"  . ?λ)
+              ("curry"   . ?»)
+              ("rcurry"  . ?«)
+              ("comp"    . ?∘)
+              ("compose" . ?∘)
+              ("."       . ?•)))
 
-         (global-prettify-symbols-mode 1))
+          (global-prettify-symbols-mode 1))
     #+END_SRC
 
     Words with dashes don't separate words in Lisp:
 
     #+BEGIN_SRC elisp
-     (dolist (c (string-to-list ":_-?!#*"))
-       (modify-syntax-entry c "w" emacs-lisp-mode-syntax-table))
+      (dolist (c (string-to-list ":_-?!#*"))
+        (modify-syntax-entry c "w" emacs-lisp-mode-syntax-table))
     #+END_SRC
 
     *Note:*: Need to change this to work with the v24.4 super-word.
@@ -1747,57 +1759,64 @@
     #+BEGIN_SRC elisp
       (global-set-key (kbd "C-x e") 'eval-and-comment-output)
     #+END_SRC
+
 ** Clojure
 
    See [[file:emacs-clojure.org][emacs-clojure.el]] for details on working with [[http://clojure.org][Clojure]].
    Not sure if I should just load it directly, like:
 
    #+BEGIN_SRC elisp
-  (require 'init-clojure)
-   #+END_SRC
-
-   Or if I should load it after the Clojure mode kicks in?
-
-   #+BEGIN_SRC elisp :tangle no
-  (eval-after-load 'clojure-mode '(require 'init-clojure))
+     (require 'init-clojure)
    #+END_SRC
 
 ** Java
 
-   Eh ... why use Java anymore?
+   As soon as a I have a project that requires Java (and doesn’t allow
+   me to work on either Clojure or Scala, I’ll update my old Java
+   initialization section.
+
+** Ruby
+
+   See my [[file:emacs-ruby.org][emacs-ruby.el]] file for details on working with Ruby.
+   Typically, my [[file:emacs-local.org][emacs-local.el]] file would do the work of requiring
+   this for particular hosts or projects.
+
+   #+BEGIN_SRC elisp :tangle no
+     (require 'init-ruby)
+   #+END_SRC
 
 ** Python
 
    See [[file:emacs-python.org][emacs-python.el]] for details on working with Python.
    Not sure if I should just load it directly, like:
 
-#+BEGIN_SRC elisp :tangle no
-  (load-library "init-python")
-#+END_SRC
+   #+BEGIN_SRC elisp :tangle no
+     (require 'init-python)
+   #+END_SRC
 
 ** JavaScript
 
    See [[file:emacs-javascript.org][emacs-javascript.el]] for details on working with JavaScript.
 
-#+BEGIN_SRC elisp :tangle no
-;;  (load-library "init-javascript")
-#+END_SRC
+   #+BEGIN_SRC elisp :tangle no
+     (require 'init-javascript)
+   #+END_SRC
 
 ** HTML, CSS and other Web Programming
 
    See [[file:emacs-web.org][emacs-web.el]] for details on working with HTML and its ilk.
 
-#+BEGIN_SRC elisp :tangle no
-  (load-library "init-web")
-#+END_SRC
+   #+BEGIN_SRC elisp :tangle no
+     (require 'init-web)
+   #+END_SRC
 
 * Org-Mode
 
   See [[file:emacs-org.org][emacs-org-mode.el]] for details on my [[http://www.orgmode][Org-Mode]] settings.
 
-#+BEGIN_SRC elisp
-  (require 'init-org-mode)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (require 'init-org-mode)
+  #+END_SRC
 
 * Tools
 ** Git
@@ -1821,44 +1840,44 @@
 
 *** Full Screen Git
 
-   I like having Magit to run in a /full screen/ mode, and took this
-   =defadvice= idea from [[https://github.com/magnars/.emacs.d/blob/master/setup-magit.el][Sven Magnars]]:
+    I like having Magit to run in a /full screen/ mode, and took this
+    =defadvice= idea from [[https://github.com/magnars/.emacs.d/blob/master/setup-magit.el][Sven Magnars]]:
 
-   #+BEGIN_SRC elisp
-     (defadvice magit-status (around magit-fullscreen activate)
-       (window-configuration-to-register :magit-fullscreen)
-       ad-do-it
-       (delete-other-windows))
-   #+END_SRC
+    #+BEGIN_SRC elisp
+      (defadvice magit-status (around magit-fullscreen activate)
+        (window-configuration-to-register :magit-fullscreen)
+        ad-do-it
+        (delete-other-windows))
+    #+END_SRC
 
-   Now, we have to have the =q= command recover the window session
-   that was stored in a window register:
+    Now, we have to have the =q= command recover the window session
+    that was stored in a window register:
 
-   #+BEGIN_SRC elisp
-     (defun magit-quit-session ()
-       "Restores the previous window configuration and kills the magit buffer"
-       (interactive)
-       (kill-buffer)
-       (jump-to-register :magit-fullscreen))
+    #+BEGIN_SRC elisp
+      (defun magit-quit-session ()
+        "Restores the previous window configuration and kills the magit buffer"
+        (interactive)
+        (kill-buffer)
+        (jump-to-register :magit-fullscreen))
 
-     (define-key magit-status-mode-map (kbd "q") 'magit-quit-session)
-   #+END_SRC
+      (define-key magit-status-mode-map (kbd "q") 'magit-quit-session)
+    #+END_SRC
 
 *** Fringe Information
 
-   Install and use the [[https://github.com/syohex/emacs-git-gutter-fringe][Git Gutter Fringe]] to see what lines are /dirty/
-   from Git’s perspective.
+    Install and use the [[https://github.com/syohex/emacs-git-gutter-fringe][Git Gutter Fringe]] to see what lines are /dirty/
+    from Git’s perspective.
 
-   #+BEGIN_SRC elisp
-     (if (window-system)
-         (when (require 'git-gutter-fringe nil t)
-           (global-git-gutter-mode +1)
-           (setq-default indicate-buffer-boundaries 'left)
-           (setq-default indicate-empty-lines +1)))
-   #+END_SRC
+    #+BEGIN_SRC elisp
+      (if (window-system)
+          (when (require 'git-gutter-fringe nil t)
+            (global-git-gutter-mode +1)
+            (setq-default indicate-buffer-boundaries 'left)
+            (setq-default indicate-empty-lines +1)))
+    #+END_SRC
 
-   To see a /blame mode/, use either =vc-annotate= (=C-x v g=) or
-   =magit-blame-mode=.
+    To see a /blame mode/, use either =vc-annotate= (=C-x v g=) or
+    =magit-blame-mode=.
 
 *** One-step Commits
 
@@ -1880,54 +1899,54 @@
 
 *** Github Pull Requests
 
-   Perhaps we can do [[https://github.com/sigma/magit-gh-pulls][Github pull requests]] from within Emacs, after
-   reading [[http://endlessparentheses.com/merging-github-pull-requests-from-emacs.html][this blog entry]]. Just do =# g g= in Magit to list the pull
-   requests.
+    Perhaps we can do [[https://github.com/sigma/magit-gh-pulls][Github pull requests]] from within Emacs, after
+    reading [[http://endlessparentheses.com/merging-github-pull-requests-from-emacs.html][this blog entry]]. Just do =# g g= in Magit to list the pull
+    requests.
 
-   #+BEGIN_SRC elisp
-     (when (require 'magit-gh-pulls nil t)
-           (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls))
-   #+END_SRC
+    #+BEGIN_SRC elisp
+      (when (require 'magit-gh-pulls nil t)
+            (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls))
+    #+END_SRC
 
 ** Markdown
 
    Don't use Markdown nearly as much as I used to, but I'm surprised
    that the following extension-associations aren't the default:
 
-#+BEGIN_SRC elisp
-  (autoload 'markdown-mode "markdown-mode.el"
-     "Major mode for editing Markdown files" t)
-  (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
-  (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (autoload 'markdown-mode "markdown-mode.el"
+        "Major mode for editing Markdown files" t)
+     (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+     (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+   #+END_SRC
 
    Using the =surround= function, I create some wrapper
    functions to make it easier to bold text in Markdown files:
 
-#+BEGIN_SRC elisp
-  (defun markdown-bold () "Wraps the region with double asterisks."
-    (interactive)
-    (surround-text "**"))
-  (defun markdown-italics () "Wraps the region with asterisks."
-    (interactive)
-    (surround-text "*"))
-  (defun markdown-code () "Wraps the region with equal signs."
-    (interactive)
-    (surround-text "`"))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (defun markdown-bold () "Wraps the region with double asterisks."
+       (interactive)
+       (surround-text "**"))
+     (defun markdown-italics () "Wraps the region with asterisks."
+       (interactive)
+       (surround-text "*"))
+     (defun markdown-code () "Wraps the region with equal signs."
+       (interactive)
+       (surround-text "`"))
+   #+END_SRC
 
    Now I can associate some keystrokes to =markdown-mode=:
 
-#+BEGIN_SRC elisp
-  (add-hook 'markdown-mode-hook
-        (lambda ()
-          (local-set-key (kbd "A-b") 'markdown-bold)
-          (local-set-key (kbd "s-b") 'markdown-bold)    ;; For Linux
-          (local-set-key (kbd "A-i") 'markdown-italics)
-          (local-set-key (kbd "s-i") 'markdown-italics)
-          (local-set-key (kbd "A-=") 'markdown-code)
-          (local-set-key (kbd "s-=") 'markdown-code)))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (add-hook 'markdown-mode-hook
+           (lambda ()
+             (local-set-key (kbd "A-b") 'markdown-bold)
+             (local-set-key (kbd "s-b") 'markdown-bold)    ;; For Linux
+             (local-set-key (kbd "A-i") 'markdown-italics)
+             (local-set-key (kbd "s-i") 'markdown-italics)
+             (local-set-key (kbd "A-=") 'markdown-code)
+             (local-set-key (kbd "s-=") 'markdown-code)))
+   #+END_SRC
 
 ** Wiki
 
@@ -1936,59 +1955,59 @@
    still use the =confluence-edit-mode= for anything with a =.wiki=
    extension.
 
-#+BEGIN_SRC elisp
-  (autoload 'confluence-edit-mode "confluence-edit-mode.el"
-     "Major mode for editing Wiki documents" t)
-  (add-to-list 'auto-mode-alist '("\\.wiki\\'" . confluence-edit-mode))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (autoload 'confluence-edit-mode "confluence-edit-mode.el"
+        "Major mode for editing Wiki documents" t)
+     (add-to-list 'auto-mode-alist '("\\.wiki\\'" . confluence-edit-mode))
+   #+END_SRC
 
    I would also like to create and use some formatting wrappers.
 
-#+BEGIN_SRC elisp
-  (defun wiki-bold () "Wraps the region with single asterisks."
-    (interactive)
-    (surround-text "*"))
-  (defun wiki-italics () "Wraps the region with underbars."
-    (interactive)
-    (surround-text "_"))
-  (defun wiki-code () "Wraps the region with curly brackets."
-    (interactive)
-    (surround-text "{{" "}}"))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (defun wiki-bold () "Wraps the region with single asterisks."
+       (interactive)
+       (surround-text "*"))
+     (defun wiki-italics () "Wraps the region with underbars."
+       (interactive)
+       (surround-text "_"))
+     (defun wiki-code () "Wraps the region with curly brackets."
+       (interactive)
+       (surround-text "{{" "}}"))
+   #+END_SRC
 
    Now I can associate some keystrokes to =markdown-mode=:
 
-#+BEGIN_SRC elisp
-  (add-hook 'confluence-edit-mode-hook
-        (lambda ()
-          (local-set-key (kbd "A-b") 'wiki-bold)
-          (local-set-key (kbd "A-i") 'wiki-italics)
-          (local-set-key (kbd "A-=") 'wiki-code)))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (add-hook 'confluence-edit-mode-hook
+           (lambda ()
+             (local-set-key (kbd "A-b") 'wiki-bold)
+             (local-set-key (kbd "A-i") 'wiki-italics)
+             (local-set-key (kbd "A-=") 'wiki-code)))
+   #+END_SRC
 
 ** PlantUML and Graphviz
 
    Install the Graphviz project using Homebrew:
 
-#+BEGIN_SRC sh :tangle no
-  brew install graphviz
-  brew link graphviz
-  brew install plantuml
-#+END_SRC
+   #+BEGIN_SRC sh :tangle no
+     brew install graphviz
+     brew link graphviz
+     brew install plantuml
+   #+END_SRC
 
    To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, download the Jar and place
    in the =~/bin= directory. We then set the "mode" working for
    editing the files:
 
-#+BEGIN_SRC elisp
-  (setq plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (setq plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+   #+END_SRC
 
    Second, to get [[http://zhangweize.wordpress.com/2010/08/25/creating-uml-images-by-using-plantuml-and-org-babel-in-emacs/][PlantUML]] working in org-mode, set a different variable:
 
-#+BEGIN_SRC elisp
-  (setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+   #+END_SRC
 
 * Applications
 ** Web Browsing
@@ -1997,61 +2016,61 @@
    file.
 
    #+BEGIN_SRC elisp
-   (require 'init-browser)
+     (require 'init-browser)
    #+END_SRC
 
 ** EShell
 
-  See [[file:emacs-eshell.org][emacs-eshell.el]] for details of configuring and using EShell.
+   See [[file:emacs-eshell.org][emacs-eshell.el]] for details of configuring and using EShell.
 
-#+BEGIN_SRC elisp
-  (require 'init-eshell)
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (require 'init-eshell)
+   #+END_SRC
 
 ** Circe
 
    I find reading Twitter and IRC in Emacs a good idea. Really. Small
    bits of the Emacs window are accessible and whatnot.
 
-#+BEGIN_SRC elisp
-  (require 'circe nil t)
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (require 'circe nil t)
+   #+END_SRC
 
 ** Chatting
 
    Using the [[http://www.emacswiki.org/emacs/JabberEl][jabber.el]] project to connect up to Google Talk and what
    not. To begin, make sure you =brew install gnutls=
 
-#+BEGIN_SRC elisp
-  (when (require 'jabber nil t)
-    (setq starttls-use-gnutls t
-          starttls-gnutls-program "gnutls-cli"
-          starttls-extra-arguments '("--starttls" "--insecure"))
-    (setq
-     jabber-history-enabled t
-     jabber-use-global-history nil
-     jabber-backlog-number 40
-     jabber-backlog-days 30)
+   #+BEGIN_SRC elisp
+     (when (require 'jabber nil t)
+       (setq starttls-use-gnutls t
+             starttls-gnutls-program "gnutls-cli"
+             starttls-extra-arguments '("--starttls" "--insecure"))
+       (setq
+        jabber-history-enabled t
+        jabber-use-global-history nil
+        jabber-backlog-number 40
+        jabber-backlog-days 30)
 
-    (defun my-jabber-chat-delete-or-bury ()
-      (interactive)
-      (if (eq 'jabber-chat-mode major-mode)
-          (condition-case e
-              (delete-frame)
-            (error
-             (if (string= "Attempt to delete the sole visible or iconified frame"
-                          (cadr e))
-                 (bury-buffer))))))
+       (defun my-jabber-chat-delete-or-bury ()
+         (interactive)
+         (if (eq 'jabber-chat-mode major-mode)
+             (condition-case e
+                 (delete-frame)
+               (error
+                (if (string= "Attempt to delete the sole visible or iconified frame"
+                             (cadr e))
+                    (bury-buffer))))))
 
-    (define-key jabber-chat-mode-map [escape]
-      'my-jabber-chat-delete-or-bury)
+       (define-key jabber-chat-mode-map [escape]
+         'my-jabber-chat-delete-or-bury)
 
-    (when (require 'autosmiley nil t)
-      (add-hook 'jabber-chat-mode-hook 'autosmiley-mode)))
-#+END_SRC
+       (when (require 'autosmiley nil t)
+         (add-hook 'jabber-chat-mode-hook 'autosmiley-mode)))
+   #+END_SRC
 
-  To chat simply press: =C-x C-j C-c= ... hahaha. I doubt I can
-  remember that one. Perhaps.
+   To chat simply press: =C-x C-j C-c= ... hahaha. I doubt I can
+   remember that one. Perhaps.
 
 * Technical Artifacts
 
@@ -2083,32 +2102,22 @@
 
 ** Load up the Local Configuration
 
-  Before we finish, we need to check if there is a local file for us
-  to load and evaluate.
+   Before we finish, we need to check if there is a local file for us
+   to load and evaluate.  We assume the local file has been tangled
+   and provides the =init-local= key:
 
-  #+BEGIN_SRC elisp :tangle no
-  (let ((local-file "~/.emacs.d/elisp/init-local.el"))
-    (when (file-exists-p local-file)
-      (load-file local-file)
-      (message "Loaded machine-specific settings: %s" local-file)))
-  #+END_SRC
+   #+BEGIN_SRC elisp
+     (require 'init-local nil t)
+   #+END_SRC
 
-  However, we can assume that the local file has been tangled and
-  provides the =init-local= key:
+   After the first load, we can reload this with a require:
 
-  #+BEGIN_SRC elisp
-  (catch 'error
-    (require 'init-local))
-  #+END_SRC
+   #+BEGIN_SRC elisp
+     (provide 'init-main)
+   #+END_SRC
 
-  After the first load, we can reload this with a require:
-
-  #+BEGIN_SRC elisp
-    (provide 'init-main)
-  #+END_SRC
-
-  Before you can build this on a new system, make sure that you put
-  the cursor over any of these properties, and hit: =C-c C-c=
+   Before you can build this on a new system, make sure that you put
+   the cursor over any of these properties, and hit: =C-c C-c=
 
 #+DESCRIPTION: A literate programming version of my Emacs Initialization script, loaded by the .emacs file.
 #+PROPERTY:    results silent
