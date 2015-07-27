@@ -74,6 +74,19 @@ a shell-slut, and dabble between Zshell and Fish.
   fi
 #+END_SRC
 
+* Python
+
+  Assuming we have installed both [[http://virtualenvwrapper.readthedocs.org/en/latest/index.html][virtualenvwrapper]] and [[https://github.com/kennethreitz/autoenv][autoenv]], the
+  following should activate them:
+
+  #+BEGIN_SRC sh
+    export WORKON_HOME="$HOME/.virtualenvs"
+    source /usr/local/bin/virtualenvwrapper.sh
+    source /usr/local/opt/autoenv/activate.sh
+  #+END_SRC
+
+  See [[file:emacs-python.org::*Virtual%20Environments][Virtual Environments]] in the Python Emacs setup for details.
+
 * My Function Collection
 
   Load up my [[file:sh-functions.org][shared functions]]. These can be shared with Bash, Fish and

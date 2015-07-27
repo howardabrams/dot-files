@@ -1,54 +1,119 @@
 #+TITLE:  Emacs Settings for Python
 #+AUTHOR: Howard Abrams
 #+EMAIL:  howard.abrams@gmail.com
-#+DATE:   [2014-02-01 Sat][2014-02-01 Sat]
+#+DATE:   [2014-02-01 Sat]
 #+TAGS:   emacs python
 
-   Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].  The
-   question is whether I use [[http://rope.sourceforge.net/ropemacs.html][Rope]] or [[https://github.com/tkf/emacs-jedi][Jedi]] for auto-completion.  Rope,
-   while claiming more features, seems to crash and lock up my Emacs
-   connections, so I'm back to using Jedi...for now. See [[http://www.masteringemacs.org/articles/2013/01/10/jedi-completion-library-python/][this article]].
+Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].  The
+question is whether I use [[http://rope.sourceforge.net/ropemacs.html][Rope]] or [[https://github.com/tkf/emacs-jedi][Jedi]] for auto-completion.  Rope,
+while claiming more features, seems to crash and lock up my Emacs
+connections, so I'm back to using Jedi...for now. See [[http://www.masteringemacs.org/articles/2013/01/10/jedi-completion-library-python/][this article]].
 
 #+BEGIN_SRC elisp
   (packages-install '( elpy
                        nose
                        jedi
                        py-autopep8
-                       pylint
-                       pysmell
+                       ;; pylint
                        virtualenvwrapper))
 #+END_SRC
 
+* Virtual Environments
+
+  All development for Python is done in [[http://docs.python-guide.org/en/latest/dev/virtualenvs/][virtual environments]].
+  However, this is a monstrous collection of layers.
+
+  Assuming we have installed both [[http://virtualenvwrapper.readthedocs.org/en/latest/index.html][virtualenvwrapper]] and [[https://github.com/kennethreitz/autoenv][autoenv]]:
+
+  #+BEGIN_SRC sh
+    brew install pyenv pyenv-virtualenv pyenv-virtualwrapper autoenv
+    sudo pip install virtualenv   # installed globally
+  #+END_SRC
+
+  And use them by adding the following to our [[file:profile.org::*Python][.profile]]:
+
+  #+BEGIN_SRC sh
+    export WORKON_HOME="$HOME/.virtualenvs"
+    source /usr/local/bin/virtualenvwrapper.sh
+    source /usr/local/opt/autoenv/activate.sh
+  #+END_SRC
+
+  For a given /project/, we first install a particular Python version
+  for it:
+
+  #+BEGIN_SRC sh
+    pyenv install 2.6.6    # pyenv versions to see what is installed
+  #+END_SRC
+
+  Get path to this built/installed executable:
+
+  #+BEGIN_SRC sh
+    pyenv local 2.6.6
+    pyenv which python
+  #+END_SRC
+
+  Each project (environment) will be *named*, and the version of
+  Python can be specified based on the results of the =pyenv which=
+  command above, for instance:
+
+  #+BEGIN_SRC sh
+    mkvirtualenv -p /Users/howard.abrams/.pyenv/versions/2.6.6/bin/python lab
+  #+END_SRC
+
+  And to use the environment in a shell, issue:
+
+  #+BEGIN_SRC sh
+    workon lab
+  #+END_SRC
+
+  Or, create an =.env= at the top of the project:
+
+  #+BEGIN_SRC sh
+    echo 'workon lab' > .env
+  #+END_SRC
+
+  Now, commands like =pip= should be isolated to that virtual environment
+  as well as the needed version.
+
+  For Emacs to work with a /project/, we use [[https://github.com/porterjamesj/virtualenvwrapper.el][virtualenvwrapper.el]]:
+
+  #+BEGIN_SRC elisp
+  (when (require 'virtualenvwrapper nil t)
+    ;; (venv-initialize-interactive-shells) ;; if you want interactive shell support
+    (venv-initialize-eshell) ;; if you want eshell support
+    (setq venv-location (concat (getenv "HOME") "/.virtualenvs/")))
+  #+END_SRC
+
+  Then issue the command, =venv-workon=, which queries for a virtual
+  environment to activate.
+
+  *Note:* To restart the inferior Python processes automatically when
+  switching virtual environments, add =pyvenv-restart-python= to
+  =pyvenv-post-activate-hooks=.
+
 * Basics
-
-  Make sure that PATH can reference the Python executables, and
-  since I am installing a updated Python...
-
-#+BEGIN_SRC elisp :tangle no
-  (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
-#+END_SRC
 
   WSGI files are just Python files in disguise, so tell them to use
   the Python environment:
 
-#+BEGIN_SRC elisp
-  (add-to-list 'auto-mode-alist '("\\.wsgi$" . python-mode))
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (add-to-list 'auto-mode-alist '("\\.wsgi$" . python-mode))
+  #+END_SRC
 
   Careful with the tabs, my friend.
 
-#+BEGIN_SRC elisp
-  (setq-default indent-tabs-mode nil)
-  (setq-default tab-width 4)
+  #+BEGIN_SRC elisp
+    (setq-default indent-tabs-mode nil)
+    (setq-default tab-width 4)
 
-  (add-hook 'python-mode-hook '(lambda () (setq python-indent 4)))
-#+END_SRC
+    (add-hook 'python-mode-hook '(lambda () (setq python-indent 4)))
+  #+END_SRC
 
-   Need to color the defined variables:
+  Need to color the defined variables:
 
-#+BEGIN_SRC elisp
-  (add-hook 'python-mode-hook 'color-identifiers-mode)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (add-hook 'python-mode-hook 'color-identifiers-mode)
+  #+END_SRC
 
 * Prettify
 
@@ -62,76 +127,41 @@
                   (modify-syntax-entry ?. "."))))
   #+END_SRC
 
-* Virtual Environments
-
-  Almost all development for Python is done in [[http://docs.python-guide.org/en/latest/dev/virtualenvs/][virtual environments]],
-  and I need to have Emacs know about it. Would like to have all
-  environments centrally located as well as /within/ the project, to
-  work with both [[http://virtualenvwrapper.readthedocs.org/en/latest/index.html][virtualenvwrapper]] and [[https://github.com/kennethreitz/autoenv][autoenv]], so:
-
-  - Each project has a =.env= directory containing the environment
-  - The =$HOME/.pyenvs= directory has symbolic links... visa-versa?
-
-  Currently using [[https://github.com/jorgenschaefer/pyvenv][pyvenv]]
-
-#+BEGIN_SRC elisp
-  (when (require 'virtualenvwrapper nil t)
-    ;; (venv-initialize-interactive-shells) ;; if you want interactive shell support
-    (venv-initialize-eshell) ;; if you want eshell support
-    (setq venv-location (concat (getenv "HOME") "/.virtualenvs/")))
-#+END_SRC
-
-  The main entry points are =venv-workon=, which queries for a
-  virtual environment to activate.
-
-
-  To restart the inferior Python processes automatically when
-  switching virtual environments, add =pyvenv-restart-python= to
-  =pyvenv-post-activate-hooks=.
-
 * ELPY
 
   According to the [[https://github.com/jorgenschaefer/elpy/wiki][ELPY Web Site]], we first install the python-based
   part, by issuing, =pip install elpy= before we can use this.
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
   ;; (require 'elpy)
   (elpy-enable)
-#+END_SRC
+  #+END_SRC
 
 * Lint
 
-    Lint-style syntax checking for Python builds on the regular
-    Flymake package, however, I am now using Flycheck for that.
+  Let's try out the Pysmell project, which depends on Pymacs:
+  sudo pip install Pymacs
 
-#+BEGIN_SRC elisp :tangle no
-  (when (require 'flymake-python-pyflakes nil t)
-        (add-hook 'python-mode-hook 'flymake-python-pyflakes-load))
-#+END_SRC
+  #+BEGIN_SRC elisp :tangle no
+    (when (require 'pymacs nil t)
+      (when (require 'pysmell nil t)
+        (add-hook 'python-mode-hook (lambda () (pysmell-mode 1)))))
+  #+END_SRC
 
-    Let's try out the Pysmell project, which depends on Pymacs:
-    sudo pip install Pymacs
+  My company has standardized on the =autopep8= project, just make sure you've
+  install the library: =pip install --upgrade autopep8=
 
-#+BEGIN_SRC elisp
-  (require 'pymacs)
-  (require 'pysmell)
-  (add-hook 'python-mode-hook (lambda () (pysmell-mode 1)))
-#+END_SRC
-
-    We also want to use the =autopep8= project, just make sure you've
-    install the library: =pip install --upgrade autopep8=
-
-#+BEGIN_SRC elisp
-  (require 'py-autopep8)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (require 'py-autopep8 nil t)
+  #+END_SRC
 
   Not sure I want to automatically change my files on save...you know,
   in case, I'm editing someone else's file. But this does seem like a
   good idea:
 
-#+BEGIN_SRC elisp :tangle no
-  (add-hook 'before-save-hook 'py-autopep8-before-save)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (add-hook 'before-save-hook 'py-autopep8-before-save)
+  #+END_SRC
 
 * Nose
 
@@ -144,70 +174,72 @@
 
 * Jedi
 
-    Auto-completion system for Python. This code hooks Jedi into the
-    standard Python mode. See [[http://tkf.github.io/emacs-jedi/][these instructions]] for details.
+  Auto-completion system for Python. This code hooks Jedi into the
+  standard Python mode. See [[http://tkf.github.io/emacs-jedi/][these instructions]] for details.
 
-        pip install jedi
+  #+BEGIN_SRC sh
+    pip install jedi
+  #+END_SRC
 
-    New keys:
+  New keys:
 
     - =C-Tab= for auto complete.
     - =C-.= to jump to definition.
     - =C-c d= to show the function documentation
 
-#+BEGIN_SRC elisp
-  (when (require 'jedi nil t)
-        (add-hook 'python-mode-hook 'jedi:setup)
-        (add-hook 'python-mode-hook 'jedi:ac-setup)
-        (setq jedi:setup-keys t)
-        (setq jedi:complete-on-dot t))
-#+END_SRC
+    #+BEGIN_SRC elisp
+      (when (require 'jedi nil t)
+            (add-hook 'python-mode-hook 'jedi:setup)
+            (add-hook 'python-mode-hook 'jedi:ac-setup)
+            (setq jedi:setup-keys t)
+            (setq jedi:complete-on-dot t))
+    #+END_SRC
 
 * Rope
 
-    After installing the following Python libraries using =pip= (in a
-    global environment):
+  After installing the following Python libraries using =pip= (in a
+  global environment):
 
     - [[http://rope.sourceforge.net/index.html][Rope]]
     - [[http://rope.sourceforge.net/ropemacs.html][Ropemacs]]
     - [[https://pypi.python.org/pypi/ropemode][Ropemode]]
 
-    And have installed [[http://pymacs.progiciels-bpi.ca/pymacs.html][pymacs]], with both =package-install= as well as
-    by cloning [[https://github.com/pinard/Pymacs.git][this Git repo]] and issuing a =make install=.
-    According to [[http://stackoverflow.com/questions/2855378/ropemacs-usage-tutorial][this discusssion]], we /just/ need to:
+  And have installed [[http://pymacs.progiciels-bpi.ca/pymacs.html][pymacs]], with both =package-install= as well as
+  by cloning [[https://github.com/pinard/Pymacs.git][this Git repo]] and issuing a =make install=.
+  According to [[http://stackoverflow.com/questions/2855378/ropemacs-usage-tutorial][this discusssion]], we /just/ need to:
 
-#+BEGIN_SRC elisp :tangle no
-  ;; (require 'pymacs)
+  #+BEGIN_SRC elisp :tangle no
+    ;; (require 'pymacs)
 
-  (autoload 'pymacs-apply "pymacs")
-  (autoload 'pymacs-call "pymacs")
-  (autoload 'pymacs-eval "pymacs" nil t)
-  (autoload 'pymacs-exec "pymacs" nil t)
-  (autoload 'pymacs-load "pymacs" nil t)
-  (autoload 'pymacs-autoload "pymacs")
+    (autoload 'pymacs-apply "pymacs")
+    (autoload 'pymacs-call "pymacs")
+    (autoload 'pymacs-eval "pymacs" nil t)
+    (autoload 'pymacs-exec "pymacs" nil t)
+    (autoload 'pymacs-load "pymacs" nil t)
+    (autoload 'pymacs-autoload "pymacs")
 
-  ;;(eval-after-load "pymacs"
-  ;;  '(add-to-list 'pymacs-load-path YOUR-PYMACS-DIRECTORY"))
+    ;;(eval-after-load "pymacs"
+    ;;  '(add-to-list 'pymacs-load-path YOUR-PYMACS-DIRECTORY"))
 
-  (add-hook 'python-mode-hook
-            (lambda ()
-              (pymacs-load "ropemacs" "rope-")
-              (setq ropemacs-enable-autoimport t)))
+    (add-hook 'python-mode-hook
+              (lambda ()
+                (pymacs-load "ropemacs" "rope-")
+                (setq ropemacs-enable-autoimport t)))
 
-  (defun rope-before-save-actions ()
-    ;; Does nothing but save us from an error.
-    )
-  (defun rope-after-save-actions ()
-    ;; Does nothing but save us from an error.
-    )
-  (defun rope-exiting-actions ()
-    ;; Does nothing but save us from an error.
-    )
-#+END_SRC
+    (defun rope-before-save-actions ()
+      ;; Does nothing but save us from an error.
+      )
+    (defun rope-after-save-actions ()
+      ;; Does nothing but save us from an error.
+      )
+    (defun rope-exiting-actions ()
+      ;; Does nothing but save us from an error.
+      )
+  #+END_SRC
 
-    A helluva lot of work, but it is worth it. As long as the Rope
-    instance stays alive and doesn't die. Then it becomes pretty
-    annoying.
+  A helluva lot of work, but it is worth it. As long as the Rope
+  instance stays alive and doesn't die. Then it becomes pretty
+  annoying.
 
 * Debugging
 
@@ -216,20 +248,20 @@
   environment to run all the Python gunk from within Emacs.
 
   #+BEGIN_SRC elisp
-  (require 'virtualenv nil t)
-#+END_SRC
+    (require 'virtualenv nil t)
+  #+END_SRC
 
 * IPython
 
-   Got iPython and EIN? Great! Remember, pre-install the following packages:
+  Got iPython and EIN? Great! Remember, pre-install the following packages:
    - websocket
    - request
    - ein
 
-#+BEGIN_SRC elisp :tangle no
-  (when (require 'ein nil t)
-    (setq ein:use-auto-complete t))
-#+END_SRC
+   #+BEGIN_SRC elisp :tangle no
+     (when (require 'ein nil t)
+       (setq ein:use-auto-complete t))
+   #+END_SRC
 
    After starting the IPython notebook server,
    type =M-x ein:notebooklist-open= to open notebook list.
@@ -238,9 +270,9 @@
 
   Make sure that we can simply =require= this library.
 
-#+BEGIN_SRC elisp
-  (provide 'init-python)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (provide 'init-python)
+  #+END_SRC
 
   Before you can build this on a new system, make sure that you put
   the cursor over any of these properties, and hit: =C-c C-c=
@@ -248,6 +280,7 @@
 #+DESCRIPTION: A literate programming version of my Emacs Initialization of Python
 #+PROPERTY:    results silent
 #+PROPERTY:    tangle ~/.emacs.d/elisp/init-python.el
+#+PROPERTY:    header-args:sh  :tangle no
 #+PROPERTY:    eval no-export
 #+PROPERTY:    comments org
 #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
