@@ -1,0 +1,8 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: loop
+# key: loop
+# --
+(loop [${1:var} ${2:value}
+       ${3:acc} ${4:start}]
+  $0
+  (recur $1 $3))

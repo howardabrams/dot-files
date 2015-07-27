@@ -1,0 +1,7 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: with-test
+# key: with
+# --
+(with-test   ;; Definition: λ $1
+  $0
+  (is))
