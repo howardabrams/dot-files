@@ -84,9 +84,14 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
   #+BEGIN_SRC elisp
     (defun ha/ruby-mode-defaults ()
       ;; It hate subwords
-      (superword-mode +1))
+      (superword-mode +1)
+      (ruby-tools-mode +1)
+
       (setq-default ruby-indent-level 2)
       (setq-default ruby-indent-tabs-mode nil)
+
+      ;; Using =expand-regions= and send a region to REPLs:
+      (local-set-key (kbd "C-c i") 'ruby-send-region))
 
     (add-hook 'ruby-mode-hook 'ha/ruby-mode-defaults)
   #+END_SRC
@@ -132,20 +137,11 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
   my editor, and for Ruby, this is [[https://github.com/nonsequitur/inf-ruby][inf-ruby]]:
 
   #+BEGIN_SRC elisp
-  (require 'inf-ruby)
-  (add-hook 'ruby-mode-hook 'inf-ruby-minor-mode)
+    (require 'inf-ruby)
+    (add-hook 'ruby-mode-hook 'inf-ruby-minor-mode)
   #+END_SRC
 
   To start eval-ing, do: =M-x inf-ruby=  ... or: =C-c C-s=
-
-  I usually use =expand-regions= in order to send a region to this
-  REPL with =ruby-send-region= (=C-c i=).
-
-  #+BEGIN_SRC elisp
-    (add-hook 'ruby-mode-hook
-              (lambda ()
-                (local-set-key (kbd "C-c i") 'ruby-send-region)))
-  #+END_SRC
 
 * Smart Parens
 
@@ -187,7 +183,11 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
   #+BEGIN_SRC elisp
     (when (require 'robe nil t)
       (add-hook 'ruby-mode-hook 'robe-mode)
-      (add-hook 'robe-mode-hook 'ac-robe-setup)
+      (eval-after-load 'company '(push 'company-robe company-backends))
+
+      ;; Don't care to have to start up Ruby if I'm just jumping around
+      (define-key robe-mode-map (kbd "M .") 'xref-find-definitions)
+      (define-key robe-mode-map (kbd "C-M .") 'robe-jump)
 
       (defadvice inf-ruby-console-auto (before activate-rvm-for-robe activate)
         (rvm-activate-corresponding-ruby)))
