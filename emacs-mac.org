@@ -36,6 +36,11 @@ then, only during a graphical run.
     (define-key mac-key-mode-map (kbd "A-+") 'text-scale-increase)
     (define-key mac-key-mode-map (kbd "A-_") 'text-scale-decrease)
     (define-key mac-key-mode-map (kbd "A-l") 'goto-line)
+
+    ;; Command-Q is awful (too easy to hit) ... especially next to
+    ;; the more benign key binding to close a window: Cmd-W
+    (define-key mac-key-mode-map (kbd "A-q") 'dont-kill-emacs)
+
     (define-key mac-key-mode-map (kbd "A-w") 'bury-buffer)
     (define-key mac-key-mode-map (kbd "A-M-w") 'kill-this-buffer))
 #+END_SRC
