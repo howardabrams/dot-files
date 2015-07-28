@@ -186,8 +186,8 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
       (eval-after-load 'company '(push 'company-robe company-backends))
 
       ;; Don't care to have to start up Ruby if I'm just jumping around
-      (define-key robe-mode-map (kbd "M .") 'xref-find-definitions)
-      (define-key robe-mode-map (kbd "C-M .") 'robe-jump)
+      (define-key robe-mode-map (kbd "M-.") 'xref-find-definitions)
+      (define-key robe-mode-map (kbd "C-M-.") 'robe-jump)
 
       (defadvice inf-ruby-console-auto (before activate-rvm-for-robe activate)
         (rvm-activate-corresponding-ruby)))
