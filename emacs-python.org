@@ -144,37 +144,16 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
 
 * Lint
 
-  Let's try out the Pysmell project, which depends on Pymacs:
-  sudo pip install Pymacs
-
-  #+BEGIN_SRC elisp :tangle no
-    (when (require 'pymacs nil t)
-      (when (require 'pysmell nil t)
-        (add-hook 'python-mode-hook (lambda () (pysmell-mode 1)))))
-  #+END_SRC
-
-  My company has standardized on the =autopep8= project, just make sure you've
-  install the library:
+  My company has standardized on the =pep8= project, just make sure you've
+  install the [[https://flake8.readthedocs.org/en/2.3.0/][Flake8]] library:
 
   #+BEGIN_SRC sh
     workon wpc # Or whatever the project name is
-    pip install --upgrade autopep8
+    pip install --upgrade flake8
   #+END_SRC
 
-  And then we can use it, as long as =workon= command is set to the
-  same virtual environment.
-
-  #+BEGIN_SRC elisp
-    (require 'py-autopep8 nil t)
-  #+END_SRC
-
-  Not sure I want to automatically change my files on save...you know,
-  in case, I'm editing someone else's file. But this does seem like a
-  good idea:
-
-  #+BEGIN_SRC elisp
-    (add-hook 'before-save-hook 'py-autopep8-before-save)
-  #+END_SRC
+  [[http://www.flycheck.org][Flycheck]] automatically supports [[http://www.flycheck.org/manual/latest/Supported-languages.html#Python][Python with Flake8]]. To use it, set
+  the virtual environment, and the errors should appear automatically.
 
 * Nose
 
@@ -208,68 +187,6 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
           (setq jedi:setup-keys t)
           (setq jedi:complete-on-dot t))
   #+END_SRC
-
-* Rope
-
-  Rope seems to be a helluva lot of work compare to Jedi...especially
-  since the Rope instance dies and leaves the communication port
-  open. Pretty annoying, so I will just be using Jedi for the time
-  being, but will leave these instructions around for a wee bit.
-
-  After installing the following Python libraries using =pip= (in a
-  global environment):
-
-    - [[http://rope.sourceforge.net/index.html][Rope]]
-    - [[http://rope.sourceforge.net/ropemacs.html][Ropemacs]]
-    - [[https://pypi.python.org/pypi/ropemode][Ropemode]]
-
-  And have installed [[http://pymacs.progiciels-bpi.ca/pymacs.html][pymacs]], with both =package-install= as well as
-  by cloning [[https://github.com/pinard/Pymacs.git][this Git repo]] and issuing a =make install=.
-  According to [[http://stackoverflow.com/questions/2855378/ropemacs-usage-tutorial][this discusssion]], we /just/ need to:
-
-  #+BEGIN_SRC elisp :tangle no
-    (autoload 'pymacs-apply "pymacs")
-    (autoload 'pymacs-call "pymacs")
-    (autoload 'pymacs-eval "pymacs" nil t)
-    (autoload 'pymacs-exec "pymacs" nil t)
-    (autoload 'pymacs-load "pymacs" nil t)
-    (autoload 'pymacs-autoload "pymacs")
-
-    ;;(eval-after-load "pymacs"
-    ;;  '(add-to-list 'pymacs-load-path YOUR-PYMACS-DIRECTORY"))
-
-    (add-hook 'python-mode-hook
-              (lambda ()
-                (pymacs-load "ropemacs" "rope-")
-                (setq ropemacs-enable-autoimport t)))
-
-    (defun rope-before-save-actions ()
-      ;; Does nothing but save us from an error.
-      )
-    (defun rope-after-save-actions ()
-      ;; Does nothing but save us from an error.
-      )
-    (defun rope-exiting-actions ()
-      ;; Does nothing but save us from an error.
-      )
-  #+END_SRC
-
-* IPython
-
-  Got iPython and EIN? Great! Remember, pre-install (with =pip=) the
-  following packages:
-
-   - websocket
-   - request
-   - ein
-
-   #+BEGIN_SRC elisp :tangle no
-     (when (require 'ein nil t)
-       (setq ein:use-auto-complete t))
-   #+END_SRC
-
-   After starting the IPython notebook server,
-   type =M-x ein:notebooklist-open= to open notebook list.
 
 * Technical Artifacts
 
