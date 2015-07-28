@@ -13,8 +13,7 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
   (packages-install '( elpy
                        nose
                        jedi
-                       py-autopep8
-                       ;; pylint
+                       py-autopep8          ;; pylint
                        virtualenvwrapper))
 #+END_SRC
 
@@ -39,7 +38,8 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
   #+END_SRC
 
   For a given /project/, we first install a particular Python version
-  for it:
+  for it using the =pyenv= command (which must be done prior to
+  starting a new virtual environment with the =mkvirtualenv= command):
 
   #+BEGIN_SRC sh
     pyenv install 2.6.6    # pyenv versions to see what is installed
@@ -75,17 +75,8 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
   Now, commands like =pip= should be isolated to that virtual environment
   as well as the needed version.
 
-  For Emacs to work with a /project/, we use [[https://github.com/porterjamesj/virtualenvwrapper.el][virtualenvwrapper.el]]:
-
-  #+BEGIN_SRC elisp
-  (when (require 'virtualenvwrapper nil t)
-    ;; (venv-initialize-interactive-shells) ;; if you want interactive shell support
-    (venv-initialize-eshell) ;; if you want eshell support
-    (setq venv-location (concat (getenv "HOME") "/.virtualenvs/")))
-  #+END_SRC
-
-  Then issue the command, =venv-workon=, which queries for a virtual
-  environment to activate.
+  The [[http://elpy.readthedocs.org/en/latest/concepts.html#virtual-envs][Elpy Project]] deals with the =virtualenvwrapper=, so call
+  function, =M-x pyvenv-workon=, to activate a virtual environment.
 
   *Note:* To restart the inferior Python processes automatically when
   switching virtual environments, add =pyvenv-restart-python= to
@@ -130,11 +121,25 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
 * ELPY
 
   According to the [[https://github.com/jorgenschaefer/elpy/wiki][ELPY Web Site]], we first install the python-based
-  part, by issuing, =pip install elpy= before we can use this.
+  package components:
+
+  #+BEGIN_SRC sh
+    pip install jedi
+
+    # flake8 for code checks ... which installs pep8
+    pip install flake8
+
+    # and importmagic for automatic imports
+    pip install importmagic
+
+    pip install elpy
+  #+END_SRC
+
+  Once this has been installed, we can enable it:
 
   #+BEGIN_SRC elisp
-  ;; (require 'elpy)
-  (elpy-enable)
+  (when (require 'elpy nil t)
+    (elpy-enable))
   #+END_SRC
 
 * Lint
@@ -149,7 +154,15 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
   #+END_SRC
 
   My company has standardized on the =autopep8= project, just make sure you've
-  install the library: =pip install --upgrade autopep8=
+  install the library:
+
+  #+BEGIN_SRC sh
+    workon wpc # Or whatever the project name is
+    pip install --upgrade autopep8
+  #+END_SRC
+
+  And then we can use it, as long as =workon= command is set to the
+  same virtual environment.
 
   #+BEGIN_SRC elisp
     (require 'py-autopep8 nil t)
@@ -175,7 +188,8 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
 * Jedi
 
   Auto-completion system for Python. This code hooks Jedi into the
-  standard Python mode. See [[http://tkf.github.io/emacs-jedi/][these instructions]] for details.
+  standard Python mode. See [[http://tkf.github.io/emacs-jedi/][these instructions]] for details (but this
+  should have been installed for Elpy).
 
   #+BEGIN_SRC sh
     pip install jedi
@@ -184,18 +198,23 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
   New keys:
 
     - =C-Tab= for auto complete.
-    - =C-.= to jump to definition.
+    - =C-.= to jump to definition (overrides the =ctags= interface)
     - =C-c d= to show the function documentation
 
-    #+BEGIN_SRC elisp
-      (when (require 'jedi nil t)
-            (add-hook 'python-mode-hook 'jedi:setup)
-            (add-hook 'python-mode-hook 'jedi:ac-setup)
-            (setq jedi:setup-keys t)
-            (setq jedi:complete-on-dot t))
-    #+END_SRC
+  #+BEGIN_SRC elisp
+    (when (require 'jedi nil t)
+          (add-hook 'python-mode-hook 'jedi:setup)
+          (add-hook 'python-mode-hook 'jedi:ac-setup)
+          (setq jedi:setup-keys t)
+          (setq jedi:complete-on-dot t))
+  #+END_SRC
 
 * Rope
+
+  Rope seems to be a helluva lot of work compare to Jedi...especially
+  since the Rope instance dies and leaves the communication port
+  open. Pretty annoying, so I will just be using Jedi for the time
+  being, but will leave these instructions around for a wee bit.
 
   After installing the following Python libraries using =pip= (in a
   global environment):
@@ -209,8 +228,6 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
   According to [[http://stackoverflow.com/questions/2855378/ropemacs-usage-tutorial][this discusssion]], we /just/ need to:
 
   #+BEGIN_SRC elisp :tangle no
-    ;; (require 'pymacs)
-
     (autoload 'pymacs-apply "pymacs")
     (autoload 'pymacs-call "pymacs")
     (autoload 'pymacs-eval "pymacs" nil t)
@@ -237,23 +254,11 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
       )
   #+END_SRC
 
-  A helluva lot of work, but it is worth it. As long as the Rope
-  instance stays alive and doesn't die. Then it becomes pretty
-  annoying.
-
-* Debugging
-
-  Use the [[https://pypi.python.org/pypi/virtualenv][virtualenv]] world of goodness, but only if it is installed.
-  This allows me to =M-x virtualenv-workon= and specify the virtual
-  environment to run all the Python gunk from within Emacs.
-
-  #+BEGIN_SRC elisp
-    (require 'virtualenv nil t)
-  #+END_SRC
-
 * IPython
 
-  Got iPython and EIN? Great! Remember, pre-install the following packages:
+  Got iPython and EIN? Great! Remember, pre-install (with =pip=) the
+  following packages:
+
    - websocket
    - request
    - ein
