@@ -37,6 +37,20 @@ some significant differences to address. To this end, I [[http://www.howardism.o
      (setenv "PAGER" "cat")
    #+END_SRC
 
+** Don’t Modify the Text
+
+   Scrolling through the output and searching for results that can be
+   copied to the kill ring is a great feature of Eshell. However,
+   instead of running =end-of-buffer= key-binding, the following
+   setting means any other key will jump back to the prompt:
+
+   #+BEGIN_SRC elisp
+     (setq eshell-scroll-to-bottom-on-input t)
+   #+END_SRC
+
+   *Note:* hitting return on any other line will copy that line to the
+    prompt and immediately execute it.
+
 * Aliases
 
   Gotta have some [[http://www.emacswiki.org/emacs/EshellAlias][shell aliases]], right?
