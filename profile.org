@@ -89,6 +89,66 @@ a shell-slut, and dabble between Zshell and Fish.
 
 * Prompt
 
+  Better approach to displaying the current path, is to only display
+  the first or second directory name ... any maybe the name of the Git
+  project. Holy hell, so many exceptions and so few patterns...
+
+  #+BEGIN_SRC sh
+    function trim_dir {
+        V='[[:alnum:]._-]'
+        D='[[:alnum:]._/-]'
+        sed -E "s|/$D+/($V+)|../\1|" <<< $1
+    }
+
+    function prompt_dir {
+        PWD=$(pwd)
+
+        if [[ $PWD == $HOME ]]
+        then
+            echo -n '~'
+        elif [[ $PWD == $HOME/Work ]]
+        then
+            echo -n '~/Work'
+            
+             # In a Git project?
+        elif PRJ=$(git rev-parse --show-toplevel 2>/dev/null)
+        then
+            name=$(basename $PRJ)
+            rest=$(sed "s|$PRJ||" <<< $PWD)
+            echo -n "[$name]$(trim_dir $rest)"
+
+             # In work-related directory...
+        elif [[ $PWD == $HOME/Work/* ]]
+        then
+            name=$(sed -E "s|$HOME/Work/([[:alnum:]_-]+).*|\1|" <<< $PWD)
+            base=$(basename $PWD)
+            intr=$(basename `dirname $PWD`)
+
+            if [[ $name == $base ]]
+            then
+                echo -n "Ⓦ/$name"
+            elif [[ $intr == $name ]]
+            then
+                echo -n "Ⓦ/$name/$base"
+            else
+                echo -n "Ⓦ/$name/../$base"
+            fi
+
+             # In a home directory
+        elif [[ $PWD == $HOME/* ]]
+        then
+            if [[ $(basename `dirname $PWD`) == $(basename $HOME) ]]
+            then
+                echo -n "~/$(basename $PWD)"
+            else
+                echo -n "~/$(trim_dir $PWD)"
+            fi
+        else
+            trim_dir $PWD
+        fi
+    }
+  #+END_SRC
+
   I wanna add everything to my command line prompt: the Git
   repository, the Python virtual environment (in white), the Ruby
   Virtual Environment (in red) ... of course, now I have no room to
@@ -97,11 +157,13 @@ a shell-slut, and dabble between Zshell and Fish.
   #+BEGIN_SRC sh
     if [ -d ~/.rvm ]
     then
-        export PS1='\[\e[1;31m\]$(~/.rvm/bin/rvm-prompt v g)\[\e[1;34m\] ../\W$(__git_ps1 " \[\e[1;32m\]:%s")\[\e[0m\] \$ '
+        export PS1='\[\e[1;31m\]$(~/.rvm/bin/rvm-prompt v g)\[\e[1;34m\] $(prompt_dir)$(__git_ps1 " \[\e[1;32m\]:%s")\[\e[0m\] \$ '
     else
-        export PS1='../\W$(__git_ps1 " \[\e[1;32m\]:%s")\[\e[0m\] \$ '
+        export PS1='\[\e[1;34m\]$(prompt_dir)$(__git_ps1 " \[\e[1;32m\]:%s")\[\e[0m\] \$ '
     fi
   #+END_SRC
+
+  Good thing I seldom use a shell.
 
 * My Function Collection
 
