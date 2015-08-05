@@ -1765,7 +1765,7 @@
    See [[file:emacs-clojure.org][emacs-clojure.el]] for details on working with [[http://clojure.org][Clojure]].
    Not sure if I should just load it directly, like:
 
-   #+BEGIN_SRC elisp
+   #+BEGIN_SRC elisp :tangle no
      (require 'init-clojure)
    #+END_SRC
 
