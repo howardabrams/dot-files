@@ -99,6 +99,13 @@ email messages that arrive on my GMail account.
   However, I’m not sure if using that command will automatically index
   it or not.
 
+  Finally, we need to make sure that we can have org-mode /link/ to
+  mail messages through mu4e:
+
+  #+BEGIN_SRC elisp
+    (require 'org-mu4e nil t)
+  #+END_SRC
+
 * Sending Email
 
   To send to GMail, we need to install TLS:
