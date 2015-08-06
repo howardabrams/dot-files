@@ -1080,89 +1080,109 @@
      brew install homebrew/dupes/grep
    #+END_SRC
 
-   With [[https://twitter.com/_wilfredh][Wilfred Hughes]] fancy [[https://github.com/Wilfred/ag.el/#agel][ag package]], I’ve switch from [[http://beyondgrep.com][ack]] to the
-   [[http://geoff.greer.fm/2011/12/27/the-silver-searcher-better-than-ack/][Silver Searcher]]:
+*** Silver Searcher
 
-   #+BEGIN_SRC sh
-     brew install ag
-   #+END_SRC
+    With [[https://twitter.com/_wilfredh][Wilfred Hughes]] fancy [[https://github.com/Wilfred/ag.el/#agel][ag package]], I’ve switch from [[http://beyondgrep.com][ack]] to the
+    [[http://geoff.greer.fm/2011/12/27/the-silver-searcher-better-than-ack/][Silver Searcher]]:
 
-   Best part about the ag package, is not needing to do any
-   configuration (as it is all load-on demand).
+    #+BEGIN_SRC sh
+      brew install ag
+    #+END_SRC
 
-   - =ag-project= is the primary interface for me
-   - =ag-project-at-point= sets the query with the word at point
+    Best part about the ag package, is not needing any configuration
+    (as all functions are load-on demand).
 
-   The only downside is needing to pre-define [[file:~/.agignore][ignorable files]]:
+    - =ag-project-at-point= :: sets the query with the word at point, use: =C-c p s s=
+    - =ag-regexp= :: searches for regular expressions in a chosen
+                     directory (*Note:* the =ag= command prompts with
+                     =regexp=, but it adds a =--literal= option to the command)
+    - =C-u= :: Adding a prefix adds command line options, like =-s= or
+               =-i= to specify case-sensitivity.
 
-   #+BEGIN_SRC org :tangle ~/.agignore
-   #.* 
-   #+END_SRC
-  
-   However, I also need a global /indexing/ approach to searching
-   through my notes, and since I'm usually on a Mac, I might as well
-   use the /Spotlight/ service that is already running:
+    Create collection of [[file:~/.agignore][ignorable files]] so it doesn’t look in backup files:
 
-   #+BEGIN_SRC elisp
-     (setq locate-command "mdfind")  ;; Use Mac OS X's Spotlight
-     (global-set-key (kbd "C-c f l") 'locate)
-   #+END_SRC
+    #+BEGIN_SRC org :tangle ~/.agignore
+      #.* 
+    #+END_SRC
+   
+    Using the latest version of =ag=? Highlight the keywords:
 
-   The following function wraps =locate-with-filter= to only grab
-   =org-mode= files:
+    #+BEGIN_SRC elisp
+      (setq ag-highlight-search t)
+    #+END_SRC
 
-   #+BEGIN_SRC elisp
-     (defun locate-org-files (search-string)
-       (interactive "sSearch string: ")
-       (locate-with-filter search-string ".org$"))
+    Personally, I’m almost /always/ looking for full words:
 
-     (global-set-key (kbd "C-c f o") 'locate-org-files)
-   #+END_SRC
+    #+BEGIN_SRC elisp
+      (add-to-list 'ag-arguments "--word-regexp")
+    #+END_SRC
 
-   We /could/ limit the location that Spotlight request searches:
+*** Spotlight
 
-   #+BEGIN_SRC elisp :tangle no
-     (defun locate-my-org-files (search-string)
-       (let ((tech (concat (getenv "HOME") "/technical"))
-             (pers (concat (getenv "HOME") "/personal"))
-             (note (concat (getenv "HOME") "/notes"))
-             (jrnl (concat (getenv "HOME") "/journal")))
-         (-flatten (list "mdfind"
-                  (if (file-exists-p tech) (list "-onlyin" tech))
-                  (if (file-exists-p pers) (list "-onlyin" pers))
-                  (if (file-exists-p note) (list "-onlyin" note))
-                  (if (file-exists-p jrnl) (list "-onlyin" jrnl))
-                  "-interpret" search-string))))
+    However, I also need a global /indexing/ approach to searching
+    through my notes, and since I'm usually on a Mac, I might as well
+    use the /Spotlight/ service that is already running:
 
-     (setq locate-make-command-line 'locate-my-org-files)
-   #+END_SRC
+    #+BEGIN_SRC elisp
+      (setq locate-command "mdfind")  ;; Use Mac OS X's Spotlight
+      (global-set-key (kbd "C-c f l") 'locate)
+    #+END_SRC
 
-   However, the problem with locate, is it doesn't show me any
-   context. My [[file:bin/find-notes][find-notes]] script uses both =mdfind= and =grep= to both
-   better search and display some useful context.
+    The following function wraps =locate-with-filter= to only grab
+    =org-mode= files:
 
-   Just need to wrap that in a function:
+    #+BEGIN_SRC elisp
+      (defun locate-org-files (search-string)
+        (interactive "sSearch string: ")
+        (locate-with-filter search-string ".org$"))
 
-   #+BEGIN_SRC elisp
-     (defun find-notes (words)
-       "Uses my 'find-notes' shell script as a better grep
-     utility. Not only does it show the results in a clickable list,
-     it also highlights the result, allowing us to put more context in
-     the output."
-       (interactive "sSearch for words:")
-       (let ((program (concat (getenv "HOME") "/bin/find-notes"))
-             (buffer-name (concat "*find-notes: " words "*")))
-         (call-process program nil buffer-name t words)
-         (switch-to-buffer buffer-name)
-         (read-only-mode 1)
-         (grep-mode)
-         (toggle-truncate-lines)
-         (beginning-of-buffer)
-         (dolist (word (split-string words))
-           (highlight-regexp word))))
+      (global-set-key (kbd "C-c f o") 'locate-org-files)
+    #+END_SRC
 
-     (global-set-key (kbd "C-x C-n") 'find-notes)
-   #+END_SRC
+    We /could/ limit the location that Spotlight request searches:
+
+    #+BEGIN_SRC elisp :tangle no
+      (defun locate-my-org-files (search-string)
+        (let ((tech (concat (getenv "HOME") "/technical"))
+              (pers (concat (getenv "HOME") "/personal"))
+              (note (concat (getenv "HOME") "/notes"))
+              (jrnl (concat (getenv "HOME") "/journal")))
+          (-flatten (list "mdfind"
+                   (if (file-exists-p tech) (list "-onlyin" tech))
+                   (if (file-exists-p pers) (list "-onlyin" pers))
+                   (if (file-exists-p note) (list "-onlyin" note))
+                   (if (file-exists-p jrnl) (list "-onlyin" jrnl))
+                   "-interpret" search-string))))
+
+      (setq locate-make-command-line 'locate-my-org-files)
+    #+END_SRC
+
+    However, the problem with locate, is it doesn't show me any
+    context. My [[file:bin/find-notes][find-notes]] script uses both =mdfind= and =grep= to both
+    better search and display some useful context.
+
+    Just need to wrap that in a function:
+
+    #+BEGIN_SRC elisp
+      (defun find-notes (words)
+        "Uses my 'find-notes' shell script as a better grep
+      utility. Not only does it show the results in a clickable list,
+      it also highlights the result, allowing us to put more context in
+      the output."
+        (interactive "sSearch for words:")
+        (let ((program (concat (getenv "HOME") "/bin/find-notes"))
+              (buffer-name (concat "*find-notes: " words "*")))
+          (call-process program nil buffer-name t words)
+          (switch-to-buffer buffer-name)
+          (read-only-mode 1)
+          (grep-mode)
+          (toggle-truncate-lines)
+          (beginning-of-buffer)
+          (dolist (word (split-string words))
+            (highlight-regexp word))))
+
+      (global-set-key (kbd "C-x C-n") 'find-notes)
+    #+END_SRC
 
 ** Recent File List
 
