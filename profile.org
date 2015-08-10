@@ -76,13 +76,14 @@ a shell-slut, and dabble between Zshell and Fish.
 
 * Python
 
-  Assuming we have installed both [[http://virtualenvwrapper.readthedocs.org/en/latest/index.html][virtualenvwrapper]] and [[https://github.com/kennethreitz/autoenv][autoenv]], the
-  following should activate them:
+  Assuming we have [[https://github.com/yyuu/pyenv][pyenv]] installed, let’s activate it:
 
   #+BEGIN_SRC sh
-    export WORKON_HOME="$HOME/.virtualenvs"
-    source /usr/local/bin/virtualenvwrapper.sh
-    source /usr/local/opt/autoenv/activate.sh
+    export PYENV_ROOT="$HOME/.pyenv"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
   #+END_SRC
 
   See [[file:emacs-python.org::*Virtual%20Environments][Virtual Environments]] in the Python Emacs setup for details.
@@ -109,7 +110,7 @@ a shell-slut, and dabble between Zshell and Fish.
         elif [[ $PWD == $HOME/Work ]]
         then
             echo -n '~/Work'
-            
+
              # In a Git project?
         elif PRJ=$(git rev-parse --show-toplevel 2>/dev/null)
         then

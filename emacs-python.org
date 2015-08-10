@@ -20,22 +20,28 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
 * Virtual Environments
 
   All development for Python is done in [[http://docs.python-guide.org/en/latest/dev/virtualenvs/][virtual environments]].
-  However, this is a monstrous collection of layers.
-
-  Assuming we have installed both [[http://virtualenvwrapper.readthedocs.org/en/latest/index.html][virtualenvwrapper]] and [[https://github.com/kennethreitz/autoenv][autoenv]]:
-
-  #+BEGIN_SRC sh
-    brew install pyenv pyenv-virtualenv pyenv-virtualwrapper autoenv
-    sudo pip install virtualenv   # installed globally
-  #+END_SRC
-
-  And use them by adding the following to our [[file:profile.org::*Python][.profile]]:
+  However, this is a monstrous collection of layers, so I am now using
+  [[https://github.com/yyuu/pyenv][pyenv]] for all my Pythonic virtualization needs, as it does a better
+  job of both [[http://virtualenvwrapper.readthedocs.org/en/latest/index.html][virtualenvwrapper]] and [[https://github.com/kennethreitz/autoenv][autoenv]]:
 
   #+BEGIN_SRC sh
-    export WORKON_HOME="$HOME/.virtualenvs"
-    source /usr/local/bin/virtualenvwrapper.sh
-    source /usr/local/opt/autoenv/activate.sh
+    brew install pyenv pyenv-virtualenv pyenv-virtualwrapper
   #+END_SRC
+
+  Or, if on Linux, let’s do it neckbeard-style:
+
+  #+BEGIN_SRC sh
+    git clone https://github.com/yyuu/pyenv.git ~/.pyenv
+    git clone https://github.com/yyuu/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv
+  #+END_SRC
+
+  Next, use pip to install virtualenv globally.
+
+  #+BEGIN_SRC sh
+    sudo pip install virtualenv
+  #+END_SRC
+
+  And use them by configuring our [[file:profile.org::*Python][.profile]].
 
   For a given /project/, we first install a particular Python version
   for it using the =pyenv= command (which must be done prior to
@@ -57,30 +63,28 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
   command above, for instance:
 
   #+BEGIN_SRC sh
-    mkvirtualenv -p /Users/howard.abrams/.pyenv/versions/2.6.6/bin/python lab
+    pyenv virtualenv 2.6.6 lab
   #+END_SRC
 
   And to use the environment in a shell, issue:
 
   #+BEGIN_SRC sh
-    workon lab
+    pyenv activate lab
   #+END_SRC
 
-  Or, create an =.env= at the top of the project:
+  Or, better yet, use the =local= option to make that environment
+  active whenever you enter that directory:
 
   #+BEGIN_SRC sh
-    echo 'workon lab' > .env
+    pyenv local lab
   #+END_SRC
 
   Now, commands like =pip= should be isolated to that virtual environment
   as well as the needed version.
 
   The [[http://elpy.readthedocs.org/en/latest/concepts.html#virtual-envs][Elpy Project]] deals with the =virtualenvwrapper=, so call
-  function, =M-x pyvenv-workon=, to activate a virtual environment.
-
-  *Note:* To restart the inferior Python processes automatically when
-  switching virtual environments, add =pyvenv-restart-python= to
-  =pyvenv-post-activate-hooks=.
+  function, =M-x pyvenv-workon=, to activate a virtual environment,
+  however, we will want to check out [[https://github.com/proofit404/pyenv-mode][pyenv-mode]] to see if will help.
 
 * Basics
 
