@@ -79,6 +79,7 @@
 #+DESCRIPTION: A literate programming version of my Emacs Initialization of Web Programming
 #+PROPERTY:    results silent
 #+PROPERTY:    tangle ~/.emacs.d/elisp/init-web.el
+#+PROPERTY:    header-args:sh  :tangle no
 #+PROPERTY:    eval no-export
 #+PROPERTY:    comments org
 #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil

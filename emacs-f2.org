@@ -174,6 +174,7 @@ phrases I want to type a bit too often.
 
 #+DESCRIPTION: A literate programming version of my Emacs Initialization for Graphical Clients
 #+PROPERTY:    results silent
+#+PROPERTY:    header-args:sh  :tangle no
 #+PROPERTY:    tangle ~/.emacs.d/elisp/init-f2.el
 #+PROPERTY:    eval no-export
 #+PROPERTY:    comments org

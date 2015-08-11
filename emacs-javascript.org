@@ -230,6 +230,8 @@
 
 #+DESCRIPTION: A literate programming version of my Emacs Initialization of JavaScript
 #+PROPERTY:    results silent
+#+PROPERTY:    header-args:js  :tangle no
+#+PROPERTY:    header-args:sh  :tangle no
 #+PROPERTY:    tangle ~/.emacs.d/elisp/init-javascript.el
 #+PROPERTY:    eval no-export
 #+PROPERTY:    comments org

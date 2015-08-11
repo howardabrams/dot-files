@@ -202,6 +202,14 @@
                       yasnippet))
    #+END_SRC
 
+** Use-Package
+
+   Just beginning to use [[https://github.com/jwiegley/use-package][use-package]]. I’m sure it will be a long time to finally convert everything.
+
+   #+BEGIN_SRC elisp
+     (require 'use-package)
+   #+END_SRC
+
 * Variables
 
   General settings about me that other packages can use. The biggest
@@ -336,16 +344,17 @@
    - *F2* - Standard alternate meta key with lots of bindings
    - *F3* - Define a keyboard macro
    - *F4* - Replay a keyboard macro
-   - *F5* - Repeat the last command ...
-   - *F6* - Repeat the last command entered at the M-x prompt
+   - *F5* - Use org-mode’s Mark Ring feature globally
+   - *F6* - Open to temporary, changeable commands...
    - *F7* - Switch to another window ... Shift goes the other way.
    - *F8* - Switch to buffer
    - *F9* - My other meta key for changing colors and other odd
      bindings that I actually don't use that often
 
    #+BEGIN_SRC elisp
-     (global-set-key (kbd "<f5>") 'repeat)
-     (global-set-key (kbd "<f6>") 'repeat-complex-command)
+     (global-set-key (kbd "<f5>") 'org-mark-ring-push)
+     (global-set-key (kbd "C-<f5>") 'org-mark-ring-goto)
+     ;; (global-set-key (kbd "<f6>") ')
      (global-set-key (kbd "<f7>") 'other-window)
      (global-set-key (kbd "<f8>") 'ido-switch-buffer)
    #+END_SRC
@@ -1102,20 +1111,18 @@
     Create collection of [[file:~/.agignore][ignorable files]] so it doesn’t look in backup files:
 
     #+BEGIN_SRC org :tangle ~/.agignore
-      #.* 
+      #.*
     #+END_SRC
-   
+
     Using the latest version of =ag=? Highlight the keywords:
 
     #+BEGIN_SRC elisp
-      (setq ag-highlight-search t)
+      (use-package ag
+        :init      (setq ag-highlight-search t)
+        :config    (add-to-list 'ag-arguments "--word-regexp"))
     #+END_SRC
 
     Personally, I’m almost /always/ looking for full words:
-
-    #+BEGIN_SRC elisp
-      (add-to-list 'ag-arguments "--word-regexp")
-    #+END_SRC
 
 *** Spotlight
 
@@ -2132,6 +2139,7 @@
 
 #+DESCRIPTION: A literate programming version of my Emacs Initialization script, loaded by the .emacs file.
 #+PROPERTY:    results silent
+#+PROPERTY:    header-args:sh  :tangle no
 #+PROPERTY:    tangle ~/.emacs.d/elisp/init-main.el
 #+PROPERTY:    eval no-export
 #+PROPERTY:    comments org

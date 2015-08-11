@@ -177,6 +177,7 @@ coupled with some magic available to JavaScript.
 #+DESCRIPTION: Instructions for getting Emacs to be able to publish a blog system using org-page
 #+PROPERTY:    results silent
 #+PROPERTY:    tangle ~/.emacs.d/elisp/init-blog.el
+#+PROPERTY:    header-args:sh  :tangle no
 #+PROPERTY:    eval no-export
 #+PROPERTY:    comments org
 #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil

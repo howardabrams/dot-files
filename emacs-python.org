@@ -207,6 +207,7 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
 #+PROPERTY:    results silent
 #+PROPERTY:    tangle ~/.emacs.d/elisp/init-python.el
 #+PROPERTY:    header-args:sh  :tangle no
+#+PROPERTY:    header-args:python  :tangle no
 #+PROPERTY:    eval no-export
 #+PROPERTY:    comments org
 #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
