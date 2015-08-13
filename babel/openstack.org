@@ -3,6 +3,7 @@
 #+EMAIL:  howard.abrams@workday.com
 #+DATE:   2015 Aug 12
 #+TAGS:   openstack emacs
+#+PROPERTY: header-args:sh  :exports both
 
 The following “functions” are useful for formatting org-mode code
 blocks.  This is part of my Library of Babel collection. Remember to
@@ -44,8 +45,7 @@ hit the =C-c C-v i= to add these sections.
   #+NAME: os-table
   #+BEGIN_SRC elisp :results value table :var data=""
     (mapcar (lambda (cells) (filter (lambda (cell) (not (string-empty-p cell))) cells))
-            (filter (lambda (line) (not (string-match "^\+--" (car line)))) data)
-    )
+            (filter (lambda (line) (not (string-match "^\+--" (car line)))) data))
   #+END_SRC
 
   To verify this code, we first begin with a typical output from a
