@@ -1,0 +1,122 @@
+#+TITLE:  Shell Output Formatting
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2015 Jul 31
+#+TAGS:   technical shell linux emacs
+
+This is part of my Library of Babel collection. Remember to hit the
+=C-c C-v i= to add these sections.
+
+* Table Separator
+
+  Instead of relying on the org-mode to separate the output into a
+  table based on spaces, let’s allow me to do a :post call and
+  break up the cells based on a regular expression.
+
+  To begin, let’s have some sample data to play with:
+
+   #+NAME: example-table
+   #+BEGIN_EXAMPLE
+   a    b          c
+   d    ei ei o    f
+   g    h          i
+   #+END_EXAMPLE
+
+   And
+
+   #+NAME: example-table2
+   #+BEGIN_EXAMPLE
+   a - b c
+   doh - ei ei o f
+   g - h i
+   #+END_EXAMPLE
+
+   Since the results from an =sh= block come in as a single string, we
+   use the above example code to pass into this block:
+
+   #+NAME: table_sep
+   #+BEGIN_SRC elisp :var data=example-table regex="  +" :results code
+     (defun split-line-by-colpos (str positions)
+       "Split a string, STR, based on a list of column POSITIONS."
+       (let ((end-col (car positions)))
+         (if (and end-col str (not (string-empty-p str)))
+             (cons
+              (string-trim (substring str 0 end-col))
+              (split-line-by-colpos (substring str end-col) (cdr positions)))
+           (list (string-trim str)))))
+
+     ;; (split-line-by-colpos "foo bar bazzies bo" '(4 4 8)) => ("foo" "bar" "bazzies" "bo")
+
+     (defun analyze-line-for-colpos (str &optional regex)
+       "Calculates columns of first line, STR, based on a regular expression, REGEX.
+        Defaults for columns with multiple spaces (not a single space)."
+       (unless regex (setq regex "   *"))
+       (if (and str (not (string-empty-p str)))
+           (let ((pos (string-match regex str))
+                 (epos (match-end 0)))
+             (when pos
+               (cons epos
+                     (analyze-line-for-colpos (substring str epos) regex))))))
+
+     ;; (analyze-line-for-colpos "a     b          c") ;; => (6 11)
+
+     ;; (let* ((s "abc   defghi   jkl")
+     ;;        (pos (analyze-line-for-colpos s)))
+     ;;   (split-line-by-colpos s pos))  ;; => ("abc" "defghi" "jkl")
+
+     ;; (let* ((s "abc - def ghi jkl")
+     ;;        (pos (analyze-line-for-colpos s " - ")))
+     ;;   (split-line-by-colpos s pos))  ;; => ("abc -" "def ghi jkl")
+
+     (defun string-to-table-with-separator (str regex)
+       (prin1-to-string
+        (let* ((lines (split-string str "\n"))
+               (pos (analyze-line-for-colpos (car lines) regex)))
+          ;; (message "First: '%s'" (car lines))
+          ;; (princ pos)
+          (mapcar (lambda (line) (split-line-by-colpos line pos)) lines))))
+
+     ;; Function to apply these functions
+     (if (stringp data)
+         (string-to-table-with-separator data regex)
+       (message "Huh ... data is something else")
+       data)
+   #+END_SRC
+
+   #+RESULTS: table_sep
+   #+BEGIN_SRC elisp
+     (org-babel-script-escape "((\"a\" \"b\" \"c\") (\"d\" \"ei ei o\" \"f\") (\"g\" \"h\" \"i\"))")
+   #+END_SRC
+
+   #+RESULTS:
+   | a | b       | c |
+   | d | ei ei o | f |
+   | g | h       | i |
+
+   So, we can call =docker= to get some tabular data:
+
+   #+BEGIN_SRC sh :results output
+     docker images
+   #+END_SRC
+
+   #+RESULTS:
+   : REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+   : <none>              <none>              511136ea3c5a        2 years ago         0 B
+
+   The end result is something like:
+
+   #+BEGIN_SRC sh :post table_sep(data=*this*) :results output
+     docker images
+   #+END_SRC
+
+   #+RESULTS:
+   : "'((\"REPOSITORY\" \"TAG\" \"IMAGE ID\" \"CREATED\" \"VIRTUAL SIZE\") (\"<none>\" \"<none>\" \"511136ea3c5a\" \"2 years ago\" \"0 B\") (\"\"))"
+
+
+
+
+   :RESULTS:
+   (("REPOSITORY" "TAG" "IMAGE ID" "CREATED" "VIRTUAL SIZE")
+    ("<none>" "<none>" "511136ea3c5a" "2 years ago" "0 B")
+    (""))
+   :END:

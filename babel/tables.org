@@ -1,0 +1,42 @@
+#+TITLE:  Table Formatting for Shell Output
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2015 Aug 11
+#+TAGS:   emacs org
+
+This is part of my Library of Babel collection. Remember to hit the
+=C-c C-v i= to add these sections.
+
+* Filter
+
+  Given a table output (like most things that are parsed from a shell
+  command), the =table-filter= allows you to filter rows where a cell in
+  the row matches the regular expression, =include=, as well as make
+  sure no rows where a cell matches the =exclude= regular expression.
+
+  For example:
+
+  #+BEGIN_SRC org
+    ,#+HEADER: :post table-filter(data=*this*, include="python", exclude="deinstall")
+    ,#+BEGIN_SRC sh :results value list
+      dpkg --get-selections
+    ,#+END_SRC
+  #+END_SRC
+
+  May require additional formatting.
+
+  #+NAME: table-filter
+  #+BEGIN_SRC elisp :var data="" include="" exclude="" :results value
+    (flet ((equals (cont patt)
+                   (if (stringp cont)
+                       (string-match patt cont)))
+           (remove-empties (lst)
+                           (filter (lambda (cell)
+                                     (not (equal "" cell))) lst)))
+      (mapcar 'remove-empties
+              (filter (lambda (row)
+                        ;; (if (string-match "en" "zenity") t)
+                        (and (some   (lambda (cell) (equals cell include)) row)
+                             (notany (lambda (cell) (equals cell exclude)) row)))
+                      data)))
+  #+END_SRC
