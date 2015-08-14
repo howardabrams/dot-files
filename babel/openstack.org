@@ -1,0 +1,90 @@
+#+TITLE:  Formatting Functions for Nova
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@workday.com
+#+DATE:   2015 Aug 12
+#+TAGS:   openstack emacs
+#+PROPERTY: header-args:sh  :exports both
+
+The following “functions” are useful for formatting org-mode code
+blocks.  This is part of my Library of Babel collection. Remember to
+hit the =C-c C-v i= to add these sections.
+
+* OpenStack Table
+
+  The =os-table-str= is a =:post= function for post-processing the
+  output from a =nova= table output as a /string/, and re-formats it
+  into a list data structure so that org-mode can reformat it in its
+  own table format.
+
+  To use it, add the following source code block header:
+
+  #+BEGIN_SRC org
+   :post os-table-str(data=*this*) :results output
+  #+END_SRC
+
+  To use =os-table-str= make sure that the =:results= are set to
+  =output=.  If you set the =:results= to =value=, then use the
+  =:post= function, =os-table= (it however, doesn't deal well with
+  spaces in an cell).
+
+  This code first splits the string as a series of lines, and then
+  further splits that string on OpenStack vertical bars. It then sends
+  it =os-table= for further processing:
+
+  #+NAME: os-table-str
+  #+BEGIN_SRC elisp :results value table :var data="" :post os-table(data=*this*)
+    (mapcar (lambda (line) (split-string line " *| *"))
+            (split-string data "[\n\r]+" t))
+  #+END_SRC
+
+  If we have output data as a list of lists (typical data table
+  structure), we remove any OpenStack inserted table formatting as
+  well as any empty cells. *Note:* This function can be used alone if
+  the data from a org-mode source block is set to =:output value= ...
+
+  #+NAME: os-table
+  #+BEGIN_SRC elisp :results value table :var data=""
+    (mapcar (lambda (cells) (filter (lambda (cell) (not (string-empty-p cell))) cells))
+            (filter (lambda (line) (not (string-match "^\+--" (car line)))) data))
+  #+END_SRC
+
+  To verify this code, we first begin with a typical output from a
+  =nova list= command:
+
+  #+NAME: os-table-example-data
+  #+BEGIN_EXAMPLE
+    +--------------------------------------+----------------------+--------+------------+-------------+----------------------+
+    | ID                                   | Name                 | Status | Task State | Power State | Networks             |
+    +--------------------------------------+----------------------+--------+------------+-------------+----------------------+
+    | 521fd286-cbdc-42a6-8c33-0e771d4c37c1 | ha-ci-sdn-chefserver | ACTIVE | -          | Running     | cedev13=10.96.68.204 |
+    | 542b9f7d-f380-4d67-9eee-f974ba958e3a | ha-ci-sdn-chefserver | ACTIVE | -          | Running     | cedev13=10.96.68.196 |
+    +--------------------------------------+----------------------+--------+------------+-------------+----------------------+
+  #+END_EXAMPLE
+
+  Our =org-mode= source block does nothing more than echo this data as
+  a string, relying on the =:post= call to do the work:
+
+  #+BEGIN_SRC sh :var input=os-table-example-data  :results output :post os-table-str(data=*this*)
+    echo "$input"
+  #+END_SRC
+
+  #+RESULTS:
+  | ID                                   | Name                 | Status | Task State | Power State | Networks             |
+  | 521fd286-cbdc-42a6-8c33-0e771d4c37c1 | ha-ci-sdn-chefserver | ACTIVE | -          | Running     | cedev13=10.96.68.204 |
+  | 542b9f7d-f380-4d67-9eee-f974ba958e3a | ha-ci-sdn-chefserver | ACTIVE | -          | Running     | cedev13=10.96.68.196 |
+
+  Real world example that attempts to access an OpenStack system at a
+  particular IP address. This assumes that the nova credentials are
+  stored in a file in the home directory, =openrc= (as it will attempt
+  to source those first).
+
+  #+HEADER: :post os-table-str(data=*this*) :results output
+  #+HEADER: :prologue source ./openrc
+  #+BEGIN_SRC sh :dir /10.96.21.38:
+    nova list
+  #+END_SRC
+
+  #+RESULTS:
+  | ID                                   | Name                    | Status | Task State | Power State | Networks             |
+  | 737c49e9-515c-4315-be34-682eaed22170 | ha-ci-sdn-chefserver    | ACTIVE | -          | Running     | cedev13=10.96.68.204 |
+  | c9b173c3-d500-41ef-adb2-dc0358e52d69 | ha-ci-sdn-os-controller | ACTIVE | -          | Running     | cedev13=10.96.68.203 |
