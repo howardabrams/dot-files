@@ -7,116 +7,80 @@
 This is part of my Library of Babel collection. Remember to hit the
 =C-c C-v i= to add these sections.
 
-* Table Separator
+* Table by Separator
 
-  Instead of relying on the org-mode to separate the output into a
-  table based on spaces, let’s allow me to do a :post call and
-  break up the cells based on a regular expression.
+  The following is a simple approach looking for a regular expression
+  that works on *every* row. We also run every line we separate
+  through a filter to remove any blank entries... maybe that should be
+  configurable option.
 
-  To begin, let’s have some sample data to play with:
+  #+NAME: table
+  #+BEGIN_SRC elisp :results value table :var data=example-table regex="  +"
+    (flet ((split-the-line (line)
+                       (filter (lambda (cell) (not (string-empty-p cell)))
+                               (split-string (string-trim line) regex))))
+      (if (stringp data)
+          (mapcar 'split-the-line (split-string data "[\n\r]+" t))
+        data))   ;; Not a string? Just return the value...
+  #+END_SRC
 
-   #+NAME: example-table
-   #+BEGIN_EXAMPLE
-   a    b          c
-   d    ei ei o    f
-   g    h          i
-   #+END_EXAMPLE
+  #+RESULTS: table
+  | a | b       | c |
+  | d | ei ei o | f |
+  | g | h       | i |
 
-   And
+  Let’s try with a different type of table, formatted more like a CSV:
 
-   #+NAME: example-table2
-   #+BEGIN_EXAMPLE
-   a - b c
-   doh - ei ei o f
-   g - h i
-   #+END_EXAMPLE
+  #+HEADER: :post table(data=*this*, regex=",")
+  #+BEGIN_SRC sh :results output
+    echo "a, b,c"
+    echo "doh,ei ei o,f"
+    echo "g,h, i"
+  #+END_SRC
 
-   Since the results from an =sh= block come in as a single string, we
-   use the above example code to pass into this block:
+  #+RESULTS:
+  | a   | b       | c |
+  | doh | ei ei o | f |
+  | g   | h       | i |
 
-   #+NAME: table_sep
-   #+BEGIN_SRC elisp :var data=example-table regex="  +" :results code
-     (defun split-line-by-colpos (str positions)
-       "Split a string, STR, based on a list of column POSITIONS."
-       (let ((end-col (car positions)))
-         (if (and end-col str (not (string-empty-p str)))
-             (cons
-              (string-trim (substring str 0 end-col))
-              (split-line-by-colpos (substring str end-col) (cdr positions)))
-           (list (string-trim str)))))
+  Once more, but this time with output that is already in some sort of
+  strange table output (can you say nova?):
 
-     ;; (split-line-by-colpos "foo bar bazzies bo" '(4 4 8)) => ("foo" "bar" "bazzies" "bo")
+  #+HEADER: :post table(data=*this*, regex="[\|\+]")
+  #+BEGIN_SRC sh :results output
+    echo "| a   | b       | c |"
+    echo "| doh | ei ei o | f |"
+    echo "| g   | h       | i |"
+  #+END_SRC
 
-     (defun analyze-line-for-colpos (str &optional regex)
-       "Calculates columns of first line, STR, based on a regular expression, REGEX.
-        Defaults for columns with multiple spaces (not a single space)."
-       (unless regex (setq regex "   *"))
-       (if (and str (not (string-empty-p str)))
-           (let ((pos (string-match regex str))
-                 (epos (match-end 0)))
-             (when pos
-               (cons epos
-                     (analyze-line-for-colpos (substring str epos) regex))))))
+  #+RESULTS:
+  | a   | b       | c |
+  | doh | ei ei o | f |
+  | g   | h       | i |
 
-     ;; (analyze-line-for-colpos "a     b          c") ;; => (6 11)
+  Need a real world example, so call =docker= to get some tabular data:
 
-     ;; (let* ((s "abc   defghi   jkl")
-     ;;        (pos (analyze-line-for-colpos s)))
-     ;;   (split-line-by-colpos s pos))  ;; => ("abc" "defghi" "jkl")
-
-     ;; (let* ((s "abc - def ghi jkl")
-     ;;        (pos (analyze-line-for-colpos s " - ")))
-     ;;   (split-line-by-colpos s pos))  ;; => ("abc -" "def ghi jkl")
-
-     (defun string-to-table-with-separator (str regex)
-       (prin1-to-string
-        (let* ((lines (split-string str "\n"))
-               (pos (analyze-line-for-colpos (car lines) regex)))
-          ;; (message "First: '%s'" (car lines))
-          ;; (princ pos)
-          (mapcar (lambda (line) (split-line-by-colpos line pos)) lines))))
-
-     ;; Function to apply these functions
-     (if (stringp data)
-         (string-to-table-with-separator data regex)
-       (message "Huh ... data is something else")
-       data)
-   #+END_SRC
-
-   #+RESULTS: table_sep
-   #+BEGIN_SRC elisp
-     (org-babel-script-escape "((\"a\" \"b\" \"c\") (\"d\" \"ei ei o\" \"f\") (\"g\" \"h\" \"i\"))")
-   #+END_SRC
-
-   #+RESULTS:
-   | a | b       | c |
-   | d | ei ei o | f |
-   | g | h       | i |
-
-   So, we can call =docker= to get some tabular data:
-
-   #+BEGIN_SRC sh :results output
+  #+HEADER: :prologue $(/usr/local/bin/boot2docker shellinit)
+  #+BEGIN_SRC sh :results output
      docker images
-   #+END_SRC
+  #+END_SRC
 
-   #+RESULTS:
-   : REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
-   : <none>              <none>              511136ea3c5a        2 years ago         0 B
+  #+RESULTS:
+  : REPOSITORY                  TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+  : tomcat                      6.0                 8c4e1a4ca737        4 weeks ago         345.8 MB
+  : rand/docker-clojurescript   latest              f6e0e40b4408        7 months ago        1.091 GB
 
-   The end result is something like:
+  Now, let’s see if we really have something good here:
 
-   #+BEGIN_SRC sh :post table_sep(data=*this*) :results output
-     docker images
-   #+END_SRC
+  #+HEADER: :prologue $(/usr/local/bin/boot2docker shellinit)
+  #+BEGIN_SRC sh :post table(data=*this*) :results output
+    docker images
+  #+END_SRC
 
-   #+RESULTS:
-   : "'((\"REPOSITORY\" \"TAG\" \"IMAGE ID\" \"CREATED\" \"VIRTUAL SIZE\") (\"<none>\" \"<none>\" \"511136ea3c5a\" \"2 years ago\" \"0 B\") (\"\"))"
+  #+RESULTS:
+  | REPOSITORY                | TAG    | IMAGE ID     | CREATED      | VIRTUAL SIZE |
+  | tomcat                    | 6.0    | 8c4e1a4ca737 | 4 weeks ago  | 345.8 MB     |
+  | rand/docker-clojurescript | latest | f6e0e40b4408 | 7 months ago | 1.091 GB     |
 
-
-
-
-   :RESULTS:
-   (("REPOSITORY" "TAG" "IMAGE ID" "CREATED" "VIRTUAL SIZE")
-    ("<none>" "<none>" "511136ea3c5a" "2 years ago" "0 B")
-    (""))
-   :END:
+  Now, if we can just teach org-mode that the first line is a header,
+  we’d be golden.
