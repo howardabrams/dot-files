@@ -1,0 +1,50 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# key: Sample Functions for demo-it
+# name: demoit
+# contributor: Howard Abrams <howardabrams@gmail.com>
+# --
+;;; ${1:`(file-name-sans-extension (file-name-base (buffer-file-name)))`} --- ${2:Simple Summary}
+
+;;; Commentary:
+
+;; $0
+
+;;; Code:
+
+(load-library "demo-it")
+
+;; ----------------------------------------------------------------------
+;;  Create each function that represents a "presentation frame"
+
+(defun ${3:my-demo}-load-presentation ()
+    "Display $1.org (an 'org-mode' file) as a presentation."
+    (demo-it-frame-fullscreen)
+    (delete-other-windows)
+    (demo-it-presentation "$1.org"))
+
+(defun $3-load-source-code ()
+    "Load some source code in a side window."
+    (demo-it-load-file "some-source.py"))
+
+(defun $3-run-code ()
+    "Execute our source code in an Eshell buffer."
+    (demo-it-run-in-eshell "~/Work" "python some-source.py"))
+
+;; ----------------------------------------------------------------------
+;; Demonstration and/or Presentation Order
+
+(defun $3-start-presentation ()
+     "$2."
+     (interactive)
+     (demo-it-keybindings)
+     (demo-it-start (list
+                     '$3-load-presentation         ;; Frame 1
+                     '$3-load-source-code          ;; Frame 2
+                     '$3-run-code                  ;; Frame 3
+                 )))
+
+;; ----------------------------------------------------------------------
+;; Start the presentation whenever this script is evaluated. Good idea?
+($3-start-presentation)
+
+;;; $1.el ends here

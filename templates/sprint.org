@@ -1,0 +1,35 @@
+#+TITLE:  ${1:`(capitalize (file-name-nondirectory (file-name-sans-extension (buffer-file-name))))`}
+#+AUTHOR: `(user-full-name)`
+#+EMAIL:  `user-mail-address`
+#+DATE:   `(org-time-stamp-inactive)`
+
+* Work Issues
+
+  $0
+
+* Meeting Notes
+
+* Scrum Status
+
+* Sprint Demonstration
+
+* Sprint Retrospective
+
+** Keep Doing (Good)
+
+** Stop Doing (Bad)
+
+** Start Doing (Improvements)
+
+** Status/Accomplishments
+
+** Retrospective Meeting
+
+* Notes for Next Sprint
+
+#+DESCRIPTION: Notes taken during $1
+#+PROPERTY:    results drawer
+#+PROPERTY:    tangle no
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil skip:nil author:nil email:nil creator:nil timestamp:nil

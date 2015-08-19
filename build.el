@@ -63,6 +63,10 @@
   (ha/mksymlink  "${dot-files-src}/snippets"
                  "${ha/emacs-directory}/snippets")
 
+  ;; Just link the entire directory instead of copying the snippets:
+  (ha/mksymlink  "${dot-files-src}/templates"
+                 "${ha/emacs-directory}/templates")
+
   ;; Some Elisp files are just symlinked instead of tangled...
   (ha/mksymlinks "${dot-files-src}/bin/[a-z]*"
                  "${HOME}/bin")
