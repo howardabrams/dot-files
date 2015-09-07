@@ -76,17 +76,84 @@ a shell-slut, and dabble between Zshell and Fish.
 
 * Python
 
-  Assuming we have [[https://github.com/yyuu/pyenv][pyenv]] installed, let’s activate it:
+  Use Homebrew to install the [[https://github.com/yyuu/pyenv][pyenv]] project:
 
-  #+BEGIN_SRC sh
-    export PYENV_ROOT="$HOME/.pyenv"
-    export PATH="$PYENV_ROOT/bin:$PATH"
-
-    eval "$(pyenv init -)"
-    eval "$(pyenv virtualenv-init -)"
+  #+BEGIN_SRC sh :tangle no
+    brew install pyenv
   #+END_SRC
 
-  See [[file:emacs-python.org::*Virtual%20Environments][Virtual Environments]] in the Python Emacs setup for details.
+  Initialize the project with the following code:
+
+  #+BEGIN_SRC sh
+    export PYENV_ROOT="${HOME}/.pyenv"
+
+    if [ -d "${PYENV_ROOT}" ]; then
+        export PATH="${PYENV_ROOT}/bin:${PATH}"
+        eval "$(pyenv init -)"
+    fi
+  #+END_SRC
+
+  Install a particular version of Python:
+
+  #+BEGIN_SRC sh :tangle no
+    pyenv install 2.7.5
+    pyenv global 2.7.5
+  #+END_SRC
+
+  Use a particular Python version with:
+
+  #+BEGIN_SRC sh :tangle no
+    pyenv virtualenv $NAME    # Creates the virtual env
+    pyenv activate $NAME      # Choose the virtual env
+    pyenv deactivate          # Stops using it
+  #+END_SRC
+
+  While in the root directory of a /project/, automatically use the
+  appropriate Python version with the =local= command (do this just
+  once):
+
+  #+BEGIN_SRC sh :tangle no
+    pyenv local <virtualenv or version>
+  #+END_SRC
+
+  When entering this directory, the chosen virtualenv or Python
+  version will be activated automatically. The file that is creatied
+  and specifies the appropriate environment is named =.python-version=
+  (add this to git).
+
+  Enhance =pyenv= with the [[https://github.com/yyuu/pyenv-virtualenv][pyenv-virtualenv]] plugin. If installed, this
+  code initializes it:
+
+  #+BEGIN_SRC sh
+    if which pyenv-virtualenv-init > /dev/null
+    then
+        eval "$(pyenv virtualenv-init -)"
+    fi
+  #+END_SRC
+
+  Create a virtual environment with:
+
+  #+BEGIN_SRC sh :tangle no
+    pyenv virtualenv 2.7.10 lp-demo
+  #+END_SRC
+
+  List the created virtual environments:
+
+  #+BEGIN_SRC sh :tangle no
+    pyenv virtualenvs
+  #+END_SRC
+
+  It seems that the =local= command may make this a moot point,
+  activate a virtual environment manually with:
+
+  #+BEGIN_SRC sh :tangle no
+    pyenv activate <name>
+    pyenv deactivate
+  #+END_SRC
+
+  In other words, this =pyenv= project subsumes both [[https://github.com/kennethreitz/autoenv][autoenv]] and
+  [[http://virtualenvwrapper.readthedocs.org/en/latest/index.html][virtualenvwrapper]]. See [[file:emacs-python.org::*Virtual%20Environments][Virtual Environments]] in the Python Emacs
+  setup for details.
 
 * Prompt
 
