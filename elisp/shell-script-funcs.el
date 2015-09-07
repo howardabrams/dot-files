@@ -64,6 +64,18 @@
 
 ;; (ha/get-files "/foo/bar/*")  => nil
 
+(defun ha/has-org-tag-p (file tag)
+  (let ((reg (concat "^#\\+TAGS:.* " tag "\\b")))
+    (with-temp-buffer
+      (insert-file-contents file)
+      (re-search-forward reg nil t 1))))
+
+(defun ha/get-org-files (path tag &optional full)
+  "Return list of `org-mode' files in PATH that match the TAG section.
+If FULL is specified, return absolute pathnames for each file."
+  (filter (lambda (file) (ha/has-org-tag-p file tag)) (ha/get-files path full)))
+
+;; (ha/get-org-files "~/website/Presentations/*.org" "presentation" t)
 
 (defun ha/get-path (path &rest extra)
   "Return a file specification based on PATH.  We should expand this function so that glob patterns work when specifying the parent, but shouldn't worry about matching any particular file.  All EXTRA parameters are appended separated with / characters."
