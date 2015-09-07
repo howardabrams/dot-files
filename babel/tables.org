@@ -31,11 +31,10 @@ This is part of my Library of Babel collection. Remember to hit the
                    (if (stringp cont)
                        (string-match patt cont)))
            (remove-empties (lst)
-                           (filter (lambda (cell)
-                                     (not (equal "" cell))) lst)))
+                           (filter (lambda (cell) (not (equal "" cell)))
+                                   lst)))
       (mapcar 'remove-empties
               (filter (lambda (row)
-                        ;; (if (string-match "en" "zenity") t)
                         (and (some   (lambda (cell) (equals cell include)) row)
                              (notany (lambda (cell) (equals cell exclude)) row)))
                       data)))
