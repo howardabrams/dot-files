@@ -199,28 +199,23 @@ Since I’m using the latest of these tools, the version numbers change regularl
                         :inherit 'error))
   #+END_SRC
 
-* Leiningen
-
-  With the =elein= project installed, it allows us to do things
-  like: =M-x elein-run-cmd koan run=
-
 * Clojure Docs
 
   Really want to try out my new [[file:~/Dropbox/Clojure/clojuredocs-emacs/org/clojuredocs.org][ClojureDocs functions]]. Note: You
   need to do the following steps:
 
-  #+BEGIN_SRC sh :tangle no
-     cd ~/Other/... # or whatever
-     git clone https://github.com/howardabrams/clojuredocs-emacs.git
-     cd ~/.emacs.d
-     ln -s ~/Other/clojuredocs-emacs/clojuredocs.el .
+  #+BEGIN_SRC sh :tangle no :var work="~/Work/Other"
+    git clone https://github.com/howardabrams/clojuredocs-emacs.git $work/clojure-docs-emacs
+    ln -s $work/clojure-docs-emacs/clojure-docs.el ~/.emacs.d/elisp
   #+END_SRC
 
   Then the following code will work:
 
   #+BEGIN_SRC elisp
-     (if (locate-library "clojuredocs")
-         (load-library "clojuredocs"))
+    (when (require 'clojure-docs nil t)
+      (add-hook 'clojure-mode-hook
+                (lambda ()
+                  (local-set-key (kbd "C-c C-e") 'clojuredocs-examples))))
   #+END_SRC
 
 * Auto Completion
@@ -248,8 +243,8 @@ Since I’m using the latest of these tools, the version numbers change regularl
   And we can call it with =C-c C-d=:
 
   #+BEGIN_SRC elisp :toggle no
-  (eval-after-load "cider"
-    '(define-key cider-mode-map (kbd "C-c C-d") 'ac-cider-popup-doc))
+    (eval-after-load "cider"
+      '(define-key cider-mode-map (kbd "C-c C-d") 'ac-cider-popup-doc))
   #+END_SRC
 
 * ElDoc
@@ -258,8 +253,8 @@ Since I’m using the latest of these tools, the version numbers change regularl
   Do I need [[https://gist.github.com/tomykaira/1386472][this EL file]]?
 
   #+BEGIN_SRC elisp
-    (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
-    (add-hook 'clojure-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
+    (add-hook 'clojure-mode-hook 'eldoc-mode)
     (add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
   #+END_SRC
 
@@ -306,15 +301,16 @@ Since I’m using the latest of these tools, the version numbers change regularl
 
 * Refactoring
 
-  Using the [[https://github.com/clojure-emacs/clj-refactor.el][clj-refactor]] project,
+  Using the [[https://github.com/clojure-emacs/clj-refactor.el][clj-refactor]] project:
 
   #+BEGIN_SRC elisp
     (when (require 'clj-refactor nil t)
 
       (defun my-clojure-mode-hook ()
         (clj-refactor-mode 1)
-        (yas-minor-mode 1) ; for adding require/use/import
-        (cljr-add-keybindings-with-prefix "C-c C-m"))
+
+        (define-key clj-refactor-map (kbd "C-x C-r") 'cljr-rename-file)
+        (cljr-add-keybindings-with-prefix "C-c ."))
 
       (add-hook 'clojure-mode-hook #'my-clojure-mode-hook))
   #+END_SRC
@@ -327,10 +323,7 @@ Since I’m using the latest of these tools, the version numbers change regularl
     :plugins [[refactor-nrepl "1.0.5"]]
   #+END_SRC
 
-* Speed of Thought
-
-  Intrigued if I will ever get so smart with Clojure that I can
-  program at the
+  The /real problem/ is trying to remember all [[https://github.com/clojure-emacs/clj-refactor.el/wiki][refactoring options]].
 
 * New Key Bindings
 
@@ -347,7 +340,7 @@ Since I’m using the latest of these tools, the version numbers change regularl
   Finally, if you are just learning Clojure, check out [[http://www.4clojure.com/][4Clojure]] and then
   install [[https://github.com/joshuarh/4clojure.el][4clojure-mode]].
 
-  #+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp :tangle no
      (when (package-installed-p '4clojure)
        (defadvice 4clojure-open-question (around 4clojure-open-question-around)
          "Start a cider/nREPL connection if one hasn't already been started when
