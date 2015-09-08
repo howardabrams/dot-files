@@ -167,7 +167,28 @@ a shell-slut, and dabble between Zshell and Fish.
   And then just source the following:
 
   #+BEGIN_SRC sh
-  source $HOME/.rvm/scripts/rvm
+    source $HOME/.rvm/scripts/rvm
+  #+END_SRC
+
+  Create new virtual environments with:
+
+  #+BEGIN_SRC sh :tangle no
+    rvm install 2.0.0
+    rvm use ruby-2.0.0-p643
+    rvm gemset create chef
+    rvm gemset use chef
+  #+END_SRC
+
+  And use those environements with:
+
+  #+BEGIN_SRC sh :tangle no
+    rvm use ruby-2.0.0-p643@chef
+  #+END_SRC
+
+  And now =gem= commands work as expected:
+
+  #+BEGIN_SRC sh :tangle no
+    gem install bundler
   #+END_SRC
 
 * Prompt
@@ -180,7 +201,7 @@ a shell-slut, and dabble between Zshell and Fish.
     function trim_dir {
         V='[[:alnum:]._-]'
         D='[[:alnum:]._/-]'
-        sed -E "s|/$D+/($V+)|../\1|" <<< $1
+        sed -E "s|/$D+/($V+)|../\1|; s/ / /g" <<< $1
     }
 
     function prompt_dir {
@@ -198,12 +219,12 @@ a shell-slut, and dabble between Zshell and Fish.
         then
             name=$(basename $PRJ)
             rest=$(sed "s|$PRJ||" <<< $PWD)
-            echo -n "[$name]$(trim_dir $rest)"
+            echo -n "$(sed -e 's/ / /g' <<< [$name])$(trim_dir $rest)"
 
              # In work-related directory...
         elif [[ $PWD == $HOME/Work/* ]]
         then
-            name=$(sed -E "s|$HOME/Work/([[:alnum:]_-]+).*|\1|" <<< $PWD)
+            name=$(sed -E "s|$HOME/Work/([[:alnum:]_-]+).*|\1|; s/ / /g" <<< $PWD)
             base=$(basename $PWD)
             intr=$(basename `dirname $PWD`)
 
