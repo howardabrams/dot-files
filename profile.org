@@ -155,6 +155,21 @@ a shell-slut, and dabble between Zshell and Fish.
   [[http://virtualenvwrapper.readthedocs.org/en/latest/index.html][virtualenvwrapper]]. See [[file:emacs-python.org::*Virtual%20Environments][Virtual Environments]] in the Python Emacs
   setup for details.
 
+* Ruby
+
+  Install [[https://rvm.io/][RVM]] via:
+
+  #+BEGIN_SRC sh :tangle no
+    gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+    curl -sSL https://get.rvm.io | bash -s stable
+  #+END_SRC
+
+  And then just source the following:
+
+  #+BEGIN_SRC sh
+  source $HOME/.rvm/scripts/rvm
+  #+END_SRC
+
 * Prompt
 
   Better approach to displaying the current path, is to only display
