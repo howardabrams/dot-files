@@ -1166,7 +1166,7 @@
      (add-hook 'find-file-hook 'auto-insert)
      (auto-insert-mode 1)
 
-     (setq auto-insert-directory (ha/emacs-subdirectory "templates"))
+     (setq auto-insert-directory (ha/emacs-subdirectory "templates/"))
      (setq auto-insert-query nil) ;;; If you don't want to be prompted before insertion
 
      (define-auto-insert "\.el" "default-lisp.el")
@@ -1180,8 +1180,8 @@
        "Replace text in yasnippet template."
        (yas-expand-snippet (buffer-string) (point-min) (point-max)))
 
-     (add-to-list 'auto-insert-alist
-                  '(("Sprint.*\\.org\\'" . "Sprint Org Files") . ["sprint.org" ha/autoinsert-yas-expand]))
+     (define-auto-insert "\\.sh$" ["default-sh.sh" ha/autoinsert-yas-expand])
+     (define-auto-insert "/bin/"  ["default-sh.sh" ha/autoinsert-yas-expand])
    #+END_SRC
 
 ** Auto Complete
@@ -1585,6 +1585,15 @@
 
   - C-M-a - Jump to the start of a function
   - C-M-e - Jump to the end of a function
+
+** Shell Scripts
+
+   Files in my =bin= directory (but /only/ if it doesn't have any
+   other extension), should start in =sh-mode=:
+
+   #+BEGIN_SRC elisp
+     (setq auto-mode-alist (append auto-mode-alist '(("/bin/" . sh-mode))))
+   #+END_SRC
 
 ** Emacs Lisp
 
