@@ -4,39 +4,67 @@
 #+DATE:   [2014-02-01 Sat][2014-02-01 Sat]
 #+TAGS:   emacs web
 
+The basic web features of Emacs are often good enough, but
+
+  #+BEGIN_SRC elisp
+    (packages-install '( emmet-mode
+                         ;; impatient-mode
+                         web-mode
+                         mustache-mode
+                         handlebars-mode
+                         htmlize ))    ;; I use this more for org-mode
+  #+END_SRC
+
+
+* Surround with Tag
+
+  Seems that even the SGML mode doesn't care about properly formatted
+  HTML tags. This allows me to select a region and add wrap it in
+  tag...properly.
+
+  #+BEGIN_SRC elisp
+    (defun surround-html (start end tag)
+       "Wraps the specified region (or the current 'symbol / word'
+     with a properly formatted HTML tag."
+       (interactive "r\nsTag: " start end tag)
+       (save-excursion
+         (narrow-to-region start end)
+         (goto-char (point-min))
+         (insert (format "<%s>" tag))
+         (goto-char (point-max))
+         (insert (format "</%s>" tag))
+         (widen)))
+  #+END_SRC
+
+  And bind it to the HTML hook:
+
+  #+BEGIN_SRC elisp
+    (define-key html-mode-map (kbd "C-c C-w") 'surround-html)
+  #+END_SRC
+l
 * Emmet Mode
 
-   The basic web features of Emacs are often good enough, but
-   [[https://github.com/smihica/emmet-mode][Emmet-Mode]] is pretty sweet.
+  [[https://github.com/smihica/emmet-mode][Emmet-Mode]] is pretty sweet, but need to hook it up to both
+  SGML (which includes HTML) and CSS:
 
-#+BEGIN_SRC elisp
-  (packages-install '( emmet-mode
-                       web-mode
-                       mustache-mode
-                       handlebars-mode
-                       htmlize ))    ;; I use this more for org-mode
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+    (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
+  #+END_SRC
 
-   Now, hook emmet up to SGML and all the other modes:
+  Set emmet to only use 2 spaces:
 
-#+BEGIN_SRC elisp
-  (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
-  (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (add-hook 'emmet-mode-hook (lambda ()
+                                 (setq emmet-indentation 2))) ;; indent 2 spaces.
+  #+END_SRC
 
-   Set emmet to only use 2 spaces:
+  If you want the cursor to be positioned between first empty quotes
+  after expanding:
 
-#+BEGIN_SRC elisp
-  (add-hook 'emmet-mode-hook (lambda ()
-                               (setq emmet-indentation 2))) ;; indent 2 spaces.
-#+END_SRC
-
-   If you want the cursor to be positioned between first empty quotes
-   after expanding:
-
-#+BEGIN_SRC elisp :tangle no
-  (setq emmet-move-cursor-between-quotes t)
-#+END_SRC
+  #+BEGIN_SRC elisp :tangle no
+    (setq emmet-move-cursor-between-quotes t)
+  #+END_SRC
 
 * Impatient Mode
 
@@ -58,20 +86,20 @@
   Having Emacs be an [[https://github.com/skeeto/emacs-web-server][HTTP Server]] means a browser could be updated as
   it attempts to render HTML, CSS or JavaScript.
 
-#+BEGIN_SRC elisp
-  (when (require 'simple-httpd nil t)
-    (setq httpd-port 8888)
-    (setq httpd-root "~/technical")
-    (httpd-start))
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (when (require 'simple-httpd nil t)
+      (setq httpd-port 8888)
+      (setq httpd-root "~/technical")
+      (httpd-start))
+  #+END_SRC
 
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.
 
-#+BEGIN_SRC elisp
-  (provide 'init-web)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (provide 'init-web)
+  #+END_SRC
 
   Before you can build this on a new system, make sure that you put
   the cursor over any of these properties, and hit: =C-c C-c=
