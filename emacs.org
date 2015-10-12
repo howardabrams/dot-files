@@ -599,12 +599,49 @@
 
 ** Expand Region
 
-   Wherever you are in a file, and whatever the type of file, you
-   can slowly increase a region selection by logical segments.
+   Wherever you are in a file, and whatever the type of file, you can
+   slowly increase a region selection by logical segments by using
+   Magnar's [[https://github.com/magnars/expand-region.el][expand-region]] project.
 
    #+BEGIN_SRC elisp
      (require 'expand-region)
-     (global-set-key (kbd "C-=") 'er/expand-region)
+   #+END_SRC
+
+   However, the normal experience for =expand-region= is interactive,
+   expected to be called repeatedly to expand and contract the regions
+   based on syntax, and whatnot. Since I am seldom sure what I will
+   select if I give this function a numeric prefix, I created a
+   wrapper function that will (when given a number), just select the
+   number of lines for the region. Select the current line with a 0
+   argument. No argument (well, =lines= is given 1 with no argument),
+   then it just calls =expand-region=:
+
+   #+BEGIN_SRC elisp
+     (defun ha/expand-region (lines)
+       "Prefix-oriented wrapper around Magnar's `er/expand-region'.
+
+     Call with LINES equal to 1 (given no prefix), it expands the
+     region as normal.  When LINES given a positive number, selects
+     the current line and number of lines specified.  When LINES is a
+     negative number, selects the current line and the previous lines
+     specified.  Select the current line if the LINES prefix is zero."
+       (interactive "p")
+       (cond ((= lines 1)   (er/expand-region 1))
+             ((< lines 0)   (ha/expand-previous-line-as-region lines))
+             (t             (ha/expand-next-line-as-region (1+ lines)))))
+
+     (defun ha/expand-next-line-as-region (lines)
+       (message "lines = %d" lines)
+       (beginning-of-line)
+       (set-mark (point))
+       (end-of-line lines))
+
+     (defun ha/expand-previous-line-as-region (lines)
+       (end-of-line)
+       (set-mark (point))
+       (beginning-of-line (1+ lines)))
+
+     (global-set-key (kbd "C-=") 'ha/expand-region)
    #+END_SRC
 
    This works really well with other commands, including
@@ -627,22 +664,23 @@
            (goto-char cur)))
 
        (defun ha/highlight-section (num)
-         "If some of the buffer is highlighted with the 'fancy-narrow'
-          mode, then un-highlight it by calling 'fancy-widen'.
+         "If some of the buffer is highlighted with the `fancy-narrow'
+          mode, then un-highlight it by calling `fancy-widen'.
 
-          If region is active, call 'fancy-narrow-to-region'.
+          If region is active, call `fancy-narrow-to-region'.
 
-          If given a prefix value, C-u, highlight the current
-          block (delimited by blank lines). Otherwise, called
-          'fancy-narrow-to-defun, to highlight current function."
+          If NUM is 0, highlight the current block (delimited by blank
+          lines). If NUM is positive or negative, highlight that number
+          of lines.  Otherwise, called `fancy-narrow-to-defun', to
+          highlight current function."
          (interactive "p")
          (cond
-          ((fancy-narrow-active-p) (fancy-widen))
-          ((> num 1)               (ha-highlight-block))
-          ((region-active-p)       (fancy-narrow-to-region (region-beginning) (region-end)))
-          ;; Want to do something special in org-mode? Probably...
-          ;; ((derived-mode-p 'org-mode) ...)
-          (t                       (fancy-narrow-to-defun))))
+          ((fancy-narrow-active-p)  (fancy-widen))
+          ((region-active-p)        (fancy-narrow-to-region (region-beginning) (region-end)))
+          ((= num 0)                (ha/highlight-block))
+          ((= num 1)                (fancy-narrow-to-defun))
+          (t                        (progn (ha/expand-region num)
+                                           (fancy-narrow-to-region (region-beginning) (region-end))))))
 
        (global-set-key (kbd "C-M-+") 'ha/highlight-section))
    #+END_SRC
