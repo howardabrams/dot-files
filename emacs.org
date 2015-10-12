@@ -591,10 +591,23 @@
    default keybindings, so I set up the suggested:
 
    #+BEGIN_SRC elisp
-     (when (require 'multiple-cursors nil t)
-           (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-           (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-           (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+     (use-package multiple-cursors
+       :ensure t
+       :config
+       (global-set-key
+        (kbd "C-c C-.")
+        (defhydra hydra-multiple-cursors ()
+          "multiple-cursors"
+          ("." mc/mark-all-dwim                   "all-dwim")
+          ("n" mc/mark-next-like-this             "next")
+          ("p" mc/mark-previous-like-this         "previous")
+          ("a" mc/mark-all-like-this              "mark-all")
+          ("N" mc/mark-next-symbol-like-this      "next-symbol")
+          ("P" mc/mark-previous-symbol-like-this  "previous-symbol")
+          ("A" mc/mark-all-symbols-like-this      "all-symbols")
+          ("f" mc/mark-all-like-this-in-defun     "in-func")
+          ("l" mc/edit-lines                      "all-lines")
+          ("e" mc/edit-ends-of-lines              "end-lines"))))
    #+END_SRC
 
 ** Expand Region
