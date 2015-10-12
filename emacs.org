@@ -599,6 +599,7 @@
         (defhydra hydra-multiple-cursors ()
           "multiple-cursors"
           ("." mc/mark-all-dwim                   "all-dwim")
+          ("C-." mc/mark-all-like-this-dwim       "all-like-dwim")
           ("n" mc/mark-next-like-this             "next")
           ("p" mc/mark-previous-like-this         "previous")
           ("a" mc/mark-all-like-this              "mark-all")
