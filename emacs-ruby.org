@@ -96,6 +96,20 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
     (add-hook 'ruby-mode-hook 'ha/ruby-mode-defaults)
   #+END_SRC
 
+* Better Keyboard Movement
+
+  Each language that I use, I like to bind the /sexp/ movement:
+
+  #+BEGIN_SRC elisp
+    (define-key ruby-mode-map (kbd "M-<down>") 'ruby-forward-sexp)
+    (define-key ruby-mode-map (kbd "M-<up>") 'ruby-backward-sexp)
+  #+END_SRC
+
+  Other keystrokes to remember:
+
+  - =C-M-p= / =C-M-n= :: Move to the beginning and end of a block
+  - =C-M-a= / =C-M-e= :: Move to the beginning and end of a function
+
 * Ruby Virtual Manager
 
   Using [[https://github.com/senny/rvm.el][RVM integration]] for Emacs:
