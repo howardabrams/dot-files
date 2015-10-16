@@ -1,0 +1,39 @@
+#!/bin/sh
+# ----------------------------------------------------------------------
+#  COLUMN: Given a table of information where each cell is separated
+#  with a vertical bar, this script will return just one column of
+#  that table.
+#
+#  The trick is identifying the header, so that can be stripped out as
+#  well, so the -h allows me to specify the number of lines to remove.
+#  ----------------------------------------------------------------------
+
+HEADER=3
+DEL='|'
+SEP='^+'
+
+while getopts "h:c:d:s:" o
+do  case "$o" in
+        h)      HEADER=$OPTARG;;
+        c)      COL=$OPTARG;;
+        d)      DEL=$OPTARG;;
+        s)      SEP=$OPTARG;;
+        [?])    print >&2 "Usage: $0 [-h header-lines] [-d delimiter] [-c column] [column]"
+                exit 1;;
+    esac
+done
+shift $(expr $OPTIND - 1)
+
+if [ -z "$COL" ]
+then
+    COL=$(expr $1 + 1)
+fi
+
+if [ $HEADER -gt 0 ]
+then
+    # echo "tail -n +$(expr $HEADER + 1) | grep -v \"$SEP\" | cut -d\"$DEL\" -f$COL"
+    tail -n +$(expr $HEADER + 1) | grep -v "$SEP" | cut -d"$DEL" -f$COL
+else
+    # echo "grep -v \"$SEP\" | cut -d\"$DEL\" -f$COL"
+    cat | grep -v "$SEP" | cut -d"$DEL" -f$COL
+fi

@@ -1,0 +1,36 @@
+#!/bin/bash
+# ----------------------------------------------------------------------
+#  STANDARD: Turn on tabs for the standard virtual machines...
+# ----------------------------------------------------------------------
+
+VERBOSE=0
+
+while getopts "v" o
+do  case "$o" in
+        v)  VERBOSE=1;;
+        [?])    print >&2 "Usage: $0 [-v]"
+                exit 1;;
+    esac
+done
+shift $(expr $OPTIND - 1)
+
+# ----------------------------------------------------------------------
+
+source $HOME/openrc
+CHEFIP=$(~/bin/onova list | grep chef | cut -d= -f2)
+if [ -n "$CHEFIP" ]
+then
+    if [ "$VERBOSE" -eq 1 ]; then
+        echo "tmux neww -n chef 'ssh -i wpc3x.pem root@$CHEFIP'"
+    fi
+    tmux neww -n chef "ssh -i wpc3x.pem root@$CHEFIP"
+fi
+
+TEMPESTIP=$(~/bin/onova list | grep tempest | cut -d= -f2)
+if [ -n "$TEMPESTIP" ]
+then
+    if [ "$VERBOSE" -eq 1 ]; then
+        echo "tmux neww -n tempest 'ssh -i wpc3x.pem $TEMPESTIP'"
+    fi
+    tmux neww -n tempest "ssh -i wpc3x.pem $TEMPESTIP"
+fi

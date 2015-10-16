@@ -1,0 +1,37 @@
+#!/bin/bash
+# ----------------------------------------------------------------------
+#  STOP-ALL-VMS: Stops and deletes all available VMS.
+#                Obviously, use with caution
+# ----------------------------------------------------------------------
+
+DOIT=0
+
+while getopts "f" o
+do  case "$o" in
+        f)      DOIT=1;;
+        [?])    print >&2 "Usage: $0 [-f] [vm-pattern]"
+                exit 1;;
+    esac
+done
+shift `expr $OPTIND - 1`
+
+if [ -z "$OS_USERNAME" ]
+then
+    source $HOME/openrc
+fi
+
+if [ -n "$1" ]
+then
+    PATT=$(echo $* | sed 's/ /\\|/g')
+    LIST=$(~/bin/onova list | grep "$PATT" | sed 's/  */ /g' | cut -d' ' -f1)
+else
+    LIST=$(~/bin/onova list | sed 's/  */ /g' | cut -d' ' -f1)
+fi
+
+# ----------------------------------------------------------------------
+
+for VM in $LIST
+do
+    echo "Stopping $VM..."
+    nova stop $VM && nova delete $VM
+done

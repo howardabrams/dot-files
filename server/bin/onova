@@ -1,0 +1,20 @@
+#!/bin/sh
+# ----------------------------------------------------------------------
+# ONOVA: Wrapper for the OpenStack 'nova' commands, or any other CLI
+# that outputs a table of information where each cell is separated by
+# vertical bars. This strips those vertical bars to make it work
+# better with org-mode.
+# ----------------------------------------------------------------------
+
+SCRIPT_BASE='s/\|//g; s/\w+-private=//g; s/, +/,/g; s/^ *//; s/ *$//;'
+
+if [ "$1" == "-h" ]
+then
+    SCRIPT='$_="" if /^\+/; '"$SCRIPT_BASE"
+    shift 1
+else
+    SCRIPT='$_="" if /^\+/ or $.==2; '"$SCRIPT_BASE"
+fi
+
+CMD=$(basename $0 | sed 's/^o//')
+$CMD $* | perl -pe "$SCRIPT"

@@ -1,0 +1,42 @@
+#!/bin/bash
+# ----------------------------------------------------------------------
+#  Starts either tmux or wemux based on what is available, and then
+#  kicks off any "mux-" scripts to initialize it.
+# ----------------------------------------------------------------------
+
+export PATH=$HOME/bin:$PATH
+
+while getopts "C" o
+do  case "$o" in
+        C)      OPTS="-CC";;     # Use the new iTerm2 tab integration?
+        [?])    print >&2 "Usage: $0 [-C]"
+                exit 1;;
+    esac
+done
+shift $(expr $OPTIND - 1)
+
+SESSION=${1:-AZ1}
+
+TMUX=$(which wemux 2>/dev/null)
+if [ -z "$TMUX" ]
+then
+    TMUX=$(which tmux 2>/dev/null)
+    if [ -z "$TMUX" ]
+    then
+        TMUX=$HOME/bin/tmux
+    fi
+fi
+
+if [ "$TERM" != "screen" ]
+then
+    if [ -x $TMUX ]
+    then
+        if [ -e mux-tabs ]
+        then
+            EXTRA="\\; neww $HOME/bin/mux-tabs"
+        fi
+
+        echo "$TMUX $OPTS attach || $TMUX $OPTS new-session -s $SESSION -n shell \"$EXTRA\""
+        $TMUX $OPTS attach || $TMUX $OPTS new-session -s $SESSION -n shell "$EXTRA"
+    fi
+fi

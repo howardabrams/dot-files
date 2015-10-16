@@ -1,0 +1,17 @@
+#!/bin/bash
+# ----------------------------------------------------------------------
+#  WEMUX-USERS: List other wemux users, other than me!
+# ----------------------------------------------------------------------
+
+if [[ $TMUX == *wemux* ]] && which wemux >/dev/null 2>&1
+then
+    USERS=$(wemux status_users | sed 's/[, ]*howard.abrams[, ]*//')
+    if [ -n "$USERS" ]
+    then
+        echo $USERS
+    else
+        echo "wemux"
+    fi
+else
+    echo "tmux"
+fi
