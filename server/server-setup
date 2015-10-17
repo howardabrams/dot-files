@@ -1,0 +1,22 @@
+#!/bin/bash
+# ----------------------------------------------------------------------
+#  SERVER-SETUP: Configures and gets a remote server ready to use.
+# ----------------------------------------------------------------------
+
+while getopts "h:" o
+do
+    case "$o" in
+        h)  HOST="$OPTARG";;
+        [?])    print >&2 "Usage: \$0 [-h hostname]"
+                exit 1;;
+    esac
+done
+shift $(expr $OPTIND - 1)
+
+HOST=${HOST:-$1}
+
+# ----------------------------------------------------------------------
+# I would like to just copy _everything_ in this directory, but...
+
+ssh-copy-id $HOST
+scp -r .??* bin $HOST:

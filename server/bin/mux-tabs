@@ -1,6 +1,6 @@
 #!/bin/bash
 # ----------------------------------------------------------------------
-#  STANDARD: Turn on tabs for the standard virtual machines...
+#  STANDARD: Create tabs for the standard virtual machines...
 # ----------------------------------------------------------------------
 
 VERBOSE=0
@@ -14,9 +14,11 @@ do  case "$o" in
 done
 shift $(expr $OPTIND - 1)
 
-# ----------------------------------------------------------------------
-
 source $HOME/openrc
+
+# ----------------------------------------------------------------------
+# Connect to the Chef server if it is running.
+
 CHEFIP=$(~/bin/onova list | grep chef | cut -d= -f2)
 if [ -n "$CHEFIP" ]
 then
@@ -25,6 +27,9 @@ then
     fi
     tmux neww -n chef "ssh -i wpc3x.pem root@$CHEFIP"
 fi
+
+# ----------------------------------------------------------------------
+# Connect to the Tempest server if it is running.
 
 TEMPESTIP=$(~/bin/onova list | grep tempest | cut -d= -f2)
 if [ -n "$TEMPESTIP" ]
