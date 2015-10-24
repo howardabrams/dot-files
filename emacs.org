@@ -2057,15 +2057,6 @@
      (require 'init-eshell)
    #+END_SRC
 
-** Circe
-
-   I find reading Twitter and IRC in Emacs a good idea. Really. Small
-   bits of the Emacs window are accessible and whatnot.
-
-   #+BEGIN_SRC elisp
-     (require 'circe nil t)
-   #+END_SRC
-
 ** Chatting
 
    Using the [[http://www.emacswiki.org/emacs/JabberEl][jabber.el]] project to connect up to Google Talk and what
