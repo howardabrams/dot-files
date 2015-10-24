@@ -134,9 +134,12 @@ other systems with a graphical front-end.
 #+END_SRC
 
    No matter, the theme, I like /some/ of the ideas in the [[https://github.com/jonnay/emagicians-starter-kit/blob/master/themes/org-beautify-theme.org][EMagicians Starter Kit]],
-   particularly in how the headers are larger, not different
-   colors. Also, the headers are based on Adobe’s open source font,
-   [[https://github.com/adobe-fonts/source-sans-pro/releases/tag/2.010R-ro/1.065R-it][Source Sans Pro]] (as I think that will match the [[https://github.com/adobe-fonts/source-code-pro/][Source Code Pro]]).
+   particularly in how the headers are larger, instead of different
+   colors.
+
+   Since the headers are based on Adobe’s open source font pair of the
+   proportional font, [[https://github.com/adobe-fonts/source-sans-pro/releases/tag/2.010R-ro/1.065R-it][Source Sans Pro]], will match the non-proportional
+   font, [[https://github.com/adobe-fonts/source-code-pro/][Source Code Pro]].
 
    #+BEGIN_SRC elisp
      (deftheme ha/org-theme "Sub-theme to beautify org mode")
