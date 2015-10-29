@@ -22,7 +22,6 @@ Since I’m using the latest of these tools, the version numbers change regularl
   #+BEGIN_SRC elisp
   (packages-install '( clojure-mode
                        clojure-cheatsheet
-                       clojure-snippets
                        clojurescript-mode
                        cider
                        ac-cider
@@ -36,6 +35,10 @@ Since I’m using the latest of these tools, the version numbers change regularl
   #+END_SRC
 
   Need to add Yasnippets to Clojure mode:
+
+  #+BEGIN_SRC sh
+  git clone http://github.com/swannodette/clojure-snippets snippets/clojure-mode
+  #+END_SRC
 
   #+BEGIN_SRC elisp
   (require 'clojure-mode)
