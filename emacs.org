@@ -1737,6 +1737,18 @@
                   (local-set-key (kbd "RET") 'electrify-return-if-match)))
     #+END_SRC
 
+*** Nicer Paren Matching
+
+    The reverse mode of the default parenthesis matching doesn’t match
+    as well, so [[http://www.emacswiki.org/emacs/ShowParenMode][this code]] just makes it bold and more obvious:
+
+    #+BEGIN_SRC elisp
+      (require 'paren)
+      (set-face-background 'show-paren-match (face-background 'default))
+      (set-face-foreground 'show-paren-match "#afa")
+      (set-face-attribute 'show-paren-match nil :weight 'extra-bold)
+    #+END_SRC
+
 *** Prettify Symbols
 
     Might as well pretty up the lambdas, and other functions using the
