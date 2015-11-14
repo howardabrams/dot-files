@@ -15,6 +15,6 @@
   </head>
   <body>
     <h1>$1</h1>
-    $0
+    `yas-selected-text`$0
   </body>
 </html>
