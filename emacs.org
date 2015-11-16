@@ -1595,6 +1595,7 @@
 
    #+BEGIN_SRC elisp
      (when (require 'flycheck nil t)
+       (flymake-mode-off)
        (add-hook 'after-init-hook #'global-flycheck-mode))
    #+END_SRC
 
