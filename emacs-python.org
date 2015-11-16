@@ -99,7 +99,7 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
 
   #+BEGIN_SRC elisp
     (setq-default indent-tabs-mode nil)
-    (setq-default tab-width 4)
+    (setq-default tab-width 2)
 
     (add-hook 'python-mode-hook '(lambda () (setq python-indent 4)))
   #+END_SRC
@@ -122,37 +122,13 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
                   (modify-syntax-entry ?. "."))))
   #+END_SRC
 
-* ELPY
-
-  According to the [[https://github.com/jorgenschaefer/elpy/wiki][ELPY Web Site]], we first install the python-based
-  package components:
-
-  #+BEGIN_SRC sh
-    pip install jedi
-
-    # flake8 for code checks ... which installs pep8
-    pip install flake8
-
-    # and importmagic for automatic imports
-    pip install importmagic
-
-    pip install elpy
-  #+END_SRC
-
-  Once this has been installed, we can enable it:
-
-  #+BEGIN_SRC elisp
-  (when (require 'elpy nil t)
-    (elpy-enable))
-  #+END_SRC
-
 * Lint
 
   My company has standardized on the =pep8= project, just make sure you've
   install the [[https://flake8.readthedocs.org/en/2.3.0/][Flake8]] library:
 
   #+BEGIN_SRC sh
-    workon wpc # Or whatever the project name is
+    pyenv activate wpc # Or whatever the project name is
     pip install --upgrade flake8
   #+END_SRC
 
@@ -190,6 +166,25 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
           (add-hook 'python-mode-hook 'jedi:ac-setup)
           (setq jedi:setup-keys t)
           (setq jedi:complete-on-dot t))
+  #+END_SRC
+
+* ELPY
+
+  According to the [[https://github.com/jorgenschaefer/elpy/wiki][ELPY Web Site]], we first install the python-based
+  package components:
+
+  #+BEGIN_SRC sh
+    # and importmagic for automatic imports
+    pip install importmagic
+
+    pip install elpy
+  #+END_SRC
+
+  Once this has been installed, we can enable it:
+
+  #+BEGIN_SRC elisp
+  (when (require 'elpy nil t)
+    (elpy-enable))
   #+END_SRC
 
 * Technical Artifacts
