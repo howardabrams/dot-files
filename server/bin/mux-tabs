@@ -4,6 +4,7 @@
 # ----------------------------------------------------------------------
 
 VERBOSE=0
+SSH_OPTS="-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 while getopts "v" o
 do  case "$o" in
@@ -23,9 +24,9 @@ CHEFIP=$(~/bin/onova list | grep chef | cut -d= -f2)
 if [ -n "$CHEFIP" ]
 then
     if [ "$VERBOSE" -eq 1 ]; then
-        echo "tmux neww -n chef 'ssh -i wpc3x.pem root@$CHEFIP'"
+        echo "tmux neww -n chef 'ssh -i wpc3x.pem $SSH_OPTS root@$CHEFIP'"
     fi
-    tmux neww -n chef "ssh -i wpc3x.pem root@$CHEFIP"
+    tmux neww -n chef "ssh -i wpc3x.pem $SSH_OPTS root@$CHEFIP"
 fi
 
 # ----------------------------------------------------------------------
@@ -35,7 +36,7 @@ TEMPESTIP=$(~/bin/onova list | grep tempest | cut -d= -f2)
 if [ -n "$TEMPESTIP" ]
 then
     if [ "$VERBOSE" -eq 1 ]; then
-        echo "tmux neww -n tempest 'ssh -i wpc3x.pem $TEMPESTIP'"
+        echo "tmux neww -n tempest 'ssh -i wpc3x.pem $SSH_OPTS $TEMPESTIP'"
     fi
-    tmux neww -n tempest "ssh -i wpc3x.pem $TEMPESTIP"
+    tmux neww -n tempest "ssh -i wpc3x.pem $SSH_OPTS $TEMPESTIP"
 fi
