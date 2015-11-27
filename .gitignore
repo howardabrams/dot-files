@@ -16,3 +16,4 @@ elisp/in-progress
 snippets/message-mode/*
 server/old
 /snippets/clojure-mode
+/emacs-circe.org
