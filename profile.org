@@ -34,7 +34,7 @@ a shell-slut, and dabble between Zshell and Fish.
   OLDPATH=$PATH
   PATH=$HOME/bin
 
-  for DIR in /usr/local/git/bin /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/sbin
+  for DIR in /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/sbin
   do
     if [ -d $DIR ]
     then
@@ -61,17 +61,6 @@ a shell-slut, and dabble between Zshell and Fish.
 
 #+BEGIN_SRC sh
   alias more=less
-#+END_SRC
-
-* System-Specific Variables
-
-  Host-specific values, are stored in a separate profile.
-
-#+BEGIN_SRC sh
-  if [ -x $HOME/.profile-local ]
-  then
-    . $HOME/.profile-local
-  fi
 #+END_SRC
 
 * Python
@@ -193,17 +182,29 @@ a shell-slut, and dabble between Zshell and Fish.
 
 * Prompt
 
+  A helper function to help trim down lengthy directories:
+
+  #+BEGIN_SRC sh
+    function _trim_dir {
+        V='[[:alnum:]._-]'
+        D='[[:alnum:]._/-]'
+        sed -E "s|/$D+/($V+)|../\1|; s/ / /g" <<< $1
+    }
+  #+END_SRC
+
+  The =__git_ps1= is nice, but can be lengthy when pulling down Gerrit
+  reviews, so let's make a simpler branch:
+
+  #+BEGIN_SRC sh
+    function _mygit_ps1 {
+      __git_ps1 " :%s" | sed 's|^ :review/.*/\([0-9]*\)$| :review-\1|'
+    }
+  #+END_SRC
   Better approach to displaying the current path, is to only display
   the first or second directory name ... any maybe the name of the Git
   project. Holy hell, so many exceptions and so few patterns...
 
   #+BEGIN_SRC sh
-    function trim_dir {
-        V='[[:alnum:]._-]'
-        D='[[:alnum:]._/-]'
-        sed -E "s|/$D+/($V+)|../\1|; s/ / /g" <<< $1
-    }
-
     function prompt_dir {
         PWD=$(pwd)
 
@@ -219,7 +220,7 @@ a shell-slut, and dabble between Zshell and Fish.
         then
             name=$(basename $PRJ)
             rest=$(sed "s|$PRJ||" <<< $PWD)
-            echo -n "$(sed -e 's/ / /g' <<< [$name])$(trim_dir $rest)"
+            echo -n "$(sed -e 's/ / /g' <<< [$name])$(_trim_dir $rest)"
 
              # In work-related directory...
         elif [[ $PWD == $HOME/Work/* ]]
@@ -245,10 +246,10 @@ a shell-slut, and dabble between Zshell and Fish.
             then
                 echo -n "~/$(basename $PWD)"
             else
-                echo -n "~/$(trim_dir $PWD)"
+                echo -n "~/$(_trim_dir $PWD)"
             fi
         else
-            trim_dir $PWD
+            _trim_dir $PWD
         fi
     }
   #+END_SRC
@@ -259,11 +260,11 @@ a shell-slut, and dabble between Zshell and Fish.
   type commands. ;-)
 
   #+BEGIN_SRC sh
+    export PS1='\[\e[1;34m\]$(prompt_dir)\[\e[1;32m\]$(_mygit_ps1)\[\e[0m\] \$ '
+
     if [ -d ~/.rvm ]
     then
-        export PS1='\[\e[1;31m\]$(~/.rvm/bin/rvm-prompt v g)\[\e[1;34m\] $(prompt_dir)$(__git_ps1 " \[\e[1;32m\]:%s")\[\e[0m\] \$ '
-    else
-        export PS1='\[\e[1;34m\]$(prompt_dir)$(__git_ps1 " \[\e[1;32m\]:%s")\[\e[0m\] \$ '
+        export PS1='\[\e[1;31m\]$(~/.rvm/bin/rvm-prompt v g)'"$PS1"
     fi
   #+END_SRC
 
@@ -274,12 +275,21 @@ a shell-slut, and dabble between Zshell and Fish.
   Load up my [[file:sh-functions.org][shared functions]]. These can be shared with Bash, Fish and
   Zshell.
 
-#+BEGIN_SRC sh
-  if [ -f $HOME/.sh-funcs.sh ]
-  then
-      . $HOME/.sh-funcs.sh
-  fi
-#+END_SRC
+  #+BEGIN_SRC sh
+    if [ -f $HOME/.sh-funcs.sh ]
+    then
+        . $HOME/.sh-funcs.sh
+    fi
+  #+END_SRC
+
+  Host-specific values, are stored in a separate profile.
+
+  #+BEGIN_SRC sh
+    if [ -x $HOME/.profile-local ]
+    then
+      . $HOME/.profile-local
+    fi
+  #+END_SRC
 
 * Technical Gunk
 
