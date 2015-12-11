@@ -49,36 +49,72 @@ other systems with a graphical front-end.
 
 * Font Settings
 
-   I love syntax highlighting.
+  I love syntax highlighting.
 
-#+BEGIN_SRC elisp
-  (global-font-lock-mode 1)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (global-font-lock-mode 1)
+  #+END_SRC
 
-   Am I really a monospace font slut? I think so. I keep changing my
-   font based on the monospace du jour... right now, I am liking [[http://mplus-fonts.sourceforge.jp/mplus-outline-fonts/download/index.html][M+]]
-   since it is thinner and has more white space between lines.
+  Am I really a monospace font slut? I think so. I keep changing my
+  font based on the monospace du jour... While I [[http://mplus-fonts.sourceforge.jp/mplus-outline-fonts/download/index.html][M+]] because it is
+  thinner and has more white space between lines, but [[http://blogs.adobe.com/typblography/2012/09/source-code-pro.html][Source Code Pro]]
+  is so attractive, oh, and then there is Anonymous Pro...
 
-   However, I find [[http://blogs.adobe.com/typblography/2012/09/source-code-pro.html][Source Code Pro]] quite attractive, as well as
-   Anonymous Pro.
+  While thicker, my new favorite is [[https://github.com/tonsky/FiraCode][Fira]] as it does symbol ligatures.
 
-#+BEGIN_SRC elisp
-  ;; (setq my/font-family "M+ 1mn")
-  (setq my/font-family "Source Code Pro")
-  ;; (setq my/font-family "Anonymous Pro")
-#+END_SRC
+  #+BEGIN_SRC elisp
+    ;; (setq my/font-family "M+ 1mn")
+    ;; (setq my/font-family "Source Code Pro")
+    ;; (setq my/font-family "Anonymous Pro")
+    (setq my/font-family "Fira Code")
+  #+END_SRC
 
-   With the font name situated, I just need to use that to set the
-   three magic frame settings:
+  With the font name situated, I just need to use that to set the
+  three magic frame settings:
 
-#+BEGIN_SRC elisp
-  (set-frame-font my/font-family)
-  (set-face-attribute 'default nil :font my/font-family :height 120)
-  (set-face-font 'default my/font-family)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (set-frame-font my/font-family)
+    (set-face-attribute 'default nil :font my/font-family :height 140)
+    (set-face-font 'default my/font-family)
+  #+END_SRC
 
    *Note:* I find that the height should be =160= for M+, but =140=
    for most other fonts.
+
+* Ligatures in Code
+
+  With the [[https://github.com/tonsky/FiraCode][Fira Code font]], we can [[https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs][use this code]] to set up particular
+  programming symbols to take up multiple widths:
+
+  #+BEGIN_SRC elisp
+    (let ((alist '((33 . ".\\(?:\\(?:==\\)\\|[!=]\\)")
+                   (35 . ".\\(?:[(?[_{]\\)")
+                   (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
+                   (42 . ".\\(?:\\(?:\\*\\*\\)\\|[*/]\\)")
+                   (43 . ".\\(?:\\(?:\\+\\+\\)\\|\\+\\)")
+                   (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
+                   (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=]\\)")
+                   (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
+                   (58 . ".\\(?:[:=]\\)")
+                   (59 . ".\\(?:;\\)")
+                   (60 . ".\\(?:\\(?:!--\\)\\|\\(?:\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[/<=>|-]\\)")
+                   (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
+                   (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
+                   (63 . ".\\(?:[:=?]\\)")
+                   (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
+                   (94 . ".\\(?:=\\)")
+                   (123 . ".\\(?:-\\)")
+                   (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
+                   (126 . ".\\(?:[=@~-]\\)"))))
+      (dolist (char-regexp alist)
+        (set-char-table-range composition-function-table (car char-regexp)
+                              `([,(cdr char-regexp) 0 font-shape-gstring]))))
+  #+END_SRC
+
+  These symbols are more prominent in all languages, as well as being
+  a /single character symbol/ (well, until you hit backspace on it):
+
+  [[https://github.com/tonsky/FiraCode/raw/master/showcases/all_ligatures.png]]
 
 * Color Theme
 
