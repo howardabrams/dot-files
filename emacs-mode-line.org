@@ -70,10 +70,10 @@
   (defun powerline-simpler-minor-display (s)
     (replace-regexp-in-string
      (concat " "
-             (mapconcat 'identity '("Undo-Tree" "GitGutter" "Projectile"
+             (mapconcat 'identity '("Undo-Tree" "GitGutter" "Projectile" "Hi"
                                     "Abbrev" "ColorIds" "MRev" "ElDoc" "Paredit"
                                     "+1" "+2" "FlyC" "Fly" ;; ":1/0"
-                                    "Fill" "AC" "FIC") "\\|")) "" s))
+                                    "Fill" "FIC") "\\|")) "" s))
 
   (defun powerline-ha-theme ()
     "A powerline theme that removes many minor-modes that don't serve much purpose on the mode-line."
