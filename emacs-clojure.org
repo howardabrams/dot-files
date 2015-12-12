@@ -87,24 +87,18 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
 
   #+BEGIN_SRC elisp
     (use-package clojure-mode
+      :ensure t
       :init
       (defconst clojure--prettify-symbols-alist
          '(("fn"   . ?λ)
-           ("->"   . ?⤷)  ;; Threading for the first (into left)
-           ("->>"  . ?⤶)  ;; Threading for the last item (from right)
-           ("<="   . ?≤)
-           (">="   . ?≥)
-           ("=="   . ?≡)  ;; Do I like this?
-           ("not=" . ?≠)  ;; Or even this?
-           ("."    . ?•)
            ("__"   . ?⁈)))
 
+      :config
       ;; Turn on the colored identifiers:
-      ;; (add-hook 'clojure-mode-hook 'color-identifiers-mode)
+      (add-hook 'clojure-mode-hook 'color-identifiers-mode)
       (add-hook 'clojure-mode-hook 'global-prettify-symbols-mode)
       (add-hook 'clojure-mode-hook 'clojure-mode-configuration)
 
-      :config
       (bind-key "M-a" 'backward-sexp clojure-mode-map)
       (bind-key "M-e" 'forward-sexp  clojure-mode-map))
   #+END_SRC
@@ -116,7 +110,6 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
    (use-package color-identifiers-mode
      :config
      (add-hook 'clojure-mode-hook 'color-identifiers-mode))
-     ;; :diminish color-identifiers-mode)
   #+END_SRC
 
 * Compojure
@@ -198,16 +191,15 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
   disappear, leaving only the bad red ones:
 
   #+BEGIN_SRC elisp
-  (use-package rainbow-delimiters
-    :init
-    (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
-    (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
+    (use-package rainbow-delimiters
+      :init
+      (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
+      (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
 
-    :config
-    (set-face-attribute 'rainbow-delimiters-unmatched-face nil
-                        :foreground 'unspecified
-                        :inherit 'error)
-    :diminish rainbow-delimiters-mode)
+      :config
+      (set-face-attribute 'rainbow-delimiters-unmatched-face nil
+                          :foreground 'unspecified
+                          :inherit 'error))
   #+END_SRC
 
 * REPL
@@ -242,6 +234,7 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
 
   #+BEGIN_SRC elisp
     (use-package cider
+      :ensure t
       :commands (cider cider-connect cider-jack-in)
 
       :init
@@ -258,7 +251,6 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
       (add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
       (add-hook 'cider-mode-hook 'company-mode)
 
-      (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
       (add-hook 'cider-repl-mode-hook 'smartparens-strict-mode)
       (add-hook 'cider-repl-mode-hook 'subword-mode)
       (add-hook 'cider-repl-mode-hook 'company-mode)
@@ -319,7 +311,8 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
     (use-package clj-refactor
       :ensure t
       :config
-      (add-hook 'clojure-mode-hook 'clj-refactor-mode))
+      (add-hook 'clojure-mode-hook 'clj-refactor-mode)
+      :diminish clj-refactor-mode)
   #+END_SRC
 
   The advanced refactorings require the [[https://github.com/clojure-emacs/refactor-nrepl][refactor-nrepl middleware]],
@@ -328,6 +321,16 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
 
   Of course, the /real problem/ is trying to remember all the
   [[https://github.com/clojure-emacs/clj-refactor.el/wiki][refactoring options]].
+
+  The [[https://github.com/kai2nenobu/guide-key][guide-key]] minor mode will be very handy for this:
+
+  #+BEGIN_SRC elisp
+    (use-package guide-key
+      :ensure t
+      :init
+      (add-to-list 'guide-key/guide-key-sequence "C-c .")
+      :diminish guide-key-mode)
+  #+END_SRC
 
 * Clojure Docs
 
