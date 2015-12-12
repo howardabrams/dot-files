@@ -109,8 +109,8 @@
    Load up my special collection of enhancements to Emacs Lisp:
 
    #+BEGIN_SRC elisp
-     (require 'init-support)
      (require 'cl)
+     (require 'init-support)
    #+END_SRC
 
 * Package Initialization
@@ -207,6 +207,10 @@
    Just beginning to use [[https://github.com/jwiegley/use-package][use-package]]. I’m sure it will be a long time to finally convert everything.
 
    #+BEGIN_SRC elisp
+     (unless (package-installed-p 'use-package)
+       (package-refresh-contents)
+       (package-install 'use-package))
+
      (require 'use-package)
    #+END_SRC
 
@@ -918,7 +922,8 @@
                         "M-s h"     ; hi-lock highlighting
                         "C-x w"     ; alternative to M-s ...
                         (org-mode "C-c C-x")))
-       :config  (guide-key-mode 1))
+       :config  (guide-key-mode 1)
+       :diminish guide-key-mode)
    #+END_SRC
 
    May think about using the following commands:
@@ -1001,13 +1006,6 @@
    #+BEGIN_SRC elisp
      (setq tramp-default-method "ssh")
    #+END_SRC
-
-   Come back someday, and see if the [[https://github.com/dougm/vagrant-tramp][vagrant-tramp]] project starts
-   working, as that would be nice to access files like:
-
-   #+BEGIN_EXAMPLE
-   /vagrant:collectd-server:/var/chef/cache/chef-stacktrace.out
-   #+END_EXAMPLE*
 
 ** Editing Root Files
 
@@ -1265,24 +1263,30 @@
 
    Using [[http://company-mode.github.io/][company-mode]] for all my auto completion needs.
 
+   Like [[https://github.com/vspinu/company-math][this idea]] of being able to easily insert math
+   symbols based on LaTeX keywords. Start typing a backslash.
+
    #+BEGIN_SRC elisp
-     (add-hook 'after-init-hook 'global-company-mode)
+     (use-package company
+       :ensure t
+       :init
+       (add-hook 'after-init-hook 'global-company-mode)
+       :config
+       (add-to-list 'company-backends 'company-math-symbols-unicode)
+       :diminish company-mode)
    #+END_SRC
 
-   If the [[https://www.github.com/expez/company-quickhelp][company-quickhelp]] is installed, let’s take advantage of it:
+   Take advantage of idle time by displaying some documentation
+   using [[https://www.github.com/expez/company-quickhelp][company-quickhelp]] project.
 
    #+BEGIN_SRC elisp
-     (company-quickhelp-mode 1)
+     (use-package company-quickhelp
+       :ensure t
+       :config
+       (company-quickhelp-mode 1))
    #+END_SRC
 
    This also requires [[https://github.com/pitkali/pos-tip/blob/master/pos-tip.el][pos-tip]].
-
-   And I really like [[https://github.com/vspinu/company-math][this idea]] of being able to easily insert math
-   symbols based on LaTeX keywords:
-
-   #+BEGIN_SRC elisp
-     (add-to-list 'company-backends 'company-math-symbols-unicode)
-   #+END_SRC
 
 ** Yasnippets
 
@@ -1607,8 +1611,10 @@
    Not sure if I like it, or not.
 
    #+BEGIN_SRC elisp
-     (require 'hungry-delete)
-     (global-hungry-delete-mode)
+     (use-package hungry-delete
+       :config
+       (global-hungry-delete-mode)
+       :diminish hungry-delete-mode)
    #+END_SRC
 
 * Programming Languages
@@ -1744,10 +1750,20 @@
     as well, so [[http://www.emacswiki.org/emacs/ShowParenMode][this code]] just makes it bold and more obvious:
 
     #+BEGIN_SRC elisp
-      (require 'paren)
-      (set-face-background 'show-paren-match (face-background 'default))
-      (set-face-foreground 'show-paren-match "#afa")
-      (set-face-attribute 'show-paren-match nil :weight 'extra-bold)
+      (use-package paren
+        :init
+        (set-face-background 'show-paren-match (face-background 'default))
+        (set-face-foreground 'show-paren-match "#afa")
+        (set-face-attribute 'show-paren-match nil :weight 'extra-bold))
+    #+END_SRC
+
+    While we are at it, let's dim the parens:
+
+    #+BEGIN_SRC elisp
+      (use-package paren-face
+        :ensure t
+        :config
+        (global-paren-face-mode))
     #+END_SRC
 
 *** Prettify Symbols
