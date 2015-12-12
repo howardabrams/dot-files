@@ -60,13 +60,16 @@ other systems with a graphical front-end.
   thinner and has more white space between lines, but [[http://blogs.adobe.com/typblography/2012/09/source-code-pro.html][Source Code Pro]]
   is so attractive, oh, and then there is Anonymous Pro...
 
-  While thicker, my new favorite is [[https://github.com/tonsky/FiraCode][Fira]] as it does symbol ligatures.
+  While thicker, [[https://github.com/tonsky/FiraCode][Fira]] does symbol ligatures. However, [[https://github.com/i-tu/Hasklig][Hasklig]] is a
+  nice font that is thinner and easier to read, with /some/ symbolic
+  ligatures that doesn't interfere with my org-mode header bullets.
 
   #+BEGIN_SRC elisp
     ;; (setq my/font-family "M+ 1mn")
     ;; (setq my/font-family "Source Code Pro")
     ;; (setq my/font-family "Anonymous Pro")
-    (setq my/font-family "Fira Code")
+    ;; (setq my/font-family "Fira Code")
+    (setq my/font-family "Hasklig")
   #+END_SRC
 
   With the font name situated, I just need to use that to set the
@@ -74,7 +77,7 @@ other systems with a graphical front-end.
 
   #+BEGIN_SRC elisp
     (set-frame-font my/font-family)
-    (set-face-attribute 'default nil :font my/font-family :height 140)
+    (set-face-attribute 'default nil :font my/font-family :height 150)
     (set-face-font 'default my/font-family)
   #+END_SRC
 
@@ -83,32 +86,33 @@ other systems with a graphical front-end.
 
 * Ligatures in Code
 
-  With the [[https://github.com/tonsky/FiraCode][Fira Code font]], we can [[https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs][use this code]] to set up particular
-  programming symbols to take up multiple widths:
+  With font that has symbolic ligatures, we can either use a prebuilt
+  Mac Port (see [[https://lists.gnu.org/archive/html/emacs-devel/2015-08/msg00882.html][this message]]) or [[https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs][use this code]] to set up particular
+  programming symbols to trigger those symbols.
 
   #+BEGIN_SRC elisp
-    (let ((alist '((33 . ".\\(?:\\(?:==\\)\\|[!=]\\)")
-                   (35 . ".\\(?:[(?[_{]\\)")
-                   (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
-                   (42 . ".\\(?:\\(?:\\*\\*\\)\\|[*/]\\)")
-                   (43 . ".\\(?:\\(?:\\+\\+\\)\\|\\+\\)")
-                   (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
-                   (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=]\\)")
-                   (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
-                   (58 . ".\\(?:[:=]\\)")
-                   (59 . ".\\(?:;\\)")
-                   (60 . ".\\(?:\\(?:!--\\)\\|\\(?:\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[/<=>|-]\\)")
-                   (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
-                   (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
-                   (63 . ".\\(?:[:=?]\\)")
-                   (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
-                   (94 . ".\\(?:=\\)")
-                   (123 . ".\\(?:-\\)")
-                   (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
-                   (126 . ".\\(?:[=@~-]\\)"))))
-      (dolist (char-regexp alist)
-        (set-char-table-range composition-function-table (car char-regexp)
-                              `([,(cdr char-regexp) 0 font-shape-gstring]))))
+    (if (fboundp 'mac-auto-operator-composition-mode)
+        (mac-auto-operator-composition-mode)
+      (let ((alist '((33 . ".\\(?:\\(?:==\\)\\|[!=]\\)")
+                     (35 . ".\\(?:[(?[_{]\\)")
+                     (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
+                     (43 . ".\\(?:\\(?:\\+\\+\\)\\|\\+\\)")
+                     (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
+                     (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
+                     (58 . ".\\(?:[:=]\\)")
+                     (59 . ".\\(?:;\\)")
+                     (60 . ".\\(?:\\(?:!--\\)\\|\\(?:\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[/<=>|-]\\)")
+                     (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
+                     (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
+                     (63 . ".\\(?:[:=?]\\)")
+                     (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
+                     (94 . ".\\(?:=\\)")
+                     (123 . ".\\(?:-\\)")
+                     (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
+                     (126 . ".\\(?:[=@~-]\\)"))))
+        (dolist (char-regexp alist)
+          (set-char-table-range composition-function-table (car char-regexp)
+                                `([,(cdr char-regexp) 0 font-shape-gstring]))))
   #+END_SRC
 
   These symbols are more prominent in all languages, as well as being
