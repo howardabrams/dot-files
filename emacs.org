@@ -1645,15 +1645,6 @@
     (require 'etags)
   #+END_SRC
 
-  With the fancy new [[https://marmalade-repo.org/packages/ctags-update][ctags-update]] package, we can update the tags file
-  whenever we save a file:
-
-  #+BEGIN_SRC elisp
-    (autoload 'turn-on-ctags-auto-update-mode
-      "ctags-update" "turn on `ctags-auto-update-mode'." t)
-    (add-hook 'prog-mode-hook  'turn-on-ctags-auto-update-mode)
-  #+END_SRC
-
   Now, use the following keys:
 
   - M-. :: To find the tag at point to jump to the function’s
@@ -1675,6 +1666,16 @@
 
   - C-M-a - Jump to the start of a function
   - C-M-e - Jump to the end of a function
+
+  With the fancy new [[https://marmalade-repo.org/packages/ctags-update][ctags-update]] package, we can update the tags file
+  whenever we save a file:
+
+  #+BEGIN_SRC elisp
+    (use-package ctags-update
+      :config
+      (add-hook 'prog-mode-hook  'turn-on-ctags-auto-update-mode)
+      :diminish ctags-auto-update-mode)
+  #+END_SRC
 
 ** Shell Scripts
 
