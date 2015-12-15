@@ -252,7 +252,7 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
       (add-hook 'cider-mode-hook 'company-mode)
 
       (add-hook 'cider-repl-mode-hook 'smartparens-strict-mode)
-      (add-hook 'cider-repl-mode-hook 'subword-mode)
+      (add-hook 'cider-repl-mode-hook 'superword-mode)
       (add-hook 'cider-repl-mode-hook 'company-mode)
       (add-hook 'cider-test-report-mode 'jcf-soft-wrap)
 
