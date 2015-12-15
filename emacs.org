@@ -1639,13 +1639,19 @@
     ctags -e -R .
   #+END_SRC
 
-  However, with the fancy new [[https://marmalade-repo.org/packages/ctags-update][ctags-update]] package, this happens
+  We access stuff by loading the =etags= package:
+
+  #+BEGIN_SRC elisp
+    (require 'etags)
+  #+END_SRC
+
+  With the fancy new [[https://marmalade-repo.org/packages/ctags-update][ctags-update]] package, we can update the tags file
   whenever we save a file:
 
   #+BEGIN_SRC elisp
     (autoload 'turn-on-ctags-auto-update-mode
       "ctags-update" "turn on `ctags-auto-update-mode'." t)
-    (add-hook 'c-mode-common-hook  'turn-on-ctags-auto-update-mode)
+    (add-hook 'prog-mode-hook  'turn-on-ctags-auto-update-mode)
   #+END_SRC
 
   Now, use the following keys:
@@ -1681,13 +1687,22 @@
 
 ** Emacs Lisp
 
-   Sure, everything here is in Emacs Lisp, but this section helps me write more of that.
-
-   The most important change to Emacs Lisp is colorizing the
+   Sure, everything here is in Emacs Lisp, but this section helps me
+   write more of that... like making snazzy symbols and colorizing the
    variables:
 
    #+BEGIN_SRC elisp
-      (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode)
+     (use-package emacs-lisp
+       :init
+         (defconst lisp--prettify-symbols-alist
+            '(("lambda"  . ?λ)
+              ("curry"   . ?»)
+              ("rcurry"  . ?«)
+              ("comp"    . ?∘)
+              ("compose" . ?∘)
+              ("."       . ?•)))
+       :config
+         (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode))
    #+END_SRC
 
 *** Paredit
@@ -1697,51 +1712,10 @@
     See this [[http://www.emacswiki.org/emacs/PareditCheatsheet][cheatsheet]].
 
     #+BEGIN_SRC elisp
-      (require 'paredit)
-    #+END_SRC
-
-    Associate the following Lisp-based modes with ParEdit:
-
-    #+BEGIN_SRC elisp
-      (defun turn-on-paredit () (paredit-mode t))
-    #+END_SRC
-
-    Associate the following Lisp-based modes with ParEdit:
-
-    #+BEGIN_SRC elisp
-      (add-hook 'emacs-lisp-mode-hook       'turn-on-paredit)
-      (add-hook 'lisp-mode-hook             'turn-on-paredit)
-      (add-hook 'lisp-interaction-mode-hook 'turn-on-paredit)
-      (add-hook 'scheme-mode-hook           'turn-on-paredit)
-      (add-hook 'clojure-mode-hook          'turn-on-paredit)
-      (add-hook 'cider-repl-mode-hook       'turn-on-paredit)
-      (add-hook 'sibiliant-mode-hook        'turn-on-paredit)
-    #+END_SRC
-
-    According to [[http://www.emacswiki.org/emacs/ParEdit#toc4][the ParEdit documentation]], we can allow a Return
-    keypress to insert a couple of indented newlines, if within an
-    s-expression. While within =paredit=, simply press =)= to shrink
-    back up the extra whitespace.
-
-    #+BEGIN_SRC elisp :tangle no
-      (defun electrify-return-if-match (arg)
-            "If the text after the cursor matches `electrify-return-match' then
-          open and indent an empty line between the cursor and the text.  Move the
-          cursor to the new line."
-            (interactive "P")
-            (let ((case-fold-search nil))
-              (if (looking-at "[\]}\)\"]")
-                  (save-excursion (newline-and-indent)))
-              (newline arg)
-              (indent-according-to-mode)))
-    #+END_SRC
-
-    Finally, bind the function to a key:
-
-    #+BEGIN_SRC elisp :tangle no
-      (add-hook 'paredit-mode-hook
-                (lambda ()
-                  (local-set-key (kbd "RET") 'electrify-return-if-match)))
+      (use-package paredit
+        :ensure t
+        :init
+          (add-hook 'emacs-lisp-mode-hook 'paredit-mode))
     #+END_SRC
 
 *** Nicer Paren Matching
@@ -1751,7 +1725,7 @@
 
     #+BEGIN_SRC elisp
       (use-package paren
-        :init
+        :config
         (set-face-background 'show-paren-match (face-background 'default))
         (set-face-foreground 'show-paren-match "#afa")
         (set-face-attribute 'show-paren-match nil :weight 'extra-bold))
@@ -1766,35 +1740,6 @@
         (global-paren-face-mode))
     #+END_SRC
 
-*** Prettify Symbols
-
-    Might as well pretty up the lambdas, and other functions using the
-    new 24.4 prettify-symbols-mode:
-
-    This approach seems to work and looks pretty good:
-
-    #+BEGIN_SRC elisp
-      (when (fboundp 'global-prettify-symbols-mode)
-          (defconst lisp--prettify-symbols-alist
-            '(("lambda"  . ?λ)
-              ("curry"   . ?»)
-              ("rcurry"  . ?«)
-              ("comp"    . ?∘)
-              ("compose" . ?∘)
-              ("."       . ?•)))
-
-          (global-prettify-symbols-mode 1))
-    #+END_SRC
-
-    Words with dashes don't separate words in Lisp:
-
-    #+BEGIN_SRC elisp
-      (dolist (c (string-to-list ":_-?!#*"))
-        (modify-syntax-entry c "w" emacs-lisp-mode-syntax-table))
-    #+END_SRC
-
-    *Note:*: Need to change this to work with the v24.4 super-word.
-
 *** Insert Comment of Eval
 
     While writing and documenting Emacs Lisp code, it would be helpful
@@ -1802,21 +1747,18 @@
     into the code as a comment:
 
     #+BEGIN_SRC elisp
-      (defun eval-and-comment-output ()
-        "Add the output of the sexp as a comment after the sexp"
-        (interactive)
-        (save-excursion
-          (end-of-line)
-          (condition-case nil
-              (princ (concat " ; -> " (pp-to-string (eval (preceding-sexp))))
-                     (current-buffer))
-            (error (message "Invalid expression")))))
-    #+END_SRC
+      (use-package emacs-lisp
+        :config (defun eval-and-comment-output ()
+                  "Add the output of the sexp as a comment after the sexp"
+                  (interactive)
+                  (save-excursion
+                    (end-of-line)
+                    (condition-case nil
+                        (princ (concat " ; -> " (pp-to-string (eval (preceding-sexp))))
+                               (current-buffer))
+                      (error (message "Invalid expression")))))
 
-    And since it is Emacs Lisp, let’s bind globally:
-
-    #+BEGIN_SRC elisp
-      (global-set-key (kbd "C-x e") 'eval-and-comment-output)
+        :bind ("C-x e" . eval-and-comment-output))
     #+END_SRC
 
 ** Clojure
