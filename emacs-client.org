@@ -112,7 +112,7 @@ other systems with a graphical front-end.
                      (126 . ".\\(?:[=@~-]\\)"))))
         (dolist (char-regexp alist)
           (set-char-table-range composition-function-table (car char-regexp)
-                                `([,(cdr char-regexp) 0 font-shape-gstring]))))
+                                `([,(cdr char-regexp) 0 font-shape-gstring])))))
   #+END_SRC
 
   These symbols are more prominent in all languages, as well as being
