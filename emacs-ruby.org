@@ -5,117 +5,80 @@
 #+TAGS:   emacs ruby
 #+PROPERTY: header-args:sh :results silent :tangle no
 
-We begin by stealing a typical Ruby environment from [[https://github.com/bbatsov/prelude/blob/master/modules/prelude-ruby.el][Prelude]].
+The following instructions create a modern, blinged-out setup for
+developing Ruby in Emacs.
 
 * Ruby Installation
 
-  I like having everything Ruby controlled by [[https://rvm.io/][RVM]]:
+  Every Ruby /instance/ is controlled by [[https://rvm.io/][RVM]]. Install it, via:
 
   #+BEGIN_SRC sh
     curl -sSL https://get.rvm.io | bash -s stable
   #+END_SRC
 
-  And then install a Ruby version and set it to be used globally:
+  Next, install a Ruby version and set it to be used globally:
 
   #+BEGIN_SRC sh
     rvm install 1.9.3-p550
     rvm use 1.9.3-p550
   #+END_SRC
 
-  See the [[#ruby-virtual-manager][Ruby Virtual Manager]] section below.
+  See the [[#ruby-virtual-manager][Ruby Virtual Manager]] section below for using RVM within
+  Emacs, as well as the Ruby configuration in my [[file:profile.org::*Ruby][shell environment]].
 
-* Supporting Packages
+* Ruby Mode
 
-  Starting to collect the Ruby packages that make the most sense for
-  my work-flow and development style:
-
-  #+BEGIN_SRC elisp
-    (packages-install '( ruby-tools
-                         inf-ruby
-                         rvm
-                         yari
-                         robe
-                         rubocop
-                         smartparens ))
-  #+END_SRC
-
-  Notice that I’m not using [[https://github.com/zenspider/enhanced-ruby-mode][enh-ruby-mode]], as I have found that the
-  updated =ruby-mode= that is standard in Emacs 24.4 is quite good.
-
-* Ruby Mode and File Extensions
-
-  Many odd files need to associated with any Ruby mode:
+  While the Ruby mode is supplied with Emacs, it needs to be
+  associated with a few other file type extensions:
 
   #+BEGIN_SRC elisp
-    (when (require 'ruby-mode nil t)
-      (add-to-list 'auto-mode-alist '("\\.rb$"          . ruby-mode))
-      (add-to-list 'interpreter-mode-alist '("ruby"     . ruby-mode))
-      (add-to-list 'auto-mode-alist '("\\.rake\\'"      . ruby-mode))
-      (add-to-list 'auto-mode-alist '("Rakefile\\'"     . ruby-mode))
-      (add-to-list 'auto-mode-alist '("\\.gemspec\\'"   . ruby-mode))
-      (add-to-list 'auto-mode-alist '("\\.ru\\'"        . ruby-mode))
-      (add-to-list 'auto-mode-alist '("Gemfile\\'"      . ruby-mode))
-      (add-to-list 'auto-mode-alist '("Guardfile\\'"    . ruby-mode))
-      (add-to-list 'auto-mode-alist '("Capfile\\'"      . ruby-mode))
-      (add-to-list 'auto-mode-alist '("\\.thor\\'"      . ruby-mode))
-      (add-to-list 'auto-mode-alist '("\\.rabl\\'"      . ruby-mode))
-      (add-to-list 'auto-mode-alist '("Thorfile\\'"     . ruby-mode))
-      (add-to-list 'auto-mode-alist '("Vagrantfile\\'"  . ruby-mode))
-      (add-to-list 'auto-mode-alist '("\\.jbuilder\\'"  . ruby-mode))
-      (add-to-list 'auto-mode-alist '("Podfile\\'"      . ruby-mode))
-      (add-to-list 'auto-mode-alist '("\\.podspec\\'"   . ruby-mode))
-      (add-to-list 'auto-mode-alist '("Puppetfile\\'"   . ruby-mode))
-      (add-to-list 'auto-mode-alist '("Berksfile\\'"    . ruby-mode))
-      (add-to-list 'auto-mode-alist '("Appraisals\\'"   . ruby-mode)))
+    (use-package ruby-mode
+      :ensure t
+      :mode "\\.rb\\'"
+      :mode "Rakefile\\'"
+      :mode "Gemfile\\'"
+      :mode "Berksfile\\'"
+      :mode "Vagrantfile\\'"
+      :interpreter "ruby"
+
+      :init
+      (setq ruby-indent-level 2
+            ruby-indent-tabs-mode nil)
+      (add-hook 'ruby-mode 'superword-mode)
+
+      :config
+      (bind-key "M-<down>" 'ruby-forward-sexp)
+      (bind-key "M-<up>" 'ruby-backward-sexp)
+      ;; Don't care to have to start up Ruby if I'm just jumping around
+      (bind-key "M-." 'find-tag)
+      (bind-key "C-c C-e" 'ruby-send-region))  ;; Rebind since Rubocop uses C-c C-r
   #+END_SRC
 
-  Use [[http://web-mode.org/][web-mode]] for dealing with ERB templates:
-
-  #+BEGIN_SRC elisp
-    (when (require 'web-mode nil t)
-      (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode)))
-  #+END_SRC
-
-* Customizations
-
-  Create a function that will set the default values for the
-  =ruby-mode=, and tie that to the =ruby-mode-hoook=:
-
-  #+BEGIN_SRC elisp
-    (defun ha/ruby-mode-defaults ()
-      ;; It hate subwords
-      (superword-mode +1)
-      (ruby-tools-mode +1)
-
-      (setq-default ruby-indent-level 2)
-      (setq-default ruby-indent-tabs-mode nil)
-
-      ;; Using =expand-regions= and send a region to REPLs:
-      (local-set-key (kbd "C-c i") 'ruby-send-region))
-
-    (add-hook 'ruby-mode-hook 'ha/ruby-mode-defaults)
-  #+END_SRC
-
-* Better Keyboard Movement
-
-  Each language that I use, I like to bind the /sexp/ movement:
-
-  #+BEGIN_SRC elisp
-    (define-key ruby-mode-map (kbd "M-<down>") 'ruby-forward-sexp)
-    (define-key ruby-mode-map (kbd "M-<up>") 'ruby-backward-sexp)
-  #+END_SRC
+  Being able to select code using expand-region, and then sending it
+  to the Ruby REPL is often useful. But what does an /s-expression/
+  mean in Ruby?
 
   Other keystrokes to remember:
 
   - =C-M-p= / =C-M-n= :: Move to the beginning and end of a block
   - =C-M-a= / =C-M-e= :: Move to the beginning and end of a function
 
+  Use [[http://web-mode.org/][web-mode]] for dealing with ERB templates:
+
+  #+BEGIN_SRC elisp
+    (use-package web-mode
+      :ensure t
+      :mode "\\.erb\\'")
+  #+END_SRC
+
 * Ruby Virtual Manager
 
   Using [[https://github.com/senny/rvm.el][RVM integration]] for Emacs:
 
   #+BEGIN_SRC elisp
-    (when (require 'rvm nil t)
+    (use-package rvm
+      :ensure t
+      :config
       (rvm-use-default))
   #+END_SRC
 
@@ -123,12 +86,21 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
   =rvm-use= ... which must be done before starting an Eshell (that
   is, if you’re into that sort of thing).
 
+  Start with a default Gemset by placing the following in your local
+  configuration:
+
+  #+BEGIN_SRC elisp :tangle no
+    (rvm-use "ruby-2.0.0" "p643")
+  #+END_SRC
+
 * Ruby Functional Doc
 
   The [[http://www.emacswiki.org/cgi-bin/emacs/YARI][Yari]] project attempts to hook Ruby calls to the =ri= project.
 
-  #+BEGIN_SRC elisp
-    (when (require 'yari nil t)
+  #+BEGIN_SRC elisp :tangle no
+    (use-package yari
+      :ensure t
+      :init
       (add-hook 'ruby-mode-hook
                 (lambda ()
                   (local-set-key [f1] 'yari))))
@@ -151,11 +123,14 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
   my editor, and for Ruby, this is [[https://github.com/nonsequitur/inf-ruby][inf-ruby]]:
 
   #+BEGIN_SRC elisp
-    (require 'inf-ruby)
-    (add-hook 'ruby-mode-hook 'inf-ruby-minor-mode)
+    (use-package inf-ruby
+      :ensure t
+      :bind ("C-c i" . inf-ruby)
+      :init
+      (add-hook 'ruby-mode-hook 'inf-ruby-minor-mode))
   #+END_SRC
 
-  To start eval-ing, do: =M-x inf-ruby=  ... or: =C-c C-s=
+  To start eval-ing, do: =M-x inf-ruby=  ... or: =C-c i=
 
 * Smart Parens
 
@@ -164,10 +139,10 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
   =paredit=. Still, it may be good enough for Ruby:
 
   #+BEGIN_SRC elisp
-    (when (require 'smartparens-config nil t)
-          (require 'smartparens-ruby)
-
-      (add-hook 'ruby-mode-hook 'smartparens-mode))
+    (use-package smartparens
+      :ensure t
+      :init
+        (add-hook 'ruby-mode-hook 'smartparens-strict-mode))
   #+END_SRC
 
 * Rubocop
@@ -176,11 +151,42 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
   The [[https://github.com/bbatsov/rubocop-emacs][rubocop.el]] mode should just work with [[https://github.com/flycheck/flycheck][Flycheck]].
 
   #+BEGIN_SRC elisp
-    (when (require 'rubocop nil t)
+    (use-package rubocop
+      :ensure t
+      :init
       (add-hook 'ruby-mode-hook 'rubocop-mode))
   #+END_SRC
 
   Install it with: =gem install rubocop=
+
+* Food Critic
+
+   Let's get [[http://www.foodcritic.io/][Foodcritic]] working with Flycheck, but only if the file
+   is located in a =recipes= or =cookbooks= directory:
+
+   #+BEGIN_SRC elisp
+     (use-package flycheck
+       :no-require t
+       :config
+       (flycheck-define-checker chef-foodcritic
+         "A Chef cookbooks syntax checker using Foodcritic.
+     See URL `http://acrmp.github.io/foodcritic/'."
+         :command ("foodcritic" source)
+         :error-patterns
+         ((error line-start (message) ": " (file-name) ":" line line-end))
+         :modes (enh-ruby-mode ruby-mode)
+         :predicate
+         (lambda ()
+           (let ((parent-dir (file-name-directory (buffer-file-name))))
+             (or
+              ;; Chef CookBook
+              ;; http://docs.opscode.com/chef/knife.html#id38
+              (locate-dominating-file parent-dir "recipes")
+              ;; Knife Solo
+              ;; http://matschaffer.github.io/knife-solo/#label-Init+command
+              (locate-dominating-file parent-dir "cookbooks"))))
+         :next-checkers ((warnings-only . ruby-rubocop))))
+   #+END_SRC
 
 * Robe
 
@@ -192,19 +198,30 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
     gem install pry pry-doc
   #+END_SRC
 
+  And even then, it barely works.
   Once started with =robe-start=, we should get code completion:
 
-  #+BEGIN_SRC elisp
-    (when (require 'robe nil t)
+  #+BEGIN_SRC elisp :tangle no
+    (use-package robe
+      :ensure t
+      :bind ("C-M-." . robe-jump)
+
+      :init
       (add-hook 'ruby-mode-hook 'robe-mode)
-      (eval-after-load 'company '(push 'company-robe company-backends))
 
-      ;; Don't care to have to start up Ruby if I'm just jumping around
-      (define-key robe-mode-map (kbd "M-.") 'xref-find-definitions)
-      (define-key robe-mode-map (kbd "C-M-.") 'robe-jump)
-
-      (defadvice inf-ruby-console-auto (before activate-rvm-for-robe activate)
+      :config
+      (defadvice inf-ruby-console-auto
+        (before activate-rvm-for-robe activate)
         (rvm-activate-corresponding-ruby)))
+  #+END_SRC
+
+  If we have installed Company for auto-complete, use robe for this purpose:
+
+  #+BEGIN_SRC elisp :tangle no
+    (use-package company
+      :no-require t
+      :config
+      (push 'company-robe company-backends))
   #+END_SRC
 
   With a complex Ruby project, one should evaluate the entire Ruby
@@ -214,12 +231,17 @@ We begin by stealing a typical Ruby environment from [[https://github.com/bbatso
   - =robe-ask= will act like jump, but asks for the method first
   - =robe-doc= displays the method documentation (doesn’t seem to be as useful as =dash-at-point=).
 
+  However, it seldom works with any of the Ruby code that I use, so I
+  currently have it turned off.
+
 * Ruby Tools
 
   The little refactoring available with [[https://github.com/rejeep/ruby-tools.el][Ruby Tools]] looks interesting.
 
   #+BEGIN_SRC elisp
-    (when (require 'ruby-tools nil t)
+    (use-package ruby-tools
+      :ensure t
+      :init
       (add-hook 'ruby-mode-hook 'ruby-tools-mode))
   #+END_SRC
 
