@@ -137,7 +137,7 @@
 
    #+BEGIN_SRC elisp
      (package-initialize)
-     (package-refresh-contents)
+     ;; (package-refresh-contents)
    #+END_SRC
 
    Not sure why the package management system doesn't come with a
@@ -184,7 +184,6 @@
                       gitconfig-mode
                       gitignore-mode
                       graphviz-dot-mode
-                      hungry-delete
                       htmlize
                       hydra
                       ido-vertical-mode
@@ -1608,14 +1607,11 @@
 ** Hungry Delete
 
    With this [[http://endlessparentheses.com//hungry-delete-mode.html][free feature]], deleting any space, deletes ALL spaces.
-   Not sure if I like it, or not.
 
-   #+BEGIN_SRC elisp
-     (use-package hungry-delete
-       :config
-       (global-hungry-delete-mode)
-       :diminish hungry-delete-mode)
-   #+END_SRC
+   This is already built into Emacs with the following:
+   - =M-0 M-SPC= :: Removes all spaces
+   - =M-SPC= :: Removes extra spaces, leaving just one
+   - =M-- M-1 M-SPC= :: Joins line separated by a space
 
 * Programming Languages
 
