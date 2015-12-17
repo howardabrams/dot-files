@@ -84,42 +84,6 @@ other systems with a graphical front-end.
    *Note:* I find that the height should be =160= for M+, but =140=
    for most other fonts.
 
-* Ligatures in Code
-
-  With font that has symbolic ligatures, we can either use a prebuilt
-  Mac Port (see [[https://lists.gnu.org/archive/html/emacs-devel/2015-08/msg00882.html][this message]]) or [[https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs][use this code]] to set up particular
-  programming symbols to trigger those symbols.
-
-  #+BEGIN_SRC elisp
-    (if (fboundp 'mac-auto-operator-composition-mode)
-        (mac-auto-operator-composition-mode)
-      (let ((alist '((33 . ".\\(?:\\(?:==\\)\\|[!=]\\)")
-                     (35 . ".\\(?:[(?[_{]\\)")
-                     (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
-                     (43 . ".\\(?:\\(?:\\+\\+\\)\\|\\+\\)")
-                     (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
-                     (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
-                     (58 . ".\\(?:[:=]\\)")
-                     (59 . ".\\(?:;\\)")
-                     (60 . ".\\(?:\\(?:!--\\)\\|\\(?:\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[/<=>|-]\\)")
-                     (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
-                     (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
-                     (63 . ".\\(?:[:=?]\\)")
-                     (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
-                     (94 . ".\\(?:=\\)")
-                     (123 . ".\\(?:-\\)")
-                     (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
-                     (126 . ".\\(?:[=@~-]\\)"))))
-        (dolist (char-regexp alist)
-          (set-char-table-range composition-function-table (car char-regexp)
-                                `([,(cdr char-regexp) 0 font-shape-gstring])))))
-  #+END_SRC
-
-  These symbols are more prominent in all languages, as well as being
-  a /single character symbol/ (well, until you hit backspace on it):
-
-  [[https://github.com/tonsky/FiraCode/raw/master/showcases/all_ligatures.png]]
-
 * Color Theme
 
    Use the color theme project by following [[http://www.nongnu.org/color-theme/][these instructions]].
