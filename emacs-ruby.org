@@ -142,7 +142,8 @@ developing Ruby in Emacs.
     (use-package smartparens
       :ensure t
       :init
-        (add-hook 'ruby-mode-hook 'smartparens-strict-mode))
+        (add-hook 'ruby-mode-hook 'smartparens-strict-mode)
+      :diminish smartparens-mode)
   #+END_SRC
 
 * Rubocop
@@ -154,7 +155,8 @@ developing Ruby in Emacs.
     (use-package rubocop
       :ensure t
       :init
-      (add-hook 'ruby-mode-hook 'rubocop-mode))
+      (add-hook 'ruby-mode-hook 'rubocop-mode)
+      :diminish rubocop-mode)
   #+END_SRC
 
   Install it with: =gem install rubocop=
@@ -242,7 +244,8 @@ developing Ruby in Emacs.
     (use-package ruby-tools
       :ensure t
       :init
-      (add-hook 'ruby-mode-hook 'ruby-tools-mode))
+      (add-hook 'ruby-mode-hook 'ruby-tools-mode)
+      :diminish ruby-tools-mode)
   #+END_SRC
 
   The primary key-bindings operate on the /thing/ the cursor is on,
