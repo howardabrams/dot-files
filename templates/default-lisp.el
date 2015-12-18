@@ -1,7 +1,3 @@
-# -*- mode: snippet; require-final-newline: nil -*-
-# name: header
-# key: header
-# --
 ;;; `(upcase (file-name-nondirectory (file-name-sans-extension (buffer-file-name))))` --- Summary
 ;;
 ;; Author: `(concat user-full-name)` <`(concat user-mail-address)`>

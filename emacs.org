@@ -1243,7 +1243,7 @@
      (setq auto-insert-directory (ha/emacs-subdirectory "templates/"))
      (setq auto-insert-query nil) ;;; If you don't want to be prompted before insertion
 
-     (define-auto-insert "\.el" "default-lisp.el")
+     ;; (define-auto-insert "\\.html?$" "default-html.html")
    #+END_SRC
 
    Some auto insertion requires entering data for particular fields,
@@ -1254,8 +1254,10 @@
        "Replace text in yasnippet template."
        (yas-expand-snippet (buffer-string) (point-min) (point-max)))
 
+     (define-auto-insert "\\.el$" ["default-lisp.el" ha/autoinsert-yas-expand])
      (define-auto-insert "\\.sh$" ["default-sh.sh" ha/autoinsert-yas-expand])
      (define-auto-insert "/bin/"  ["default-sh.sh" ha/autoinsert-yas-expand])
+     (define-auto-insert "\\.html?$" ["default-html.html" ha/autoinsert-yas-expand])
    #+END_SRC
 
 ** Auto Complete
