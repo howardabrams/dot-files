@@ -5,37 +5,21 @@
 #+TAGS:   emacs
 
 This file is a smaller subset of my Emacs configuration file oriented
-for servers.
+for servers. Since I now use Tramp exclusively for editing files on my
+servers, having a special non-client configuration has become less of
+an issue.
 
-* Needed Packages
-
-#+BEGIN_SRC elisp
-  (packages-install '( emmax ))
-#+END_SRC
+If I do get back to using a server-side emacs, since I dig [[https://tmux.github.io/][tmux]], I may
+want to play with the [[https://github.com/re5et/emux][emux]] package.
 
 * Key Bindings
 
-If I am running on server, then I might as well attempt to pretend I'm
-on a desktop:
-
-#+BEGIN_SRC elisp
-  (cua-mode t)
-#+END_SRC
-
-* TMux Integration
+  If I am running on server, then I might as well attempt to pretend I'm
+  on a desktop:
 
   #+BEGIN_SRC elisp
-  (when (getenv "TMUX")
-    (require 'emamux)
-    (global-set-key (kbd "M-!") 'emamux:run-command)
-    (global-set-key (kbd "C-x !") 'emamux:send-command)
-    (global-set-key (kbd "C-x ~") 'emamux:emamux:close-runner-pane))
+    (cua-mode t)
   #+END_SRC
-
-* Technical Artifacts
-
-  Before you can build this on a new system, make sure that you put
-  the cursor over any of these properties, and hit: =C-c C-c=
 
 #+DESCRIPTION: A literate programming version of my Emacs Initialization for Servers
 #+PROPERTY:    results silent
