@@ -1641,7 +1641,7 @@
    variables:
 
    #+BEGIN_SRC elisp
-     (use-package emacs-lisp
+     (use-package lisp-mode
        :init
          (defconst lisp--prettify-symbols-alist
             '(("lambda"  . ?λ)
@@ -1696,7 +1696,7 @@
     into the code as a comment:
 
     #+BEGIN_SRC elisp
-      (use-package emacs-lisp
+      (use-package lisp-mode
         :config (defun eval-and-comment-output ()
                   "Add the output of the sexp as a comment after the sexp"
                   (interactive)
