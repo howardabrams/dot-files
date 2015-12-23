@@ -95,74 +95,73 @@ ever do that?
           (align-regexp real-start real-end "\\(\\s-*\\)\\(\\S-*\\)\\(\\s-*\\)" 3 1 nil))))
   #+END_SRC
 
-* Cut Line or Region
+* Kill Entire Lines
 
-  Hitting =Ctrl-w= cuts the text from the point to the mark...but do
-  you remember where that fucker is? Probably not, and may not be what
-  you want, so /unless the region is currently active and
-  highlighted/, let's cut the current line ... all of it ... no matter
-  where the point is. This idea, came from [[http://ergoemacs.org/emacs/emacs_copy_cut_current_line.html#rnd_elisp_doc][ErgoEmacs]], but with a
-  little modification.
+  According to [[http://endlessparentheses.com/kill-entire-line-with-prefix-argument.html][this article]], killing the rest of the line is fine,
+  but =C-3 C-k= kills only 2½ lines. Not so useful.
 
-  First, let's define a function that returns the first and last text
-  positions based on if the region is "on" and what the mode is. That
-  is, if I'm in =org-mode=, I probably don't want to cut/copy the
-  line, but the paragraph or other structural element.
+  This creates a macro that moves to the beginning of the line and
+  then calls a function given to it. Quite an interesting approach:
 
   #+BEGIN_SRC elisp
-    (defun ha/get-line-or-region (&optional num)
-      "Return a list containing the start and ending text positions
-    of the active region.  If the region isn't active, make a good
-    guess about the structure where the start and end of the current
-    line is the default. If a prefix number is given, it returns the
-    position that includes that many lines or other structural
-    elements."
+    (defmacro bol-with-prefix (function)
+      "Define a new function which calls FUNCTION.
+    Except it moves to beginning of line before calling FUNCTION when
+    called with a prefix argument. The FUNCTION still receives the
+    prefix argument."
+      (let ((name (intern (format "ha/%s-BOL" function))))
+        `(progn
+           (defun ,name (p)
+             ,(format
+               "Call `%s', but move to the beginning of the line when called with a prefix argument."
+               function)
+             (interactive "P")
+             (when p
+               (forward-line 0))
+             (call-interactively ',function))
+           ',name)))
+  #+END_SRC
+
+  And we re-bind them to functions that use them.
+
+  #+BEGIN_SRC elisp
+    (global-set-key [remap paredit-kill] (bol-with-prefix paredit-kill))
+    (global-set-key [remap org-kill-line] (bol-with-prefix org-kill-line))
+    (global-set-key [remap kill-line] (bol-with-prefix kill-line))
+
+    (global-set-key (kbd "C-k") (bol-with-prefix kill-line))
+  #+END_SRC
+
+* Selecting Words
+
+  While you can type: =M-4 M-@= to select the next four words, that
+  is too much finger stretching for something I want to use often.
+  (Yes, hitting =M-@= four times is actually easier, but...)
+
+  The =M-w= does nothing different with a prefix, so this seems quite
+  reasonable to re-purpose such a direct command:
+
+  #+BEGIN_SRC elisp
+    (defun ha/select-words-or-copy (num)
+      "If region is active, copy to kill ring as normal, but given a
+    prefix, selects that number of words."
+      (interactive "p")
       (cond
-       ((use-region-p)  (list (region-beginning)        (region-end)))
-       ((string-equal major-mode "org-mode")
-        (list (ha/get-org-element 'org-backward-paragraph '< num)
-              (ha/get-org-element 'org-forward-paragraph '> num)))
-       (num             (list (line-beginning-position) (line-end-position (1+ num))))
-       (t               (list (line-beginning-position) (line-end-position)))))
-
-    (defun ha/get-org-element (f p &optional num)
-      "Strange little function.  F is a function to call in an saved
-    excursion to move the cursor around and get its state. P is a
-    predicate on whether NUM should be given to F, since number could
-    be nil.  Written to make 'ha/get-line-or-region' easier to read."
-      (save-excursion
-        (if (and num (funcall p num 0))
-            (dotimes (i (abs num))
-                     (funcall f))
-          (funcall f))
-        (point)))
+       ((use-region-p) (kill-ring-save (region-beginning) (region-end)))
+       ((> num 0) (progn
+                    (beginning-of-thing 'word)
+                    (push-mark (point) nil t)
+                    (forward-word num)))
+       ((< num 0) (progn
+                    (end-of-thing 'word)
+                    (push-mark (point) nil t)
+                    (forward-word num)))))
   #+END_SRC
 
-  Now, we can use this function to copy the text and bind it to our
-  normal key chord:
+  Now bind them to the standard keys:
 
   #+BEGIN_SRC elisp
-    (defun ha/copy-line-or-region ()
-      "Copy current line or text selection.  If prefix argument is given, copies that many lines."
-      (interactive)
-      (apply 'kill-ring-save (ha/get-line-or-region current-prefix-arg)))
-
-    (global-set-key (kbd "M-w") 'ha/copy-line-or-region)
-    (global-set-key (kbd "A-c") 'ha/copy-line-or-region)
-    (global-set-key (kbd "s-c") 'ha/copy-line-or-region)
-  #+END_SRC
-
-  And put on the cut ring:
-
-  #+BEGIN_SRC elisp
-    (defun ha/cut-line-or-region ()
-      "Cut current line or text selection.  If prefix argument is given, copies that many lines."
-      (interactive)
-      (apply 'kill-region (ha/get-line-or-region current-prefix-arg)))
-
-    (global-set-key (kbd "C-w") 'ha/cut-line-or-region)
-    (global-set-key (kbd "A-x") 'ha/cut-line-or-region)
-    (global-set-key (kbd "s-x") 'ha/cut-line-or-region)
+    (global-set-key (kbd "M-w") 'ha/select-words-or-copy)
   #+END_SRC
 
 * Better Newline
@@ -283,9 +282,8 @@ ever do that?
         (move-beginning-of-line 1))))
 
   ;; remap C-a to `smarter-move-beginning-of-line'
-  ;; however, this doesn't work in org-mode's `org-beginning-of-line'
-  (global-set-key [remap move-beginning-of-line]
-                  'smarter-move-beginning-of-line)
+  (global-set-key [remap move-beginning-of-line] 'smarter-move-beginning-of-line)
+  (global-set-key [remap org-beginning-of-line]  'smarter-move-beginning-of-line)
 #+END_SRC
 
 * Next and Previous File

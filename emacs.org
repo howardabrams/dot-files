@@ -856,56 +856,6 @@
              (surround nil nil txt)))
        #+END_SRC
 
-** Kill Entire Lines
-
-   While =C-k= kills text to the end of the line, what about killing
-   text before the point?
-
-   #+BEGIN_SRC elisp
-     (defun ha/kill-line-before ()
-       "Kills text from the current cursor position to the beginning
-     of the current line."
-       (interactive)
-       (kill-region (point-at-bol) (point)))
-
-     (global-set-key (kbd "C-S-K") 'ha/kill-line-before)
-   #+END_SRC
-
-   According to [[http://endlessparentheses.com/kill-entire-line-with-prefix-argument.html][this article]], killing the rest of the line is fine,
-   but =C-3 C-k= kills only 2½ lines. Not so useful.
-
-   This creates a macro that moves to the beginning of the line and
-   then calls a function given to it. Quite an interesting approach:
-
-   #+BEGIN_SRC elisp
-     (defmacro bol-with-prefix (function)
-       "Define a new function which calls FUNCTION.
-     Except it moves to beginning of line before calling FUNCTION when
-     called with a prefix argument. The FUNCTION still receives the
-     prefix argument."
-       (let ((name (intern (format "ha/%s-BOL" function))))
-         `(progn
-            (defun ,name (p)
-              ,(format
-                "Call `%s', but move to the beginning of the line when called with a prefix argument."
-                function)
-              (interactive "P")
-              (when p
-                (forward-line 0))
-              (call-interactively ',function))
-            ',name)))
-   #+END_SRC
-
-   And we re-bind them to functions that use them.
-
-   #+BEGIN_SRC elisp
-     (global-set-key [remap paredit-kill] (bol-with-prefix paredit-kill))
-     (global-set-key [remap org-kill-line] (bol-with-prefix org-kill-line))
-     (global-set-key [remap kill-line] (bol-with-prefix kill-line))
-
-     (global-set-key (kbd "C-k") (bol-with-prefix kill-line))
-   #+END_SRC
-
 ** Displaying Command Sequences
 
    Many command sequences may be logical, but who can remember them
