@@ -171,7 +171,7 @@ some significant differences to address. To this end, I [[http://www.howardism.o
   2. A predicate function that takes a file as a parameter.
 
   For the first step, we have our function /called/ as it helps
-  /parse/ the text at this time.  Based on what it sees, it returns
+  parse the text at this time.  Based on what it sees, it returns
   the predicate function used to filter the files:
 
   #+BEGIN_SRC elisp

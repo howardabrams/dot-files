@@ -23,8 +23,8 @@ filter function.
             (mapcar (lambda (x) (and (funcall condp x) x)) lst)))
   #+END_SRC
 
-  Might as well have an =inverse-filter= to filter out everything that
-  /doesn't/ match the predicate function:
+  Might as well have an =inverse-filter= to filter out everything
+  that /doesn't/ match the predicate function:
 
   #+BEGIN_SRC elisp
     (defun inverse-filter (condp lst)

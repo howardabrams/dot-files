@@ -74,7 +74,7 @@ email messages that arrive on my GMail account.
     ((setq  )etq mu4e-trash-folder  "/[Gmail].Trash")
   #+END_SRC
 
-  *Note:* Don't save message to =Sent Messages=, as =GMail/IMAP= will
+  Don't save message to =Sent Messages=, as =GMail/IMAP= will
   take care of this:
 
   #+BEGIN_SRC elisp
@@ -154,9 +154,9 @@ email messages that arrive on my GMail account.
 
 * Org-Mime
 
-  To send /formatted =org-mode= files/, like this, first, install the
-  =org-plus-contrib= package from ELPA (but *do not* install the
-  =org-mime= package, as that is old and broken, see [[http://lists.gnu.org/archive/html/emacs-orgmode/2014-05/msg00311.html][this discussion]]
+  To send /formatted =org-mode= files/, like this, first, install
+  the =org-plus-contrib= package from ELPA (but *do not* install
+  the =org-mime= package, as that is old and broken, see [[http://lists.gnu.org/archive/html/emacs-orgmode/2014-05/msg00311.html][this discussion]]
   for details.
 
   Require this =[[http://orgmode.org/worg/org-contrib/org-mime.html][org-mime]]= system (that is part of =org-plus-contrib=):
