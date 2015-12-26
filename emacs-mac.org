@@ -7,75 +7,64 @@
 The settings in this file are only included on a Macintosh, and even
 then, only during a graphical run.
 
-* Needed Packages
-
-#+BEGIN_SRC elisp
-  (packages-install '( mac-key-mode ))
-#+END_SRC
-
 * Key Bindings
 
-   I like the ability to use the Command key to turn a standard Emacs
-   into a more Macintosh-specific application. (See [[http://stackoverflow.com/questions/162896/emacs-on-mac-os-x-leopard-key-bindings][these online notes]])
+  Not going to use the Escape key as my Meta key ... that is what the
+  Option key should be:
 
-#+BEGIN_SRC elisp
-  (setq mac-option-modifier 'meta)
+  #+BEGIN_SRC elisp
+    (setq mac-option-modifier 'meta)
+  #+END_SRC
 
-  ;; Emacs on Mac specific code:
-  (unless (boundp 'aquamacs-version)
-    (require 'mac-key-mode)
-    (mac-key-mode)
+  However, I like the ability to use the Command key to turn a
+  standard Emacs into a more Macintosh-specific application.
+  (See [[http://stackoverflow.com/questions/162896/emacs-on-mac-os-x-leopard-key-bindings][these online notes]])
 
-    (define-key mac-key-mode-map (kbd "A-o") 'ido-find-file)
+  #+BEGIN_SRC elisp
+    (unless (boundp 'aquamacs-version)
+      (use-package mac-key-mode
+        :ensure t
+        :init
+        (mac-key-mode)
+        :config
+        (define-key mac-key-mode-map (kbd "A-o") 'ido-find-file)
 
-    ;; I'd rather selectively bind Meta-I to my italics function,
-    ;; instead of showing the file in the Finder.
-    (define-key mac-key-mode-map (kbd "A-i") nil)
-    (define-key mac-key-mode-map (kbd "A-2") 'mac-key-show-in-finder)
+        ;; I'd rather selectively bind Meta-I to my italics function,
+        ;; instead of showing the file in the Finder.
+        (define-key mac-key-mode-map (kbd "A-i") nil)
+        (define-key mac-key-mode-map (kbd "A-m") nil)
+        (define-key mac-key-mode-map (kbd "A-2") 'mac-key-show-in-finder)
 
-    (define-key mac-key-mode-map (kbd "A-+") 'text-scale-increase)
-    (define-key mac-key-mode-map (kbd "A-_") 'text-scale-decrease)
-    (define-key mac-key-mode-map (kbd "A-l") 'goto-line)
+        (define-key mac-key-mode-map (kbd "A-+") 'text-scale-increase)
+        (define-key mac-key-mode-map (kbd "A-_") 'text-scale-decrease)
+        (define-key mac-key-mode-map (kbd "A-l") 'goto-line)
 
-    ;; Command-Q is awful (too easy to hit) ... especially next to
-    ;; the more benign key binding to close a window: Cmd-W
-    (define-key mac-key-mode-map (kbd "A-q") 'dont-kill-emacs)
+        ;; Command-Q is awful (too easy to hit) ... especially next to
+        ;; the more benign key binding to close a window: Cmd-W
+        (define-key mac-key-mode-map (kbd "A-q") 'dont-kill-emacs)
 
-    (define-key mac-key-mode-map (kbd "A-w") 'bury-buffer)
-    (define-key mac-key-mode-map (kbd "A-M-w") 'kill-this-buffer))
-#+END_SRC
+        (define-key mac-key-mode-map (kbd "A-w") 'bury-buffer)
+        (define-key mac-key-mode-map (kbd "A-M-w") 'kill-this-buffer)))
+  #+END_SRC
 
-   Since the default ls for the Mac isn't so good, I always have the
-   GNU ls version available in =/usr/local/bin/gls=.
+  Since the default ls for the Mac isn't so good, I always have the
+  GNU ls version available in =/usr/local/bin/gls=.
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
     (require 'ls-lisp)
     (setq ls-lisp-use-insert-directory-program t)
     (setq insert-directory-program "/usr/local/bin/gls")
-#+END_SRC
-
-   I hate the default implementation of Command-M. Now,
-   pressing Command-M will toggle whether the Option key is a
-   standard Option key or a Meta key:
-
-#+BEGIN_SRC elisp
-  (defun toggle-meta-key ()
-    "Toggles whether the Mac option key is an option key or a meta key."
-    (interactive)
-    (if (eq mac-option-modifier 'meta)
-        (setq mac-option-modifier nil)
-      (setq mac-option-modifier 'meta)))
-#+END_SRC
+  #+END_SRC
 
 * Undo and Redo
 
   Special Cmd-Z binding for the special undo world.
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
     (unless (boundp 'aquamacs-version)
       (define-key mac-key-mode-map (kbd "A-z") 'undo-tree-undo)
       (define-key mac-key-mode-map (kbd "A-S-z") 'undo-tree-redo))
-#+END_SRC
+  #+END_SRC
 
 * Ligatures in Code
 
@@ -119,20 +108,16 @@ then, only during a graphical run.
    Dash for documentation of anything with a =C-c d= keystroke:
 
    #+BEGIN_SRC elisp
-     (autoload 'dash-at-point "dash-at-point"
-       "Search the word at point with Dash." t nil)
-     (global-set-key (kbd "C-c d") 'dash-at-point)
-     (global-set-key (kbd "C-c e") 'dash-at-point-with-docset)
-   #+END_SRC
-
-   Let’s tie some of my most-used language modes with particular docsets:
-
-   #+BEGIN_SRC elisp
-     (add-to-list 'dash-at-point-mode-alist '(clojure-mode . "clojure"))
-     (add-to-list 'dash-at-point-mode-alist '(ruby-mode . "ruby"))
-     (add-to-list 'dash-at-point-mode-alist '(python-mode . "python2"))
-     (add-to-list 'dash-at-point-mode-alist '(sh-mode . "bash"))
-     (add-to-list 'dash-at-point-mode-alist '(emacs-lisp-mode . "elisp"))
+     (use-package dash-at-point
+       :ensure t
+       :init
+       (global-set-key (kbd "C-c d") 'dash-at-point-with-docset)
+       :config
+       (add-to-list 'dash-at-point-mode-alist '(clojure-mode . "clojure"))
+       (add-to-list 'dash-at-point-mode-alist '(ruby-mode . "ruby"))
+       (add-to-list 'dash-at-point-mode-alist '(python-mode . "python2"))
+       (add-to-list 'dash-at-point-mode-alist '(sh-mode . "bash"))
+       (add-to-list 'dash-at-point-mode-alist '(emacs-lisp-mode . "elisp")))
    #+END_SRC
 
 * Notifications
@@ -150,54 +135,55 @@ then, only during a graphical run.
   (after a semi-colon), or at the beginning, since anything following
   is executed first, and the notification follows.
 
-#+BEGIN_SRC elisp
-  (defun eshell/beep (&rest args)
-    "Send a Mac notification message when the command given has
-  completed."
+  #+BEGIN_SRC elisp
+    (defun eshell/beep (&rest args)
+      "Send a Mac notification message when the command given has
+    completed."
 
-    (let ((comment (if args
-                       (concat "Process has completed: " (car args))
-                     "Process has completed.")))
-      (if args
-          (eshell-plain-command (car args) (cdr args)))
+      (let ((comment (if args
+                         (concat "Process has completed: " (car args))
+                       "Process has completed.")))
+        (if args
+            (eshell-plain-command (car args) (cdr args)))
 
-      (shell-command-to-string
-       (concat "terminal-notifier -message '"
-               comment
-               "' -title 'Emacs' -subtitle 'Eshell Process Completed'"
-               " -sound default -sender org.gnu.Emacs"))))
-#+END_SRC
+        (shell-command-to-string
+         (concat "terminal-notifier -message '"
+                 comment
+                 "' -title 'Emacs' -subtitle 'Eshell Process Completed'"
+                 " -sound default -sender org.gnu.Emacs"))))
+  #+END_SRC
 
 * Skype
 
-    I normally mute Skype with some Alfred keystroke running some
-    AppleScript. However, Emacs will grab all keystrokes before
-    passing them on, so I need this function:
+  I normally mute Skype with some Alfred keystroke running some
+  AppleScript. However, Emacs will grab all keystrokes before
+  passing them on, so I need this function:
 
-#+BEGIN_SRC elisp
-   (defun mute-skype ()
-     "Mutes or unmutes Skype via an AppleScript call."
-     (interactive)
-     (let ((mute-script "tell application \"Skype\"
-    if \(send command \"GET MUTE\" script name \"MuteToggler\"\) is equal to \"MUTE ON\" then
-      send command \"SET MUTE OFF\" script name \"MuteToggler\"
-    else
-      send command \"SET MUTE ON\" script name \"MuteToggler\"
-    end if
-  end tell"))
-       (progn
-         (call-process "osascript" nil nil nil "-ss" "-e" mute-script)
-         (message "Skype (un)mute message has been sent."))))
+  #+BEGIN_SRC elisp
+     (defun mute-skype ()
+       "Mutes or unmutes Skype via an AppleScript call."
+       (interactive)
+       (let ((mute-script "tell application \"Skype\"
+      if \(send command \"GET MUTE\" script name \"MuteToggler\"\) is equal to \"MUTE ON\" then
+        send command \"SET MUTE OFF\" script name \"MuteToggler\"
+      else
+        send command \"SET MUTE ON\" script name \"MuteToggler\"
+      end if
+    end tell"))
+         (progn
+           (call-process "osascript" nil nil nil "-ss" "-e" mute-script)
+           (message "Skype (un)mute message has been sent."))))
 
-  (global-set-key (kbd "C-M-A-m") 'mute-skype)
-#+END_SRC
+    (global-set-key (kbd "C-M-A-m") 'mute-skype)
+  #+END_SRC
+
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.
 
-#+BEGIN_SRC elisp
-  (provide 'init-mac)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (provide 'init-mac)
+  #+END_SRC
 
   Before you can build this on a new system, make sure that you put
   the cursor over any of these properties, and hit: =C-c C-c=
