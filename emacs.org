@@ -162,16 +162,9 @@
    specify a list of packages to make sure they are installed.
 
    #+BEGIN_SRC elisp
-     (packages-install
-                    '(ace-jump-mode
-                      ag
+     (packages-install '(
                       avy
-                      company
-                      company-quickhelp
-                      company-math
                       dired-details
-                      color-identifiers-mode  ;; Color variables differently
-                      ctags-update
                       epl
                       esh-buf-stack
                       expand-region
@@ -191,14 +184,10 @@
                       linum-relative
                       magit
                       markdown-mode
-                      multiple-cursors
-                      paredit
-                      redo+             ;; If not installed, edit mac-key-mode
                       smex
                       thesaurus
-                      undo-tree
                       visual-regexp
-                      yasnippet))
+                      ))
    #+END_SRC
 
 ** Use-Package
@@ -238,48 +227,6 @@
 
    #+BEGIN_SRC elisp
      (setq-default tab-always-indent 'complete)
-   #+END_SRC
-
-** Aggressive Auto Indention
-
-   Automatically indent without use of the tab found in [[http://endlessparentheses.com/permanent-auto-indentation.html][this article]],
-   and seems to be quite helpful for many types of programming
-   languages.
-
-   To begin, we create a function that can indent a function by
-   calling =indent-region= on the beginning and ending points of a
-   function.
-
-   #+BEGIN_SRC elisp
-     (defun indent-defun ()
-       "Indent current defun.
-     Do nothing if mark is active (to avoid deactivaing it), or if
-     buffer is not modified (to avoid creating accidental
-     modifications)."
-       (interactive)
-       (unless (or (region-active-p)
-                   buffer-read-only
-                   (null (buffer-modified-p)))
-         (let ((l (save-excursion (beginning-of-defun 1) (point)))
-               (r (save-excursion (end-of-defun 1) (point))))
-           (cl-letf (((symbol-function 'message) #'ignore))
-             (indent-region l r)))))
-   #+END_SRC
-
-   Next, create a hook that will call the =indent-defun= with every
-   command call:
-
-   #+BEGIN_SRC elisp
-     (defun activate-aggressive-indent ()
-       "Locally add `ha/indent-defun' to `post-command-hook'."
-       (add-hook 'post-command-hook
-                 'indent-defun nil 'local))
-   #+END_SRC
-
-   The trick is to add the following to each programming hook:
-
-   #+BEGIN_SRC elisp
-     (add-hook 'emacs-lisp-mode-hook 'activate-aggressive-indent)
    #+END_SRC
 
 ** Encrypting Files
@@ -365,17 +312,13 @@
    Set up [[https://github.com/abo-abo/ace-window][ace-window]] mode:
 
    #+BEGIN_SRC elisp
-     (when (require 'ace-window nil t)
-           (global-set-key (kbd "<f7>") 'ace-window)
-           (global-set-key (kbd "C-<f7>") (lambda () (interactive) (ace-window 4)))
-           (global-set-key (kbd "M-<f7>") (lambda () (interactive) (ace-window 8))))
-   #+END_SRC
-
-   At some point, I will want to choose window labels based on the
-   right hand (since F7) is on the left side of my keyboards.
-
-   #+BEGIN_SRC elisp :tangle no
-     (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+     (use-package ace-window
+       :ensure t
+       :init
+         (setq aw-keys '(?a ?s ?d ?f ?j ?k ?l ?o))
+         (global-set-key (kbd "C-x o") 'ace-window)
+         (global-set-key (kbd "<f7>") 'ace-window)    ;; Hrm.
+       :diminish ace-window-mode)
    #+END_SRC
 
    I like [[https://github.com/KMahoney/kpm-list][kpm-list]] a bit better than =ibuffer=, but I really don’t use
@@ -519,13 +462,6 @@
      (global-set-key (kbd "M-<right>") 'end-of-line)
      (global-set-key (kbd "C-M-<left>") 'beginning-of-buffer)
      (global-set-key (kbd "C-M-<right>") 'end-of-buffer)
-   #+END_SRC
-
-   Why isn’t =imenu= bound?
-
-   #+BEGIN_SRC elisp
-     (global-set-key (kbd "M-s f") 'imenu)
-     (global-set-key (kbd "M-s M-f") 'imenu)
    #+END_SRC
 
    Better jumping around the buffer with [[https://github.com/winterTTr/ace-jump-mode][ace-jump-mode]] and friends.
@@ -846,15 +782,27 @@
        (global-set-key (kbd "C-+") 'surround)
    #+END_SRC
 
-       To make it easier to call from other functions, let's wrap that
-       wrapper:
+   To make it easier to call from other functions, let's wrap that
+   wrapper:
 
-       #+BEGIN_SRC elisp
-         (defun surround-text (txt)
-           (if (region-active-p)
-               (surround (region-beginning) (region-end) txt)
-             (surround nil nil txt)))
-       #+END_SRC
+   #+BEGIN_SRC elisp
+     (defun surround-text (txt)
+       (if (region-active-p)
+           (surround (region-beginning) (region-end) txt)
+         (surround nil nil txt)))
+   #+END_SRC
+
+   This function returns an interactive lambda expression, suitable
+   for adding to a key-binding:
+
+   #+BEGIN_SRC elisp
+     (defun surround-text-with (surr-str)
+       "Returns an interactive function that when called, will surround the region (or word) with the SURR-STR string."
+       (lexical-let ((text surr-str))
+         (lambda ()
+           (interactive)
+           (surround-text text))))
+   #+END_SRC
 
 ** Displaying Command Sequences
 
@@ -1067,6 +1015,7 @@
 
     #+BEGIN_SRC elisp
       (use-package ag
+        :ensure    t
         :init      (setq ag-highlight-search t)
         :config    (add-to-list 'ag-arguments "--word-regexp"))
     #+END_SRC
@@ -1187,27 +1136,40 @@
    insert if a blank file is loaded.
 
    #+BEGIN_SRC elisp
-     (add-hook 'find-file-hook 'auto-insert)
-     (auto-insert-mode 1)
+     (use-package autoinsert
+       :init
+       (setq auto-insert-directory (ha/emacs-subdirectory "templates/"))
+       ;; Don't want to be prompted before insertion:
+       (setq auto-insert-query nil)
 
-     (setq auto-insert-directory (ha/emacs-subdirectory "templates/"))
-     (setq auto-insert-query nil) ;;; If you don't want to be prompted before insertion
-
-     ;; (define-auto-insert "\\.html?$" "default-html.html")
+       (add-hook 'find-file-hook 'auto-insert)
+       (auto-insert-mode 1))
    #+END_SRC
 
-   Some auto insertion requires entering data for particular fields,
+   Add a =:config= section to configure static insertion, and add:
+
+   #+BEGIN_SRC elisp :tangle no
+     (define-auto-insert "\\.html?$" "default-html.html")
+   #+END_SRC
+
+   However, auto insertion requires entering data for particular fields,
    and for that Yasnippet is better, so in this case, we combine them:
 
    #+BEGIN_SRC elisp
      (defun ha/autoinsert-yas-expand()
        "Replace text in yasnippet template."
        (yas-expand-snippet (buffer-string) (point-min) (point-max)))
+   #+END_SRC
 
-     (define-auto-insert "\\.el$" ["default-lisp.el" ha/autoinsert-yas-expand])
-     (define-auto-insert "\\.sh$" ["default-sh.sh" ha/autoinsert-yas-expand])
-     (define-auto-insert "/bin/"  ["default-sh.sh" ha/autoinsert-yas-expand])
-     (define-auto-insert "\\.html?$" ["default-html.html" ha/autoinsert-yas-expand])
+   Now bind many of the templates for auto-insert and field expansion:
+
+   #+BEGIN_SRC elisp
+     (use-package autoinsert
+       :config
+       (define-auto-insert "\\.el$" ["default-lisp.el" ha/autoinsert-yas-expand])
+       (define-auto-insert "\\.sh$" ["default-sh.sh" ha/autoinsert-yas-expand])
+       (define-auto-insert "/bin/"  ["default-sh.sh" ha/autoinsert-yas-expand])
+       (define-auto-insert "\\.html?$" ["default-html.html" ha/autoinsert-yas-expand]))
    #+END_SRC
 
 ** Auto Complete
@@ -1245,39 +1207,16 @@
    can be brought into a file, based on the language.
 
    #+BEGIN_SRC elisp
-     (require 'yasnippet)
-     (yas-global-mode 1)
+     (use-package yasnippet
+       :ensure t
+       :init
+       (yas-global-mode 1)
+       :config
+       (add-to-list 'yas-snippet-dirs (ha/emacs-subdirectory "snippets")))
    #+END_SRC
 
-   Helper function so that we can automatically expand a snippet
-   programmatically, which makes it easier to do this with
-   auto-insert:
-
-   #+BEGIN_SRC elisp
-     (defun yas--expand-by-uuid (mode uuid)
-       "Exapnd snippet template in MODE by its UUID"
-       (yas-expand-snippet
-        (yas--template-content
-         (yas--get-template-by-uuid mode uuid))))
-   #+END_SRC
-
-   Inside the =snippets= directory should be directories for each
-   mode, e.g.  =clojure-mode= and =org-mode=. This connects the mode
-   with the snippets.
-
-   #+BEGIN_SRC elisp
-     (add-to-list 'yas-snippet-dirs (ha/emacs-subdirectory "snippets"))
-   #+END_SRC
-
-   [[https://code.google.com/p/js2-mode/][js2-mode]] is good, but its name means that Yas' won't automatically
-   link it to its =js-mode=. This little bit of magic does the linking:
-
-   #+BEGIN_SRC elisp :tangle no
-     (add-hook 'js2-mode-hook '(lambda ()
-                                 (make-local-variable 'yas-extra-modes)
-                                 (add-to-list 'yas-extra-modes 'js-mode)
-                                 (yas-minor-mode 1)))
-   #+END_SRC
+   *Note:*: the =snippets= directory contains directories for each
+   mode, e.g.  =clojure-mode= and =org-mode=.
 
 ** Abbreviation Mode
 
@@ -1567,63 +1506,123 @@
 
 * Programming Languages
 
-  All programming languages require some sort of tagging. but after
-  thirty years, we are still using good ol’ ctags...well,
-  [[http://ctags.sourceforge.net][Exuberant Ctags]].   Install with Homebrew:
+** General Language Support
 
-  #+BEGIN_SRC sh :tangle no
-    brew install --HEAD ctags
-  #+END_SRC
+   Many programming language environments can benefit from this section.
 
-  On Ubuntu Linux, do:
+*** Tag Support
 
-  #+BEGIN_SRC sh :tangle no
-    sudo apt-get install -y exuberant-ctags
-  #+END_SRC
+   All programming languages require some sort of tagging. but after
+   thirty years, we are still using good ol’ ctags...well,
+   [[http://ctags.sourceforge.net][Exuberant Ctags]].   Install with Homebrew:
 
-  *Note:* for every project, run the following command:
+   #+BEGIN_SRC sh :tangle no
+     brew install --HEAD ctags
+   #+END_SRC
 
-  #+BEGIN_SRC sh :tangle no
-    ctags -e -R .
-  #+END_SRC
+   On Ubuntu Linux, do:
 
-  We access stuff by loading the =etags= package:
+   #+BEGIN_SRC sh :tangle no
+     sudo apt-get install -y exuberant-ctags
+   #+END_SRC
 
-  #+BEGIN_SRC elisp
-    (require 'etags)
-  #+END_SRC
+   *Note:* for every project, run the following command:
 
-  Now, use the following keys:
+   #+BEGIN_SRC sh :tangle no
+     ctags -e -R .
+   #+END_SRC
 
-  - M-. :: To find the tag at point to jump to the function’s
-           definition when the point is over a function call. It is a
-           dwim-type function.
-  - M-, :: jump back to where you were.
-  - M-? :: find a tag, that is, use the Tags file to look up a
-           definition. If there are multiple tags in the project with
-           the same name, use `C-u M-.’ to go to the next match.
-  - =M-x tags-search= :: regexp-search through the source files
-       indexed by a tags file (a bit like =grep=)
-  - =M-x tags-query-replace= :: query-replace through the source files
-       indexed by a tags file
-  - =M-x tags-apropos= :: list all tags in a tags file that match a
-       regexp
-  - =M-x list-tags= :: list all tags defined in a source file
+   We access stuff by loading the =etags= package:
 
-  Other helpful movement commands I need to remember:
+   #+BEGIN_SRC elisp
+     (require 'etags)
+   #+END_SRC
 
-  - C-M-a - Jump to the start of a function
-  - C-M-e - Jump to the end of a function
+   Now, use the following keys:
 
-  With the fancy new [[https://marmalade-repo.org/packages/ctags-update][ctags-update]] package, we can update the tags file
-  whenever we save a file:
+   - M-. :: To find the tag at point to jump to the function’s
+            definition when the point is over a function call. It is a
+            dwim-type function.
+   - M-, :: jump back to where you were.
+   - M-? :: find a tag, that is, use the Tags file to look up a
+            definition. If there are multiple tags in the project with
+            the same name, use `C-u M-.’ to go to the next match.
+   - =M-x tags-search= :: regexp-search through the source files
+        indexed by a tags file (a bit like =grep=)
+   - =M-x tags-query-replace= :: query-replace through the source files
+        indexed by a tags file
+   - =M-x tags-apropos= :: list all tags in a tags file that match a
+        regexp
+   - =M-x list-tags= :: list all tags defined in a source file
 
-  #+BEGIN_SRC elisp
-    (use-package ctags-update
-      :config
-      (add-hook 'prog-mode-hook  'turn-on-ctags-auto-update-mode)
-      :diminish ctags-auto-update-mode)
-  #+END_SRC
+   With the fancy new [[https://marmalade-repo.org/packages/ctags-update][ctags-update]] package, we can update the tags file
+   whenever we save a file:
+
+   #+BEGIN_SRC elisp
+     (use-package ctags-update
+       :ensure t
+       :config
+       (add-hook 'prog-mode-hook  'turn-on-ctags-auto-update-mode)
+       :diminish ctags-auto-update-mode)
+   #+END_SRC
+
+   Emacs 25 changed has now deprecated the famous [[info:emacs#Tags][Tags and Friends]],
+   like =find-tags= for =xref=. Some point, I will have to learn how
+   to configure it, but until then, I'll just rebind to my old mates:
+
+   #+BEGIN_SRC elisp :tangle no
+     (global-set-key (kbd "M-.") 'find-tag)
+     (global-set-key (kbd "C-M-.") 'find-tag-regexp)
+     (global-set-key (kbd "M-,") 'pop-tag-mark)
+     (global-set-key (kbd "M-i") 'imenu-anywhere)
+   #+END_SRC
+
+   While, I like =imenu=, [[https://github.com/vspinu/imenu-anywhere][combining it]] with an IDO interface nicely
+   lists the headings/functions in the current buffer:
+
+   #+BEGIN_SRC elisp
+     (use-package imenu-anywhere
+        :ensure t
+        :bind (("C-c i" . imenu-anywhere)))
+   #+END_SRC
+
+   Need to look into [[info:emacs#Hideshow][Hide Show Minor]] mode.
+
+*** Aggressive Auto Indention
+
+    Automatically indent without use of the tab found in [[http://endlessparentheses.com/permanent-auto-indentation.html][this article]],
+    and seems to be quite helpful for many types of programming
+    languages.
+
+    To begin, we create a function that can indent a function by
+    calling =indent-region= on the beginning and ending points of a
+    function.
+
+    #+BEGIN_SRC elisp
+      (defun indent-defun ()
+        "Indent current defun.
+      Do nothing if mark is active (to avoid deactivaing it), or if
+      buffer is not modified (to avoid creating accidental
+      modifications)."
+        (interactive)
+        (unless (or (region-active-p)
+                    buffer-read-only
+                    (null (buffer-modified-p)))
+          (let ((l (save-excursion (beginning-of-defun 1) (point)))
+                (r (save-excursion (end-of-defun 1) (point))))
+            (cl-letf (((symbol-function 'message) #'ignore))
+              (indent-region l r)))))
+    #+END_SRC
+
+    Next, create a hook that will call the =indent-defun= with every
+    command call:
+
+    #+BEGIN_SRC elisp
+      (defun activate-aggressive-indent ()
+        "Locally add `ha/indent-defun' to `post-command-hook'."
+        (add-hook 'post-command-hook
+                  'indent-defun nil 'local))
+    #+END_SRC
 
 ** Shell Scripts
 
@@ -1631,7 +1630,7 @@
    other extension), should start in =sh-mode=:
 
    #+BEGIN_SRC elisp
-     (setq auto-mode-alist (append auto-mode-alist '(("/bin/" . sh-mode))))
+     (add-to-list 'auto-mode-alist '(("/bin/" . sh-mode)))
    #+END_SRC
 
 ** Emacs Lisp
@@ -1641,17 +1640,14 @@
    variables:
 
    #+BEGIN_SRC elisp
-     (use-package lisp-mode
+     (use-package emacs-lisp-mode
        :init
-         (defconst lisp--prettify-symbols-alist
-            '(("lambda"  . ?λ)
-              ("curry"   . ?»)
-              ("rcurry"  . ?«)
-              ("comp"    . ?∘)
-              ("compose" . ?∘)
-              ("."       . ?•)))
+       (defconst lisp--prettify-symbols-alist
+         '(("lambda"  . ?λ)
+           ("."       . ?•)))
        :config
-         (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode))
+       (add-hook 'emacs-lisp-mode-hook 'global-prettify-symbols-mode)
+       (add-hook 'emacs-lisp-mode-hook 'activate-aggressive-indent))
    #+END_SRC
 
 *** Paredit
@@ -1665,6 +1661,17 @@
         :ensure t
         :init
           (add-hook 'emacs-lisp-mode-hook 'paredit-mode))
+    #+END_SRC
+
+*** Colored Variables
+
+    Color each variable, and downplay standard key words:
+
+    #+BEGIN_SRC elisp
+    (use-package color-identifiers-mode
+      :ensure t
+      :init
+      (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode))
     #+END_SRC
 
 *** Nicer Paren Matching
@@ -1864,75 +1871,16 @@
    that the following extension-associations aren't the default:
 
    #+BEGIN_SRC elisp
-     (autoload 'markdown-mode "markdown-mode.el"
-        "Major mode for editing Markdown files" t)
-     (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
-     (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
-   #+END_SRC
-
-   Using the =surround= function, I create some wrapper
-   functions to make it easier to bold text in Markdown files:
-
-   #+BEGIN_SRC elisp
-     (defun markdown-bold () "Wraps the region with double asterisks."
-       (interactive)
-       (surround-text "**"))
-     (defun markdown-italics () "Wraps the region with asterisks."
-       (interactive)
-       (surround-text "*"))
-     (defun markdown-code () "Wraps the region with equal signs."
-       (interactive)
-       (surround-text "`"))
-   #+END_SRC
-
-   Now I can associate some keystrokes to =markdown-mode=:
-
-   #+BEGIN_SRC elisp
-     (add-hook 'markdown-mode-hook
-           (lambda ()
-             (local-set-key (kbd "A-b") 'markdown-bold)
-             (local-set-key (kbd "s-b") 'markdown-bold)    ;; For Linux
-             (local-set-key (kbd "A-i") 'markdown-italics)
-             (local-set-key (kbd "s-i") 'markdown-italics)
-             (local-set-key (kbd "A-=") 'markdown-code)
-             (local-set-key (kbd "s-=") 'markdown-code)))
-   #+END_SRC
-
-** Wiki
-
-   Now that Atlassian changed this Wiki system so that [[https://code.google.com/p/confluence-el/][confluence.el]]
-   doesn't work anymore (yeah, not an improvement, Atlassian), I can
-   still use the =confluence-edit-mode= for anything with a =.wiki=
-   extension.
-
-   #+BEGIN_SRC elisp
-     (autoload 'confluence-edit-mode "confluence-edit-mode.el"
-        "Major mode for editing Wiki documents" t)
-     (add-to-list 'auto-mode-alist '("\\.wiki\\'" . confluence-edit-mode))
-   #+END_SRC
-
-   I would also like to create and use some formatting wrappers.
-
-   #+BEGIN_SRC elisp
-     (defun wiki-bold () "Wraps the region with single asterisks."
-       (interactive)
-       (surround-text "*"))
-     (defun wiki-italics () "Wraps the region with underbars."
-       (interactive)
-       (surround-text "_"))
-     (defun wiki-code () "Wraps the region with curly brackets."
-       (interactive)
-       (surround-text "{{" "}}"))
-   #+END_SRC
-
-   Now I can associate some keystrokes to =markdown-mode=:
-
-   #+BEGIN_SRC elisp
-     (add-hook 'confluence-edit-mode-hook
-           (lambda ()
-             (local-set-key (kbd "A-b") 'wiki-bold)
-             (local-set-key (kbd "A-i") 'wiki-italics)
-             (local-set-key (kbd "A-=") 'wiki-code)))
+     (use-package markdown-mode
+       :ensure t
+       :mode ("\\.\\(m\\(ark\\)?down\\|md\\)$" . markdown-mode)
+       :config
+       (bind-key "A-b" (surround-text-with "+**") markdown-mode-map)
+       (bind-key "s-b" (surround-text-with "**") markdown-mode-map)
+       (bind-key "A-i" (surround-text-with "*") markdown-mode-map)
+       (bind-key "s-i" (surround-text-with "*") markdown-mode-map)
+       (bind-key "A-=" (surround-text-with "`") markdown-mode-map)
+       (bind-key "s-=" (surround-text-with "`") markdown-mode-map))
    #+END_SRC
 
 ** PlantUML and Graphviz
