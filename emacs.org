@@ -1875,7 +1875,7 @@
        :ensure t
        :mode ("\\.\\(m\\(ark\\)?down\\|md\\)$" . markdown-mode)
        :config
-       (bind-key "A-b" (surround-text-with "+**") markdown-mode-map)
+       (bind-key "A-b" (surround-text-with "+*") markdown-mode-map)
        (bind-key "s-b" (surround-text-with "**") markdown-mode-map)
        (bind-key "A-i" (surround-text-with "*") markdown-mode-map)
        (bind-key "s-i" (surround-text-with "*") markdown-mode-map)
