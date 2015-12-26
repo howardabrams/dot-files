@@ -7,15 +7,6 @@
 The settings in this file are only included on a Macintosh, Linux, or
 other systems with a graphical front-end.
 
-* Needed Packages
-
-#+BEGIN_SRC elisp
-  (packages-install '( color-theme
-                       color-theme-sanityinc-tomorrow
-                       highlight-tail          ;; Used only sporadically
-                     ))
-#+END_SRC
-
 * Key Bindings
 
   Gotta get rid of the bloody =C-x C-c=, for it is too close to the
@@ -30,10 +21,10 @@ other systems with a graphical front-end.
     (global-set-key (kbd "C-x C-c") 'dont-kill-emacs)
   #+END_SRC
 
-   I would like Command-W to close a frame, but only if it only has a
-   single window in it. I found this code on [[http://www.emacswiki.org/emacs/frame-cmds.el][this site]].
+  I would like Command-W to close a frame, but only if it only has a
+  single window in it. I found this code on [[http://www.emacswiki.org/emacs/frame-cmds.el][this site]].
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
   (defun delete-single-window (&optional window)
     "Remove WINDOW from the display.  Default is `selected-window'.
   If WINDOW is the only one in its frame, then `delete-frame' too."
@@ -45,7 +36,7 @@ other systems with a graphical front-end.
       (if (one-window-p t)
           (delete-frame)
           (delete-window (selected-window)))))
-#+END_SRC
+  #+END_SRC
 
 * Font Settings
 
@@ -81,23 +72,27 @@ other systems with a graphical front-end.
     (set-face-font 'default my/font-family)
   #+END_SRC
 
-   *Note:* I find that the height should be =160= for M+, but =140=
-   for most other fonts.
+  *Note:* I find that the height should be =160= for M+, but =140=
+  for most other fonts.
 
 * Color Theme
 
-   Use the color theme project by following [[http://www.nongnu.org/color-theme/][these instructions]].
-   We now can do =M-x color-theme-<TAB> RET=
+  Use the color theme project by following [[http://www.nongnu.org/color-theme/][these instructions]].
+  We now can do =M-x color-theme-<TAB> RET=
 
-#+BEGIN_SRC elisp
-  (require 'color-theme)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (use-package color-theme
+      :ensure t
+      :init (require 'color-theme)
+      :config (use-package color-theme-sanityinc-tomorrow
+               :ensure t))
+  #+END_SRC
 
-   The color themes work quite well, except they don't know about the
-   org-mode source code blocks, so we need to set up a couple
-   functions that we can use to set them.
+  The color themes work quite well, except they don't know about the
+  org-mode source code blocks, so we need to set up a couple
+  functions that we can use to set them.
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
   (defun org-src-color-blocks-light ()
     "Colors the block headers and footers to make them stand out more for lighter themes"
     (interactive)
@@ -110,12 +105,7 @@ other systems with a graphical front-end.
        ((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF"))))
 
      '(mode-line-buffer-id ((t (:foreground "#005000" :bold t))))
-     '(which-func ((t (:foreground "#008000")))))
-
-     ;; Looks like the minibuffer issues are only for v23
-     ; (set-face-foreground 'minibuffer "black")
-     ; (set-face-foreground 'minibuffer-prompt "red")
-  )
+     '(which-func ((t (:foreground "#008000"))))))
 
   (defun org-src-color-blocks-dark ()
     "Colors the block headers and footers to make them stand out more for dark themes"
@@ -129,31 +119,26 @@ other systems with a graphical front-end.
        ((t (:foreground "#008ED1" :background "#002E41"))))
 
      '(mode-line-buffer-id ((t (:foreground "black" :bold t))))
-     '(which-func ((t (:foreground "green")))))
+     '(which-func ((t (:foreground "green"))))))
+  #+END_SRC
 
-     ;; Looks like the minibuffer issues are only for v23
-     ;; (set-face-foreground 'minibuffer "white")
-     ;; (set-face-foreground 'minibuffer-prompt "white")
-  )
-#+END_SRC
+  No matter, the theme, I like /some/ of the ideas in the [[https://github.com/jonnay/emagicians-starter-kit/blob/master/themes/org-beautify-theme.org][EMagicians Starter Kit]],
+  particularly in how the headers are larger, instead of different
+  colors.
 
-   No matter, the theme, I like /some/ of the ideas in the [[https://github.com/jonnay/emagicians-starter-kit/blob/master/themes/org-beautify-theme.org][EMagicians Starter Kit]],
-   particularly in how the headers are larger, instead of different
-   colors.
+  Since the headers are based on Adobe’s open source font pair of the
+  proportional font, [[https://github.com/adobe-fonts/source-sans-pro/releases/tag/2.010R-ro/1.065R-it][Source Sans Pro]], will match the non-proportional
+  font, [[https://github.com/adobe-fonts/source-code-pro/][Source Code Pro]].
 
-   Since the headers are based on Adobe’s open source font pair of the
-   proportional font, [[https://github.com/adobe-fonts/source-sans-pro/releases/tag/2.010R-ro/1.065R-it][Source Sans Pro]], will match the non-proportional
-   font, [[https://github.com/adobe-fonts/source-code-pro/][Source Code Pro]].
-
-   #+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
      (deftheme ha/org-theme "Sub-theme to beautify org mode")
-   #+END_SRC
+  #+END_SRC
 
-   Since I’m using the Powerline project, switching my Emacs color
-   theme, requires me to call =powerline-reset= in order to get the
-   colors to apply to the mode line.
+  Since I’m using the Powerline project, switching my Emacs color
+  theme, requires me to call =powerline-reset= in order to get the
+  colors to apply to the mode line.
 
-   We put all of these requirements in a single function call:
+  We put all of these requirements in a single function call:
 
   #+BEGIN_SRC elisp
     (defun ha/change-theme (theme org-block-style)
@@ -185,22 +170,22 @@ other systems with a graphical front-end.
                                 `(org-document-title ((t (,@headline ,@sans-font :height 1.5 :underline nil)))))))
   #+END_SRC
 
-   And the default startup goes to...night...unless I'm at work, and
-   then we'll take the bright shiny theme.
+  And the default startup goes to...night...unless I'm at work, and
+  then we'll take the bright shiny theme.
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
   (if (equal "howard.abrams" user-login-name)
     (ha/change-theme 'color-theme-sanityinc-tomorrow-day
                      'org-src-color-blocks-light)
     (ha/change-theme 'color-theme-sanityinc-tomorrow-night
                      'org-src-color-blocks-dark))
-#+END_SRC
+  #+END_SRC
 
-   My main reason for wanting to use the color theme project is to
-   switch between /black on white/ during the day, and /white on
-   black/ at night. Because I have to pass function references to my
-   =define-sequence= macro, I use the =list= function call instead of
-   quoting the list:
+  My main reason for wanting to use the color theme project is to
+  switch between /black on white/ during the day, and /white on
+  black/ at night. Because I have to pass function references to
+  my =define-sequence= macro, I use the =list= function call instead of
+  quoting the list:
 
   #+BEGIN_SRC elisp
     (define-sequence 'personal-theme-map "<f9> d" 'ha/change-theme
@@ -212,17 +197,19 @@ other systems with a graphical front-end.
 
 * Undo and Redo
 
-    According to [[http://ergoemacs.org/emacs/emacs_best_redo_mode.html][this article]], I get better functionality than the
-    =redo+= plugin (which I can't seem to get working well).
+  According to [[http://ergoemacs.org/emacs/emacs_best_redo_mode.html][this article]], I get better functionality than
+  the =redo+= plugin (which I can't seem to get working well).
 
-#+BEGIN_SRC elisp
-  (require 'undo-tree)
-  (global-undo-tree-mode 1)
-  (defalias 'redo 'undo-tree-redo)
-
-  (global-set-key (kbd "C-z") 'undo) ; Zap to character isn't helpful
-  (global-set-key (kbd "C-S-z") 'redo)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (use-package undo-tree
+      :ensure t
+      :init
+      (global-undo-tree-mode 1)
+      :config
+      (defalias 'redo 'undo-tree-redo)
+      :bind (("C-z" . undo)     ; Zap to character isn't helpful
+             ("C-S-z" . redo)))
+  #+END_SRC
 
 * Frame and Window Size
 
@@ -252,39 +239,38 @@ other systems with a graphical front-end.
           (enlarge-window-horizontally (- width (window-width))))))
   #+END_SRC
 
-   The bell is pretty obnoxious when it dings during scrolling.
+  The bell is pretty obnoxious when it dings during scrolling.
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
   (setq ring-bell-function 'ignore)
-#+END_SRC
+  #+END_SRC
 
 * Twitter
 
-   I know, I know, reading my [[http://www.emacswiki.org/emacs-en/TwitteringMode][twitter feed in Emacs]] is pretty geeking
-   awesome. And I can filter out tweets that match a pattern that annoys me:
+  I know, I know, reading my [[http://www.emacswiki.org/emacs-en/TwitteringMode][twitter feed in Emacs]] is pretty geeking
+  awesome. And I can filter out tweets that match a pattern that annoys me:
 
-#+BEGIN_SRC elisp
-  (setq twittering-tweet-filters '("kickstart" "#burritowatch"))
+  #+BEGIN_SRC elisp
+    (use-package twittering-mode
+      :init
+      (setq twittering-tweet-filters '("NPR" "#burritowatch"))
 
-  (defun twittering-filter-tweets ()
-    (setq non-matching-statuses '())
-    (dolist (status twittering-new-tweets-statuses)
-      (setq matched-tweets 0)
-      (dolist (pat twittering-tweet-filters)
-        (if (string-match pat (cdr (assoc 'text status)))
-            (setq matched-tweets (+ 1 matched-tweets))))
-      (if (= 0 matched-tweets)
-          (setq non-matching-statuses (append non-matching-statuses `(,status)))))
-    (setq new-statuses non-matching-statuses))
+      (defun twittering-filter-tweets ()
+        "Call string-match on all new tweets"
+        (setq non-matching-statuses '())
+        (dolist (status twittering-new-tweets-statuses)
+          (setq matched-tweets 0)
+          (dolist (pat twittering-tweet-filters)
+            (if (string-match pat (cdr (assoc 'text status)))
+                (setq matched-tweets (+ 1 matched-tweets))))
+          (if (= 0 matched-tweets)
+              (setq non-matching-statuses
+                    (append non-matching-statuses `(,status)))))
+        (setq new-statuses non-matching-statuses))
 
-  (add-hook 'twittering-new-tweets-hook 'twittering-filter-tweets)
-#+END_SRC
-
-   Need to enable spell-checking for the Twitter mode.
-
-#+BEGIN_SRC elisp
-(add-hook 'twittering-edit-mode-hook (lambda () (ispell-minor-mode) (flyspell-mode)))
-#+END_SRC
+      (add-hook 'twittering-edit-mode-hook 'flyspell-mode)
+      (add-hook 'twittering-new-tweets-hook 'twittering-filter-tweets))
+  #+END_SRC
 
 * Technical Artifacts
 
@@ -300,9 +286,9 @@ other systems with a graphical front-end.
 
   Make sure that we can simply =require= this library.
 
-#+BEGIN_SRC elisp
-  (provide 'init-client)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (provide 'init-client)
+  #+END_SRC
 
   Before you can build this on a new system, make sure that you put
   the cursor over any of these properties, and hit: =C-c C-c=
