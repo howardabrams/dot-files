@@ -17,31 +17,17 @@ Emacs at work instead of using iTunes like the good lord intended.
   brew install mplayer
   #+END_EXAMPLE
 
-  Install the EMMS package:
-
-#+BEGIN_SRC elisp
-  (packages-install '( emms ))
-#+END_SRC
-
-  Load up the system and the players.
+  Load up the system and the players. Including configure to show the
+  current track each time EMMS starts to play a track.
 
   #+BEGIN_SRC elisp
-    (require 'emms-setup)
-    (emms-standard)
-    (emms-default-players)
-  #+END_SRC
-
-  Show the current track each time EMMS starts to play a track.
-
-  #+BEGIN_SRC elisp
-    (add-hook 'emms-player-started-hook 'emms-show)
-    (setq emms-show-format "Playing: %s")
-  #+END_SRC
-
-  When asked for =emms-play-directory=, always start from this one:
-
-  #+BEGIN_SRC elisp
-    (setq emms-source-file-default-directory "~/Music/")
+    (use-package emms-setup
+      :init
+      (add-hook 'emms-player-started-hook 'emms-show)
+      (setq emms-show-format "Playing: %s")
+      :config
+      (emms-standard)
+      (emms-default-players))
   #+END_SRC
 
 * Radio Stations
@@ -59,7 +45,7 @@ Emacs at work instead of using iTunes like the good lord intended.
   And then bind it to some key, however, I’m sure I will start picking
   up a larger and larger collection of radio stations that fit my
   mood, so I might as well create a prefix for these using my snazzy
-  =define-sequence= macro:
+  dazzy =define-sequence= macro:
 
   #+BEGIN_SRC elisp
     (define-sequence 'personal-music-map "<f9> m" 'emms-play-streamlist
@@ -80,19 +66,19 @@ Emacs at work instead of using iTunes like the good lord intended.
 
   Make sure that we can simply =require= this library.
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
   (provide 'init-emms)
-#+END_SRC
+  #+END_SRC
 
   Before you can build this on a new system, make sure that you put
   the cursor over any of these properties, and hit: =C-c C-c=
 
-#+DESCRIPTION: A literate programming version of my Emacs Initialization for Graphical Clients
-#+PROPERTY:    results silent
-#+PROPERTY:    header-args:sh  :tangle no
-#+PROPERTY:    tangle ~/.emacs.d/elisp/init-emms.el
-#+PROPERTY:    eval no-export
-#+PROPERTY:    comments org
-#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
-#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
-#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+  #+DESCRIPTION: A literate programming version of my Emacs Initialization for Graphical Clients
+  #+PROPERTY:    results silent
+  #+PROPERTY:    header-args:sh  :tangle no
+  #+PROPERTY:    tangle ~/.emacs.d/elisp/init-emms.el
+  #+PROPERTY:    eval no-export
+  #+PROPERTY:    comments org
+  #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+  #+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+  #+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
