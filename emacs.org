@@ -166,7 +166,6 @@
                       dired-details
                       epl
                       esh-buf-stack
-                      expand-region
                       flycheck
                       flycheck-color-mode-line
                       git-blame
@@ -177,7 +176,6 @@
                       htmlize
                       linum-relative
                       magit
-                      markdown-mode
                       thesaurus
                       visual-regexp
                       ))
@@ -594,7 +592,8 @@
    Magnar's [[https://github.com/magnars/expand-region.el][expand-region]] project.
 
    #+BEGIN_SRC elisp
-     (require 'expand-region)
+     (use-package expand-region
+       :ensure t)
    #+END_SRC
 
    However, the normal experience for =expand-region= is interactive,
