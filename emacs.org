@@ -285,49 +285,88 @@
    #+END_SRC
 
 * Key Bindings
+** Hydra Sequences
+
+   I’m starting to appreciate the [[https://github.com/abo-abo/hydra][Hydra project]].
+
+   #+BEGIN_SRC elisp
+     (use-package hydra
+       :ensure t
+       :config
+       (hydra-add-font-lock))
+   #+END_SRC
+
+   Easily manipulate the size of the windows using the arrow keys in a
+   particular buffer window.
+
+   #+BEGIN_SRC elisp
+     (require 'windmove)
+
+     (defun hydra-move-splitter-left (arg)
+       "Move window splitter left."
+       (interactive "p")
+       (if (let ((windmove-wrap-around))
+             (windmove-find-other-window 'right))
+           (shrink-window-horizontally arg)
+         (enlarge-window-horizontally arg)))
+
+     (defun hydra-move-splitter-right (arg)
+       "Move window splitter right."
+       (interactive "p")
+       (if (let ((windmove-wrap-around))
+             (windmove-find-other-window 'right))
+           (enlarge-window-horizontally arg)
+         (shrink-window-horizontally arg)))
+
+     (defun hydra-move-splitter-up (arg)
+       "Move window splitter up."
+       (interactive "p")
+       (if (let ((windmove-wrap-around))
+             (windmove-find-other-window 'up))
+           (enlarge-window arg)
+         (shrink-window arg)))
+
+     (defun hydra-move-splitter-down (arg)
+       "Move window splitter down."
+       (interactive "p")
+       (if (let ((windmove-wrap-around))
+             (windmove-find-other-window 'up))
+           (shrink-window arg)
+         (enlarge-window arg)))
+
+     (defhydra hydra-splitter (global-map "<f9>")
+       "splitter"
+       ("<left>" hydra-move-splitter-left)
+       ("<down>" hydra-move-splitter-down)
+       ("<up>" hydra-move-splitter-up)
+       ("<right>" hydra-move-splitter-right))
+   #+END_SRC
+
+   Other Hydra sequences are associated with the package they control.
+
 ** Function Key Definitions
 
-   Clearly, the most important keybindings are the function keys,
-   right? Here is my list of needs:
+   Emacs has never seen a need for function keys, and I agree...for
+   the most part. For things really /away from the flow/, they don't
+   seem to bad. But what are those?
 
    - *F1* - Help? Isn't Control-H good enough?
-   - *F2* - Standard alternate meta key with lots of bindings
+   - *F2* - Special odd, little-used characters that I have to think
+            about before remembering what its binding.
    - *F3* - Define a keyboard macro
    - *F4* - Replay a keyboard macro
    - *F5* - Use org-mode’s Mark Ring feature globally
    - *F6* - Open to temporary, changeable commands...
-   - *F7* - Switch to another window ... Shift goes the other way.
+   - *F7* - Switch to another window ... Control goes the other way.
    - *F8* - Switch to buffer
-   - *F9* - My other meta key for changing colors and other odd
-     bindings that I actually don't use that often
+   - *F9* - My extension (replacement?) for =C-c= for changing colors
+     and other odd bindings that I actually don't use that often.
 
    #+BEGIN_SRC elisp
      (global-set-key (kbd "<f5>") 'org-mark-ring-push)
      (global-set-key (kbd "C-<f5>") 'org-mark-ring-goto)
-     ;; (global-set-key (kbd "<f6>") ')
      (global-set-key (kbd "<f7>") 'other-window)
-     (global-set-key (kbd "<f8>") 'ido-switch-buffer)
-   #+END_SRC
-
-   Set up [[https://github.com/abo-abo/ace-window][ace-window]] mode:
-
-   #+BEGIN_SRC elisp
-     (use-package ace-window
-       :ensure t
-       :init
-         (setq aw-keys '(?a ?s ?d ?f ?j ?k ?l ?o))
-         (global-set-key (kbd "C-x o") 'ace-window)
-         (global-set-key (kbd "<f7>") 'ace-window)    ;; Hrm.
-       :diminish ace-window-mode)
-   #+END_SRC
-
-   I like [[https://github.com/KMahoney/kpm-list][kpm-list]] a bit better than =ibuffer=, but I really don’t use
-   either more than =ido-switch-buffer=. Still:
-
-   #+BEGIN_SRC elisp
-     (if (require 'kpm-list nil t)
-         (global-set-key (kbd "S-<f8>") 'kpm-list)
-       (global-set-key (kbd "S-<f8>") 'ibuffer))
+     (global-set-key (kbd "C-<f7>") (lambda () (interactive) (other-window -1)))
    #+END_SRC
 
 *** F2 and F9 Helpers
@@ -388,13 +427,45 @@
         (highlight-regexp "Imp\\(rove\\)?:" 'hi-blue-b))
     #+END_SRC
 
-*** Controlling Windows
+*** Jumping to Windows
+
+   Set up [[https://github.com/abo-abo/ace-window][ace-window]] mode:
+
+   #+BEGIN_SRC elisp
+     (use-package ace-window
+       :ensure t
+       :init
+         (setq aw-keys '(?a ?s ?d ?f ?j ?k ?l ?o))
+         (global-set-key (kbd "C-x o") 'ace-window)
+       :diminish ace-window-mode)
+   #+END_SRC
+
+*** Selecting a Buffer
+
+    I like =IDO= for switching buffers since I typically know what I'm after:
+
+    #+BEGIN_SRC elisp
+     (global-set-key (kbd "<f8>") 'ido-switch-buffer)
+     (global-set-key (kbd "S-<f8>") 'ibuffer)
+    #+END_SRC
+
+    I like [[https://github.com/KMahoney/kpm-list][kpm-list]] a bit better than =ibuffer=, but I really don’t use
+    either more than =ido-switch-buffer=. Still:
+
+    #+BEGIN_SRC elisp
+     (use-package kpm-list
+       :ensure t
+       :bind ("S-<f8>" . kpm-list)
+             ("C-x C-b" . kpm-list))
+    #+END_SRC
+
+*** Controlling Window Size
 
     Often, while on my laptop, I want the current window to be ‘large
     enough for work’, and this is bound to =<f9> .= (period).
 
     #+BEGIN_SRC elisp
-      (define-key personal-global-map (kbd ",") 'ha/window-standard-size)
+      (global-set-key (kbd "C-c w") 'ha/window-standard-size)
     #+END_SRC
 
     If I've enlarged the window, I can restore that window to its
@@ -428,6 +499,28 @@
               (enlarge-window-horizontally (- window-width-original goal-width))
             (enlarge-window-horizontally new-width))))
     #+END_SRC
+
+*** Controlling Window Placement
+
+    Change window configuration and then return to the old
+    configuration with [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]].  Use =Control-C Arrow= keys to
+    cycle through window/frame configurations.
+
+    #+BEGIN_SRC elisp
+      (use-package winner
+        :ensure t
+        :init (winner-mode 1)
+        :config (global-set-key
+                 (kbd "C-c p")
+                 (defhydra hydra-winner ()
+                   "Winner"
+                   ("p" winner-undo "back")
+                   ("o" winner-redo "forward" :exit t))))
+    #+END_SRC
+
+    Note: Can't use the =:bind= symbol in a =use-package= with
+    =defhydra=, since that needs to be expanded (as a macro), and
+    evaluated. Calling =global-set-key= seems to work, though.
 
 ** Better Jumping
 
@@ -472,80 +565,6 @@
 
    #+BEGIN_SRC elisp
      (require 'init-fixes)
-   #+END_SRC
-
-** Hydra Sequences
-
-   I’m starting to appreciate the [[https://github.com/abo-abo/hydra][Hydra project]].
-
-   #+BEGIN_SRC elisp
-     (require 'hydra)
-
-     (defhydra hydra-zoom (global-map "<f9>")
-       "zoom"
-       ("+" text-scale-increase "in")
-       ("=" text-scale-increase "in")
-       ("-" text-scale-decrease "out"))
-   #+END_SRC
-
-   Change window configuration and then return to the old
-   configuration with [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]].  Use =Control-C Arrow= keys to
-   cycle through window/frame configurations.
-
-   #+BEGIN_SRC elisp
-     (winner-mode 1)
-
-     (defhydra hydra-winner (global-map "<f9> c")
-       "zoom"
-       ("<left>" winner-undo "undo-window")
-       ("<right>" winner-redo "redo-window"))
-   #+END_SRC
-
-
-   Easily manipulate the size of the windows using the arrow keys in a
-   particular buffer window.
-
-   #+BEGIN_SRC elisp
-     (require 'windmove)
-
-     (defun hydra-move-splitter-left (arg)
-       "Move window splitter left."
-       (interactive "p")
-       (if (let ((windmove-wrap-around))
-             (windmove-find-other-window 'right))
-           (shrink-window-horizontally arg)
-         (enlarge-window-horizontally arg)))
-
-     (defun hydra-move-splitter-right (arg)
-       "Move window splitter right."
-       (interactive "p")
-       (if (let ((windmove-wrap-around))
-             (windmove-find-other-window 'right))
-           (enlarge-window-horizontally arg)
-         (shrink-window-horizontally arg)))
-
-     (defun hydra-move-splitter-up (arg)
-       "Move window splitter up."
-       (interactive "p")
-       (if (let ((windmove-wrap-around))
-             (windmove-find-other-window 'up))
-           (enlarge-window arg)
-         (shrink-window arg)))
-
-     (defun hydra-move-splitter-down (arg)
-       "Move window splitter down."
-       (interactive "p")
-       (if (let ((windmove-wrap-around))
-             (windmove-find-other-window 'up))
-           (shrink-window arg)
-         (enlarge-window arg)))
-
-     (defhydra hydra-splitter (global-map "<f9>")
-       "splitter"
-       ("<left>" hydra-move-splitter-left)
-       ("<down>" hydra-move-splitter-down)
-       ("<up>" hydra-move-splitter-up)
-       ("<right>" hydra-move-splitter-right))
    #+END_SRC
 
 ** Multiple Cursors
@@ -1566,6 +1585,15 @@
         :bind (("C-c i" . imenu-anywhere)))
    #+END_SRC
 
+   If I don't know what I'm after, Helm is better:
+
+   #+BEGIN_SRC elisp
+     (use-package helm
+       :bind (("C-c M-i" . helm-imenu)))
+   #+END_SRC
+
+   Notice that I don't set Helm for everything.
+
    However, I need to use [[http://www.emacswiki.org/emacs/EtagsSelect#toc3][this function]] to use IDO in conjunctions
    with the TAGS file for all functions in the project:
 
@@ -1662,7 +1690,7 @@
    other extension), should start in =sh-mode=:
 
    #+BEGIN_SRC elisp
-     (add-to-list 'auto-mode-alist '(("/bin/" . sh-mode)))
+     (add-to-list 'auto-mode-alist '("/bin/" . sh-mode))
    #+END_SRC
 
 ** Emacs Lisp
@@ -1686,7 +1714,7 @@
    with λ:
 
    #+BEGIN_SRC elisp
-     (use-package emacs-lisp-mode
+     (use-package lisp-mode
        :init
        (defconst lisp--prettify-symbols-alist
          '(("lambda"  . ?λ)
