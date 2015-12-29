@@ -163,13 +163,10 @@
 
    #+BEGIN_SRC elisp
      (packages-install '(
-                      avy
                       dired-details
                       epl
                       esh-buf-stack
                       expand-region
-                      flx
-                      flx-ido
                       flycheck
                       flycheck-color-mode-line
                       git-blame
@@ -178,13 +175,9 @@
                       gitignore-mode
                       graphviz-dot-mode
                       htmlize
-                      hydra
-                      ido-vertical-mode
-                      iy-go-to-char
                       linum-relative
                       magit
                       markdown-mode
-                      smex
                       thesaurus
                       visual-regexp
                       ))
@@ -934,46 +927,61 @@
    According to [[http://www.masteringemacs.org/articles/2010/10/10/introduction-to-ido-mode/][Mickey]], IDO is the greatest thing.
 
    #+BEGIN_SRC elisp
-     (setq ido-enable-flex-matching t)
-     (setq ido-everywhere t)
-     (flx-ido-mode 1)
+     (use-package ido
+       :ensure t
+       :init  (setq ido-enable-flex-matching t
+                    ido-everywhere t)
+       :config (ido-mode 1)
+               (ido-everywhere 1))
    #+END_SRC
 
-   According to [[https://gist.github.com/rkneufeld/5126926][Ryan Kneufeld]], we could make IDO work
-   vertically, which is much easier to read. For this, I use
-   [[https://github.com/gempesaw/ido-vertical-mode.el][ido-vertically]]:
+   Add to IDO, the [[https://github.com/lewang/flx][FLX]] package:
 
    #+BEGIN_SRC elisp
-     (require 'ido-vertical-mode)
-     (ido-mode 1)
-     (ido-vertical-mode 1)
+     (use-package flx-ido
+        :ensure t
+        :init (setq ido-enable-flex-matching t
+                    ido-use-faces nil)
+        :config (flx-ido-mode 1))
+   #+END_SRC
 
-     ; I like up and down arrow keys:
-     (setq ido-vertical-define-keys 'C-n-C-p-up-and-down)
+   According to [[https://gist.github.com/rkneufeld/5126926][Ryan Kneufeld]], we could make IDO work vertically,
+   which is much easier to read. For this, I use [[https://github.com/gempesaw/ido-vertical-mode.el][ido-vertically]]:
+
+   #+BEGIN_SRC elisp
+     (use-package ido-vertical-mode
+       :ensure t
+       :init               ; I like up and down arrow keys:
+       (setq ido-vertical-define-keys 'C-n-C-p-up-and-down)
+       :config
+       (ido-vertical-mode 1))
    #+END_SRC
 
 ** SMEX
 
-   Built using [[*IDO%20(Interactively%20DO%20Things)][IDO]].
+   Built using [[*IDO%20(Interactively%20DO%20Things)][IDO]] to do something similar but with =M-x= commands:
 
    #+BEGIN_SRC elisp
-     (require 'smex)
-     (smex-initialize) ; Can be omitted. This might cause a (minimal) delay
-
-     (global-set-key (kbd "M-x") 'smex)
-     (global-set-key (kbd "M-z") 'smex)  ;; Zap to char isn't so helpful
-     (global-set-key (kbd "M-X") 'smex-major-mode-commands)
-
-     ;; This is our old M-x.
-     (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
+     (use-package smex
+       :ensure t
+       :init (smex-initialize)
+       :bind ("M-x" . smex)
+             ("M-X" . smex-major-mode-commands))
    #+END_SRC
 
-   Not crazy about =zap-to-char= being so close to the very useful
-   =M-x= sequence, so...
+** Helm
+
+   Obviously, Helm would be helpful if I can learn all the bindings,
+   so:
 
    #+BEGIN_SRC elisp
-     (global-set-key (kbd "M-z") 'smex-major-mode-commands)
+     (use-package helm
+       :ensure t
+       :init (add-to-list 'guide-key/guide-key-sequence "C-x c"))
    #+END_SRC
+
+   Re-read [[http://tuhdo.github.io/helm-intro.html][this essay on Helm]].
+
 ** Grep for my Notes
 
    I have a voluminous amount of org-mode text files I routinely need
@@ -1592,7 +1600,13 @@
        :bind (("C-c M-i" . helm-imenu)))
    #+END_SRC
 
-   Notice that I don't set Helm for everything.
+   Notice that I don't set Helm for everything. Obviously, Helm would
+   be helpful if I can learn all the bindings, so:
+
+   #+BEGIN_SRC elisp
+     (use-package guide-key
+       :init (add-to-list 'guide-key/guide-key-sequence "C-x c"))
+   #+END_SRC
 
    However, I need to use [[http://www.emacswiki.org/emacs/EtagsSelect#toc3][this function]] to use IDO in conjunctions
    with the TAGS file for all functions in the project:
