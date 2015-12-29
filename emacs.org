@@ -429,52 +429,25 @@
             (enlarge-window-horizontally new-width))))
     #+END_SRC
 
-** Other Key Bindings
+** Better Jumping
 
-   After picking up an Advantage Kinesis, I decided that I wanted to
-   redo some of the bindings to make it easier on me...mainly because
-   the Shift key is now really, really hard to reach.
-
-   #+BEGIN_SRC elisp
-     (global-set-key (kbd "M-<left>") 'beginning-of-line)
-     (global-set-key (kbd "M-<right>") 'end-of-line)
-     (global-set-key (kbd "C-M-<left>") 'beginning-of-buffer)
-     (global-set-key (kbd "C-M-<right>") 'end-of-buffer)
-   #+END_SRC
-
-   Better jumping around the buffer with [[https://github.com/winterTTr/ace-jump-mode][ace-jump-mode]] and friends.
+   Replaced the deprecated [[https://github.com/winterTTr/ace-jump-mode][ace-jump-mode]] with the [[https://github.com/abo-abo/avy][avy]] project.
+   Since I use the [[help:avy-goto-word-1][=avy-goto-word-1=]] function the most, I bind it to a
+   simple sequence. Other options (that require more of my memory),
+   are bound to =C-c J= (shift J). Perhaps that mnemonic will stick.
 
    #+BEGIN_SRC elisp
-     (when (require 'ace-jump-mode nil t)
-       (global-set-key (kbd "C-c SPC") 'ace-jump-mode)
-       (global-set-key (kbd "C-c C-SPC") 'ace-jump-mode-pop-mark)
-
-       (global-set-key (kbd "M-s s") 'ace-jump-mode)   ;; Needed for org-mode files
-       (global-set-key (kbd "M-s a") 'avi-goto-char)
-       (global-set-key (kbd "M-s w") 'avi-goto-word-1)
-       (global-set-key (kbd "M-s l") 'avi-goto-line))
+     (use-package avy
+       :ensure t
+       :bind
+       ("C-c j" . avy-goto-word-1)
+       ("C-c J J" . avy-goto-word-1)
+       ("C-c J j" . avy-goto-word-1)
+       ("C-c J c" . avy-goto-char-1)
+       ("C-c J C" . avy-goto-char-1)
+       ("C-c J l" . avy-goto-line)
+       ("C-c J L" . avy-goto-line))
    #+END_SRC
-
-  - =C-c SPC= ... =ace-jump-word-mode=
-    enter first character of a word, select the highlighted key to move to it.
-  - =C-u C-c SPC= ... =ace-jump-char-mode=
-    enter a character for query, select the highlighted key to move to it.
-  - =C-u C-u C-c SPC= ... =ace-jump-line-mode=
-    each non-empty line will be marked, select the highlighted key to move to it.
-  - =M-s l= ... =avi-goto-line= ... works well with org-mode files.
-  - =M-s .= ... =isearch-forward-symbol-at-point= search forward to
-    whatever is at point, but you need to =C-s= to jump to next match.
-  - =M-s _= ... =isearch-forward-symbol=
-
-  Using [[https://github.com/abo-abo/avy][avy]] as an /extension/ to the normal =isearch=, so that if I
-  type a search phrase, I can then type =C-'= to kick off
-  =avy-isearch=, and jump to the one that I want. Little change to the
-  mental flow.
-
-  #+BEGIN_SRC elisp
-    (when (require 'avy nil t)
-     (define-key isearch-mode-map (kbd "C-'") 'avy-isearch))
-  #+END_SRC
 
 ** Unfill Paragraph
 
