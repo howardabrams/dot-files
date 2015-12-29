@@ -348,28 +348,6 @@
       (require 'init-f2)
     #+END_SRC
 
-*** Auto Hiding Functions
-
-    Big, structured file, like source code, hide all of the functions,
-    and selectively reveal them, using [[http://www.emacswiki.org/emacs/HideShow][hide-show-mode]]. I don't like
-    the complicated key-bindings, so I through them on the <f9>:
-
-    #+BEGIN_SRC elisp
-      (defun ha-hs-hide-all ()
-        "Wrapper around 'hs-hide-all' that turns on the minor mode."
-        (interactive)
-        (hs-minor-mode t)
-        (hs-hide-all))
-
-      (define-key personal-global-map (kbd "M-H") 'ha-hs-hide-all)
-      (define-key personal-global-map (kbd "H") 'hs-hide-block)
-      (define-key personal-global-map (kbd "M-V") 'hs-show-all)
-      (define-key personal-global-map (kbd "V") 'hs-show-block)
-    #+END_SRC
-
-    While 'S' does make sense for /showing/, I'm already using that
-    for 'Stop'. Besides, 'viewing' isn't a bad mnemonic.
-
 *** Easy Highlighting
 
     I like the ability to highlight random text.
@@ -848,6 +826,7 @@
                         "C-x 4"     ; window commands
                         "M-s h"     ; hi-lock highlighting
                         "C-x w"     ; alternative to M-s ...
+                        "C-c @"     ; hs-hide-show mode
                         (org-mode "C-c C-x")))
        :config  (guide-key-mode 1)
        :diminish guide-key-mode)
@@ -1556,10 +1535,19 @@
      sudo apt-get install -y exuberant-ctags
    #+END_SRC
 
-   *Note:* for every project, run the following command:
+   Note: for every project, run the following command:
 
    #+BEGIN_SRC sh :tangle no
      ctags -e -R .
+   #+END_SRC
+
+   I want to be able to add headers from my =org-mode= files as
+   a /language option/:
+
+   #+BEGIN_SRC sh :tangle ~/.ctags :comments no
+    --langdef=org
+    --langmap=org:.org
+    --regex-org=/^\*+[ \t]+([a-zA-Z0-9_ ]+)/\1/d,definition/
    #+END_SRC
 
    We access stuff by loading the =etags= package:
@@ -1596,6 +1584,34 @@
        :diminish ctags-auto-update-mode)
    #+END_SRC
 
+   While, I like =imenu=, [[https://github.com/vspinu/imenu-anywhere][combining it]] with an IDO interface nicely
+   lists the headings/functions in the current buffer:
+
+   #+BEGIN_SRC elisp
+     (use-package imenu-anywhere
+        :ensure t
+        :bind (("C-c i" . imenu-anywhere)))
+   #+END_SRC
+
+   However, I need to use [[http://www.emacswiki.org/emacs/EtagsSelect#toc3][this function]] to use IDO in conjunctions
+   with the TAGS file for all functions in the project:
+
+   #+BEGIN_SRC elisp
+     (use-package ido
+       :config
+       (defun ido-find-tag ()
+         "Find a tag using ido"
+         (interactive)
+         (tags-completion-table)
+         (let (tag-names)
+           (mapatoms (lambda (x)
+                       (push (prin1-to-string x t) tag-names))
+                     tags-completion-table)
+           (find-tag (ido-completing-read "Tag: " tag-names))))
+
+       (global-set-key (kbd "C-c I") 'ido-find-tag))
+   #+END_SRC
+
    Emacs 25 changed has now deprecated the famous [[info:emacs#Tags][Tags and Friends]],
    like =find-tags= for =xref=. Some point, I will have to learn how
    to configure it, but until then, I'll just rebind to my old mates:
@@ -1607,16 +1623,29 @@
      (global-set-key (kbd "M-i") 'imenu-anywhere)
    #+END_SRC
 
-   While, I like =imenu=, [[https://github.com/vspinu/imenu-anywhere][combining it]] with an IDO interface nicely
-   lists the headings/functions in the current buffer:
+*** Code Block Folding
 
-   #+BEGIN_SRC elisp
-     (use-package imenu-anywhere
-        :ensure t
-        :bind (("C-c i" . imenu-anywhere)))
-   #+END_SRC
+    The [[info:emacs#Hideshow][Hide Show Minor]] mode allows us to load a programming file with
+    all functions folded, showing only the header lines:
 
-   Need to look into [[info:emacs#Hideshow][Hide Show Minor]] mode.
+    #+BEGIN_SRC elisp
+      (defun ha/after-load (file)
+        "Called after every file is loaded."
+        (when (derived-mode-p 'prog-mode)
+          (hs-minor-mode 1)
+          (hs-hide-all)))
+
+      (add-to-list 'after-load-functions 'ha/after-load)
+    #+END_SRC
+
+    See the [[http://www.emacswiki.org/emacs/HideShow][online resources]].
+
+    Note: =C-c @ C-c= toggles the showing or hiding of a block. Little
+    quicker:
+
+    #+BEGIN_SRC elisp
+      (global-set-key (kbd "C-c @ @") 'hs-toggle-hiding)
+    #+END_SRC
 
 *** Aggressive Auto Indention
 
