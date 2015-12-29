@@ -232,14 +232,16 @@ ever do that?
    The [[https://github.com/doitian/iy-go-to-char][iy-go-to-char]] project allows a quick search for a particular
    character. In [[http://www.youtube.com/watch?v%3DNXTf8_Arl1w][Episode 6]] of [[http://www.emacsrocks.com][EmacsRocks]], [[http://twitter.com/emacsrocks][Magnar Sveen]] pulls it all
    together and makes a compelling case for micro-optimizations.
-   We'll see if I can remember to use the feature.
+   I find it better than =avy= when in a macro.t
 
-#+BEGIN_SRC elisp
-  (when (require 'iy-go-to-char nil t)
-    (global-set-key (kbd "C-`") 'iy-go-to-char)
-    (global-set-key (kbd "<f13>") 'iy-go-to-char)
-    (global-set-key (kbd "C-~") 'iy-go-to-char-backward))
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (use-package iy-go-to-char
+       :ensure t
+       :bind
+       ("C-`" . iy-go-to-char)
+       ("<f13>" . iy-go-to-char)
+       ("C-~" . iy-go-to-char-backward))
+   #+END_SRC
 
    To use, type =C-`= and then a character, number or other symbol to
    jump to. Typing most things will bugger out of its "state" and
