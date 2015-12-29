@@ -168,10 +168,6 @@
                       esh-buf-stack
                       flycheck
                       flycheck-color-mode-line
-                      git-blame
-                      git-gutter-fringe
-                      gitconfig-mode
-                      gitignore-mode
                       graphviz-dot-mode
                       htmlize
                       linum-relative
@@ -1862,6 +1858,35 @@
   #+END_SRC
 
 * Tools
+** Git
+
+   I like [[https://github.com/syohex/emacs-git-gutter-fringe][git-gutter-fringe]]:
+
+   #+BEGIN_SRC elisp
+     (use-package git-gutter-fringe
+        :ensure t
+        :config (git-gutter-mode 1))
+   #+END_SRC
+
+   I want to have special mode for Git's =configuration= file:
+
+   #+BEGIN_SRC elisp
+     (use-package gitconfig-mode
+       :ensure t)
+
+     (use-package gitignore-mode
+       :ensure t)
+   #+END_SRC
+
+   What about being able to see the [[https://github.com/voins/mo-git-blame][Git blame]] in a buffer?
+
+   #+BEGIN_SRC elisp
+     (use-package mo-git-blame
+        :ensure t)
+   #+END_SRC
+
+   Run =mo-git-blame-current= to see the goodies.
+
 ** Magit
 
    Git is [[http://emacswiki.org/emacs/Git][already part of Emacs]]. However, [[http://philjackson.github.com/magit/magit.html][Magit]] is sweet.
