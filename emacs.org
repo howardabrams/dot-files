@@ -175,7 +175,6 @@
                       graphviz-dot-mode
                       htmlize
                       linum-relative
-                      magit
                       thesaurus
                       visual-regexp
                       ))
@@ -1863,94 +1862,34 @@
   #+END_SRC
 
 * Tools
-** Git
+** Magit
 
    Git is [[http://emacswiki.org/emacs/Git][already part of Emacs]]. However, [[http://philjackson.github.com/magit/magit.html][Magit]] is sweet.
+   Don't believe me? Check out [[https://www.youtube.com/watch?v=vQO7F2Q9DwA][this video]].
 
    #+BEGIN_SRC elisp
-     (require 'magit)
+     (use-package magit
+       :init
+       (use-package magit-blame)
+       (defadvice magit-status (around magit-fullscreen activate)
+         (window-configuration-to-register :magit-fullscreen)
+         ad-do-it
+         (delete-other-windows))
+       :config
+       (setq magit-branch-arguments nil
+             ;; use ido to look for branches
+             magit-completing-read-function 'magit-ido-completing-read
+             ;; don't put "origin-" in front of new branch names by default
+             magit-default-tracking-name-function 'magit-default-tracking-name-branch-only
+             magit-push-always-verify nil
+             ;; Get rid of the previous advice to go into fullscreen
+             magit-restore-window-configuration t)
 
-     (global-set-key (kbd "C-x g") 'magit-status)
-     (define-key personal-global-map (kbd "g") 'magit-status)
+       :bind ("C-x g" . magit-status))
    #+END_SRC
 
-   Temporarily drop into Magit while looking at the file system
-   (through the standard =load-file=) without actually loading a file.
-
-   #+BEGIN_SRC elisp :tangle no
-     (define-key ido-completion-map
-       (kbd "C-x g") 'ido-enter-magit-status)
-   #+END_SRC
-
-*** Full Screen Git
-
-    I like having Magit to run in a /full screen/ mode, and took this
-    =defadvice= idea from [[https://github.com/magnars/.emacs.d/blob/master/setup-magit.el][Sven Magnars]]:
-
-    #+BEGIN_SRC elisp
-      (defadvice magit-status (around magit-fullscreen activate)
-        (window-configuration-to-register :magit-fullscreen)
-        ad-do-it
-        (delete-other-windows))
-    #+END_SRC
-
-    Now, we have to have the =q= command recover the window session
-    that was stored in a window register:
-
-    #+BEGIN_SRC elisp
-      (defun magit-quit-session ()
-        "Restores the previous window configuration and kills the magit buffer"
-        (interactive)
-        (kill-buffer)
-        (jump-to-register :magit-fullscreen))
-
-      (define-key magit-status-mode-map (kbd "q") 'magit-quit-session)
-    #+END_SRC
-
-*** Fringe Information
-
-    Install and use the [[https://github.com/syohex/emacs-git-gutter-fringe][Git Gutter Fringe]] to see what lines are /dirty/
-    from Git’s perspective.
-
-    #+BEGIN_SRC elisp
-      (if (window-system)
-          (when (require 'git-gutter-fringe nil t)
-            (global-git-gutter-mode +1)
-            (setq-default indicate-buffer-boundaries 'left)
-            (setq-default indicate-empty-lines +1)))
-    #+END_SRC
-
-    To see a /blame mode/, use either =vc-annotate= (=C-x v g=) or
-    =magit-blame-mode=.
-
-*** One-step Commits
-
-    Simple function to stage and commit the current file. Even asks to
-    save the current file.
-
-    #+BEGIN_SRC elisp
-      (defun ha/commit-file (&optional args)
-        "Stage and commit the current file.  With a prefix argument, ARGS,
-      ammends the previous commit."
-        (interactive "P")
-        (magit-stage-file (buffer-file-name))
-        (if args
-            (magit-commit-amend)
-          (magit-commit)))
-
-      (global-set-key (kbd "C-x G") 'ha/commit-file)
-    #+END_SRC
-
-*** Github Pull Requests
-
-    Perhaps we can do [[https://github.com/sigma/magit-gh-pulls][Github pull requests]] from within Emacs, after
-    reading [[http://endlessparentheses.com/merging-github-pull-requests-from-emacs.html][this blog entry]]. Just do =# g g= in Magit to list the pull
-    requests.
-
-    #+BEGIN_SRC elisp
-      (when (require 'magit-gh-pulls nil t)
-            (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls))
-    #+END_SRC
+   I like having Magit to run in a /full screen/ mode, and add the
+   above =defadvice= idea from [[https://github.com/magnars/.emacs.d/blob/master/setup-magit.el][Sven Magnars]].
 
 ** Markdown
 
