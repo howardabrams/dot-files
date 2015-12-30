@@ -4,12 +4,12 @@
 
 * Introduction
 
-  This is my =.emacs= file, written using [[http://www.orgmode.org][org-mode]], so that I can
-  organize it and take notes on all the complexity.
+  This is my =.emacs= file ... well, the top-level of it anyway.
+  I've written it in a [[http://www.orgmode.org][literate style]], to make it easy to explain.
+  The notes also include hyperlinks to where I stole it. ;-)
 
 ** Emacs Executable
 
-   This file is really a /script/ that requires version 24 of Emacs.
    While I often use [[http://emacsformacosx.com/builds][Emacs for Mac]], lately, I've been building from
    [[http://brew.sh/][Homebrew]] with the following dependency:
 
@@ -46,15 +46,16 @@
      (unless (boundp 'aquamacs-version)
       (load-file "~/.emacs.d/elisp/init-main.el")
 
-      (when (window-system)
-        (require 'init-client))
+      (if (window-system)
+        (require 'init-client)
+        (require 'init-server)
 
       (server-start))
    #+END_SRC
 
-   *Note:* I only load this from a "normal" Emacs distribution, which
-   allows me to play around with [[http://aquamacs.org/][Aquamacs]] and [[http://eschulte.github.io/emacs-starter-kit/][Starter Kits]] for
-   recommendations to people new to Emacs.
+   I only load this from a "normal" Emacs distribution, which
+   allows me to play around with [[http://aquamacs.org/][Aquamacs]] and [[http://eschulte.github.io/emacs-starter-kit/][Starter Kits]].
+   You know, to see what I may be missing.
 
 * General Settings
 ** My Directory Location
@@ -128,22 +129,13 @@
                               ("gnu"       . "http://elpa.gnu.org/packages/")
                               ("melpa"     . "http://melpa.milkbox.net/packages/")
                               ("marmalade" . "http://marmalade-repo.org/packages/")))
-   #+END_SRC
 
-   While we can now do a =package-list-packages=, you can install and
-   everything is good, however, we can't =require= any of these
-   packages (in order to customize them in this file) until we do
-   this:
-
-   #+BEGIN_SRC elisp
      (package-initialize)
-     ;; (package-refresh-contents)
    #+END_SRC
 
-   Not sure why the package management system doesn't come with a
-   programmatic way to specify what packages should be installed. Oh
-   yeah, this is pretty new. Looks like everyone just rolls there own,
-   so this is mine.
+   The package management system doesn't come with a
+   programmatic way to specify what packages /should/ be
+   installed. Here is my solution until I convert to [[Use-Package][use-package]].
 
    #+BEGIN_SRC elisp
      (defun packages-install (packages)
@@ -176,9 +168,12 @@
                       ))
    #+END_SRC
 
+   Why yes, this list is getting smaller.
+
 ** Use-Package
 
-   Just beginning to use [[https://github.com/jwiegley/use-package][use-package]]. I’m sure it will be a long time to finally convert everything.
+   Using [[https://github.com/jwiegley/use-package][use-package]] to automatically install certain packages, as
+   well as the ease of lazily loading them.
 
    #+BEGIN_SRC elisp
      (unless (package-installed-p 'use-package)
@@ -330,6 +325,35 @@
 
    Other Hydra sequences are associated with the package they control.
 
+** Displaying Command Sequences
+
+   Many command sequences may be logical, but who can remember them
+   all? Use [[https://github.com/kai2nenobu/guide-key][guide-key]] to display the final function name. This isn't
+   as nice as Hydra, but useful for built-in key sequences:
+
+   #+BEGIN_SRC elisp
+     (use-package guide-key
+       :ensure t
+       :init    (setq guide-key/guide-key-sequence
+                      '("C-x r"     ; rectanges and registers
+                        "C-x 4"     ; window commands
+                        "M-s h"     ; hi-lock highlighting
+                        "C-x w"     ; alternative to M-s ...
+                        "C-c @"     ; hs-hide-show mode
+                        "<f2>"
+                        "<f9>"
+                        (org-mode "C-c C-x")))
+       :config  (guide-key-mode 1)
+       :diminish guide-key-mode)
+   #+END_SRC
+
+   May think about using the following commands:
+
+   #+BEGIN_SRC elisp :tangle no
+     (setq guide-key/guide-key-sequence '("C-x"))
+     (setq guide-key/recursive-key-sequence-flag t)
+   #+END_SRC
+
 ** Function Key Definitions
 
    Emacs has never seen a need for function keys, and I agree...for
@@ -373,140 +397,144 @@
       (require 'init-f2)
     #+END_SRC
 
-*** Easy Highlighting
+** Easy Highlighting
 
-    I like the ability to highlight random text.
-
-    #+BEGIN_SRC elisp
-      (define-key personal-global-map (kbd "h") 'highlight-regexp)
-      (define-key personal-global-map (kbd "u") 'unhighlight-regexp)
-    #+END_SRC
-
-    May get specific highlights automatically for certain files. We
-    begin by highlighting lines in *.log files.
-
-    #+BEGIN_SRC elisp
-      (defun highlite-it ()
-        "Highlight certain lines in specific files. Currently, only log files are supported."
-        (interactive)
-        (when (equal "log" (file-name-extension (buffer-file-name)))
-              (hi-lock-mode 1)
-              (highlight-lines-matching-regexp "ERROR:" 'hi-red-b)
-              (highlight-lines-matching-regexp "NOTE:" 'hi-blue-b)))
-
-      (add-hook 'find-file-hook 'highlite-it)
-    #+END_SRC
-
-    Turn on specific word groupings for specific occasions. We begin
-    with highlighting keywords I use during note-taking sessions at
-    the end of a sprint.
-
-    #+BEGIN_SRC elisp
-      (defun ha/sprint-retrospective-highlighting ()
-        "Highlights the good, the bad and the improvements to make when taking notes."
-        (interactive)
-        (hi-lock-mode t)
-        (highlight-lines-matching-regexp "^   [-*] " 'hi-black-b)
-        (highlight-phrase "TODO:?" 'hi-black-b)
-        (highlight-regexp "(?Good)?:?" 'hi-green-b)
-        (highlight-regexp "(?Bad)?:?" 'hi-red-b)
-        (highlight-regexp "Imp\\(rove\\)?:" 'hi-blue-b))
-    #+END_SRC
-
-*** Jumping to Windows
-
-   Set up [[https://github.com/abo-abo/ace-window][ace-window]] mode:
+   I like the ability to highlight random text.
 
    #+BEGIN_SRC elisp
-     (use-package ace-window
-       :ensure t
-       :init
-         (setq aw-keys '(?a ?s ?d ?f ?j ?k ?l ?o))
-         (global-set-key (kbd "C-x o") 'ace-window)
-       :diminish ace-window-mode)
+     (global-set-key (kbd "C-c i") 'highlight-regexp)
+     (global-set-key (kbd "C-c u") 'unhighlight-regexp)
    #+END_SRC
 
-*** Selecting a Buffer
+   May get specific highlights automatically for certain files. We
+   begin by highlighting lines in *.log files.
 
-    I like =IDO= for switching buffers since I typically know what I'm after:
+   #+BEGIN_SRC elisp
+     (defun ha/highlite-logs ()
+       "Highlight certain lines in specific files. Currently, only log files are supported."
+       (interactive)
+       (when (equal "log" (file-name-extension (buffer-file-name)))
+             (hi-lock-mode 1)
+             (highlight-lines-matching-regexp "ERROR:" 'hi-red-b)
+             (highlight-lines-matching-regexp "NOTE:" 'hi-blue-b)))
+   #+END_SRC
 
-    #+BEGIN_SRC elisp
-     (global-set-key (kbd "<f8>") 'ido-switch-buffer)
-     (global-set-key (kbd "S-<f8>") 'ibuffer)
-    #+END_SRC
+   The condition in that code allows me to hook it to all files:
 
-    I like [[https://github.com/KMahoney/kpm-list][kpm-list]] a bit better than =ibuffer=, but I really don’t use
-    either more than =ido-switch-buffer=. Still:
+   #+BEGIN_SRC elisp :tangle no
+     (add-hook 'find-file-hook 'highlite-it)
+   #+END_SRC
 
-    #+BEGIN_SRC elisp
-     (use-package kpm-list
+   Turn on specific word groupings for specific occasions. We begin
+   with highlighting keywords I use during note-taking sessions at
+   the end of a sprint.
+
+   #+BEGIN_SRC elisp
+     (defun ha/sprint-retrospective-highlighting ()
+       "Highlights the good, the bad and the improvements to make when taking notes."
+       (interactive)
+       (hi-lock-mode t)
+       (highlight-lines-matching-regexp "^   [-*] " 'hi-black-b)
+       (highlight-phrase "TODO:?" 'hi-black-b)
+       (highlight-regexp "(?Good)?:?" 'hi-green-b)
+       (highlight-regexp "(?Bad)?:?" 'hi-red-b)
+       (highlight-regexp "Imp\\(rove\\)?:" 'hi-blue-b))
+   #+END_SRC
+
+** Jumping to Windows
+
+  Set up [[https://github.com/abo-abo/ace-window][ace-window]] mode:
+
+  #+BEGIN_SRC elisp
+    (use-package ace-window
+      :ensure t
+      :init
+        (setq aw-keys '(?a ?s ?d ?f ?j ?k ?l ?o))
+        (global-set-key (kbd "C-x o") 'ace-window)
+      :diminish ace-window-mode)
+  #+END_SRC
+
+** Selecting a Buffer
+
+   I like =IDO= for switching buffers since I typically know what I'm after:
+
+   #+BEGIN_SRC elisp
+    (global-set-key (kbd "<f8>") 'ido-switch-buffer)
+    (global-set-key (kbd "S-<f8>") 'ibuffer)
+   #+END_SRC
+
+   I like [[https://github.com/KMahoney/kpm-list][kpm-list]] a bit better than =ibuffer=, but I really don’t use
+   either more than =ido-switch-buffer=. Still:
+
+   #+BEGIN_SRC elisp
+    (use-package kpm-list
+      :ensure t
+      :bind ("S-<f8>" . kpm-list)
+            ("C-x C-b" . kpm-list))
+   #+END_SRC
+
+** Controlling Window Size
+
+   Often, while on my laptop, I want the current window to be ‘large
+   enough for work’, and this is bound to =<f9> .= (period).
+
+   #+BEGIN_SRC elisp
+     (global-set-key (kbd "C-c w") 'ha/window-standard-size)
+   #+END_SRC
+
+   If I've enlarged the window, I can restore that window to its
+   original size, so this requires a /buffer local variable/:
+
+   #+BEGIN_SRC elisp
+     (make-variable-buffer-local 'window-width-original)
+   #+END_SRC
+
+   Now a function that either changes the width to 80, or back to the
+   original size if already at 80.
+
+   #+BEGIN_SRC elisp
+     (defun ha/window-standard-size (arg)
+       "Sets the size of the current window to 80 characters, unless
+     it already is 80 characters, in which case, set it back to its
+     previous size. A prefix ARG can be given to set the window to a
+     particular width."
+       (interactive "p")
+
+       ;; If not already set, let's store the current window width in our
+       ;; buffer-local variable.
+       (if (not (local-variable-p 'window-width-original))
+           (setq window-width-original (window-width)))
+
+       ;; The 'goal' is 80 unless we get a better argument, C-u 60 ...
+       (let* ((goal-width (if (> arg 8) arg 80))
+              (new-width (- goal-width (window-width))))
+
+         (if (= new-width 0)    ; Already enlarged? Restore:
+             (enlarge-window-horizontally (- window-width-original goal-width))
+           (enlarge-window-horizontally new-width))))
+   #+END_SRC
+
+** Controlling Window Placement
+
+   Change window configuration and then return to the old
+   configuration with [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]].  Use =Control-C Arrow= keys to
+   cycle through window/frame configurations.
+
+   #+BEGIN_SRC elisp
+     (use-package winner
        :ensure t
-       :bind ("S-<f8>" . kpm-list)
-             ("C-x C-b" . kpm-list))
-    #+END_SRC
+       :init (winner-mode 1)
+       :config (global-set-key
+                (kbd "C-c p")
+                (defhydra hydra-winner ()
+                  "Winner"
+                  ("p" winner-undo "back")
+                  ("o" winner-redo "forward" :exit t))))
+   #+END_SRC
 
-*** Controlling Window Size
-
-    Often, while on my laptop, I want the current window to be ‘large
-    enough for work’, and this is bound to =<f9> .= (period).
-
-    #+BEGIN_SRC elisp
-      (global-set-key (kbd "C-c w") 'ha/window-standard-size)
-    #+END_SRC
-
-    If I've enlarged the window, I can restore that window to its
-    original size, so this requires a /buffer local variable/:
-
-    #+BEGIN_SRC elisp
-      (make-variable-buffer-local 'window-width-original)
-    #+END_SRC
-
-    Now a function that either changes the width to 80, or back to the
-    original size if already at 80.
-
-    #+BEGIN_SRC elisp
-      (defun ha/window-standard-size (arg)
-        "Sets the size of the current window to 80 characters, unless
-      it already is 80 characters, in which case, set it back to its
-      previous size. A prefix ARG can be given to set the window to a
-      particular width."
-        (interactive "p")
-
-        ;; If not already set, let's store the current window width in our
-        ;; buffer-local variable.
-        (if (not (local-variable-p 'window-width-original))
-            (setq window-width-original (window-width)))
-
-        ;; The 'goal' is 80 unless we get a better argument, C-u 60 ...
-        (let* ((goal-width (if (> arg 8) arg 80))
-               (new-width (- goal-width (window-width))))
-
-          (if (= new-width 0)    ; Already enlarged? Restore:
-              (enlarge-window-horizontally (- window-width-original goal-width))
-            (enlarge-window-horizontally new-width))))
-    #+END_SRC
-
-*** Controlling Window Placement
-
-    Change window configuration and then return to the old
-    configuration with [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]].  Use =Control-C Arrow= keys to
-    cycle through window/frame configurations.
-
-    #+BEGIN_SRC elisp
-      (use-package winner
-        :ensure t
-        :init (winner-mode 1)
-        :config (global-set-key
-                 (kbd "C-c p")
-                 (defhydra hydra-winner ()
-                   "Winner"
-                   ("p" winner-undo "back")
-                   ("o" winner-redo "forward" :exit t))))
-    #+END_SRC
-
-    Note: Can't use the =:bind= symbol in a =use-package= with
-    =defhydra=, since that needs to be expanded (as a macro), and
-    evaluated. Calling =global-set-key= seems to work, though.
+   Note: Can't use the =:bind= symbol in a =use-package= with
+   =defhydra=, since that needs to be expanded (as a macro), and
+   evaluated. Calling =global-set-key= seems to work, though.
 
 ** Better Jumping
 
@@ -519,7 +547,7 @@
      (use-package avy
        :ensure t
        :bind
-       ("C-c j" . avy-goto-word-1)
+       ("C-c j"   . avy-goto-word-1)
        ("C-c J J" . avy-goto-word-1)
        ("C-c J j" . avy-goto-word-1)
        ("C-c J c" . avy-goto-char-1)
@@ -789,33 +817,6 @@
          (lambda ()
            (interactive)
            (surround-text text))))
-   #+END_SRC
-
-** Displaying Command Sequences
-
-   Many command sequences may be logical, but who can remember them
-   all? Use [[https://github.com/kai2nenobu/guide-key][guide-key]] to display the final function name. This isn't
-   as nice as Hydra, but useful for built-in key sequences:
-
-   #+BEGIN_SRC elisp
-     (use-package guide-key
-       :ensure t
-       :init    (setq guide-key/guide-key-sequence
-                      '("C-x r"     ; rectanges and registers
-                        "C-x 4"     ; window commands
-                        "M-s h"     ; hi-lock highlighting
-                        "C-x w"     ; alternative to M-s ...
-                        "C-c @"     ; hs-hide-show mode
-                        (org-mode "C-c C-x")))
-       :config  (guide-key-mode 1)
-       :diminish guide-key-mode)
-   #+END_SRC
-
-   May think about using the following commands:
-
-   #+BEGIN_SRC elisp :tangle no
-     (setq guide-key/guide-key-sequence '("C-x"))
-     (setq guide-key/recursive-key-sequence-flag t)
    #+END_SRC
 
 * Loading and Finding Files
@@ -1634,27 +1635,19 @@
 
 *** Code Block Folding
 
-    The [[info:emacs#Hideshow][Hide Show Minor]] mode allows us to load a programming file with
-    all functions folded, showing only the header lines:
+    The [[info:emacs#Hideshow][Hide Show Minor]] mode allows us to /fold/ all functions
+    (hidden), showing only the header lines. Seems that =C-c @= is too
+    obnoxious to use, so I'll put my favorite on the =C-c h= prefix:
 
     #+BEGIN_SRC elisp
-      (defun ha/after-load (file)
-        "Called after every file is loaded."
-        (when (derived-mode-p 'prog-mode)
-          (hs-minor-mode 1)
-          (hs-hide-all)))
-
-      (add-to-list 'after-load-functions 'ha/after-load)
+      (use-package hs-minor-mode
+        :bind
+        ("C-c h a" . hs-hide-all)
+        ("C-c h s" . hs-show-all)
+        ("C-c h h" . hs-toggle-hiding))
     #+END_SRC
 
     See the [[http://www.emacswiki.org/emacs/HideShow][online resources]].
-
-    Note: =C-c @ C-c= toggles the showing or hiding of a block. Little
-    quicker:
-
-    #+BEGIN_SRC elisp
-      (global-set-key (kbd "C-c @ @") 'hs-toggle-hiding)
-    #+END_SRC
 
 *** Aggressive Auto Indention
 
