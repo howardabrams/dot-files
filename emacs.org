@@ -714,9 +714,8 @@
 
 ** Block Wrappers
 
-   The =M-(= binding to =insert-pair= is great, but we often need to
-   wrap other commands. Thankfully, =insert-pair= is up to the task
-   by simply having new bindings.
+   While the =M-(= binding to =insert-pair= is great, I often need to
+   wrap with other characters:
 
    #+BEGIN_SRC elisp
      (global-set-key (kbd "M-[") 'insert-pair)
@@ -725,6 +724,37 @@
      (global-set-key (kbd "M-'") 'insert-pair)
      (global-set-key (kbd "M-`") 'insert-pair)
      (global-set-key (kbd "M-\"") 'insert-pair)
+   #+END_SRC
+
+   But [[https://github.com/rejeep/wrap-region.el][wrap-region]] is even more flexible. In most editors, selecting
+   text and typing anything replaces the selected text (see the
+   [[info:emacs#Using%20Region][delete-selection-mode]]), but in this case, we can do something
+   different... like wrapping:
+
+   #+BEGIN_SRC elisp
+     (use-package wrap-region
+       :ensure   t
+       :config
+       (wrap-region-global-mode t)
+       (wrap-region-add-wrappers
+        '(("(" ")")
+          ("[" "]")
+          ("{" "}")
+          ("<" ">")
+          ("'" "'")
+          ("\"" "\"")
+          ("‘" "’"   "q")
+          ("“" "”"   "Q")
+          ("*" "*"   "b"   org-mode)                 ; bolden
+          ("/" "/"   "i"   org-mode)                 ; italics
+          ("_" "_"   "u" '(org-mode markdown-mode))  ; underline
+          ("=" "="   "c"   org-mode)                 ; code
+          ("**" "**" "b"   markdown-mode)            ; bolden
+          ("*" "*"   "i"   markdown-mode)            ; italics
+          ("`" "`"   "c" '(markdown-mode ruby-mode)) ; code
+          ("`" "'"   "c"   lisp-mode)                ; code
+          ))
+       :diminish wrap-region-mode)
    #+END_SRC
 
    But in order to wrap text in a more general way (with just about
@@ -1637,7 +1667,21 @@
 
    Sure, everything here is in Emacs Lisp, but this section helps me
    write more of that... like making snazzy symbols and colorizing the
-   variables:
+   variables.
+
+   The [[https://github.com/ankurdave/color-identifiers-mode][color-identifiers]] project (unlike [[https://github.com/Fanael/rainbow-identifiers][others]]), downplay the
+   keywords, and increase the colorizing of the variables.
+
+   #+BEGIN_SRC elisp
+     (use-package color-identifiers-mode
+       :ensure t
+       :init
+         (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode)
+       :diminish color-identifiers-mode)
+   #+END_SRC
+
+   The only real snazzy symbol that I like is replacing the =lambda=
+   with λ:
 
    #+BEGIN_SRC elisp
      (use-package emacs-lisp-mode
