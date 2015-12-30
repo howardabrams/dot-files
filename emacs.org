@@ -441,6 +441,49 @@
        (highlight-regexp "Imp\\(rove\\)?:" 'hi-blue-b))
    #+END_SRC
 
+   This works really well with other commands, including
+   [[https://github.com/Bruce-Connor/fancy-narrow][fancy-narrow]], where I can visually high-light a section of a
+   buffer. Great for code-reviews and other presentations.
+
+   #+BEGIN_SRC elisp
+     (use-package fancy-narrow
+       :ensure t
+       :config
+       (defun ha/highlight-block ()
+         "Highlights a 'block' in a buffer defined by the first blank
+          line before and after the current cursor position. Uses the
+          'fancy-narrow' mode to high-light the block."
+         (interactive)
+         (let (cur beg end)
+           (setq cur (point))
+           (setq end (or (re-search-forward  "^\s*$" nil t) (point-max)))
+           (goto-char cur)
+           (setq beg (or (re-search-backward "^\s*$" nil t) (point-min)))
+           (fancy-narrow-to-region beg end)
+           (goto-char cur)))
+
+       (defun ha/highlight-section (num)
+         "If some of the buffer is highlighted with the `fancy-narrow'
+          mode, then un-highlight it by calling `fancy-widen'.
+
+          If region is active, call `fancy-narrow-to-region'.
+
+          If NUM is 0, highlight the current block (delimited by blank
+          lines). If NUM is positive or negative, highlight that number
+          of lines.  Otherwise, called `fancy-narrow-to-defun', to
+          highlight current function."
+         (interactive "p")
+         (cond
+          ((fancy-narrow-active-p)  (fancy-widen))
+          ((region-active-p)        (fancy-narrow-to-region (region-beginning) (region-end)))
+          ((= num 0)                (ha/highlight-block))
+          ((= num 1)                (fancy-narrow-to-defun))
+          (t                        (progn (ha/expand-region num)
+                                           (fancy-narrow-to-region (region-beginning) (region-end))))))
+
+       :bind ("C-M-+" . ha/highlight-section))
+   #+END_SRC
+
 ** Jumping to Windows
 
   Set up [[https://github.com/abo-abo/ace-window][ace-window]] mode:
@@ -654,47 +697,6 @@
        (beginning-of-line (1+ lines)))
 
      (global-set-key (kbd "C-=") 'ha/expand-region)
-   #+END_SRC
-
-   This works really well with other commands, including
-   [[https://github.com/Bruce-Connor/fancy-narrow][fancy-narrow]], where I can visually high-light a section of a
-   buffer. Great for code-reviews and other presentations.
-
-   #+BEGIN_SRC elisp
-     (when (require 'fancy-narrow nil t)
-       (defun ha/highlight-block ()
-         "Highlights a 'block' in a buffer defined by the first blank
-          line before and after the current cursor position. Uses the
-          'fancy-narrow' mode to high-light the block."
-         (interactive)
-         (let (cur beg end)
-           (setq cur (point))
-           (setq end (or (re-search-forward  "^\s*$" nil t) (point-max)))
-           (goto-char cur)
-           (setq beg (or (re-search-backward "^\s*$" nil t) (point-min)))
-           (fancy-narrow-to-region beg end)
-           (goto-char cur)))
-
-       (defun ha/highlight-section (num)
-         "If some of the buffer is highlighted with the `fancy-narrow'
-          mode, then un-highlight it by calling `fancy-widen'.
-
-          If region is active, call `fancy-narrow-to-region'.
-
-          If NUM is 0, highlight the current block (delimited by blank
-          lines). If NUM is positive or negative, highlight that number
-          of lines.  Otherwise, called `fancy-narrow-to-defun', to
-          highlight current function."
-         (interactive "p")
-         (cond
-          ((fancy-narrow-active-p)  (fancy-widen))
-          ((region-active-p)        (fancy-narrow-to-region (region-beginning) (region-end)))
-          ((= num 0)                (ha/highlight-block))
-          ((= num 1)                (fancy-narrow-to-defun))
-          (t                        (progn (ha/expand-region num)
-                                           (fancy-narrow-to-region (region-beginning) (region-end))))))
-
-       (global-set-key (kbd "C-M-+") 'ha/highlight-section))
    #+END_SRC
 
 ** Block Wrappers
