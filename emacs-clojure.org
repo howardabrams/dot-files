@@ -50,7 +50,6 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
   - [[https://github.com/clojure-emacs/clj-refactor.el][clj-refactor]]
   - [[https://github.com/clojure-emacs/squiggly-clojure][flycheck-clojure]] (and [[http://www.flycheck.org/][flycheck]] of course)
   - [[http://www.emacswiki.org/emacs/ParEdit][paredit]]
-  - [[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]]
   - [[https://github.com/ankurdave/color-identifiers-mode][color-identifiers-mode]]
   - [[https://github.com/clojure-emacs/clojure-cheatsheet][clojure-cheatsheet]]
 
@@ -169,25 +168,6 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
        declaration. Good start to just about any other positioning.
   - C-M- d f d :: At beginning of function, moves to first s-expression.
 
-* Rainbow Ponies
-
-  Most LISP-based programming is better with rainbow ponies... you know,
-  [[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters-mode]].  However, the only parens I really care
-  about are the bad ones, so let’s make all those rainbow colors
-  disappear, leaving only the bad red ones:
-
-  #+BEGIN_SRC elisp
-    (use-package rainbow-delimiters
-      :init
-      (add-hook 'prog-mode-hook  'rainbow-delimiters-mode)
-      (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode)
-
-      :config
-      (set-face-attribute 'rainbow-delimiters-unmatched-face nil
-                          :foreground 'unspecified
-                          :inherit 'error))
-  #+END_SRC
-
 * REPL
 
   When demonstrating Clojure, I find it is a better approach is to send
@@ -237,7 +217,7 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
       (add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
       (add-hook 'cider-mode-hook 'company-mode)
 
-      (add-hook 'cider-repl-mode-hook 'smartparens-strict-mode)
+      (add-hook 'cider-repl-mode-hook 'paredit-mode)
       (add-hook 'cider-repl-mode-hook 'superword-mode)
       (add-hook 'cider-repl-mode-hook 'company-mode)
       (add-hook 'cider-test-report-mode 'jcf-soft-wrap)
