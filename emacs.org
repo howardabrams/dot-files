@@ -161,7 +161,6 @@
                       flycheck-color-mode-line
                       graphviz-dot-mode
                       htmlize
-                      linum-relative
                       thesaurus
                       visual-regexp
                       ))
@@ -1368,14 +1367,9 @@
    quickly pop to it.
 
    #+BEGIN_SRC elisp
-     (if (not (require 'linum-relative nil t))
-
-         ;; If this isn't installed, we'll just toggle between showing and
-         ;; not showing the line numbers.
-         (progn
-           (global-set-key (kbd "A-k") 'linum-mode)
-           (global-set-key (kbd "s-k") 'linum-mode))   ;; For Linux
-
+     (use-package linum-relative
+       :ensure t
+       :config
        ;; Otherwise, let's take advantage of the relative line numbering:
        (defun linum-new-mode ()
          "If line numbers aren't displayed, then display them.
@@ -1385,17 +1379,21 @@
              (linum-relative-toggle)
            (linum-mode 1)))
 
-       (global-set-key (kbd "A-k") 'linum-new-mode)
-       (global-set-key (kbd "s-k") 'linum-new-mode))   ;; For Linux
+       :bind ("A-k" . linum-new-mode)
+             ("s-k" . linum-new-mode))   ;; For Linux
    #+END_SRC
 
 ** Smart Scan
 
    Use the =M-n= to search the buffer for the word the cursor is
-   currently pointing. =M-p= to go backwards.
+   currently pointing. =M-p= to go backwards. See [[http://www.masteringemacs.org/articles/2011/01/14/effective-editing-movement/][this essay]] for
+   details.
 
    #+BEGIN_SRC elisp
-     (load-library "smart-scan")
+     (use-package smartscan
+       :ensure t
+       :bind ("M-n" . smartscan-symbol-go-forward)
+             ("M-p" . smartscan-symbol-go-backward))
    #+END_SRC
 
 ** Strip Whitespace on Save
@@ -1409,16 +1407,6 @@
 
 ** Better Searching and Visual Regular Expressions
 
-   Only after you've started an =isearch-forward= do you wish you had
-   regular expressions available, so why not just switch those defaults?
-
-   #+BEGIN_SRC elisp
-     (global-set-key (kbd "C-s") 'isearch-forward-regexp)
-     (global-set-key (kbd "C-r") 'isearch-backward-regexp)
-     (global-set-key (kbd "C-M-s") 'isearch-forward)
-     (global-set-key (kbd "C-M-r") 'isearch-backward)
-   #+END_SRC
-
    The [[https://github.com/benma/visual-regexp.el][Visual Regular Expressions]] project highlights the matches
    while you try to remember the differences between Perl's regular
    expressions and Emacs'...
@@ -1427,9 +1415,10 @@
    matches, type =C-c a= before you hit 'Return' to accept it.
 
    #+BEGIN_SRC elisp
-     (require 'visual-regexp)
-     (define-key global-map (kbd "C-c r") 'vr/replace)
-     (define-key global-map (kbd "C-c q") 'vr/query-replace)
+     (use-package visual-regexp
+       :ensure t
+       :bind ("C-c r" . vr/replace)
+             ("C-c q" . vr/query-replace)
 
      ;; if you use multiple-cursors, this is for you:
      (define-key global-map (kbd "C-c m") 'vr/mc-mark)
@@ -1440,9 +1429,10 @@
    [[https://github.com/flycheck/flycheck][Flycheck]] seems to be quite superior to good ol' Flymake.
 
    #+BEGIN_SRC elisp
-     (when (require 'flycheck nil t)
-       (flymake-mode-off)
-       (add-hook 'after-init-hook #'global-flycheck-mode))
+     (use-package flycheck
+       :ensure t
+       :init
+       (add-hook 'after-init-hook 'global-flycheck-mode))
    #+END_SRC
 
    The most interesting aspect is that it doesn't support Clojure.
