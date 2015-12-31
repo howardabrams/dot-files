@@ -203,6 +203,7 @@ other systems with a graphical front-end.
   #+BEGIN_SRC elisp
     (use-package undo-tree
       :ensure t
+      :diminish undo-tree-mode
       :init
       (global-undo-tree-mode 1)
       :config
