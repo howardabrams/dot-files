@@ -12,9 +12,8 @@ The basic web features of Emacs are often good enough, but
                          web-mode
                          mustache-mode
                          handlebars-mode
-                         htmlize ))    ;; I use this more for org-mode
+                       ))    ;; I use this more for org-mode
   #+END_SRC
-
 
 * Surround with Tag
 
@@ -41,7 +40,7 @@ The basic web features of Emacs are often good enough, but
   #+BEGIN_SRC elisp
     (define-key html-mode-map (kbd "C-c C-w") 'surround-html)
   #+END_SRC
-l
+
 * Emmet Mode
 
   [[https://github.com/smihica/emmet-mode][Emmet-Mode]] is pretty sweet, but need to hook it up to both

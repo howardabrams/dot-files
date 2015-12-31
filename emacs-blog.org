@@ -27,20 +27,26 @@ coupled with some magic available to JavaScript.
 
 * Prerequisites
 
-  Need the following extra packages:
+  Need the extra =contrib= package:
 
   #+BEGIN_SRC elisp
-    (packages-install '( org-plus-contrib
-                         htmlize ))
+    (use-package org-plus-contrib
+      :ensure t)
   #+END_SRC
 
   And then require them:
 
   #+BEGIN_SRC elisp
-  (require 'ox-html)
-  (require 'ox-publish)
-  (require 'ox-rss)
-  (require 'htmlize)     ;; Gotta package-install this for code highlights
+    (require 'ox-html)
+    (require 'ox-publish)
+    (require 'ox-rss)
+  #+END_SRC
+
+  Need htmlize for the code highlighting in the exports:
+
+  #+BEGIN_SRC elisp
+    (use-package htmlize
+       :ensure t)
   #+END_SRC
 
 * Blog Publishing Settings

@@ -162,7 +162,9 @@ email messages that arrive on my GMail account.
   Require this =[[http://orgmode.org/worg/org-contrib/org-mime.html][org-mime]]= system (that is part of =org-plus-contrib=):
 
   #+BEGIN_SRC elisp
-    (require 'org-mime nil t)
+    (use-package org-plus-contrib
+      :ensure t
+      :init   (require 'org-mime))
   #+END_SRC
 
   This gives us a new function, =org-mime-org-buffer-htmlize= which
@@ -173,7 +175,8 @@ email messages that arrive on my GMail account.
   this the [[http://emacswiki.org/emacs/Htmlize][htmlize project]]:
 
   #+BEGIN_SRC elisp
-    (require 'htmlize nil t)
+    (use-package htmlize
+       :ensure t)
   #+END_SRC
 
   We just need to touch up a bit of the CSS that is sent:
