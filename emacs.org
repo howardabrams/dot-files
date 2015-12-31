@@ -148,26 +148,6 @@
            (delete-other-windows)))))
    #+END_SRC
 
-** Installing Extra Packages
-
-   This means that at any point in my configuration file, I can
-   specify a list of packages to make sure they are installed.
-
-   #+BEGIN_SRC elisp
-     (packages-install '(
-                      epl
-                      esh-buf-stack
-                      flycheck
-                      flycheck-color-mode-line
-                      graphviz-dot-mode
-                      htmlize
-                      thesaurus
-                      visual-regexp
-                      ))
-   #+END_SRC
-
-   Why yes, this list is getting smaller.
-
 ** Use-Package
 
    Using [[https://github.com/jwiegley/use-package][use-package]] to automatically install certain packages, as
@@ -261,6 +241,30 @@
 
    #+BEGIN_SRC elisp
      (require 'init-mode-line)
+   #+END_SRC
+
+** Whitespace Mode
+
+   You don't want this on all the time, but nice to turn it on every
+   now and then:
+
+   #+BEGIN_SRC elisp
+     (use-package whitespace
+       :bind (("C-c T w" . whitespace-mode))
+       :config (setq whitespace-line-column nil)
+       :diminish whitespace-mode)
+   #+END_SRC
+
+** Fill Mode
+
+   Automatically wrapping when you get to the end of a line (or the
+   fill-region):
+
+   #+BEGIN_SRC elisp
+     (use-package fill
+       :bind ("C-c T f" . auto-fill-mode)
+       :init (add-hook 'org-mode-hook 'turn-on-auto-fill)
+       :diminish auto-fill-mode)
    #+END_SRC
 
 * Key Bindings
@@ -993,7 +997,7 @@
 
 *** Silver Searcher
 
-    With [[https://twitter.com/_wilfredh][Wilfred Hughes]] fancy [[https://github.com/Wilfred/ag.el/#agel][ag package]], I’ve switch from [[http://beyondgrep.com][ack]] to the
+    With [[https://twitter.com/_wilfredh][Wilfred Hughes]]' fancy [[https://github.com/Wilfred/ag.el/#agel][ag package]], I’ve switch from [[http://beyondgrep.com][ack]] to the
     [[http://geoff.greer.fm/2011/12/27/the-silver-searcher-better-than-ack/][Silver Searcher]]:
 
     #+BEGIN_SRC sh
@@ -1021,6 +1025,7 @@
     #+BEGIN_SRC elisp
       (use-package ag
         :ensure    t
+        :commands  ag
         :init      (setq ag-highlight-search t)
         :config    (add-to-list 'ag-arguments "--word-regexp"))
     #+END_SRC
@@ -1249,8 +1254,16 @@
              bef aft))))
 
      (global-set-key (kbd "C-x C-i") 'ha/ispell-word-then-abbrev)
-     (setq save-abbrevs t)
-     (setq-default abbrev-mode t)
+   #+END_SRC
+
+   Need to turn on the mode, but not necessarily show it:
+
+   #+BEGIN_SRC elisp
+     (use-package abbrev
+       :bind ("C-c T a" . abbrev-mode)
+       :init (setq save-abbrevs t)
+             (setq-default abbrev-mode t)
+       :diminish abbrev-mode)
    #+END_SRC
 
 ** Spell Checking
@@ -1258,12 +1271,18 @@
    I like spell checking with [[http://www.emacswiki.org/emacs/FlySpell][FlySpell]], which uses the built-in
    spell-check settings of [[https://www.gnu.org/software/ispell/][ispell]].
 
-   Seems like I would want this automatically turned on for all text
-   modes (but not for log files).
+   The [[http://aspell.net][ASpell]] project is better supported than ISpell.
+
+   #+BEGIN_SRC sh :tangle no
+     brew install aspell
+   #+END_SRC
+
+   Start for all text modes (but not for log files):
 
    #+BEGIN_SRC elisp
      (use-package flyspell
        :ensure t
+       :diminish flyspell-mode
        :init
        (add-hook 'prog-mode-hook 'flyspell-prog-mode)
 
@@ -1271,16 +1290,15 @@
          (add-hook hook (lambda () (flyspell-mode 1))))
 
        (dolist (hook '(change-log-mode-hook log-edit-mode-hook org-agenda-mode-hook))
-         (add-hook hook (lambda () (flyspell-mode -1)))))
-   #+END_SRC
+         (add-hook hook (lambda () (flyspell-mode -1))))
 
-   The downside of using single quotes, like ’ is that the ispell
-   dictionary doesn’t recognize it as an apostrophe, so don’t is often
-   looked at as incorrect.
+       :config
+       (setq ispell-program-name "/usr/local/bin/aspell"
+             ispell-dictionary "american" ; better for aspell
+             ispell-extra-args '("--sug-mode=ultra" "--lang=en_US")
+             ispell-list-command "--list")
 
-   #+BEGIN_SRC elisp
-     (eval-after-load "ispell"
-       '(add-to-list 'ispell-local-dictionary-alist '(nil
+       (add-to-list 'ispell-local-dictionary-alist '(nil
                                                      "[[:alpha:]]"
                                                      "[^[:alpha:]]"
                                                      "['‘’]"
@@ -1290,34 +1308,8 @@
                                                      utf-8)))
    #+END_SRC
 
-   Setting this to the /American/ dictionary seems to make it work
-   better with Homebrew.
-
-   #+BEGIN_SRC elisp
-     (setq ispell-dictionary "american")
-   #+END_SRC
-
-   Seems that the [[http://aspell.net][ASpell]] is better supported than ISpell.
-
-   #+BEGIN_SRC sh :tangle no
-     brew install aspell
-   #+END_SRC
-
-   And then configure it with the following:
-
-   #+BEGIN_SRC elisp
-     (setq ispell-program-name "/usr/local/bin/aspell")
-     (setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_US"))
-   #+END_SRC
-
-   ASpell automatically configures a personal dictionary at:
-   ~/.aspell.en.pws, so no need to configure that.
-
-   To get Flyspell to work with Aspell, I need to do this:
-
-   #+BEGIN_SRC elisp
-     (setq ispell-list-command "--list")
-   #+END_SRC
+   ASpell automatically configures a personal dictionary
+   at =~/.aspell.en.pws=, so no need to configure that.
 
 * Miscellaneous Settings
 ** Line Numbers
@@ -1418,10 +1410,11 @@
      (use-package visual-regexp
        :ensure t
        :bind ("C-c r" . vr/replace)
-             ("C-c q" . vr/query-replace)
+       ("C-c q" . vr/query-replace)
 
-     ;; if you use multiple-cursors, this is for you:
-     (define-key global-map (kbd "C-c m") 'vr/mc-mark)
+       ;; if you use multiple-cursors, this is for you:
+       :config (use-package  multiple-cursors
+                 :bind ("C-c m" . vr/mc-mark)))
    #+END_SRC
 
 ** Flycheck
@@ -1434,8 +1427,6 @@
        :init
        (add-hook 'after-init-hook 'global-flycheck-mode))
    #+END_SRC
-
-   The most interesting aspect is that it doesn't support Clojure.
 
 ** Hungry Delete
 
@@ -1672,6 +1663,7 @@
     #+BEGIN_SRC elisp
       (use-package paredit
         :ensure t
+        :diminish paredit-mode
         :init
           (add-hook 'emacs-lisp-mode-hook 'paredit-mode))
     #+END_SRC
@@ -1681,10 +1673,10 @@
     Color each variable, and downplay standard key words:
 
     #+BEGIN_SRC elisp
-    (use-package color-identifiers-mode
-      :ensure t
-      :init
-      (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode))
+      (use-package color-identifiers-mode
+        :ensure t
+        :init
+        (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode))
     #+END_SRC
 
 *** Nicer Paren Matching
@@ -1867,7 +1859,7 @@
 
 ** PlantUML and Graphviz
 
-   Install the Graphviz project using Homebrew:
+   Install the Graphviz project and [[http://plantuml.sourceforge.net/download.html][PlantUML]] using Homebrew:
 
    #+BEGIN_SRC sh :tangle no
      brew install graphviz
@@ -1875,18 +1867,13 @@
      brew install plantuml
    #+END_SRC
 
-   To get [[http://plantuml.sourceforge.net/download.html][PlantUML]] working in Emacs, first, download the Jar and place
-   in the =~/bin= directory. We then set the "mode" working for
-   editing the files:
+   Then set the "mode" working for editing the files:
 
    #+BEGIN_SRC elisp
-     (setq plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
-   #+END_SRC
-
-   Second, to get [[http://zhangweize.wordpress.com/2010/08/25/creating-uml-images-by-using-plantuml-and-org-babel-in-emacs/][PlantUML]] working in org-mode, set a different variable:
-
-   #+BEGIN_SRC elisp
-     (setq org-plantuml-jar-path (concat (getenv "HOME") "/bin/plantuml.jar"))
+     (use-package graphviz-dot-mode
+       :ensure t
+       :init (setq plantuml-jar-path (file-expand-wildcards "/usr/local/Cellar/plantuml/*/plantuml*.jar")
+               org-plantuml-jar-path (file-expand-wildcards "/usr/local/Cellar/plantuml/*/plantuml*.jar")))
    #+END_SRC
 
 * Applications
@@ -1913,15 +1900,18 @@
    not. To begin, make sure you =brew install gnutls=
 
    #+BEGIN_SRC elisp
-     (when (require 'jabber nil t)
+     (use-package jabber
+       :ensure t
+       :commands jabber-connect-all
+       :config
        (setq starttls-use-gnutls t
              starttls-gnutls-program "gnutls-cli"
-             starttls-extra-arguments '("--starttls" "--insecure"))
-       (setq
-        jabber-history-enabled t
-        jabber-use-global-history nil
-        jabber-backlog-number 40
-        jabber-backlog-days 30)
+             starttls-extra-arguments '("--starttls" "--insecure")
+
+             jabber-history-enabled t
+             jabber-use-global-history nil
+             jabber-backlog-number 40
+             jabber-backlog-days 30)
 
        (defun my-jabber-chat-delete-or-bury ()
          (interactive)
@@ -1933,15 +1923,8 @@
                              (cadr e))
                     (bury-buffer))))))
 
-       (define-key jabber-chat-mode-map [escape]
-         'my-jabber-chat-delete-or-bury)
-
-       (when (require 'autosmiley nil t)
-         (add-hook 'jabber-chat-mode-hook 'autosmiley-mode)))
+       (define-key jabber-chat-mode-map [escape] 'my-jabber-chat-delete-or-bury))
    #+END_SRC
-
-   To chat simply press: =C-x C-j C-c= ... hahaha. I doubt I can
-   remember that one. Perhaps.
 
 * Technical Artifacts
 
