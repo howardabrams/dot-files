@@ -4,20 +4,14 @@
 #+DATE:   [2014-02-28 Fri]
 #+TAGS:   emacs
 
-* Needed Packages
-
-#+BEGIN_SRC elisp
-  (packages-install '( powerline ))
-#+END_SRC
-
 * Which Function Mode
 
   While this might make my mode line a bit too cluttered, I like
   having the name of the function (or org-mode header) on the line:
 
   #+BEGIN_SRC elisp
-  (setq which-func-unknown "")
-  (which-function-mode 1)
+    (setq which-func-unknown "")
+    (which-function-mode 1)
   #+END_SRC
 
   Let's "fix" the output of the function based on my mode line:
@@ -46,17 +40,18 @@
   minor modes that don't really help.
 
   #+BEGIN_SRC elisp
-  (require 'powerline)
+    (use-package powerline
+       :ensure t)
   #+END_SRC
 
   Need the colors to be a bit more pronounced ... and grayer.
 
   #+BEGIN_SRC elisp
-  (custom-set-faces
-   '(mode-line-buffer-id ((t (:foreground "#008000" :bold t))))
-   '(which-func ((t (:foreground "#008000"))))
-   '(mode-line ((t (:foreground "#008000" :background "#dddddd" :box nil))))
-   '(mode-line-inactive ((t (:foreground "#008000" :background "#bbbbbb" :box nil)))))
+    (custom-set-faces
+     '(mode-line-buffer-id ((t (:foreground "#008000" :bold t))))
+     '(which-func ((t (:foreground "#008000"))))
+     '(mode-line ((t (:foreground "#008000" :background "#dddddd" :box nil))))
+     '(mode-line-inactive ((t (:foreground "#008000" :background "#bbbbbb" :box nil)))))
   #+END_SRC
 
   Now, let's create our own theme:
@@ -64,16 +59,12 @@
 #+BEGIN_SRC elisp
   (defun powerline-simpler-vc-mode (s)
     (if s
-        (replace-regexp-in-string "Git:" "" s)
+        (replace-regexp-in-string "Git[:-]" "" s)
       s))
 
   (defun powerline-simpler-minor-display (s)
-    (replace-regexp-in-string
-     (concat " "
-             (mapconcat 'identity '("Undo-Tree" "GitGutter" "Projectile" "Hi"
-                                    "Abbrev" "ColorIds" "MRev" "ElDoc" "Paredit"
-                                    "+1" "+2" "FlyC" "Fly" ;; ":1/0"
-                                    "Fill" "FIC") "\\|")) "" s))
+     (replace-regexp-in-string
+      (concat " " (mapconcat 'identity '("Projectile" "Fill") "\\|")) "" s))
 
   (defun powerline-ha-theme ()
     "A powerline theme that removes many minor-modes that don't serve much purpose on the mode-line."
@@ -128,7 +119,8 @@
                             (powerline-process face2)
                             (powerline-raw " :" face2)
 
-                            (powerline-simpler-minor-display (powerline-minor-modes face2 'l))
+                            (powerline-simpler-minor-display
+                                   (powerline-minor-modes face2 'l))
 
                             (powerline-raw " " face2)
                             (funcall separator-right face2 face1))))
