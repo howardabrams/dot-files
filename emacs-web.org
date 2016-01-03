@@ -4,15 +4,16 @@
 #+DATE:   [2014-02-01 Sat][2014-02-01 Sat]
 #+TAGS:   emacs web
 
-The basic web features of Emacs are often good enough, but
+* Modes
+
+  I need these packages installed:
 
   #+BEGIN_SRC elisp
-    (packages-install '( emmet-mode
-                         ;; impatient-mode
-                         web-mode
-                         mustache-mode
-                         handlebars-mode
-                       ))    ;; I use this more for org-mode
+    (use-package web-mode
+       :ensure t)
+
+    (use-package mustache-mode
+       :ensure t)
   #+END_SRC
 
 * Surround with Tag
@@ -47,50 +48,50 @@ The basic web features of Emacs are often good enough, but
   SGML (which includes HTML) and CSS:
 
   #+BEGIN_SRC elisp
+  (use-package emmet-mode
+    :ensure t
+    :commands emmet-mode
+    :init
+    (setq emmet-indentation 2)
+    (setq emmet-move-cursor-between-quotes t)
+    :config
     (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
     (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
   #+END_SRC
 
-  Set emmet to only use 2 spaces:
+* Skewer
+
+  Live coding for HTML/CSS/JavaScript with a [[https://github.com/skeeto/skewer-mode][Skewer server]] running in Emacs.
 
   #+BEGIN_SRC elisp
-    (add-hook 'emmet-mode-hook (lambda ()
-                                 (setq emmet-indentation 2))) ;; indent 2 spaces.
+    (use-package skewer-mode
+      :ensure t
+      :commands skewer-mode run-skewer
+      :config (skewer-setup))
   #+END_SRC
 
-  If you want the cursor to be positioned between first empty quotes
-  after expanding:
+  Useful key-bindings with the =skewer-setup=:
 
-  #+BEGIN_SRC elisp :tangle no
-    (setq emmet-move-cursor-between-quotes t)
-  #+END_SRC
+  - =C-x C-e= :: Evaluate the form before the point and display the result in the
+  - =minibuffer. If given a prefix argument, insert the result into the current
+  - =buffer.
+  - =C-M-x= :: Evaluate the top-level form around the point.
+  - =C-c C-k= :: Load the current buffer.
+  - =C-c C-z= :: Select the REPL buffer.
+
 
 * Impatient Mode
 
-  Changing web buffers with HTML and CSS style-sheets, can
-  automatically update a browser with [[https://github.com/netguy204/imp.el][impatient-mode]]:
+  Similar to Skewer, the [[https://github.com/netguy204/imp.el][impatient-mode]] works well with HTML, but not
+  as well with Javascript, so I'm not tangling it right now:
 
-  #+BEGIN_SRC elisp
-    (require 'impatient-mode nil t)
+  #+BEGIN_SRC elisp :tangle no
+    (use-package impatient-mode
+      :ensure t)
   #+END_SRC
 
   Simply turn on the =impatient-mode= for any buffer that should be
   /served/ and then pop over to http://localhost:8888/imp/
-
-  *Note:* This doesn't work well for automatically updating JavaScript
-  or CoffeeScript.
-
-* HTTP Server
-
-  Having Emacs be an [[https://github.com/skeeto/emacs-web-server][HTTP Server]] means a browser could be updated as
-  it attempts to render HTML, CSS or JavaScript.
-
-  #+BEGIN_SRC elisp
-    (when (require 'simple-httpd nil t)
-      (setq httpd-port 8888)
-      (setq httpd-root "~/technical")
-      (httpd-start))
-  #+END_SRC
 
 * Technical Artifacts
 
