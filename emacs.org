@@ -1737,6 +1737,16 @@
    me to work on either Clojure or Scala, I’ll update my old Java
    initialization section.
 
+   #+BEGIN_SRC elisp
+     (defun my-c-mode-hook ()
+       (setq c-basic-offset 4)
+       (c-set-offset 'substatement-open 0)   ; Curly braces alignment
+       (c-set-offset 'case-label 4))         ; Switch case statements alignment
+
+     (add-hook 'c-mode-hook 'my-c-mode-hook)
+     (add-hook 'java-mode-hook 'my-c-mode-hook)
+   #+END_SRC
+
 ** Ruby
 
    See my [[file:emacs-ruby.org][emacs-ruby.el]] file for details on working with Ruby.
