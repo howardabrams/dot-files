@@ -11,14 +11,7 @@ hide lots of useless text for various web pages.
 * Supporting Packages
 
   Not sure if I want to use the =w3m= or the 24.4-specific =eww=, so
-  now I bounce between them. Which ever one I use, I do like these
-  packages:
-
-  #+BEGIN_SRC elisp
-    (packages-install '( ace-link ))
-  #+END_SRC
-
-  To use w3m, make sure it is installed:
+  now I bounce between them. To use w3m, make sure it is installed:
 
   #+BEGIN_EXAMPLE
   brew install w3m
@@ -30,29 +23,48 @@ hide lots of useless text for various web pages.
   The one I use is the one I've loaded ...
 
   #+BEGIN_SRC elisp
-      (when (fboundp 'eww)
-        (setq browse-url-browser-function 'eww-browse-url)
+    (use-package eww
+      :commands eww eww-follow-link
+      :init
+      (setq browse-url-browser-function 'eww-browse-url)
 
-        (defun eww-search (term)
-          (interactive "sSearch terms: ")
-          (eww-browse-url (concat "http://www.google.com/search?gbv=1&source=hp&hl=en&ie=ISO-8859-1&btnG=Google+Search&q=" term)))
+      (defun eww-search (term)
+        (interactive "sSearch terms: ")
+        (eww-browse-url (concat "http://www.google.com/search?gbv=1&source=hp&hl=en&ie=ISO-8859-1&btnG=Google+Search&q=" term)))
 
-        (define-key personal-global-map (kbd "G") 'eww)
-        (define-key personal-global-map (kbd "b") 'eww-follow-link)
-        (define-key personal-global-map (kbd "S") 'eww-search))
+      (defun eww-wiki (text)
+        "Function used to search wikipedia for the given text."
+        (interactive (list (read-string "Wiki for: ")))
+        (eww (format "https://en.m.wikipedia.org/wiki/Special:Search?search=%s"
+                   (url-encode-url text))))
+
+      (global-set-key (kbd "C-c w w") 'eww)
+      (global-set-key (kbd "C-c w i") 'eww-wiki)
+      (global-set-key (kbd "C-c w l") 'eww-follow-link)
+      (global-set-key (kbd "C-c w g") 'eww-search))
   #+END_SRC
 
 * W3M?
 
   The following set up functions from [[http://www.emacswiki.org/emacs/emacs-w3m][emacs-w3m]]:
 
-  #+BEGIN_SRC elisp
-    (when (fboundp 'w3m)
+  #+BEGIN_SRC elisp :tangle no
+    (use-package w3m
+      :commands w3m-goto-url w3m-search
+      :init
       (setq browse-url-browser-function 'w3m-browse-url)
       (setq w3m-use-cookies t)
-      (define-key personal-global-map (kbd "G") 'w3m-goto-url)
-      (define-key personal-global-map (kbd "b") 'browse-url-at-point)
-      (define-key personal-global-map (kbd "S") 'w3m-search))
+
+      ;; clean up the w3m buffers:
+      (add-hook 'w3m-display-functions 'w3m-hide-stuff)
+      q(add-hook 'w3m-mode 'ace-link-mode)
+
+      (global-set-key (kbd "C-c w w") 'w3m-goto-url)
+      (global-set-key (kbd "C-c w l") 'browse-url-at-point)
+      (global-set-key (kbd "C-c w g") 'w3m-search)
+
+      :config
+      (define-key w3m-mode-map (kbd "&") 'w3m-view-url-with-external-browser))
   #+END_SRC
 
   While browsing, remember the following:
@@ -72,18 +84,8 @@ hide lots of useless text for various web pages.
 
 * External Web Browsing
 
-  Sometimes the URL needs to be in Firefox, et. al:
-
-  #+BEGIN_SRC elisp
-    (add-hook 'w3m-mode
-              (lambda ()
-                (define-key w3m-mode-map (kbd "x")
-                  'w3m-view-url-with-external-browser)))
-  #+END_SRC
-
-  Most of the time, I would like to use built-in Emacs browser, but
-  not always, so maybe I could have a function that switches between
-  the browser options?
+  Need to be able to switch and have a link in an =org-mode= file show
+  up in the default, graphical browser:
 
   #+BEGIN_SRC elisp
     (defun ha-switch-default-browser ()
@@ -109,7 +111,7 @@ hide lots of useless text for various web pages.
                             t))
                         (split-string (format "%s" browse-url-browser-function) "-")))))
 
-    (define-key personal-global-map (kbd "w") 'ha-switch-default-browser)
+    (global-set-key (kbd "C-c w d") 'ha-switch-default-browser)
     #+END_SRC
 
 * Web Page Cleanup
@@ -172,7 +174,7 @@ hide lots of useless text for various web pages.
   Add a hook to the =w3m-display-functions= to match the URL to see
   which function we need to call:
 
-  #+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp :tangle no
     (defun w3m-hide-stuff (url)
       "Call screen cleaning functions for the W3M based on the URL."
       (interactive)
@@ -180,69 +182,17 @@ hide lots of useless text for various web pages.
             ((string-match "clojuredocs.org" url) (w3m-skip-in-clojuredocs))
             ((string-match "stackoverflow.com" url) (w3m-skip-in-stackoverflow))
             ))
-
-    (add-hook 'w3m-display-functions 'w3m-hide-stuff)
   #+END_SRC
 
 * Easier Link Selection
 
-  [[https://github.com/abo-abo/ace-link][Ace-Link]] already supports EWW, so I just need to add it to =w3m=.
-  This turns it on everywhere:
+  [[https://github.com/abo-abo/ace-link][Ace-Link]] already supports EWW.
 
   #+BEGIN_SRC elisp
-  (ace-link-setup-default)
-  #+END_SRC
-
-  And perhaps turn it on for w3m-mode:
-
-  #+BEGIN_SRC elisp
-    (when (and (fboundp 'w3m) (require 'ace-link nil t))
-      (add-hook 'w3m-mode
-                (lambda ()
-                  (define-key w3m-mode-map "o" 'ace-link-eww))))
-  #+END_SRC
-
-* Better Navigation
-
-  Intrigued with [[http://oremacs.com/2014/12/30/ace-link-eww/][navigation extensions for EWW]] where the “j” and “k”
-  keys move /by paragraphs/ if the point is at the beginning of the
-  line. I’m adding that to both browser types:
-
-  #+BEGIN_SRC elisp
-    (defun oww-down (arg)
-      (interactive "p")
-      (if (bolp)
-          (progn
-            (forward-paragraph arg)
-            (forward-line 1))
-        (line-move arg)))
-
-    (defun oww-up (arg)
-      (interactive "p")
-      (if (bolp)
-          (progn
-            (forward-line -1)
-            (backward-paragraph arg)
-            (forward-line 1))
-        (line-move (- arg))))
-
-    (add-hook 'eww-mode-hook
-              (lambda ()
-                (define-key eww-mode-map "j" 'oww-down)
-                (define-key eww-mode-map "k" 'oww-up)))
-
-    (add-hook 'w3m-mode-hook
-              (lambda ()
-                (define-key w3m-mode-map "j" 'oww-down)
-                (define-key w3m-mode-map "k" 'oww-up)))
-  #+END_SRC
-
-* EWW End of Images
-
-  Don´t care, when I´m in Emacs, to bother with images:
-
-  #+BEGIN_SRC elisp
-  (setq shr-blocked-images ".*")
+    (use-package ace-link
+      :ensure t
+      :config
+      (ace-link-setup-default))
   #+END_SRC
 
 * Technical Artifacts
