@@ -27,7 +27,7 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
   =project.clj= file, place the following in =~/.lein/profiles.clj=:
 
   #+BEGIN_SRC clojure :tangle ~/.lein/profiles.clj
-  {:repl {:plugins [[cider/cider-nrepl "0.10.0-SNAPSHOT"]
+  {:repl {:plugins [[cider/cider-nrepl "0.11.0-SNAPSHOT"]
                     [jonase/eastwood "0.2.2"]
                     [refactor-nrepl "2.0.0-SNAPSHOT"]
                     [lein-cljfmt "0.3.0"]]
