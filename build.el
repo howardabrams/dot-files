@@ -26,9 +26,9 @@
 (require 'ob-tangle)   ;; org-mode tangling process
 
 ;; My special functions for doing script are not in a loadable location.q
-(require 'shell-script-funcs
-         (concat (file-name-directory (buffer-file-name))
-                 "elisp/shell-script-funcs.el"))
+(defvar script-funcs-src (concat (file-name-directory (buffer-file-name))
+                                 "elisp/shell-script-funcs.el"))
+(require 'shell-script-funcs script-funcs-src)
 
 ;; Need to get the directory to my 'dot-files' source code. While
 ;; developing, we just evaluate this buffer, so 'buffer-file-name' is
@@ -75,8 +75,8 @@
   (ha/mksymlink  "${dot-files-src}/vimrc" "${HOME}/.vimrc")
 
   ;; All of the .el files I've eithe tangled or linked should be comp'd:
-  (mapc 'byte-compile-file
-        (ha/get-files "${ha/emacs-directory}/elisp/*.el" t))
+  ;; (mapc 'byte-compile-file
+  ;;       (ha/get-files "${ha/emacs-directory}/elisp/*.el" t))
 
   (message "Finished building dot-files- Resetting Emacs.")
   (require 'init-main (ha/get-path "${user-emacs-directory}elisp/init-main.el")))
