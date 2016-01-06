@@ -1518,9 +1518,18 @@
    lists the headings/functions in the current buffer:
 
    #+BEGIN_SRC elisp
-     (use-package imenu-anywhere
-        :ensure t
-        :bind (("C-c i" . imenu-anywhere)))
+     (use-package idomenu
+       :ensure t
+       :bind ("C-c i" . idomenu))
+   #+END_SRC
+
+   And if I'm lazy and willing to use the mouse:
+
+   #+BEGIN_SRC elisp
+     (use-package imenu+
+       :ensure t
+       :init (add-hook 'prog-mode-hook 'imenup-add-defs-to-menubar)
+             (add-hook 'org-mode-hook  'imenup-add-defs-to-menubar))
    #+END_SRC
 
    If I don't know what I'm after, Helm is better:
