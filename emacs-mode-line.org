@@ -64,7 +64,7 @@
 
   (defun powerline-simpler-minor-display (s)
      (replace-regexp-in-string
-      (concat " " (mapconcat 'identity '("Projectile" "Fill") "\\|")) "" s))
+      (concat " " (mapconcat 'identity '("Projectile" "Fill" "BufFace") "\\|")) "" s))
 
   (defun powerline-ha-theme ()
     "A powerline theme that removes many minor-modes that don't serve much purpose on the mode-line."
