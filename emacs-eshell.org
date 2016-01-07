@@ -7,14 +7,6 @@
 My frustration with shells makes me enjoy Emacs Shell, but there are
 some significant differences to address. To this end, I [[http://www.howardism.org/Technical/Emacs/eshell-fun.html][documented most features]].
 
-* Eshell-Specific Packages
-
-  While EShell is built into the Emacs, I want to always install [[*Stack%20the%20Buffer][esh-buf-stack]].
-
-  #+BEGIN_SRC elisp
-    (packages-install '( esh-buf-stack ))
-  #+END_SRC
-
 * Basics
 
 ** Set up the Correct Path
@@ -339,10 +331,12 @@ some significant differences to address. To this end, I [[http://www.howardism.o
   =M-q= functionality with [[https://github.com/tom-tan/esh-buf-stack][esh-buf-stack]]:
 
   #+BEGIN_SRC elisp
-    (when (require 'esh-buf-stack nil t)
+    (use-package esh-buf-stack
+      :ensure t
+      :commands eshell-push-command
+      :config
       (setup-eshell-buf-stack)
-      (add-hook 'eshell-mode-hook
-                (lambda () (local-set-key (kbd "M-q") 'eshell-push-command))))
+      (define-key eshell-mode-map (kbd "M-q") 'eshell-push-command))
   #+END_SRC
 
   If half-way through typing a long command and need something else,
