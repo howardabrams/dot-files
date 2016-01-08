@@ -48,10 +48,10 @@
 
   #+BEGIN_SRC elisp
     (custom-set-faces
-     '(mode-line-buffer-id ((t (:foreground "#008000" :bold t))))
-     '(which-func ((t (:foreground "#008000"))))
-     '(mode-line ((t (:foreground "#008000" :background "#dddddd" :box nil))))
-     '(mode-line-inactive ((t (:foreground "#008000" :background "#bbbbbb" :box nil)))))
+     '(mode-line-buffer-id ((t (:foreground "#000000" :bold t))))
+     '(which-func ((t (:foreground "#77aaff"))))
+     '(mode-line ((t (:foreground "#000000" :background "#dddddd" :box nil))))
+     '(mode-line-inactive ((t (:foreground "#000000" :background "#bbbbbb" :box nil)))))
   #+END_SRC
 
   Now, let's create our own theme:
