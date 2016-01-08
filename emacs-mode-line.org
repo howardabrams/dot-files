@@ -56,15 +56,24 @@
 
   Now, let's create our own theme:
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
   (defun powerline-simpler-vc-mode (s)
     (if s
         (replace-regexp-in-string "Git[:-]" "" s)
       s))
 
+  ;; Some point, we could change the text of the minor modes, but we
+  ;; need to get the text properties and sub them /back in/. To be
+  ;; figured out later... Like:
+  ;;   (let* ((props (text-properties-at 1 s))
+  ;;          (apple (set-text-properties 0 1 props "⌘"))
+  ;;          (fly-c (set-text-properties 0 1 props "✓"))
+  ;;          (news1 (replace-regexp-in-string "񓵸" apple s)))
+  ;;          (news2 (replace-regexp-in-string "FlyC" fly-c news1)))
+
   (defun powerline-simpler-minor-display (s)
-     (replace-regexp-in-string
-      (concat " " (mapconcat 'identity '("Projectile" "Fill" "BufFace") "\\|")) "" s))
+      (replace-regexp-in-string
+       (concat " " (mapconcat 'identity '("񓵸" "Projectile" "Fill" "BufFace") "\\|")) "" s))
 
   (defun powerline-ha-theme ()
     "A powerline theme that removes many minor-modes that don't serve much purpose on the mode-line."
@@ -120,7 +129,7 @@
                             (powerline-raw " :" face2)
 
                             (powerline-simpler-minor-display
-                                   (powerline-minor-modes face2 'l))
+                             (powerline-minor-modes face2 'l))
 
                             (powerline-raw " " face2)
                             (funcall separator-right face2 face1))))
@@ -136,7 +145,7 @@
                         (powerline-render rhs)))))))
 
   (powerline-ha-theme)
-#+END_SRC
+  #+END_SRC
 
 * Technical Artifacts
 

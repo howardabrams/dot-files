@@ -1449,6 +1449,16 @@
 
    Many programming language environments can benefit from this section.
 
+*** ElDoc
+
+    I like ElDoc support (when I can get it), but not needed in the
+    mode line:
+
+    #+BEGIN_SRC elisp
+      (use-package eldoc
+        :diminish eldoc-mode)
+    #+END_SRC
+
 *** Tag Support
 
    All programming languages require some sort of tagging. but after
