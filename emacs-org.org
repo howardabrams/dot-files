@@ -23,17 +23,18 @@ Emacs love affair. Make sure the latest packages are installed:
   including regular text files:
 
 #+BEGIN_SRC elisp
-  (add-to-list 'auto-mode-alist '("\\.txt\\'" . org-mode))
+
 #+END_SRC
 
    Initialization of Org Mode by hooking it into YASnippets, which
    should allow me to easily add templates to my files.
 
    #+BEGIN_SRC elisp
-     (add-hook 'org-mode-hook 'turn-on-auto-fill)
-     (add-hook 'org-mode-hook
-               '(lambda ()
-                  (yas-minor-mode-on)))
+     (use-package org
+       :ensure t        ; But it comes with Emacs now!?
+       :init
+       (add-to-list 'auto-mode-alist '("\\.txt\\'" . org-mode))
+       (add-hook 'org-mode-hook 'yas-minor-mode-on))
    #+END_SRC
 
 * Journaling
