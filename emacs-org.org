@@ -320,6 +320,14 @@ Emacs love affair. Make sure the latest packages are installed:
     (global-set-key (kbd "C-c c") 'org-capture)
    #+END_SRC
 
+   General notes are stored in [[file:~/personal/@SUMMARY.org][@SUMMARY.org]], and tasks synced with my
+   Google Task list are stored in [[file:~/personal/tasks.org][tasks.org]]:
+
+   #+BEGIN_SRC elisp
+     (defvar org-default-notes-file "~/personal/@SUMMARY.org")
+     (defvar org-default-tasks-file "~/personal/tasks.org")
+   #+END_SRC
+
    This will bring up a list of /note capturing templates/. I actually
    override this in my [[file:emacs-local.org::*Org%20Configuration][system-specific "local" configuration]] file.
 
@@ -330,10 +338,6 @@ Emacs love affair. Make sure the latest packages are installed:
          (beginning-of-line 1)
          (point))
 
-     ;; General notes go into this file:
-     (setq org-default-notes-file "~/personal/@SUMMARY.org")
-     (setq org-default-tasks-file "~/personal/tasks.org")
-
      (setq org-capture-templates
            '(("n" "Thought or Note"  entry
               (file org-default-notes-file)
@@ -342,7 +346,7 @@ Emacs love affair. Make sure the latest packages are installed:
               (file (get-journal-file-today))
               "* %?\n\n  %i\n\n  From: %a" :empty-lines 1)
              ("t" "Task Entry"        entry
-              (file+function org-default-tasks-file ha/first-header)
+              (file+function org-default-tasks-file ha/load-org-tasks)
               "* %?\n\n  %i\n\n  From: %a" :empty-lines 1)
              ("w" "Website Announcement" entry
               (file+function "~/website/index.org" ha/first-header)
@@ -355,7 +359,6 @@ Emacs love affair. Make sure the latest packages are installed:
        %i
 
        [[%F][Read more...]" :empty-lines 1)))
-
    #+END_SRC
 
    After you have selected the template, you type in your note and hit
@@ -364,18 +367,23 @@ Emacs love affair. Make sure the latest packages are installed:
    Just remember, at some point to hit =C-c C-w= to /refile/ that note
    in the appropriate place.
 
-* Org and Trello
+* Org and Google Tasks
 
-  Using [[https://github.com/org-trello/org-trello][org-trello]] to sync particular org-mode files with [[https://trello.com/b/Kp6XZg2b][trello.com]]
+  Using [[https://bitbucket.org/edgimar/michel-orgmode][org-michel]] for syncing a single Org file with my Google Tasks.
+  The problem is the =--sync= doesn't work. So, whenever I read the
+  file, I pull it down first. On save, I push it:
 
   #+BEGIN_SRC elisp
-    (defun ha/org-trello-sync ()
-      (interactive)
-      (when (require 'org-trello nil t)
-        (org-trello-mode 1)
-        (org-trello/sync-buffer t)))
+    (defun ha/load-org-tasks ()
+       (interactive)
+       (shell-command (format "/usr/local/bin/michel-orgmode --pull --orgfile %s" org-default-tasks-file))
+       (find-file org-default-tasks-file)
+       (ha/first-header)
+       (add-hook 'after-save-hook 'ha/save-org-tasks t t))
 
-    (global-set-key (kbd "S-<f1>") 'ha/org-trello-sync)
+    (defun ha/save-org-tasks ()
+       (save-buffer)
+       (shell-command (format "/usr/local/bin/michel-orgmode --push --orgfile %s" org-default-tasks-file)))
   #+END_SRC
 
 * Export Settings
