@@ -1587,18 +1587,44 @@
      (global-set-key (kbd "M-i") 'imenu-anywhere)
    #+END_SRC
 
+   Note: This prompt needs to go away:
+
+   #+BEGIN_SRC elisp
+     (setq tags-add-tables nil)
+   #+END_SRC
+
 *** Code Block Folding
 
     The [[info:emacs#Hideshow][Hide Show Minor]] mode allows us to /fold/ all functions
-    (hidden), showing only the header lines. Seems that =C-c @= is too
-    obnoxious to use, so I'll put my favorite on the =C-c h= prefix:
+    (hidden), showing only the header lines. We need to turn on the
+    mode, so wrappers are in order:
+
+    #+BEGIN_SRC elisp
+      (defun ha/hs-show-all ()
+        (interactive)
+        (hs-minor-mode 1)
+        (hs-show-all))
+
+      (defun ha/hs-hide-all ()
+        (interactive)
+        (hs-minor-mode 1)
+        (hs-hide-all))
+
+      (defun ha/hs-toggle-hiding ()
+        (interactive)
+        (hs-minor-mode 1)
+        (hs-toggle-hiding))
+    #+END_SRC
+
+    Seems that =C-c @= is too obnoxious to use, so I'll put my
+    favorite on the =C-c h= prefix:
 
     #+BEGIN_SRC elisp
       (use-package hs-minor-mode
         :bind
-        ("C-c h a" . hs-hide-all)
-        ("C-c h s" . hs-show-all)
-        ("C-c h h" . hs-toggle-hiding))
+        ("C-c h a" . ha/hs-hide-all)
+        ("C-c h s" . ha/hs-show-all)
+        ("C-c h h" . ha/hs-toggle-hiding))
     #+END_SRC
 
     See the [[http://www.emacswiki.org/emacs/HideShow][online resources]].
