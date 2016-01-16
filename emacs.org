@@ -1635,6 +1635,7 @@
     #+BEGIN_SRC elisp
       (use-package hs-minor-mode
         :bind
+        ("C-c T h" . hs-minor-mode)
         ("C-c h a" . ha/hs-hide-all)
         ("C-c h s" . ha/hs-show-all)
         ("C-c h h" . ha/hs-toggle-hiding))
