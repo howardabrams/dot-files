@@ -250,7 +250,18 @@
 
    #+BEGIN_SRC elisp
      (use-package whitespace
-       :bind (("C-c T w" . whitespace-mode))
+       :bind ("C-c T w" . whitespace-mode)
+       :init
+       (set-face-attribute 'whitespace-space nil
+                           :foreground "#666666" :background nil)
+       (set-face-attribute 'whitespace-newline nil
+                           :foreground "#666666" :background nil)
+       (set-face-attribute 'whitespace-indentation nil
+                           :foreground "#666666" :background nil)
+       (setq whitespace-display-mappings
+             '((space-mark 32 [183] [46])
+               (newline-mark 10 [9166 10])
+               (tab-mark 9 [9654 9] [92 9])))
        :config (setq whitespace-line-column nil)
        :diminish whitespace-mode)
    #+END_SRC
@@ -389,8 +400,6 @@
     #+BEGIN_SRC elisp
       (define-prefix-command 'personal-global-map)
       (global-set-key (kbd "<f9>") 'personal-global-map)
-
-      (define-key personal-global-map (kbd "b") 'bury-buffer)
     #+END_SRC
 
     Unlike the *F9* bindings, all the *F2* key-bindings happen in a
@@ -1436,12 +1445,16 @@
 
 ** Hungry Delete
 
-   With this [[http://endlessparentheses.com//hungry-delete-mode.html][free feature]], deleting any space, deletes ALL spaces.
+   The Hungry Delete project is a [[http://endlessparentheses.com//hungry-delete-mode.html][free feature]], where deleting any
+   space, deletes ALL spaces.
 
    This is already built into Emacs with the following:
-   - =M-0 M-SPC= :: Removes all spaces
+   - =M-\= :: Removes all spaces
    - =M-SPC= :: Removes extra spaces, leaving just one
-   - =M-- M-1 M-SPC= :: Joins line separated by a space
+   - =M-^= :: Joins current line with previous line (doesn't matter
+        where the point is on the line)
+   - =M-- M-1 M-SPC= :: Joins next line to this one (if point at end
+        of line) separated by a space ... quite the chording, eh?
 
 * Programming Languages
 
