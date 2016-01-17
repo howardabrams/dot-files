@@ -5,89 +5,143 @@
 #+TAGS:   emacs
 
 The [[http://orgmode.org][Org Mode]] feature was a big reason in my recent re-kindling of my
-Emacs love affair. Make sure the latest packages are installed:
-
-#+BEGIN_SRC elisp
-  (packages-install '( org
-                       org-plus-contrib
-                       org-bullets
-                       ox-reveal
-                       org-journal
-                       plantuml-mode
-                     ))
-#+END_SRC
+Emacs love affair.
 
 * Initial Settings
 
-  I really think that org-mode should be my default for most things,
-  including regular text files:
+  Initialization of Org Mode by hooking it into YASnippets, and other settings.
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
+    (use-package org
+      :ensure t        ; But it comes with Emacs now!?
+      :init
+      (setq org-use-speed-commands t
+            org-src-fontify-natively t   ;; Pretty code blocks
+            org-confirm-babel-evaluate nil)
+      (add-to-list 'auto-mode-alist '("\\.txt\\'" . org-mode))
+      (add-to-list 'auto-mode-alist '(".*/[0-9]*$" . org-mode))   ;; Journal entries
+      (add-hook 'org-mode-hook 'yas-minor-mode-on)
+      :bind (("C-c l" . org-store-link)
+             ("C-c a" . org-agenda)
+             ("C-c c" . org-capture)
+             ("C-M-|" . indent-rigidly))
+      :config
+      (define-key org-mode-map (kbd "M-C-n") 'org-end-of-item-list)
+      (define-key org-mode-map (kbd "M-C-p") 'org-beginning-of-item-list)
+      (define-key org-mode-map (kbd "M-C-u") 'outline-up-heading)
+      (define-key org-mode-map (kbd "M-C-w") 'org-table-copy-region)
+      (define-key org-mode-map (kbd "M-C-y") 'org-table-paste-rectangle))
+  #+END_SRC
 
-#+END_SRC
+  *Speed Commands:* If point is at the beginning of a headline or
+  code block in org-mode, single keys do fun things. See
+  =org-speed-command-help= for details (or hit the ? key at a
+  headline).
 
-   Initialization of Org Mode by hooking it into YASnippets, which
-   should allow me to easily add templates to my files.
+  We will use some of the packages from [[http://orgmode.org/worg/org-contrib/][org extras]], especially
+  [[http://orgmode.org/worg/org-contrib/org-drill.html][org-drill]] and [[http://orgmode.org/worg/org-contrib/org-mime.html][org-mime]] for HTML exports:
 
-   #+BEGIN_SRC elisp
-     (use-package org
-       :ensure t        ; But it comes with Emacs now!?
-       :init
-       (add-to-list 'auto-mode-alist '("\\.txt\\'" . org-mode))
-       (add-hook 'org-mode-hook 'yas-minor-mode-on))
-   #+END_SRC
+  #+BEGIN_SRC elisp
+    (use-package org-plus-contrib
+      :ensure t)
+  #+END_SRC
+
+* Local Key Bindings
+
+  A couple of short-cut keys to make it easier to edit text.
+
+  #+BEGIN_SRC elisp
+    (defun org-text-bold () "Wraps the region with asterisks."
+      (interactive)
+      (surround-text "*"))
+    (defun org-text-italics () "Wraps the region with slashes."
+      (interactive)
+      (surround-text "/"))
+    (defun org-text-code () "Wraps the region with equal signs."
+      (interactive)
+      (surround-text "="))
+  #+END_SRC
+
+  Now we can associate some keystrokes to the org-mode:
+
+  #+BEGIN_SRC elisp
+    (add-hook 'org-mode-hook
+          (lambda ()
+            (local-set-key (kbd "A-b") 'org-text-bold)
+            (local-set-key (kbd "s-b") 'org-text-bold)    ;; For Linux
+            (local-set-key (kbd "A-i") 'org-text-italics)
+            (local-set-key (kbd "s-i") 'org-text-italics)
+            (local-set-key (kbd "A-=") 'org-text-code)
+            (local-set-key (kbd "s-=") 'org-text-code)))
+  #+END_SRC
+
+* Color and Display
+
+  Displaying the headers using various bullets are nice for my presentations.
+
+  #+BEGIN_SRC elisp
+    (use-package org-bullets
+       :ensure t
+       :init (add-hook 'org-mode-hook 'org-bullets-mode))
+  #+END_SRC
+
+  Here is my approach for quickly making the initial asterisks for
+  listing items and whatnot, appear as Unicode bullets (without
+  actually affecting the text file or the behavior).
+
+  #+BEGIN_SRC elisp
+     (use-package org-mode
+       :config
+       (font-lock-add-keywords 'org-mode
+        '(("^ +\\([-*]\\) "
+               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•")))))))
+  #+END_SRC
+
+  Before we load =org-mode= proper, we need to set the following
+  syntax high-lighting parameters. These are used to help bring out
+  the source code during literate programming mode.
 
 * Journaling
 
-   Didn't realize that [[http://www.emacswiki.org/emacs/OrgJournal][org-journal]] essentially does what I have been
-   doing by hand. With a little customization, I don't have to change
-   anything else:
+  Didn't realize that [[http://www.emacswiki.org/emacs/OrgJournal][org-journal]] essentially does what I have been
+  doing by hand. With a little customization, I don't have to change
+  anything else:
 
-#+BEGIN_SRC elisp
-  (setq org-journal-dir "~/journal/")
+  #+BEGIN_SRC elisp
+     (use-package org-journal
+        :ensure t
+        :init
+        (setq org-journal-dir "~/journal/")
+        (setq org-journal-date-format "#+TITLE: Journal Entry- %Y-%b-%d (%A)")
+        (setq org-journal-time-format ""))
+  #+END_SRC
 
-  (require 'org-journal nil t)
-#+END_SRC
+  The time format is the heading for each section. I set it to a
+  blank since I really don't care about the time I add a section.
 
-   All my journal entries will be formatted using org-mode:
+  Nice to /automatically/ insert a specific header if the journal entry
+  file is empty using [[https://www.gnu.org/software/emacs/manual/html_node/autotype/Autoinserting.html][auto-insert]].
 
-#+BEGIN_SRC elisp
-  (add-to-list 'auto-mode-alist '(".*/[0-9]*$" . org-mode))
-#+END_SRC
+  A function to easily load today (and yesterday's) journal entry.
 
-   The date format is essentially, the top of the file.
+  #+BEGIN_SRC elisp
+    (defun get-journal-file-today ()
+      "Return filename for today's journal entry."
+      (let ((daily-name (format-time-string "%Y%m%d")))
+        (expand-file-name (concat org-journal-dir daily-name))))
 
-#+BEGIN_SRC elisp
-  (setq org-journal-date-format "#+TITLE: Journal Entry- %Y-%b-%d (%A)")
-#+END_SRC
+    (defun journal-file-today ()
+      "Create and load a journal file based on today's date."
+      (interactive)
+      (find-file (get-journal-file-today)))
 
-   The time format is the heading for each section. I will set it to a
-   blank since I really don't care about the time I add a section.
+    (global-set-key (kbd "C-c f j") 'journal-file-today)
+  #+END_SRC
 
-#+BEGIN_SRC elisp
-  (setq org-journal-time-format "")
-#+END_SRC
+  Since I sometimes (not often) forget to create a journal entry,
+  and need to re-write history.
 
-    A function to easily load today (and yesterday's) journal entry.
-
-#+BEGIN_SRC elisp
-  (defun get-journal-file-today ()
-    "Return filename for today's journal entry."
-    (let ((daily-name (format-time-string "%Y%m%d")))
-      (expand-file-name (concat org-journal-dir daily-name))))
-
-  (defun journal-file-today ()
-    "Create and load a journal file based on today's date."
-    (interactive)
-    (find-file (get-journal-file-today)))
-
-  (global-set-key (kbd "C-c f j") 'journal-file-today)
-#+END_SRC
-
-    Since I sometimes (not often) forget to create a journal entry,
-    and need to re-write history.
-
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
     (defun get-journal-file-yesterday ()
       "Return filename for yesterday's journal entry."
       (let ((daily-name (format-time-string "%Y%m%d" (time-subtract (current-time) (days-to-time 1)))))
@@ -99,10 +153,10 @@ Emacs love affair. Make sure the latest packages are installed:
       (find-file (get-journal-file-yesterday)))
 
     (global-set-key (kbd "C-c f y") 'journal-file-yesterday)
-#+END_SRC
+  #+END_SRC
 
-    Seems like I need to have the inserted template match the file's
-    name, not necessarily today's date:
+  Seems like I need to have the inserted template match the file's
+  name, not necessarily today's date:
 
   #+BEGIN_SRC elisp
     (defun journal-file-insert ()
@@ -116,223 +170,103 @@ Emacs love affair. Make sure the latest packages are installed:
           (setq datim (encode-time 0 0 0 day month year))
           (insert (format-time-string org-journal-date-format datim))
           (insert "\n\n"))))  ; Start with a blank separating line
+
+     (add-to-list 'auto-insert-alist '(".*/[0-9]*$" . journal-file-insert))
   #+END_SRC
 
-    Nice to /automatically/ insert this header if the journal entry
-    file is empty...yeah, we're talking [[https://www.gnu.org/software/emacs/manual/html_node/autotype/Autoinserting.html][auto-insert]]:
+  I really would really like to read what I did last year "at this
+  time", and by that, I mean, 365 days ago, plus or minus a few to get
+  to the same day of the week.
 
   #+BEGIN_SRC elisp
-    (add-to-list 'auto-insert-alist '(".*/[0-9]*$" . journal-file-insert))
-  #+END_SRC
+    (defun journal-last-year-file ()
+      "Returns the string corresponding to the journal entry that
+    happened 'last year' at this same time (meaning on the same day
+    of the week)."
+    (let* ((last-year-seconds (- (float-time) (* 365 24 60 60)))
+           (last-year (seconds-to-time last-year-seconds))
+           (last-year-dow (nth 6 (decode-time last-year)))
+           (this-year-dow (nth 6 (decode-time)))
+           (difference (if (> this-year-dow last-year-dow)
+                           (- this-year-dow last-year-dow)
+                         (- last-year-dow this-year-dow)))
+           (target-date-seconds (+ last-year-seconds (* difference 24 60 60)))
+           (target-date (seconds-to-time target-date-seconds)))
+      (format-time-string "%Y%m%d" target-date)))
 
-    I really would really like to read what I did last year "at this
-    time", and by that, I mean, 365 days ago, plus or minus a few to get
-    to the same day of the week.
+    (defun journal-last-year ()
+      "Loads last year's journal entry, which is not necessary the
+    same day of the month, but will be the same day of the week."
+      (interactive)
+      (let ((journal-file (concat org-journal-dir (journal-last-year-file))))
+        (find-file journal-file)))
 
-#+BEGIN_SRC elisp
-  (defun journal-last-year-file ()
-    "Returns the string corresponding to the journal entry that
-  happened 'last year' at this same time (meaning on the same day
-  of the week)."
-  (let* ((last-year-seconds (- (float-time) (* 365 24 60 60)))
-         (last-year (seconds-to-time last-year-seconds))
-         (last-year-dow (nth 6 (decode-time last-year)))
-         (this-year-dow (nth 6 (decode-time)))
-         (difference (if (> this-year-dow last-year-dow)
-                         (- this-year-dow last-year-dow)
-                       (- last-year-dow this-year-dow)))
-         (target-date-seconds (+ last-year-seconds (* difference 24 60 60)))
-         (target-date (seconds-to-time target-date-seconds)))
-    (format-time-string "%Y%m%d" target-date)))
-
-  (defun journal-last-year ()
-    "Loads last year's journal entry, which is not necessary the
-  same day of the month, but will be the same day of the week."
-    (interactive)
-    (let ((journal-file (concat org-journal-dir (journal-last-year-file))))
-      (find-file journal-file)))
-
-    (global-set-key (kbd "C-c f L") 'journal-last-year)
+      (global-set-key (kbd "C-c f L") 'journal-last-year)
   #+END_SRC
 
 ** Taking Meeting Notes
 
-    I've notice that while I really like taking notes in a meeting, I
-    don't always like the multiple windows I have opened, so I created
-    this function that I can easily call to eliminate distractions
-    during a meeting.
+   I've notice that while I really like taking notes in a meeting, I
+   don't always like the multiple windows I have opened, so I created
+   this function that I can easily call to eliminate distractions
+   during a meeting.
 
-    #+BEGIN_SRC elisp
-      (defun meeting-notes ()
-        "Call this after creating an org-mode heading for where the notes for the meeting
-      should be. After calling this function, call 'meeting-done' to reset the environment."
-        (interactive)
-        (outline-mark-subtree)                              ;; Select org-mode section
-        (narrow-to-region (region-beginning) (region-end))  ;; Only show that region
-        (deactivate-mark)
-        (delete-other-windows)                              ;; Get rid of other windows
-        (text-scale-set 2)                                  ;; Text is now readable by others
-        (fringe-mode 0)
-        (when (require 'olivetti nil t)
-           (olivetti-mode 1)
-           (olivetti-set-width 110)
-           (olivetti-toggle-hide-modeline))
-        (message "When finished taking your notes, run meeting-done."))
-    #+END_SRC
+   #+BEGIN_SRC elisp
+     (defun meeting-notes ()
+       "Call this after creating an org-mode heading for where the notes for the meeting
+     should be. After calling this function, call 'meeting-done' to reset the environment."
+       (interactive)
+       (outline-mark-subtree)                              ;; Select org-mode section
+       (narrow-to-region (region-beginning) (region-end))  ;; Only show that region
+       (deactivate-mark)
+       (delete-other-windows)                              ;; Get rid of other windows
+       (text-scale-set 2)                                  ;; Text is now readable by others
+       (fringe-mode 0)
+       (message "When finished taking your notes, run meeting-done."))
+   #+END_SRC
 
-    Of course, I need an 'undo' feature when the meeting is over...
+   Of course, I need an 'undo' feature when the meeting is over...
 
-    #+BEGIN_SRC elisp
-      (defun meeting-done ()
-        "Attempt to 'undo' the effects of taking meeting notes."
-        (interactive)
-        (widen)                                       ;; Opposite of narrow-to-region
-        (text-scale-set 0)                            ;; Reset the font size increase
-        (fringe-mode 1)
-        (when (require 'olivetti nil t)
-            (olivetti-toggle-hide-modeline)
-            (olivetti-mode 0))
-        (winner-undo))                                ;; Put the windows back in place
-    #+END_SRC
-
-** Org-Mode Colors
-
-  Before we load =org-mode= proper, we need to set the following
-  syntax high-lighting parameters. These are used to help bring out
-  the source code during literate programming mode.
-
-  This information came from [[http://orgmode.org/worg/org-contrib/babel/examples/fontify-src-code-blocks.html][these instructions]], however, they tend
-  to conflict with the /color-theme/, so we'll turn them off for now.
-
-#+BEGIN_SRC elisp
-  (defface org-block-begin-line
-    '((t (:underline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))
-    "Face used for the line delimiting the begin of source blocks.")
-
-  (defface org-block-background
-    '((t (:background "#FFFFEA")))
-    "Face used for the source block background.")
-
-  (defface org-block-end-line
-    '((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))
-    "Face used for the line delimiting the end of source blocks.")
-#+END_SRC
-
-* Library Loading
-
-   The standard package manager (and most recent versions of Emacs)
-   include =org-mode=, however, I want the latest version that has
-   specific features for literate programming.
-
-   Org-mode is installed in the global directory.
-
-#+BEGIN_SRC elisp
-  (require 'org)
-  (require 'ob-tangle)
-#+END_SRC
-
-* Global Key Bindings
-
-   The =org-mode= has some useful keybindings that are helpful no
-   matter what mode you are using currently.
-
-#+BEGIN_SRC elisp
-  (global-set-key (kbd "C-c l") 'org-store-link)
-  (global-set-key (kbd "C-c a") 'org-agenda)
-  (global-set-key (kbd "C-c b") 'org-iswitchb)
-
-  (global-set-key (kbd "C-M-|") 'indent-rigidly)
-#+END_SRC
-
-* Local Key Bindings
-
-  The following keybind ideas came from [[http://eschulte.github.io/emacs24-starter-kit/starter-kit-org.html][Emacs24 Starter Kit]].
-
-#+BEGIN_SRC elisp
-(add-hook 'org-mode-hook
-          (lambda ()
-            (local-set-key "\M-\C-n" 'outline-next-visible-heading)
-            (local-set-key "\M-\C-p" 'outline-previous-visible-heading)
-            (local-set-key "\M-\C-u" 'outline-up-heading)
-            ;; table
-            (local-set-key "\M-\C-w" 'org-table-copy-region)
-            (local-set-key "\M-\C-y" 'org-table-paste-rectangle)
-            (local-set-key "\M-\C-l" 'org-table-sort-lines)
-            ;; display images
-            (local-set-key "\M-I" 'org-toggle-iimage-in-org)))
-#+END_SRC
-
-   A couple of short-cut keys to make it easier to edit text.
-
-#+BEGIN_SRC elisp
-  (defun org-text-bold () "Wraps the region with asterisks."
-    (interactive)
-    (surround-text "*"))
-  (defun org-text-italics () "Wraps the region with slashes."
-    (interactive)
-    (surround-text "/"))
-  (defun org-text-code () "Wraps the region with equal signs."
-    (interactive)
-    (surround-text "="))
-#+END_SRC
-
-   Now we can associate some keystrokes to the org-mode:
-
-#+BEGIN_SRC elisp
-  (add-hook 'org-mode-hook
-        (lambda ()
-          (local-set-key (kbd "A-b") 'org-text-bold)
-          (local-set-key (kbd "s-b") 'org-text-bold)    ;; For Linux
-          (local-set-key (kbd "A-i") 'org-text-italics)
-          (local-set-key (kbd "s-i") 'org-text-italics)
-          (local-set-key (kbd "A-=") 'org-text-code)
-          (local-set-key (kbd "s-=") 'org-text-code)))
-#+END_SRC
-
-* Speed Keys
-
-   If point is at the beginning of a headline or code block in
-   org-mode, single keys do fun things. See =org-speed-command-help=
-   for details (or hit the ? key at a headline).
-
-#+BEGIN_SRC elisp
-  (setq org-use-speed-commands t)
-#+END_SRC
+   #+BEGIN_SRC elisp
+     (defun meeting-done ()
+       "Attempt to 'undo' the effects of taking meeting notes."
+       (interactive)
+       (widen)                                       ;; Opposite of narrow-to-region
+       (text-scale-set 0)                            ;; Reset the font size increase
+       (fringe-mode 1)
+       (winner-undo))                                ;; Put the windows back in place
+   #+END_SRC
 
 * Specify the Org Directories
 
-   I keep all my =org-mode= files in a few directories, and I would
-   like them automatically searched when I generate agendas.
+  I keep all my =org-mode= files in a few directories, and I would
+  like them automatically searched when I generate agendas.
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
 (setq org-agenda-files '("~/Dropbox/org/personal"
                          "~/Dropbox/org/technical"
                          "~/Dropbox/org/project"))
-#+END_SRC
+  #+END_SRC
 
 * Auto Note Capturing
 
-   Let's say you were in the middle of something, but would like to
-   /take a quick note/, but without affecting the file you are
-   working on. This is called a "capture", and is bound to the
-   following key:
+  Let's say you were in the middle of something, but would like to
+  /take a quick note/, but without affecting the file you are
+  working on. This is called a "capture", and is bound to the
+  following key:
 
-   #+BEGIN_SRC elisp
-    (global-set-key (kbd "C-c c") 'org-capture)
-   #+END_SRC
+  General notes are stored in [[file:~/personal/@SUMMARY.org][@SUMMARY.org]], and tasks synced with my
+  Google Task list are stored in [[file:~/personal/tasks.org][tasks.org]]:
 
-   General notes are stored in [[file:~/personal/@SUMMARY.org][@SUMMARY.org]], and tasks synced with my
-   Google Task list are stored in [[file:~/personal/tasks.org][tasks.org]]:
-
-   #+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
      (defvar org-default-notes-file "~/personal/@SUMMARY.org")
      (defvar org-default-tasks-file "~/personal/tasks.org")
-   #+END_SRC
+  #+END_SRC
 
-   This will bring up a list of /note capturing templates/. I actually
-   override this in my [[file:emacs-local.org::*Org%20Configuration][system-specific "local" configuration]] file.
+  This will bring up a list of /note capturing templates/. I actually
+  override this in my [[file:emacs-local.org::*Org%20Configuration][system-specific "local" configuration]] file.
 
-   #+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
      (defun ha/first-header ()
          (goto-char (point-min))
          (search-forward-regexp "^\* ")
@@ -360,17 +294,25 @@ Emacs love affair. Make sure the latest packages are installed:
        %i
 
        [[%F][Read more...]" :empty-lines 1)))
-   #+END_SRC
+  #+END_SRC
 
-   After you have selected the template, you type in your note and hit
-   =C-c C-c= to store it in the file listed above.
+  After you have selected the template, you type in your note and hit
+  =C-c C-c= to store it in the file listed above.
 
-   Just remember, at some point to hit =C-c C-w= to /refile/ that note
-   in the appropriate place.
+  Just remember, at some point to hit =C-c C-w= to /refile/ that note
+  in the appropriate place.
 
 * Org and Google Tasks
 
   Using [[https://bitbucket.org/edgimar/michel-orgmode][org-michel]] for syncing a single Org file with my Google Tasks.
+
+  #+BEGIN_SRC sh
+  pip install google-api-python-client python-gflags python-dateutil httplib2
+  pip install urllib3 apiclient discovery
+  pip install --upgrade oauth2client
+  hg clone https://bitbucket.org/edgimar/michel-orgmode
+  #+END_SRC
+
   The problem is the =--sync= doesn't work. So, whenever I read the
   file, I pull it down first. On save, I push it:
 
@@ -391,19 +333,16 @@ Emacs love affair. Make sure the latest packages are installed:
 
   Seems some change now requires a direct load of HTML:
 
+  To make the =org-mode= export defaults closer to my liking
+  (without having to put specific #+PROPERTY commands), I get rid of
+  the postamble, and then configure the default fonts.
+
   #+BEGIN_SRC elisp
-   (require 'ox-html)
-  #+END_SRC
-
-    To make the =org-mode= export defaults closer to my liking
-    (without having to put specific #+PROPERTY commands), I get rid of
-    the postamble, and then configure the default fonts.
-
-    #+BEGIN_SRC elisp
+    (use-package ox-html
+      :init
       (setq org-html-postamble nil)
       (setq org-export-with-section-numbers nil)
       (setq org-export-with-toc nil)
-
       (setq org-html-head-extra "
          <link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,400italic,700italic&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
          <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro:400,700' rel='stylesheet' type='text/css'>
@@ -414,49 +353,9 @@ Emacs love affair. Make sure the latest packages are installed:
             pre, code {
                font-family: 'Source Code Pro', monospace;
             }
-         </style>")
-    #+END_SRC
-
-* Narrowing and Widening
-
-  After reading [[http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html][this article]], I decided to expand how I narrow/widen
-  buffer sections in org-mode. This is specific to org-mode, as I
-  often like to see the surrounding code using =fancy-narrow= as
-  explained in my [[file:emacs.org::*Expand%20Region][Expand Region]] section.
-
-  #+BEGIN_SRC elisp
-    (defun org-narrow-or-widen-dwim (p)
-      "If the buffer is narrowed, it widens. Otherwise, it narrows intelligently.
-    Intelligently means: region, org-src-block, org-subtree, or defun,
-    whichever applies first.
-    Narrowing to org-src-block actually calls `org-edit-src-code'.
-
-    With prefix P, don't widen, just narrow even if buffer is already
-    narrowed."
-      (interactive "P")
-      (declare (interactive-only))
-      (cond ((and (buffer-narrowed-p) (not p)) (widen))
-            ((region-active-p)
-             (narrow-to-region (region-beginning) (region-end)))
-            ((derived-mode-p 'org-mode)
-             (cond ((ignore-errors (org-edit-src-code))
-                    (delete-other-windows))
-                   ((org-at-block-p)
-                    (org-narrow-to-block))
-                   (t (org-narrow-to-subtree))))
-            (t (narrow-to-defun))))
-
-    (global-set-key (kbd "C-x n o") 'org-narrow-or-widen-dwim)
+         </style>"))
   #+END_SRC
 
-    According to [[http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html][the narrow-widen article]], we can have =C-x C-s= get
-    out of editing org-mode source code blocks:
-
-    #+BEGIN_SRC elisp
-      (eval-after-load 'org-src
-        '(define-key org-src-mode-map
-           "\C-x\C-s" #'org-edit-src-exit))
-    #+END_SRC
 * Presentations
 
   I alternated between the browser-based presentation tool, [[https://github.com/hakimel/reveal.js/][reveal.js]]
@@ -469,7 +368,8 @@ Emacs love affair. Make sure the latest packages are installed:
    HTML output:
 
    #+BEGIN_SRC elisp
-      (when (require 'ox-reveal nil t)
+     (use-package ox-reveal
+        :init
         (setq org-reveal-root (concat "file://" (getenv "HOME") "/Public/js/reveal.js"))
         (setq org-reveal-postamble "Howard Abrams"))
    #+END_SRC
@@ -477,106 +377,28 @@ Emacs love affair. Make sure the latest packages are installed:
 ** Tree Slide
 
    A quick way to display an org-mode file is using [[https://github.com/takaxp/org-tree-slide][org-tree-slide]].
-   The only downside is the default key-binding for moving to the next
-   section is =C->= ... hardly easy to find during a presentation.
 
    * org-tree-slide-move-next-tree (C->)
    * org-tree-slide-move-previous-tree (C-<)
    * org-tree-slide-content (C-x s c)
 
-   Perhaps we can create a function that sets everything at once:
-
    #+BEGIN_SRC elisp
-     (deftheme ha/org-tree-slide-theme "Sub-theme to hide org code blocks")
-
-     (defun ha/present-it ()
-       (interactive)
-       (when (require 'demo-it nil t)
-         (demo-it-presentation (buffer-file-name))
-         (org-tree-slide-simple-profile)
-         (define-key org-mode-map (kbd "<f1>") 'org-tree-slide-move-next-tree)
-         (define-key org-mode-map (kbd "S-<f1>") 'org-tree-slide-move-previous-tree))
-
-        (when (require 'olivetti nil t)
-           (olivetti-mode 1)
-           (olivetti-set-width 110))
-
-        (setq ha/present-it-restoration '(
-           (face-foreground 'org-block-begin-line nil 'default)
-        ))
-
-       (let ((fgc (face-background 'org-block-begin-line nil 'default)))
-         (setq-default line-spacing 12)
-         (custom-theme-set-faces 'ha/org-tree-slide-theme
-                                 `(org-block-begin-line ((t (:foreground ,fgc :height 0.5 :line-height 1 :invisible t))))
-                                 `(org-block-end-line   ((t (:foreground ,fgc :height 0.2 :line-height 1 :invisible t))))))
-       (fringe-mode '(0 . 0)))
+     (use-package org-tree-slide
+        :ensure t
+        :init
+        (setq org-tree-slide-skip-outline-level 4)
+        (org-tree-slide-simple-profile))
    #+END_SRC
 
-   And we need an “undo” for this weird presentation:
+* Literate Programming
 
-   #+BEGIN_SRC elisp
-     (defun ha/present-stop ()
-       (interactive)
-       (demo-it-end)
-       (setq-default line-spacing 2)
-        (when (require 'olivetti nil t)
-           (olivetti-mode nil))
-       (let ((fgc (car ha/present-it-restoration)))
-         (custom-theme-set-faces 'ha/org-tree-slide-theme
-                                 `(org-block-begin-line ((t (:foreground ,fgc :height 1.0 :line-height 1.0 :invisible nil))))
-                                 `(org-block-end-line   ((t (:foreground ,fgc :height 1.0 :line-height 1.0 :invisible nil))))))
-       (olivetti-mode 0))
-   #+END_SRC
+  The trick to literate programming is in the [[http://orgmode.org/worg/org-contrib/babel/intro.html][Babel project]], which
+  allows org-mode to not only interpret source code blocks, but
+  evaluate them and tangle them out to a file.
 
-   Displaying the headers using various bullets are nice for my presentations.
-
-   #+BEGIN_SRC elisp
-     (when (require 'org-bullets nil t)
-           (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
-   #+END_SRC
-
-   Here is my approach for quickly making the initial asterisks for
-   listing items and whatnot, appear as Unicode bullets (without
-   actually affecting the text file or the behavior).
-
-   #+BEGIN_SRC elisp
-     (font-lock-add-keywords 'org-mode
-        '(("^ +\\([-*]\\) "
-               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-   #+END_SRC
-
-* MobileOrg
-
-   I use [[http://mobileorg.ncogni.to/doc/getting-started/using-dropbox/][Dropbox with MobileOrg]] in order to read my notes on my iPad.
-
-   The "global" location of my Org files on my local system:
-
-#+BEGIN_SRC elisp
-  (setq org-directory "~/Dropbox/org/personal")
-#+END_SRC
-
-   Set the name of the file where new notes will be stored
-
-#+BEGIN_SRC elisp
-  (setq org-mobile-inbox-for-pull "~/Dropbox/org/flagged.org")
-#+END_SRC
-
-   Set to <your Dropbox root directory>/MobileOrg.
-
-#+BEGIN_SRC elisp
-  (setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
-#+END_SRC
-
-   To get this going, we just need to: =M-x org-mobile-push=
-
-* The Tower of Babel
-
-   The trick to literate programming is in the [[http://orgmode.org/worg/org-contrib/babel/intro.html][Babel project]], which
-   allows org-mode to not only interpret source code blocks, but
-   evaluate them and tangle them out to a file.
-
-   #+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
+   (use-package org
+     :config
      (org-babel-do-load-languages
       'org-babel-load-languages
       '((sh         . t)
@@ -589,69 +411,41 @@ Emacs love affair. Make sure the latest packages are installed:
         (ruby       . t)
         (dot        . t)
         (css        . t)
-        (plantuml   . t)))
-   #+END_SRC
+        (plantuml   . t))))
+  #+END_SRC
 
-   Make the code pretty:
+  It seems to automatically recognize the language used in a source
+  block, but if not, call =org-babel-lob-ingest= to add all the
+  languages from the code blocks in a particular file into the list
+  that Babel supports.  Keystroke: =C-c C-v i=.
 
-   #+BEGIN_SRC elisp
-     (setq org-src-fontify-natively t)
-   #+END_SRC
+  According to [[http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html][the narrow-widen article]], we can have =C-x C-s= get
+  out of editing org-mode source code blocks:
 
-   I want CoffeeScript to be supported in org-mode, but I need to do
-   it myself at the moment.
-
-#+BEGIN_SRC elisp
-  (when (locate-library "ob-coffee")
-      (require 'ob-coffee))
-#+END_SRC
-
-   It seems to automatically recognize the language used in a source
-   block, but if not, call =org-babel-lob-ingest= to add all the
-   languages from the code block into the list that Babel supports.
-   Keystroke: =C-c C-v i=.
-
-** Just Evaluate It
-
-    I'm normally fine with having my code automatically evaluated.
-
-#+BEGIN_SRC elisp
-  (setq org-confirm-babel-evaluate nil)
-#+END_SRC
-
-** Font Coloring in Code Blocks
-
-#+BEGIN_SRC elisp
-   ; (setq org-src-fontify-natively t)
-   (setq org-src-tab-acts-natively t)
-
-   (define-key personal-global-map (kbd "S-f") 'org-src-fontify-buffer)
-   (define-key personal-global-map (kbd "f") 'org-src-fontify-block)
-#+END_SRC
-
-    Normally, fontifying the individual code blocks makes it
-    impossible to work with, so instead of turning it on at the global
-    level for all blocks, I created a couple of keystrokes to
-    selectively colorize one block at a time.
+  #+BEGIN_SRC elisp
+      (eval-after-load 'org-src
+        '(define-key org-src-mode-map
+           (kbd "C-x C-s") #'org-edit-src-exit))
+  #+END_SRC
 
 * Technical Artifacts
 
   Need to provide the =init-org-mode= so that I can require this
   package.
 
-#+BEGIN_SRC elisp
-  (provide 'init-org-mode)
-#+END_SRC
+  #+BEGIN_SRC elisp
+    (provide 'init-org-mode)
+  #+END_SRC
 
   Before you can build this on a new system, make sure that you put
   the cursor over any of these properties, and hit: =C-c C-c=
 
-#+DESCRIPTION: A literate programming version of my Emacs Initialization of Org-Mode
-#+PROPERTY:    results silent
-#+PROPERTY:    header-args:sh  :tangle no
-#+PROPERTY:    tangle ~/.emacs.d/elisp/init-org-mode.el
-#+PROPERTY:    eval no-export
-#+PROPERTY:    comments org
-#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
-#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
-#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+  #+DESCRIPTION: A literate programming version of my Emacs Initialization of Org-Mode
+  #+PROPERTY:    results silent
+  #+PROPERTY:    header-args:sh  :tangle no
+  #+PROPERTY:    tangle ~/.emacs.d/elisp/init-org-mode.el
+  #+PROPERTY:    eval no-export
+  #+PROPERTY:    comments org
+  #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+  #+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+  #+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
