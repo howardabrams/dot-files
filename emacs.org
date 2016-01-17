@@ -1920,7 +1920,7 @@
 
 ** PlantUML and Graphviz
 
-   Install the Graphviz project and [[http://plantuml.sourceforge.net/download.html][PlantUML]] using Homebrew:
+   Install the [[http://www.graphviz.org/][Graphviz]] and [[http://plantuml.sourceforge.net/download.html][PlantUML]] projects using Homebrew:
 
    #+BEGIN_SRC sh :tangle no
      brew install graphviz
@@ -1928,13 +1928,21 @@
      brew install plantuml
    #+END_SRC
 
-   Then set the "mode" working for editing the files:
+   Load the [[https://github.com/wildsoul/plantuml-mode][mode for PlantUML]] and reference its jar:
+
+   #+BEGIN_SRC elisp
+     (use-package plantuml-mode
+       :ensure t
+       :init (let ((plantuml-jar (car (file-expand-wildcards "/usr/local/Cellar/plantuml/*/plantuml*.jar"))))
+                 (setq plantuml-jar-path     plantuml-jar
+                       org-plantuml-jar-path plantuml-jar)))
+   #+END_SRC
+
+   And the [[http://ppareit.github.com/graphviz-dot-mode/][mode for Graphviz]]:
 
    #+BEGIN_SRC elisp
      (use-package graphviz-dot-mode
-       :ensure t
-       :init (setq plantuml-jar-path (file-expand-wildcards "/usr/local/Cellar/plantuml/*/plantuml*.jar")
-               org-plantuml-jar-path (file-expand-wildcards "/usr/local/Cellar/plantuml/*/plantuml*.jar")))
+        :ensure t)
    #+END_SRC
 
 * Applications
