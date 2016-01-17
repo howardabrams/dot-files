@@ -1665,6 +1665,17 @@
                   'indent-defun nil 'local))
     #+END_SRC
 
+*** Red Warnings
+
+    Various keywords (in comments) are now flagged in a Red Error font:
+
+    #+BEGIN_SRC elisp
+      (add-hook 'prog-common-hook
+                (lambda ()
+                  (font-lock-add-keywords nil
+                                          '(("\\<\\(FIX\\|FIXME\\|TODO\\|BUG\\|HACK\\):" 1 font-lock-warning-face t)))))
+    #+END_SRC
+
 ** Shell Scripts
 
    Files in my =bin= directory (but /only/ if it doesn't have any
