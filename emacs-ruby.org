@@ -125,12 +125,11 @@ developing Ruby in Emacs.
   #+BEGIN_SRC elisp
     (use-package inf-ruby
       :ensure t
-      :bind ("C-c i" . inf-ruby)
       :init
       (add-hook 'ruby-mode-hook 'inf-ruby-minor-mode))
   #+END_SRC
 
-  To start eval-ing, do: =M-x inf-ruby=  ... or: =C-c i=
+  To start eval-ing, do: =M-x inf-ruby=
 
 * Smart Parens
 
