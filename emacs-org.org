@@ -423,10 +423,29 @@ Emacs love affair.
   out of editing org-mode source code blocks:
 
   #+BEGIN_SRC elisp
-      (eval-after-load 'org-src
-        '(define-key org-src-mode-map
-           (kbd "C-x C-s") #'org-edit-src-exit))
+    (eval-after-load 'org-src
+      '(define-key org-src-mode-map
+         (kbd "C-x C-s") #'org-edit-src-exit))
   #+END_SRC
+
+** Just Evaluate It
+
+   I'm normally fine with having my code automatically evaluated.
+
+   #+BEGIN_SRC elisp
+     (setq org-confirm-babel-evaluate nil)
+   #+END_SRC
+
+** Font Coloring in Code Blocks
+
+   Once upon a time, fontifying individual code blocks made it
+   impossible to edit the block without =org-edit-special=. Now that
+   the syntax rendering is faster, I keep it on.
+
+   #+BEGIN_SRC elisp
+     (setq org-src-fontify-natively t)
+     (setq org-src-tab-acts-natively t)
+   #+END_SRC
 
 * Technical Artifacts
 
