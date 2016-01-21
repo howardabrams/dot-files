@@ -744,9 +744,14 @@
           ("‘" "’"   "q")
           ("“" "”"   "Q")
           ("*" "*"   "b"   org-mode)                 ; bolden
+          ("*" "*"   "*"   org-mode)                 ; bolden
           ("/" "/"   "i"   org-mode)                 ; italics
+          ("/" "/"   "/"   org-mode)                 ; italics
+          ("~" "~"   "c"   org-mode)                 ; code
+          ("~" "~"   "~"   org-mode)                 ; code
+          ("=" "="   "v"   org-mode)                 ; verbatim
+          ("=" "="   "="   org-mode)                 ; verbatim
           ("_" "_"   "u" '(org-mode markdown-mode))  ; underline
-          ("=" "="   "c"   org-mode)                 ; code
           ("**" "**" "b"   markdown-mode)            ; bolden
           ("*" "*"   "i"   markdown-mode)            ; italics
           ("`" "`"   "c" '(markdown-mode ruby-mode)) ; code
@@ -1762,10 +1767,13 @@
 
     #+BEGIN_SRC elisp
       (use-package paren
-        :config
+        :init
         (set-face-background 'show-paren-match (face-background 'default))
         (set-face-foreground 'show-paren-match "#afa")
-        (set-face-attribute 'show-paren-match nil :weight 'extra-bold))
+        (set-face-attribute  'show-paren-match nil :weight 'black)
+        (set-face-background 'show-paren-mismatch (face-background 'default))
+        (set-face-foreground 'show-paren-mismatch "#c66")
+        (set-face-attribute  'show-paren-mismatch nil :weight 'black))
     #+END_SRC
 
     While we are at it, let's dim the parens:
@@ -1773,7 +1781,7 @@
     #+BEGIN_SRC elisp
       (use-package paren-face
         :ensure t
-        :config
+        :init
         (global-paren-face-mode))
     #+END_SRC
 
@@ -1904,7 +1912,7 @@
    #+BEGIN_SRC elisp
      (use-package magit
        :init
-       (use-package magit-blame)
+       (use-package magit-blame          :ensure t)
        (defadvice magit-status (around magit-fullscreen activate)
          (window-configuration-to-register :magit-fullscreen)
          ad-do-it
@@ -1996,7 +2004,10 @@
    #+BEGIN_SRC elisp
      (use-package jabber
        :ensure t
-       :commands jabber-connect-all
+       :commands jabber-connect-all jabber-chat-with
+       :init
+       (define-key personal-global-map (kbd "a") 'jabber-connect-all)
+       (define-key personal-global-map (kbd "j") 'jabber-chat-with)
        :config
        (setq starttls-use-gnutls t
              starttls-gnutls-program "gnutls-cli"
