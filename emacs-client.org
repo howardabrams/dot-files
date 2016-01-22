@@ -57,22 +57,21 @@ other systems with a graphical front-end.
 
   #+BEGIN_SRC elisp
     (defvar ha/fixed-font-family
-      (cond ((x-list-fonts "Hasklig")         '(:font "Hasklig"))
-            ((x-list-fonts "Fira Code")       '(:font "Fira Code"))
-            ((x-list-fonts "Source Code Pro") '(:font "Source Code Pro"))
-            ((x-list-fonts "Anonymous Pro")   '(:font "Anonymous Pro"))
-            ((x-list-fonts "M+ 1mn")          '(:font "M+ 1mn"))
-            ((x-family-fonts "Monospaced")    '(:family "Monospaced")))
-      "My fixed width font based on what is installed.")
+      (cond ((x-list-fonts "Hasklig")         "Hasklig")
+            ((x-list-fonts "Source Code Pro") "Source Code Pro")
+            ((x-list-fonts "Anonymous Pro")   "Anonymous Pro")
+            ((x-list-fonts "M+ 1mn")          "M+ 1mn"))
+      "My fixed width font based on what is installed, `nil' if not defined.")
   #+END_SRC
 
   With the font name situated, I just need to use that to set the
   three magic frame settings:
 
   #+BEGIN_SRC elisp
-    (set-frame-font ha/fixed-font-family)
-    (set-face-attribute 'default nil :font ha/fixed-font-family :height 150)
-    (set-face-font 'default ha/fixed-font-family)
+    (when ha/fixed-font-family
+      (set-frame-font ha/fixed-font-family)
+      (set-face-attribute 'default nil :font ha/fixed-font-family :height 150)
+      (set-face-font 'default ha/fixed-font-family))
   #+END_SRC
 
   Since the headers are based on Adobe’s open source font pair of the
@@ -80,7 +79,7 @@ other systems with a graphical front-end.
   font, [[https://github.com/adobe-fonts/source-code-pro/][Source Code Pro]].
 
   #+BEGIN_SRC  elisp
-    (defvar ha/variable-font-family
+    (defvar ha/variable-font-tuple
       (cond ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
             ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
             ((x-list-fonts "Verdana")         '(:font "Verdana"))
@@ -107,37 +106,37 @@ other systems with a graphical front-end.
   functions that we can use to set them.
 
   #+BEGIN_SRC elisp
-  (defun org-src-color-blocks-light ()
-    "Colors the block headers and footers to make them stand out more for lighter themes"
-    (interactive)
-    (custom-set-faces
-     '(org-block-begin-line
-      ((t (:underline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF"))))
-     '(org-block-background
-       ((t (:background "#FFFFEA"))))
-     '(org-block
-       ((t (:background "#FFFFEA"))))
-     '(org-block-end-line
-       ((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF"))))
+    (defun org-src-color-blocks-light ()
+      "Colors the block headers and footers to make them stand out more for lighter themes"
+      (interactive)
+      (custom-set-faces
+       '(org-block-begin-line
+        ((t (:underline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF"))))
+       '(org-block-background
+         ((t (:background "#FFFFEA"))))
+       '(org-block
+         ((t (:background "#FFFFEA"))))
+       '(org-block-end-line
+         ((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF"))))
 
-     '(mode-line-buffer-id ((t (:foreground "#005000" :bold t))))
-     '(which-func ((t (:foreground "#008000"))))))
+       '(mode-line-buffer-id ((t (:foreground "#005000" :bold t))))
+       '(which-func ((t (:foreground "#008000"))))))
 
-  (defun org-src-color-blocks-dark ()
-    "Colors the block headers and footers to make them stand out more for dark themes"
-    (interactive)
-    (custom-set-faces
-     '(org-block-begin-line
-       ((t (:foreground "#008ED1" :background "#002E41"))))
-     '(org-block-background
-       ((t (:background "#000000"))))
-     '(org-block
-       ((t (:background "#000000"))))
-     '(org-block-end-line
-       ((t (:foreground "#008ED1" :background "#002E41"))))
+    (defun org-src-color-blocks-dark ()
+      "Colors the block headers and footers to make them stand out more for dark themes"
+      (interactive)
+      (custom-set-faces
+       '(org-block-begin-line
+         ((t (:foreground "#008ED1" :background "#002E41"))))
+       '(org-block-background
+         ((t (:background "#000000"))))
+       '(org-block
+         ((t (:background "#000000"))))
+       '(org-block-end-line
+         ((t (:foreground "#008ED1" :background "#002E41"))))
 
-     '(mode-line-buffer-id ((t (:foreground "black" :bold t))))
-     '(which-func ((t (:foreground "green"))))))
+       '(mode-line-buffer-id ((t (:foreground "black" :bold t))))
+       '(which-func ((t (:foreground "green"))))))
   #+END_SRC
 
   No matter, the theme, I like /some/ of the ideas in the [[https://github.com/jonnay/emagicians-starter-kit/blob/master/themes/org-beautify-theme.org][EMagicians Starter Kit]],
@@ -161,28 +160,29 @@ other systems with a graphical front-end.
       (powerline-reset)
       (funcall org-block-style)
 
-      (let* ((base-font-color  (face-foreground 'default nil 'default))
-             (background-color (face-background 'default nil 'default))
-             (primary-color    (face-foreground 'mode-line nil))
-             (secondary-color  (face-background 'secondary-selection nil 'region))
-             (headline        `(:inherit default :weight bold :foreground ,base-font-color)))
+      (let* ((ha/fixed-font-tuple (list :font ha/fixed-font-family))
+             (base-font-color     (face-foreground 'default nil 'default))
+             (background-color    (face-background 'default nil 'default))
+             (primary-color       (face-foreground 'mode-line nil))
+             (secondary-color     (face-background 'secondary-selection nil 'region))
+             (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
         (custom-theme-set-faces 'ha/org-theme
-                                `(org-agenda-structure ((t (:inherit default ,@ha/variable-font-family :height 2.0 :underline nil))))
-                                `(org-verbatim ((t (:inherit 'fixed-pitched ,@ha/fixed-font-family))))
-                                `(org-table ((t (:inherit 'fixed-pitched ,@ha/fixed-font-family))))
-                                `(org-block ((t (:inherit 'fixed-pitched ,@ha/fixed-font-family))))
-                                `(org-block-background ((t (:inherit 'fixed-pitched ,@ha/fixed-font-family))))
-                                `(org-block-begin-line ((t (:inherit 'fixed-pitched ,@ha/fixed-font-family))))
-                                `(org-block-end-line ((t (:inherit 'fixed-pitched ,@ha/fixed-font-family))))
-                                `(org-level-8 ((t (,@headline ,@ha/variable-font-family))))
-                                `(org-level-7 ((t (,@headline ,@ha/variable-font-family))))
-                                `(org-level-6 ((t (,@headline ,@ha/variable-font-family))))
-                                `(org-level-5 ((t (,@headline ,@ha/variable-font-family))))
-                                `(org-level-4 ((t (,@headline ,@ha/variable-font-family :height 1.1))))
-                                `(org-level-3 ((t (,@headline ,@ha/variable-font-family :height 1.25))))
-                                `(org-level-2 ((t (,@headline ,@ha/variable-font-family :height 1.5))))
-                                `(org-level-1 ((t (,@headline ,@ha/variable-font-family :height 1.75))))
-                                `(org-document-title ((t (,@headline ,@ha/variable-font-family :height 1.5 :underline nil)))))))
+                                `(org-agenda-structure ((t (:inherit default ,@ha/variable-font-tuple :height 2.0 :underline nil))))
+                                `(org-verbatim ((t (:inherit 'fixed-pitched ,@ha/fixed-font-tuple :foreground "#aef"))))
+                                `(org-table ((t (:inherit 'fixed-pitched ,@ha/fixed-font-tuple))))
+                                `(org-block ((t (:inherit 'fixed-pitched ,@ha/fixed-font-tuple))))
+                                `(org-block-background ((t (:inherit 'fixed-pitched ,@ha/fixed-font-tuple))))
+                                `(org-block-begin-line ((t (:inherit 'fixed-pitched ,@ha/fixed-font-tuple))))
+                                `(org-block-end-line ((t (:inherit 'fixed-pitched ,@ha/fixed-font-tuple))))
+                                `(org-level-8 ((t (,@headline ,@ha/variable-font-tuple))))
+                                `(org-level-7 ((t (,@headline ,@ha/variable-font-tuple))))
+                                `(org-level-6 ((t (,@headline ,@ha/variable-font-tuple))))
+                                `(org-level-5 ((t (,@headline ,@ha/variable-font-tuple))))
+                                `(org-level-4 ((t (,@headline ,@ha/variable-font-tuple :height 1.1))))
+                                `(org-level-3 ((t (,@headline ,@ha/variable-font-tuple :height 1.25))))
+                                `(org-level-2 ((t (,@headline ,@ha/variable-font-tuple :height 1.5))))
+                                `(org-level-1 ((t (,@headline ,@ha/variable-font-tuple :height 1.75))))
+                                `(org-document-title ((t (,@headline ,@ha/variable-font-tuple :height 1.5 :underline nil)))))))
   #+END_SRC
 
   And the default startup goes to...night...unless I'm at work, and
