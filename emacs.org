@@ -1442,7 +1442,9 @@
      (use-package flycheck
        :ensure t
        :init
-       (add-hook 'after-init-hook 'global-flycheck-mode))
+       (add-hook 'after-init-hook 'global-flycheck-mode)
+       :config
+       (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
    #+END_SRC
 
 ** Hungry Delete
@@ -1908,8 +1910,9 @@
 
    #+BEGIN_SRC elisp
      (use-package magit
+       :ensure t
+       :commands magit-status magit-blame
        :init
-       (use-package magit-blame          :ensure t)
        (defadvice magit-status (around magit-fullscreen activate)
          (window-configuration-to-register :magit-fullscreen)
          ad-do-it
@@ -1961,11 +1964,13 @@
    Load the [[https://github.com/wildsoul/plantuml-mode][mode for PlantUML]] and reference its jar:
 
    #+BEGIN_SRC elisp
-     (use-package plantuml-mode
-       :ensure t
-       :init (let ((plantuml-jar (car (file-expand-wildcards "/usr/local/Cellar/plantuml/*/plantuml*.jar"))))
-                 (setq plantuml-jar-path     plantuml-jar
-                       org-plantuml-jar-path plantuml-jar)))
+     (let ((plantuml-jar (car (file-expand-wildcards "/usr/local/Cellar/plantuml/*/plantuml*.jar"))))
+       (if plantuml-jar
+           (use-package plantuml-mode
+             :ensure t
+             :init
+             (setq plantuml-jar-path     plantuml-jar
+                   org-plantuml-jar-path plantuml-jar))))
    #+END_SRC
 
    And the [[http://ppareit.github.com/graphviz-dot-mode/][mode for Graphviz]]:
