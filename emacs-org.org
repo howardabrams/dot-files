@@ -16,7 +16,9 @@ Emacs love affair.
       :ensure t        ; But it comes with Emacs now!?
       :init
       (setq org-use-speed-commands t
+            org-hide-emphasis-markers t
             org-src-fontify-natively t   ;; Pretty code blocks
+            org-src-tab-acts-natively t
             org-confirm-babel-evaluate nil)
       (add-to-list 'auto-mode-alist '("\\.txt\\'" . org-mode))
       (add-to-list 'auto-mode-alist '(".*/[0-9]*$" . org-mode))   ;; Journal entries
@@ -91,7 +93,7 @@ Emacs love affair.
 
   #+BEGIN_SRC elisp
      (use-package org-mode
-       :config
+       :init
        (font-lock-add-keywords 'org-mode
         '(("^ +\\([-*]\\) "
                (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•")))))))
