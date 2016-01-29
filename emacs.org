@@ -1416,7 +1416,33 @@
      (add-hook 'before-save-hook 'delete-trailing-whitespace)
    #+END_SRC
 
+** Save File Position
+
+   Save the point position for every file, and restore it when that
+   file is reloaded.
+
+   #+BEGIN_SRC elisp
+     (require 'saveplace)
+     (setq-default save-place t)
+     (setq save-place-forget-unreadable-files t)
+     (setq save-place-skip-check-regexp "\\`/\\(?:cdrom\\|floppy\\|mnt\\|/[0-9]\\|\\(?:[^@/:]*@\\)?[^@/:]*[^@/:.]:\\)")
+   #+END_SRC
+
 ** Better Searching and Visual Regular Expressions
+
+   Searching is quite good in Emacs. Let's add a few extra keys:
+
+   #+BEGIN_SRC elisp
+     (bind-keys :map isearch-mode-map
+                ("<left>"  . isearch-repeat-backward)
+                ("<right>" . isearch-repeat-forward)
+                ("<up>"    . isearch-ring-retreat)
+                ("<down>"  . isearch-ring-advance))
+   #+END_SRC
+
+   Easier replacement of my [[http://www.masteringemacs.org/articles/2011/01/14/effective-editing-movement/][Smart Scan]] for searching forward/backward
+   for the current word. This is now bound to =M-s .= (in Emacs 24.4),
+   but I then have to hit =C-s= or =C-r= ... nicer to use the period/comma.
 
    The [[https://github.com/benma/visual-regexp.el][Visual Regular Expressions]] project highlights the matches
    while you try to remember the differences between Perl's regular
