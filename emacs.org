@@ -1123,9 +1123,14 @@
      (use-package recentf
        :init
        (setq recentf-max-menu-items 25)
+       (setq recentf-auto-cleanup 'never)
+       ;; (setq recentf-keep '(file-remote-p file-readable-p))
        (recentf-mode 1)
        :bind ("C-c f f" . recentf-open-files))
    #+END_SRC
+
+   We do not want to stat all the files when Emacs starts up because
+   files read by Tramp will slow down the start time.
 
 ** Backup Settings
 
