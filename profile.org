@@ -144,6 +144,13 @@ a shell-slut, and dabble between Zshell and Fish.
   [[http://virtualenvwrapper.readthedocs.org/en/latest/index.html][virtualenvwrapper]]. See [[file:emacs-python.org::*Virtual%20Environments][Virtual Environments]] in the Python Emacs
   setup for details.
 
+  I like the prompt changing feature that will be removed from some
+  future release. Let's turn it on.
+
+  #+BEGIN_SRC sh
+    export PYENV_VIRTUALENV_DISABLE_PROMPT=1
+  #+END_SRC
+
 * Ruby
 
   Install [[https://rvm.io/][RVM]] via:

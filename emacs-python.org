@@ -5,17 +5,10 @@
 #+TAGS:   emacs python
 
 Stole Python package ideas from [[https://github.com/gabrielelanaro/emacs-for-python][Gabriel Elanaro's git project]].  The
-question is whether I use [[http://rope.sourceforge.net/ropemacs.html][Rope]] or [[https://github.com/tkf/emacs-jedi][Jedi]] for auto-completion.  Rope,
-while claiming more features, seems to crash and lock up my Emacs
-connections, so I'm back to using Jedi...for now. See [[http://www.masteringemacs.org/articles/2013/01/10/jedi-completion-library-python/][this article]].
-
-#+BEGIN_SRC elisp
-  (packages-install '( elpy
-                       nose
-                       jedi
-                       py-autopep8          ;; pylint
-                       virtualenvwrapper))
-#+END_SRC
+question is whether I use [[http://rope.sourceforge.net/ropemacs.html][Rope]] or [[https://github.com/tkf/emacs-jedi][Jedi]] for auto-completion and or
+refactoring.  Rope, while claiming more features, seems to crash and
+lock up my Emacs connections, so I'm back to using Jedi...for now. See
+[[http://www.masteringemacs.org/articles/2013/01/10/jedi-completion-library-python/][this article]].
 
 * Virtual Environments
 
@@ -82,44 +75,27 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
   Now, commands like =pip= should be isolated to that virtual environment
   as well as the needed version.
 
-  The [[http://elpy.readthedocs.org/en/latest/concepts.html#virtual-envs][Elpy Project]] deals with the =virtualenvwrapper=, so call
-  function, =M-x pyvenv-workon=, to activate a virtual environment,
-  however, we will want to check out [[https://github.com/proofit404/pyenv-mode][pyenv-mode]] to see if will help.
+  The [[http://elpy.readthedocs.org/en/latest/concepts.html#virtual-envs][Elpy Project]] deals with the =virtualenvwrapper=, so call function,
+  =M-x pyvenv-workon= to activate a virtual environment
+  (see [[http://elpy.readthedocs.org/en/latest/concepts.html#virtual-envs][these instructions]]).
 
 * Basics
 
   WSGI files are just Python files in disguise, so tell them to use
-  the Python environment:
+  the Python environment.   Careful with the tabs, my friend.
 
   #+BEGIN_SRC elisp
-    (add-to-list 'auto-mode-alist '("\\.wsgi$" . python-mode))
-  #+END_SRC
+    (use-package python
+      :mode ("\\.py\\'" . python-mode)
+            ("\\.wsgi$" . python-mode)
+      :interpreter ("python" . python-mode)
 
-  Careful with the tabs, my friend.
+      :init
+      (setq-default indent-tabs-mode nil)
 
-  #+BEGIN_SRC elisp
-    (setq-default indent-tabs-mode nil)
-    (setq-default tab-width 2)
-
-    (add-hook 'python-mode-hook '(lambda () (setq python-indent 4)))
-  #+END_SRC
-
-  Need to color the defined variables:
-
-  #+BEGIN_SRC elisp
-    (add-hook 'python-mode-hook 'color-identifiers-mode)
-  #+END_SRC
-
-* Prettify
-
-  That =self= business in Python is quite distracting.
-
-  #+BEGIN_SRC elisp
-    (when (fboundp 'global-prettify-symbols-mode)
-      (add-hook 'python-mode-hook
-                (lambda ()
-                  (push '("self" . ?◎) prettify-symbols-alist)
-                  (modify-syntax-entry ?. "."))))
+      :config
+      (setq python-indent 4)
+      (add-hook 'python-mode-hook 'color-identifiers-mode))
   #+END_SRC
 
 * Lint
@@ -140,9 +116,11 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
   Unit test and code coverage tool for Python now comes to Emacs
   with [[http://ivory.idyll.org/articles/nose-intro.html][Python Nose]].
 
-  #+BEGIN_SRC elisp
-    (require 'nose nil t)
+  #+BEGIN_SRC sh
+    pip install nose
   #+END_SRC
+
+  The ELPY project automatically adds support [[http://elpy.readthedocs.org/en/latest/ide.html#testing][for testing]].
 
 * Jedi
 
@@ -154,20 +132,6 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
     pip install jedi
   #+END_SRC
 
-  New keys:
-
-    - =C-Tab= for auto complete.
-    - =C-.= to jump to definition (overrides the =ctags= interface)
-    - =C-c d= to show the function documentation
-
-  #+BEGIN_SRC elisp
-    (when (require 'jedi nil t)
-          (add-hook 'python-mode-hook 'jedi:setup)
-          (add-hook 'python-mode-hook 'jedi:ac-setup)
-          (setq jedi:setup-keys t)
-          (setq jedi:complete-on-dot t))
-  #+END_SRC
-
 * ELPY
 
   According to the [[https://github.com/jorgenschaefer/elpy/wiki][ELPY Web Site]], we first install the python-based
@@ -176,16 +140,50 @@ connections, so I'm back to using Jedi...for now. See [[http://www.masteringemac
   #+BEGIN_SRC sh
     # and importmagic for automatic imports
     pip install importmagic
-
     pip install elpy
   #+END_SRC
 
   Once this has been installed, we can enable it:
 
   #+BEGIN_SRC elisp
-  (when (require 'elpy nil t)
-    (elpy-enable))
+    (use-package elpy
+      :ensure t
+      :commands elpy-enable
+      :init (with-eval-after-load 'python (elpy-enable))
+
+      :config
+      (electric-indent-local-mode -1)
+      (delete 'elpy-module-highlight-indentation elpy-modules)
+      (delete 'elpy-module-flymake elpy-modules)
+
+      (defun ha/elpy-goto-definition ()
+        (interactive)
+        (condition-case err
+          (elpy-goto-definition)
+          ('error (find-tag (symbol-name (symbol-at-point))))))
+
+      :bind (:map elpy-mode-map ([remap elpy-goto-definition] . ha/elpy-goto-definition)))
   #+END_SRC
+
+  Since ELPY is not a simple mode, but a collection of smaller modes
+  stitched together, we have to call ~with-eval-after-load~ (see [[http://emacs.stackexchange.com/questions/10065/how-can-i-defer-loading-elpy-using-use-package][this discussion]])
+
+  See [[http://elpy.readthedocs.org/en/latest/ide.html][the documentation]] for details, but:
+  - =C-c C-f= :: Find Python file
+  - =C-c C-s= :: Grep for a Python symbol
+  - =C-c C-z= :: Switch to the Python Shell
+  - =C-c C-c= :: Send region to the Python interpreter
+
+  Note: The elpy-goto-definition is nice and all if you have a full
+  project with a running interpreter, but I want to use tags as a
+  fallback.  However, since the function throws an error, I can't
+  simply /advice/ the function, like:
+
+  #+BEGIN_SRC elisp :tangle no
+    (advice-add 'elpy-goto-definition :after-until 'find-tag)
+  #+END_SRC
+
+  Instead, I had to create a function wrapper.
 
 * Technical Artifacts
 
