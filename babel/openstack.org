@@ -19,33 +19,40 @@ hit the =C-c C-v i= to add these sections.
   To use it, add the following source code block header:
 
   #+BEGIN_SRC org
-   :post os-table-str(data=*this*) :results output
+    :post os-table(data=*this*) :results output
   #+END_SRC
 
-  To use =os-table-str= make sure that the =:results= are set to
-  =output=.  If you set the =:results= to =value=, then use the
-  =:post= function, =os-table= (it however, doesn't deal well with
-  spaces in an cell).
+  Or better yet, use the following header line:
 
-  This code first splits the string as a series of lines, and then
-  further splits that string on OpenStack vertical bars. It then sends
-  it =os-table= for further processing:
-
-  #+NAME: os-table-str
-  #+BEGIN_SRC elisp :results value table :var data="" :post os-table(data=*this*)
-    (mapcar (lambda (line) (split-string line " *| *"))
-            (split-string data "[\n\r]+" t))
+  #+BEGIN_SRC org
+    ,#+HEADER: :post os-table(data=*this*) :results output
   #+END_SRC
 
-  If we have output data as a list of lists (typical data table
-  structure), we remove any OpenStack inserted table formatting as
-  well as any empty cells. *Note:* This function can be used alone if
-  the data from a org-mode source block is set to =:output value= ...
+  To use =os-table= make sure that the =:results= are set to
+  =output=. Along with =data=, you can set ~header=t~ in order to retain the
+  headers from the =nova= command.
 
   #+NAME: os-table
-  #+BEGIN_SRC elisp :results value table :var data=""
-    (mapcar (lambda (cells) (filter (lambda (cell) (not (string-empty-p cell))) cells))
-            (filter (lambda (line) (not (string-match "^\+--" (car line)))) data))
+  #+BEGIN_SRC elisp :results value table :var data="" :var header="f"
+    (cl-flet* ((non-border-p     (line) (not (string-match "^ *[\+-]+-" line)))
+               (separate-row     (line) (split-string line " *| *"))
+
+               (trim-cells-front (cells) (if (string-empty-p (car cells))
+                                             (cdr cells)
+                                           cells))
+               (trim-cells-back  (cells) (if (string-empty-p (car (last cells)))
+                                             (butlast cells)
+                                           cells))
+               (trim-row-cells   (cells) (trim-cells-back (trim-cells-front cells))))
+
+      (let* ((rows (split-string data "[\n\r]+" t))
+             (table-data (mapcar #'trim-row-cells
+                                 (mapcar #'separate-row
+                                         (filter #'non-border-p rows)))))
+        (if (and (equalp "f" header)  ;; Set 'header' to any other string...
+                 (equalp "ID" (car (car table-data))))
+            (cdr table-data)
+          table-data)))
   #+END_SRC
 
   To verify this code, we first begin with a typical output from a
@@ -64,7 +71,7 @@ hit the =C-c C-v i= to add these sections.
   Our =org-mode= source block does nothing more than echo this data as
   a string, relying on the =:post= call to do the work:
 
-  #+BEGIN_SRC sh :var input=os-table-example-data  :results output :post os-table-str(data=*this*)
+  #+BEGIN_SRC sh :var input=os-table-example-data  :results output :post os-table(data=*this*, header="t")
     echo "$input"
   #+END_SRC
 
@@ -78,13 +85,135 @@ hit the =C-c C-v i= to add these sections.
   stored in a file in the home directory, =openrc= (as it will attempt
   to source those first).
 
-  #+HEADER: :post os-table-str(data=*this*) :results output
+  #+HEADER: :post os-table(data=*this*) :results output
   #+HEADER: :prologue source ./openrc
-  #+BEGIN_SRC sh :dir /10.96.21.38:
+  #+BEGIN_SRC sh :dir /10.98.1.145:
     nova list
   #+END_SRC
 
   #+RESULTS:
-  | ID                                   | Name                    | Status | Task State | Power State | Networks             |
-  | 737c49e9-515c-4315-be34-682eaed22170 | ha-ci-sdn-chefserver    | ACTIVE | -          | Running     | cedev13=10.96.68.204 |
-  | c9b173c3-d500-41ef-adb2-dc0358e52d69 | ha-ci-sdn-os-controller | ACTIVE | -          | Running     | cedev13=10.96.68.203 |
+  | ef5bab34-963c-4eb4-97a9-c0972910cf36 | ci-sdn-chefserver          | ACTIVE | - | Running | cedev13=10.98.68.204 |
+  | c9502a5a-7c36-47df-a7ec-d2ca6095d72e | howard-compute             | ACTIVE | - | Running | cedev13=10.98.68.199 |
+  | a13bfaa0-627d-40cd-b5f0-7dd2fd15b8f2 | howard-contrail-analytics  | ACTIVE | - | Running | cedev13=10.98.68.200 |
+  | 5d084d00-0010-4ee9-8cea-9bef3bed3062 | howard-contrail-controller | ACTIVE | - | Running | cedev13=10.98.68.201 |
+  | e79d154b-4f9e-4ecb-95c4-59c466a63189 | howard-elk                 | ACTIVE | - | Running | cedev13=10.98.68.203 |
+  | 3bc5a2ec-0f17-4eb6-bddd-ff66855fa95a | howard-os-controller       | ACTIVE | - | Running | cedev13=10.98.68.202 |
+
+* OpenStack List with Network Addresses
+
+  Uses the ~os-table~ block, but attempts to clean up the =nova list=
+  command with better information.
+
+  #+NAME: os-table-net
+  #+BEGIN_SRC elisp :var data="" :post os-table(data=*this*)
+    (replace-regexp-in-string "| *cedev[0-9]+=" "| " data)
+  #+END_SRC
+
+  #+HEADER: :post os-table-net(data=*this*) :results output
+  #+HEADER: :prologue source ./openrc
+  #+BEGIN_SRC sh :dir /10.98.1.145:
+    nova list
+  #+END_SRC
+
+  #+RESULTS:
+  | ef5bab34-963c-4eb4-97a9-c0972910cf36 | ci-sdn-chefserver          | ACTIVE | - | Running | 10.98.68.204 |
+  | c9502a5a-7c36-47df-a7ec-d2ca6095d72e | howard-compute             | ACTIVE | - | Running | 10.98.68.199 |
+  | a13bfaa0-627d-40cd-b5f0-7dd2fd15b8f2 | howard-contrail-analytics  | ACTIVE | - | Running | 10.98.68.200 |
+  | 5d084d00-0010-4ee9-8cea-9bef3bed3062 | howard-contrail-controller | ACTIVE | - | Running | 10.98.68.201 |
+  | e79d154b-4f9e-4ecb-95c4-59c466a63189 | howard-elk                 | ACTIVE | - | Running | 10.98.68.203 |
+  | 3bc5a2ec-0f17-4eb6-bddd-ff66855fa95a | howard-os-controller       | ACTIVE | - | Running | 10.98.68.202 |
+
+* Column Removers
+
+  If I know the text of a column, this will remove it. This isn't the
+  most reliable approach, but this needs to be a /pre-processor/ that
+  operates on a string of the results from OpenStack commands.
+
+  We take the comma-separated list of column values, =colvals=, and then
+  use a ~reduce~ function to repeatedly call the =data= variable and
+  remove more and more column sections:
+
+  #+NAME: os-table-col
+  #+HEADER: :post os-table(data=*this*) :results output
+  #+BEGIN_SRC elisp :var data="" :var colvals="-,Running,ACTIVE"
+    (cl-flet ((resetter (data col)
+                        (replace-regexp-in-string (concat "| *" col " *|") "| " data)))
+      (let ((vals (split-string colvals " *, *")))
+        (cl-reduce #'resetter vals :initial-value data)))
+  #+END_SRC
+
+  Let's test this:
+
+  #+HEADER: :post os-table-col(data=*this*, colvals="-,ACTIVE,Running")
+  #+BEGIN_SRC sh :dir /10.98.1.145: :results output
+    nova list
+  #+END_SRC
+
+  #+RESULTS:
+  | ef5bab34-963c-4eb4-97a9-c0972910cf36 | ci-sdn-chefserver          | 10.98.68.204 |
+  | c9502a5a-7c36-47df-a7ec-d2ca6095d72e | howard-compute             | 10.98.68.199 |
+  | a13bfaa0-627d-40cd-b5f0-7dd2fd15b8f2 | howard-contrail-analytics  | 10.98.68.200 |
+  | 5d084d00-0010-4ee9-8cea-9bef3bed3062 | howard-contrail-controller | 10.98.68.201 |
+  | e79d154b-4f9e-4ecb-95c4-59c466a63189 | howard-elk                 | 10.98.68.203 |
+  | 3bc5a2ec-0f17-4eb6-bddd-ff66855fa95a | howard-os-controller       | 10.98.68.202 |
+
+* Unique Columns
+
+  What if all the data in a column is the same? Why display it?  Let's
+  remove any columns if every value is the same. This is a more robust
+  and easier-to-use solution, however, I don't know how we can use it
+  as a /pre-processor/ as it expects results as formatted by the
+  =os-table=.
+
+  #+NAME: os-table-unique
+  #+BEGIN_SRC elisp :var tab="" :var data=os-table(tab) :results=value
+    ;; (setq data '(("521fd286-cbdc-42a6-8c33-0e771d4c37c1" "ha-ci-other-server" "ACTIVE" "-" "Running" "cedev13=10.96.68.204") ("542b9f7d-f380-4d67-9eee-f974ba958e3a" "ha-ci-sdn-chefserver" "ACTIVE" "-" "Running" "cedev13=10.96.68.196")))
+
+    (defun column-same-value-p (table column-number)
+      "Return `nil' if values in COLUMN-NUMBER are unique. Return
+    non-nil if the values are all the same."
+      (if (cdr table)
+          (let ((column-value (column-unique-p (cdr table) column-number)) )
+            (when (equalp column-value (nth column-number (car table)))
+              column-value))
+        (nth column-number (car table))))
+
+    (defun remove-column (table column-value)
+      "Given a TABLE (a list of lists), removes a column of data
+    where the first column is 0."
+      (cl-flet ((remove-from-list (lst pos) (append
+                                             (butlast lst (- (length lst) pos))
+                                             (nthcdr (1+ pos) lst))))
+        (mapcar (lambda (row) (remove-from-list row column-value)) table)))
+
+    (defun remove-table-same-columns (table &optional column-num)
+      "Return given TABLE but without any columns were all columns contain the same value."
+      (let* ((col (if column-num
+                      column-num
+                    (1- (length (car table)))))
+             (next-col (1- col)))
+        (if (< col 0)   ;; Ran out of columns? Bail out...
+            table
+          (let ((modified-table (if (column-same-value-p table col)
+                                    (remove-column table col)
+                                  table)))
+            (remove-table-same-columns modified-table next-col)))))
+
+    (remove-table-same-columns data)
+  #+END_SRC
+
+  Now, let's test that monstrosity out.
+
+  #+HEADER: :post os-table-unique(tab=*this*)
+  #+BEGIN_SRC sh :dir /10.98.1.145:
+    nova list
+  #+END_SRC
+
+  #+RESULTS:
+  |   | ID                                   | Name                       | Status | Task | State |         | Power | State |                      | Networks |
+  |   | ef5bab34-963c-4eb4-97a9-c0972910cf36 | ci-sdn-chefserver          | ACTIVE | -    |       | Running |       |       | cedev13=10.98.68.204 |          |
+  |   | c9502a5a-7c36-47df-a7ec-d2ca6095d72e | howard-compute             | ACTIVE | -    |       | Running |       |       | cedev13=10.98.68.199 |          |
+  |   | a13bfaa0-627d-40cd-b5f0-7dd2fd15b8f2 | howard-contrail-analytics  | ACTIVE | -    |       | Running |       |       | cedev13=10.98.68.200 |          |
+  |   | 5d084d00-0010-4ee9-8cea-9bef3bed3062 | howard-contrail-controller | ACTIVE | -    |       | Running |       |       | cedev13=10.98.68.201 |          |
+  |   | e79d154b-4f9e-4ecb-95c4-59c466a63189 | howard-elk                 | ACTIVE | -    |       | Running |       |       | cedev13=10.98.68.203 |          |
+  |   | 3bc5a2ec-0f17-4eb6-bddd-ff66855fa95a | howard-os-controller       | ACTIVE | -    |       | Running |       |       | cedev13=10.98.68.202 |          |
