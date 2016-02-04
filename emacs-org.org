@@ -1,7 +1,7 @@
 #+TITLE:  Emacs Org-Mode Settings
 #+AUTHOR: Howard Abrams
 #+EMAIL:  howard.abrams@gmail.com
-#+DATE:   [2014-02-01 Sat][2014-02-01 Sat]
+#+DATE:   [2014-02-01 Sat]
 #+TAGS:   emacs
 
 The [[http://orgmode.org][Org Mode]] feature was a big reason in my recent re-kindling of my
@@ -32,13 +32,25 @@ Emacs love affair.
       (define-key org-mode-map (kbd "M-C-p") 'org-beginning-of-item-list)
       (define-key org-mode-map (kbd "M-C-u") 'outline-up-heading)
       (define-key org-mode-map (kbd "M-C-w") 'org-table-copy-region)
-      (define-key org-mode-map (kbd "M-C-y") 'org-table-paste-rectangle))
+      (define-key org-mode-map (kbd "M-C-y") 'org-table-paste-rectangle)
+
+      (define-key org-mode-map [remap org-return] (lambda () (interactive)
+                                                    (if (org-in-src-block-p)
+                                                        (org-return)
+                                                      (org-return-indent)))))
   #+END_SRC
 
   *Speed Commands:* If point is at the beginning of a headline or
   code block in org-mode, single keys do fun things. See
   =org-speed-command-help= for details (or hit the ? key at a
   headline).
+
+  *Note*: For the most part, I like [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Indent-Convenience.html][electric-indent-mode]], however, it
+  doesn't really play well with =org-mode=, so I just bind the Return
+  key to the ~org-return-indent~ function and get the same effect (but
+  only if I am /not/ in a source code block...which actually insert
+  multiple new lines).  This /return and indent/ feature is fine, since
+  when I save a file, I automatically strip off [[file:emacs.org::*Strip%20Whitespace%20on%20Save][trailing whitespace]].
 
   We will use some of the packages from [[http://orgmode.org/worg/org-contrib/][org extras]], especially
   [[http://orgmode.org/worg/org-contrib/org-drill.html][org-drill]] and [[http://orgmode.org/worg/org-contrib/org-mime.html][org-mime]] for HTML exports:
@@ -269,33 +281,33 @@ Emacs love affair.
   override this in my [[file:emacs-local.org::*Org%20Configuration][system-specific "local" configuration]] file.
 
   #+BEGIN_SRC elisp
-     (defun ha/first-header ()
-         (goto-char (point-min))
-         (search-forward-regexp "^\* ")
-         (beginning-of-line 1)
-         (point))
+    (defun ha/first-header ()
+        (goto-char (point-min))
+        (search-forward-regexp "^\* ")
+        (beginning-of-line 1)
+        (point))
 
-     (setq org-capture-templates
-           '(("n" "Thought or Note"  entry
-              (file org-default-notes-file)
-              "* %?\n\n  %i\n\n  See: %a" :empty-lines 1)
-             ("j" "Journal Note"     entry
-              (file (get-journal-file-today))
-              "* %?\n\n  %i\n\n  From: %a" :empty-lines 1)
-             ("t" "Task Entry"        entry
-              (file+function org-default-tasks-file ha/load-org-tasks)
-              "* %?\n\n  %i\n\n  From: %a" :empty-lines 1)
-             ("w" "Website Announcement" entry
-              (file+function "~/website/index.org" ha/first-header)
-              "* %?
-       :PROPERTIES:
-       :PUBDATE: %t
-       :END:
-       ,#+HTML: <div class=\"date\">%<%e %b %Y></div>
+    (setq org-capture-templates
+          '(("n" "Thought or Note"  entry
+             (file org-default-notes-file)
+             "* %?\n\n  %i\n\n  See: %a" :empty-lines 1)
+            ("j" "Journal Note"     entry
+             (file (get-journal-file-today))
+             "* %?\n\n  %i\n\n  From: %a" :empty-lines 1)
+            ("t" "Task Entry"        entry
+             (file+function org-default-tasks-file ha/load-org-tasks)
+             "* %?\n\n  %i\n\n  From: %a" :empty-lines 1)
+            ("w" "Website Announcement" entry
+             (file+function "~/website/index.org" ha/first-header)
+             "* %?
+      :PROPERTIES:
+      :PUBDATE: %t
+      :END:
+      ,#+HTML: <div class=\"date\">%<%e %b %Y></div>
 
-       %i
+      %i
 
-       [[%F][Read more...]" :empty-lines 1)))
+      [[%F][Read more...]" :empty-lines 1)))
   #+END_SRC
 
   After you have selected the template, you type in your note and hit
