@@ -1,8 +1,37 @@
 #!/bin/sh
+# Creates an obnoxious alert that is good for important, but
+# long-running processes that you want to know if they stop early. To
+# use, simply append to a comand line, as in:
+#
+#     command-one ; beep
+#
+# It also works in a series:
+#
+#     command-one && beep && command-two && beep
+#
+# Of course, in this second case, you'd want to give the 'beep' the
+# name of the command, as in:
+#
+#     command-one && beep "The first" && command-two && beep "The second"
+#
+# This script, along with attempting to speak the exit message, can
+# also use the `terminal-notifier' program (on later Mac versions
+# after the demise of Growl), so you can specify both the command and
+# details about the message with options. Of course, using the script
+# this way is getting into the realm where this script is part of
+# another script.
+#
+# This program is quite Mac specific, in that it expects the sounds
+# files in a particular location as well as the existence of the
+# `aplay' command, etc.
+
 
 # We first need to capture the status of the previous command
 ERROR=$?
+
+# If we don't specify the command name as an argument, we'll just call it:
 COMMAND="The command"
+
 unset MESSAGE
 
 # Default value for the audio depends on the success or failure
@@ -11,11 +40,7 @@ if [ $ERROR -eq 0 ]
 then
     AUDIO=/System/Library/Sounds/Ping.aiff
 else
-    AUDIO=~/.sh-funcs-error.wav
-    if [ ! -f "$AUDIO" ]
-    then
-        AUDIO=/System/Library/Sounds/Glass.aiff
-    fi
+    AUDIO=/System/Library/Sounds/Glass.aiff
 fi
 
 function available {
