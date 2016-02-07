@@ -406,14 +406,15 @@
       (require 'init-f2)
     #+END_SRC
 
-** Easy Highlighting
+** Highlighting and Narrowing
 
    I like the ability to highlight random text.
 
-   #+BEGIN_SRC elisp
-     (global-set-key (kbd "C-c i") 'highlight-regexp)
-     (global-set-key (kbd "C-c u") 'unhighlight-regexp)
-   #+END_SRC
+   - =M-s h .= :: highlight-symbol-at-point
+   - =M-s h l= :: highlight-lines-matching-regexp
+   - =M-s h p= :: highlight-phrase
+   - =M-s h r= :: highlight-regexp
+   - =M-s h u= :: unhighlight-regexp
 
    May get specific highlights automatically for certain files. We
    begin by highlighting lines in *.log files.
@@ -428,10 +429,11 @@
              (highlight-lines-matching-regexp "NOTE:" 'hi-blue-b)))
    #+END_SRC
 
-   The condition in that code allows me to hook it to all files:
+   The condition in this function that checks for the =log= extension,
+   allows me to hook it to the loading of any file:
 
    #+BEGIN_SRC elisp :tangle no
-     (add-hook 'find-file-hook 'highlite-it)
+     (add-hook 'find-file-hook 'ha/highlite-logs)
    #+END_SRC
 
    Turn on specific word groupings for specific occasions. We begin
@@ -491,6 +493,28 @@
                                            (fancy-narrow-to-region (region-beginning) (region-end))))))
 
        :bind ("C-M-+" . ha/highlight-section))
+   #+END_SRC
+
+   This nifty function from [[http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html][Endless Parenthesis]] is a nice replacement
+   for many other narrowing keybindings that I use:
+
+   #+BEGIN_SRC elisp
+     (defun narrow-or-widen-dwim (p)
+       "If the buffer is narrowed, it widens. Otherwise, it narrows intelligently.
+     Intelligently means: region, subtree, or defun, whichever applies
+     first.
+
+     With prefix P, don't widen, just narrow even if buffer is already
+     narrowed."
+       (interactive "P")
+       (declare (interactive-only))
+       (cond ((and (buffer-narrowed-p) (not p)) (widen))
+             ((region-active-p)
+              (narrow-to-region (region-beginning) (region-end)))
+             ((derived-mode-p 'org-mode) (org-narrow-to-subtree))
+             (t (narrow-to-defun))))
+
+     (global-set-key (kbd "C-x n x") 'narrow-or-widen-dwim)
    #+END_SRC
 
 ** Jumping to Windows
