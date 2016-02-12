@@ -600,18 +600,18 @@
    #+BEGIN_SRC elisp
      (use-package winner
        :ensure t
-       :init (winner-mode 1)
-       :config (global-set-key
-                (kbd "C-c p")
-                (defhydra hydra-winner ()
-                  "Winner"
-                  ("p" winner-undo "back")
-                  ("o" winner-redo "forward" :exit t))))
+       :init (winner-mode 1))
    #+END_SRC
 
-   Note: Can't use the =:bind= symbol in a =use-package= with
-   =defhydra=, since that needs to be expanded (as a macro), and
-   evaluated. Calling =global-set-key= seems to work, though.
+   While =winner-mode= is easy to keep the current window configuration
+   /clean/, the [[https://github.com/wasamasa/eyebrowse][eyebrowse]] project seems to have a good approach to
+   managing multiple configurations.
+
+   #+BEGIN_SRC elisp
+     (use-package eyebrowse
+        :ensure t
+        :init   (eyebrowse-mode t))
+   #+END_SRC
 
 ** Better Jumping
 
@@ -967,8 +967,9 @@
        :ensure t
        :init  (setq ido-enable-flex-matching t
                     ido-everywhere t)
-       :config (ido-mode 1)
-               (ido-everywhere 1))
+       :config
+       (ido-mode 1)
+       (ido-everywhere 1))
    #+END_SRC
 
    Add to IDO, the [[https://github.com/lewang/flx][FLX]] package:
@@ -1417,13 +1418,57 @@
              ("s-k" . linum-new-mode))   ;; For Linux
    #+END_SRC
 
+** Breadcrumbs
+
+   I often flubber my attempts at walking back through the movements
+   with those two key sequences. Better to set this variable so that
+   repeated =C-SPC= continue to pop back through the ring:
+
+   #+BEGIN_SRC elisp
+     (setq set-mark-command-repeat-pop t)
+   #+END_SRC
+
+   More than the breadcrumbs left by marking, the [[http://www.emacswiki.org/emacs/GotoChg][goto-chg]] project
+   let's me walk back to where I last edited, which is usually more
+   accurate:
+
+   #+BEGIN_SRC elisp
+     (use-package goto-chg
+       :ensure t
+       :bind (("M-p" . goto-last-change)
+              ("M-n" . goto-last-change-reverse)))
+   #+END_SRC
+
+   Use =C-u 0 M-p= shows a description of the change you made at each point.
+
+   However, if walking back through your /historical trail/ crosses
+   files, then dropping some phat marks is the correct approach.
+
+   Leave a mark every time I re-center the screen. Then, walk back and
+   forth through its history (using the [[https://github.com/pheaver/breadcrumb][breadcrumb]] project):
+
+   #+BEGIN_SRC elisp
+     (use-package breadcrumb
+       :load-path "~/Other/breadcrumb/"
+       :commands bc-set bc-previous bc-next
+       :init (defun ha/mark-and-center ()
+               "Recenter the display and drops a breadcrumb."
+               (interactive)
+               (bc-set)
+               (recenter-top-bottom))
+       :config (unbind-key "A-." mac-key-mode-map)
+       :bind (("C-l" . ha/mark-and-center)
+              ("A-," . bc-previous)
+              ("A-." . bc-next)))
+   #+END_SRC
+
 ** Smart Scan
 
    Use the =M-n= to search the buffer for the word the cursor is
    currently pointing. =M-p= to go backwards. See [[http://www.masteringemacs.org/articles/2011/01/14/effective-editing-movement/][this essay]] for
    details.
 
-   #+BEGIN_SRC elisp
+   #+BEGIN_SRC elisp :tangle no
      (use-package smartscan
        :ensure t
        :bind ("M-n" . smartscan-symbol-go-forward)
