@@ -25,6 +25,34 @@ a shell-slut, and dabble between Zshell and Fish.
   fi
 #+END_SRC
 
+* Fuck
+
+  [[https://github.com/nvbn/thefuck][TheFuck]] project seems fun and useful. Works better on Linux than on
+  the Mac, but it still seems good:
+
+  #+BEGIN_EXAMPLE
+~ $ puthon
+-bash: puthon: command not found
+~ $ fuck
+python [enter/↑/↓/ctrl+c]
+Python 2.7.10 (default, Oct 23 2015, 18:05:06)
+[GCC 4.2.1 Compatible Apple LLVM 7.0.0 (clang-700.0.59.5)] on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+>>> ^D
+  #+END_EXAMPLE
+
+  We just need to install it with Homebrew:
+
+  #+BEGIN_SRC sh :tangle no
+    brew install thefuck
+  #+END_SRC
+
+  And then include it in this =.profile= file:
+
+  #+BEGIN_SRC sh
+    eval "$(thefuck --alias)"
+  #+END_SRC
+
 * Path
 
    We want to add these directories, but only if they exist. This
