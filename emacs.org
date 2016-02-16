@@ -616,14 +616,16 @@
 ** Better Jumping
 
    Mostly using the [[https://github.com/abo-abo/avy][avy]] project's [[help:avy-goto-word-1][avy-goto-word-1]] function, so I bind
-   that to =C-c j=:
+   that to =C-c j=, but the recent update to include a timer feature,
+   seems awful sweet:
 
    #+Begin_SRC elisp
      (use-package avy
        :ensure t
-       :commands avy-goto-word-1 avy-goto-char-1 avy-goto-line
+       :commands avy-goto-word-1 avy-goto-char-1 avy-goto-line avy-goto-char-timer
        :bind
        ("C-c j"   . avy-goto-word-1)
+       ("C-c k k" . avy-goto-char-timer)
        ("C-c k j" . avy-goto-word-1)
        ("C-c k c" . avy-goto-char-1)
        ("C-c k l" . avy-goto-line))
