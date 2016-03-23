@@ -11,7 +11,7 @@
 
   #+BEGIN_SRC elisp
     (setq which-func-unknown "")
-    (which-function-mode 1)
+    (which-function-mode -1)
   #+END_SRC
 
   Let's "fix" the output of the function based on my mode line:
