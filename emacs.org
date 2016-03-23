@@ -1561,6 +1561,22 @@
    - =M-- M-1 M-SPC= :: Joins next line to this one (if point at end
         of line) separated by a space ... quite the chording, eh?
 
+** Table and Column Alignment
+
+   While I shouldn't, I like to line up comma-separated columns (and
+   colon-delimited hashes), and since I can never type the regular
+   expression on the first time, I wrapped it up in a callable
+   function.
+
+   #+BEGIN_SRC elisp
+     (defun align-comma (start end c)
+       "Repeat alignment with a character padded with spaces for
+     comma-separated columns."
+       (interactive "r\nsAlign character: ")
+       (align-regexp start end
+                     (concat c "\\(\\s-*\\)") 1 1 t))
+   #+END_SRC
+
 * Programming Languages
 
 ** General Language Support
