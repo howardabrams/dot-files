@@ -625,10 +625,16 @@
        :commands avy-goto-word-1 avy-goto-char-1 avy-goto-line avy-goto-char-timer
        :bind
        ("C-c j"   . avy-goto-word-1)
+       ("A-j"     . avy-goto-word-1)    ; The Mac Command key
+       ("s-j"     . avy-goto-word-1)    ; The Command key on Linux
        ("C-c k k" . avy-goto-char-timer)
+       ("A-J"     . avy-goto-char-timer)    ; The Mac Command key
+       ("s-J"     . avy-goto-char-timer)    ; The Command key on Linux
        ("C-c k j" . avy-goto-word-1)
        ("C-c k c" . avy-goto-char-1)
-       ("C-c k l" . avy-goto-line))
+       ("C-c k l" . avy-goto-line)
+       ("C-c k p" . avy-pop-mark)
+       ("A-,"     . avy-pop-mark))
    #+END_SRC
 
    Other options (that require more of my memory), are bound
@@ -968,10 +974,13 @@
      (use-package ido
        :ensure t
        :init  (setq ido-enable-flex-matching t
+                    ido-ignore-extensions t
+                    ido-use-virtual-buffers t
                     ido-everywhere t)
        :config
        (ido-mode 1)
-       (ido-everywhere 1))
+       (ido-everywhere 1)
+       (add-to-list 'completion-ignored-extensions ".pyc"))
    #+END_SRC
 
    Add to IDO, the [[https://github.com/lewang/flx][FLX]] package:
