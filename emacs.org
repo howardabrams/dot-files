@@ -914,6 +914,16 @@
         :init (setq find-ls-option '("-print0 | xargs -0 ls -od" . "-od")))
    #+END_SRC
 
+   The [[http://pragmaticemacs.com/emacs/quickly-preview-images-and-other-files-with-peep-dired/][peep project]] allows you to preview files before loading them
+   into a dedicated buffer:
+
+   #+BEGIN_SRC elisp
+     (use-package peep-dired
+       :defer t ; don't access `dired-mode-map' until `peep-dired' is loaded
+       :bind (:map dired-mode-map
+                   ("P" . peep-dired)))
+   #+END_SRC
+
    The [[http://www.masteringemacs.org/articles/2014/04/10/dired-shell-commands-find-xargs-replacement/][dired-x project]] seems useful:
 
    #+BEGIN_SRC elisp
