@@ -17,9 +17,13 @@ Emacs love affair.
       :init
       (setq org-use-speed-commands t
             org-hide-emphasis-markers t
+            org-completion-use-ido t
+            org-outline-path-complete-in-steps nil
             org-src-fontify-natively t   ;; Pretty code blocks
             org-src-tab-acts-natively t
-            org-confirm-babel-evaluate nil)
+            org-confirm-babel-evaluate nil
+            org-todo-keywords '((sequence "TODO(t)" "DOING(g)" "|" "DONE(d)")
+                                (sequence "|" "CANCELED(c)")))
       (add-to-list 'auto-mode-alist '("\\.txt\\'" . org-mode))
       (add-to-list 'auto-mode-alist '(".*/[0-9]*$" . org-mode))   ;; Journal entries
       (add-hook 'org-mode-hook 'yas-minor-mode-on)
@@ -28,6 +32,20 @@ Emacs love affair.
              ("C-c c" . org-capture)
              ("C-M-|" . indent-rigidly))
       :config
+      (font-lock-add-keywords            ; A bit silly but my headers are now
+       'org-mode `(("^\\*+ \\(TODO\\) "  ; shorter, and that is nice canceled
+                    (1 (progn (compose-region (match-beginning 1) (match-end 1) "⚑")
+                              nil)))
+                   ("^\\*+ \\(DOING\\) "
+                    (1 (progn (compose-region (match-beginning 1) (match-end 1) "⚐")
+                              nil)))
+                   ("^\\*+ \\(CANCELED\\) "
+                    (1 (progn (compose-region (match-beginning 1) (match-end 1) "✘")
+                              nil)))
+                   ("^\\*+ \\(DONE\\) "
+                    (1 (progn (compose-region (match-beginning 1) (match-end 1) "✔")
+                              nil)))))
+
       (define-key org-mode-map (kbd "M-C-n") 'org-end-of-item-list)
       (define-key org-mode-map (kbd "M-C-p") 'org-beginning-of-item-list)
       (define-key org-mode-map (kbd "M-C-u") 'outline-up-heading)
@@ -56,8 +74,8 @@ Emacs love affair.
   [[http://orgmode.org/worg/org-contrib/org-drill.html][org-drill]] and [[http://orgmode.org/worg/org-contrib/org-mime.html][org-mime]] for HTML exports:
 
   #+BEGIN_SRC elisp
-    (use-package org-plus-contrib
-      :ensure t)
+    (use-package org-drill
+      :ensure org-plus-contrib)
   #+END_SRC
 
 * Local Key Bindings
