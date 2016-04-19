@@ -27,21 +27,21 @@ hide lots of useless text for various web pages.
       :commands eww eww-follow-link
       :init
       (setq browse-url-browser-function 'eww-browse-url)
-
-      (defun eww-search (term)
-        (interactive "sSearch terms: ")
-        (eww-browse-url (concat "http://www.google.com/search?gbv=1&source=hp&hl=en&ie=ISO-8859-1&btnG=Google+Search&q=" term)))
+      (setq eww-search-prefix "http://www.google.com/search?q=")
 
       (defun eww-wiki (text)
         "Function used to search wikipedia for the given text."
         (interactive (list (read-string "Wiki for: ")))
         (eww (format "https://en.m.wikipedia.org/wiki/Special:Search?search=%s"
-                   (url-encode-url text))))
+                     (url-encode-url text))))
 
-      (global-set-key (kbd "C-c w w") 'eww)
-      (global-set-key (kbd "C-c w i") 'eww-wiki)
-      (global-set-key (kbd "C-c w l") 'eww-follow-link)
-      (global-set-key (kbd "C-c w g") 'eww-search))
+      :config       ;; clean up the rendered display:
+      (add-hook 'eww-after-render-hook 'ha/eww-rerender-pages)
+      (add-hook 'eww-mode 'ace-link-mode)
+
+      :bind (("C-c w w" . eww)
+             ("C-c w i" . eww-wiki)
+             ("C-c w l" . eww-follow-link)))
   #+END_SRC
 
 * W3M?
@@ -57,7 +57,7 @@ hide lots of useless text for various web pages.
 
       ;; clean up the w3m buffers:
       (add-hook 'w3m-display-functions 'w3m-hide-stuff)
-      q(add-hook 'w3m-mode 'ace-link-mode)
+      (add-hook 'w3m-mode 'ace-link-mode)
 
       (global-set-key (kbd "C-c w w") 'w3m-goto-url)
       (global-set-key (kbd "C-c w l") 'browse-url-at-point)
