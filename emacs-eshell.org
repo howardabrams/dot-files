@@ -379,6 +379,18 @@ some significant differences to address. To this end, I [[http://www.howardism.o
     (global-set-key (kbd "C-!") 'eshell-here)
   #+END_SRC
 
+* Shell There
+
+  Would be nice to be able to run an eshell session and use Tramp to
+  connect to the remote host in one fell swoop:
+
+  #+BEGIN_SRC elisp
+    (defun eshell-there (host)
+      (interactive "sHost: ")
+      (let ((default-directory (format "/%s:" host)))
+        (eshell host)))
+  #+END_SRC
+
 * Better Command Line History
 
   On [[http://www.reddit.com/r/emacs/comments/1zkj2d/advanced_usage_of_eshell/][this discussion]] a little gem for using IDO to search back through
