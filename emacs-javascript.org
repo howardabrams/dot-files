@@ -130,6 +130,11 @@
   - =C-c C-b= :: Send content of buffer to REPL buffer
   - =C-c C-o C-s= :: Enable coffee-cos-mode
 
+  #+BEGIN_SRC elisp
+    (use-package ob-coffee
+       :ensure t)
+  #+END_SRC
+
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.
