@@ -880,10 +880,42 @@
        :init (projectile-global-mode 1)
        :commands projectile-ag
        :config
-       (progn
-         (setq projectile-completion-system 'ido)
-         (add-to-list 'projectile-globally-ignored-files ".DS_Store")))
+       (setq projectile-switch-project-action 'projectile-commander
+             projectile-completion-system 'ido
+             projectile-create-missing-test-files t)
+       (add-to-list 'projectile-globally-ignored-files ".DS_Store")
+
+       (def-projectile-commander-method ?d
+         "Open project root in dired."
+         (projectile-dired))
+
+       (def-projectile-commander-method ?s
+         "Open a *shell* buffer for the project."
+         (projectile-run-shell))
+
+       (def-projectile-commander-method ?F
+         "Git fetch."
+         (magit-status)
+         (call-interactively #'magit-fetch-current))
+
+       (def-projectile-commander-method ?j
+         "Jack-in with Cider."
+         (let* ((opts (projectile-current-project-files))
+                (file (ido-completing-read
+                       "Find file: "
+                       opts
+                       nil nil nil nil
+                       (car (cl-member-if
+                             (lambda (f)
+                               (string-match "core\\.clj\\'" f))
+                             opts)))))
+           (find-file (expand-file-name
+                       file (projectile-project-root)))
+           (run-hooks 'projectile-find-file-hook)
+           (cider-jack-in))))
    #+END_SRC
+
+  Much of the previous section came from [[http://endlessparentheses.com/improving-projectile-with-extra-commands.html][this essay]].
 
 ** Dired Options
 
