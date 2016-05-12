@@ -1154,14 +1154,15 @@
 
    All this work allows me to do magic:
 
-   #+BEGIN_SRC elisp :tangle off
+   #+BEGIN_SRC elisp :tangle no
      (let ((my-favs '("os-controller" "contrail-controller"
                       "compute" "nagios" "elk"))
            (command "chef-client"))
-       ; (remote-shell-commands my-favs command t t)
+       (remote-shell-commands my-favs command t t)
        (remote-shell-commands-show my-favs command))
    #+END_SRC
 
+   Check out this [[https://www.youtube.com/watch?v=pSjrwSI4OHk][YouTube video recording]] of this section in action.
 ** Editing Root Files
 
    According to [[http://emacs-fu.blogspot.com/2013/03/editing-with-root-privileges-once-more.html][Emacs Fu]], we can use the wonderful Tramp to edit
