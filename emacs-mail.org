@@ -71,7 +71,7 @@ email messages that arrive on my GMail account.
   #+BEGIN_SRC elisp :tangle no
     (setq mu4e-drafts-folder "/[Gmail].Drafts")
     (setq mu4e-sent-folder   "/[Gmail].Sent Mail")
-    ((setq  )etq mu4e-trash-folder  "/[Gmail].Trash")
+    (setq mu4e-trash-folder  "/[Gmail].Trash")
   #+END_SRC
 
   Don't save message to =Sent Messages=, as =GMail/IMAP= will
