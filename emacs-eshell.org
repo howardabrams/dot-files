@@ -501,19 +501,19 @@ some significant differences to address. To this end, I [[http://www.howardism.o
    #+BEGIN_SRC elisp
      (defun remote-shell-command (hostname command
                                            &optional root bufname directory)
-         "On HOSTNAME, run COMMAND (if the command ends with &, run
+       "On HOSTNAME, run COMMAND (if the command ends with &, run
      asynchronously). With a `C-u' prefix, run the command as ROOT.
      When non-interactive, you can specify BUFNAME for the buffer's
      name, and DIRECTORY where the command should run."
        (interactive
         (list (if #'ido-completing-read
                   (ido-completing-read "Hostname: " (remote-shell-fav-hosts-list))
-                (completing-read "Hostname: " (remote-shell-fav-hosts-list)))))
-
+                (completing-read "Hostname: " (remote-shell-fav-hosts-list)))
+              (read-string "Command: ")))
        (when (equal current-prefix-arg '(4))
          (setq root t))
        (let ((default-directory (remote-shell-tramp-connection hostname root directory)))
-           (shell-command command (remote-shell-buffer-name hostname command bufname))))
+         (shell-command command (remote-shell-buffer-name hostname command bufname))))
    #+END_SRC
 
    With the above helper functions, we can loop over a list of machines,
