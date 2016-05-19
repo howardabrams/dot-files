@@ -36,8 +36,7 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
                          [org.clojure/tools.nrepl "0.2.12"]]}}
   #+END_SRC
 
-  While the version numbers change regularly, this combination is
-  currently working well.
+  *Note:* I think the latest version of Cider removes this need.
 
 ** Required Packages
 
@@ -222,11 +221,25 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
       (add-hook 'cider-repl-mode-hook 'company-mode)
       (add-hook 'cider-test-report-mode 'jcf-soft-wrap)
 
-      (bind-key "C-x C-e" 'cider-eval-last-sexp clojure-mode-map)
-      (bind-key "C-c C-v" 'cider-send-and-evaluate-sexp)
+      :bind (:map cider-mode-map
+             ("C-c C-v C-c" . cider-send-and-evaluate-sexp)
+             ("C-c C-p"     . cider-eval-print-last-sexp))
 
       :config
       (use-package slamhound))
+  #+END_SRC
+
+  What about doing the evaluation but re-inserting the results as a
+  comment at the end of the expression? Let's create a function that
+  will insert a comment character if we aren't already in a comment,
+  and we will then advice the Cider function that prints the results:
+
+  #+BEGIN_SRC elisp
+    (defun ha/cider-append-comment ()
+      (when (null (nth 8 (syntax-ppss)))
+        (insert " ; ")))
+
+    (advice-add 'cider-eval-print-last-sexp :before #'ha/cider-append-comment)
   #+END_SRC
 
   While I typically use [[https://github.com/clojure-emacs/clj-refactor.el][clj-refactor]]'s [[https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-add-missing-libspec][add-missing-libspec]] function,
