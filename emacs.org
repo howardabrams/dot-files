@@ -338,31 +338,63 @@
 ** Displaying Command Sequences
 
    Many command sequences may be logical, but who can remember them
-   all? Use [[https://github.com/kai2nenobu/guide-key][guide-key]] to display the final function name. This isn't
-   as nice as Hydra, but useful for built-in key sequences:
+   all? While I used to use [[https://github.com/kai2nenobu/guide-key][guide-key]] to display the final function
+   name, it isn't as nice as [[https://github.com/justbur/emacs-which-key][which-key]].
 
    #+BEGIN_SRC elisp
-     (use-package guide-key
+     (use-package which-key
        :ensure t
-       :init    (setq guide-key/guide-key-sequence
-                      '("C-x r"     ; rectanges and registers
-                        "C-x 4"     ; window commands
-                        "M-s h"     ; hi-lock highlighting
-                        "C-x w"     ; alternative to M-s ...
-                        "C-c @"     ; hs-hide-show mode
-                        "C-c p"     ; projectile
-                        "<f2>"
-                        "<f9>"
-                        (org-mode "C-c C-x")))
-       :config  (guide-key-mode 1)
-       :diminish guide-key-mode)
-   #+END_SRC
+       :defer 10
+       :config
 
-   May think about using the following commands:
+       ;; Replacements for how KEY is replaced when which-key displays
+       ;;   KEY → FUNCTION
+       ;; Eg: After "C-c", display "right → winner-redo" as "▶ → winner-redo"
+       (setq which-key-key-replacement-alist
+             '(("<\\([[:alnum:]-]+\\)>" . "\\1")
+               ("left"                  . "◀")
+               ("right"                 . "▶")
+               ("up"                    . "▲")
+               ("down"                  . "▼")
+               ("delete"                . "DEL") ; delete key
+               ("\\`DEL\\'"             . "BS") ; backspace key
+               ("next"                  . "PgDn")
+               ("prior"                 . "PgUp"))
 
-   #+BEGIN_SRC elisp :tangle no
-     (setq guide-key/guide-key-sequence '("C-x"))
-     (setq guide-key/recursive-key-sequence-flag t)
+             ;; List of "special" keys for which a KEY is displayed as just
+             ;; K but with "inverted video" face... not sure I like this.
+             which-key-special-keys '("RET" "DEL" ; delete key
+                                      "ESC" "BS" ; backspace key
+                                      "SPC" "TAB")
+
+             ;; Replacements for how part or whole of FUNCTION is replaced:
+             which-key-description-replacement-alist
+             '(("Prefix Command" . "prefix")
+               ("\\`calc-"       . "") ; Hide "calc-" prefixes when listing M-x calc keys
+               ("/body\\'"       . "") ; Remove display the "/body" portion of hydra fn names
+               ("\\`projectile-" . "𝓟/")
+               ("\\`hydra-"      . "+𝐇/")
+               ("\\`org-babel-"  . "ob/"))
+
+             ;; Underlines commands to emphasize some functions:
+             which-key-highlighted-command-list
+             '(("\\`hydra-" . which-key-group-description-face)
+               "\\(rectangle-\\)\\|\\(-rectangle\\)"
+               "\\`org-"))
+
+       ;; Change what string to display for a given *complete* key binding
+       ;; Eg: After "C-x", display "8 → +unicode" instead of "8 → +prefix"
+       (which-key-add-key-based-replacements
+         "C-x 8"   "unicode"
+         "C-c T"   "toggles-"
+         "C-c p s" "projectile-search"
+         "C-c p 4" "projectile-other-buffer-"
+         "C-x a"   "abbrev/expand"
+         "C-x r"   "rect/reg"
+         "C-c /"   "engine-mode-map"
+         "C-c C-v" "org-babel")
+
+       (which-key-mode 1))
    #+END_SRC
 
 ** Function Key Definitions
@@ -1246,7 +1278,7 @@
    #+BEGIN_SRC elisp
      (use-package helm
        :ensure t
-       :init (add-to-list 'guide-key/guide-key-sequence "C-x c")
+       :init
        (use-package helm-config))   ;; Binds C-x c to the helm bidness.
    #+END_SRC
 
@@ -1926,14 +1958,6 @@
    #+BEGIN_SRC elisp
      (use-package helm
        :bind (("C-c M-i" . helm-imenu)))
-   #+END_SRC
-
-   Notice that I don't set Helm for everything. Obviously, Helm would
-   be helpful if I can learn all the bindings, so:
-
-   #+BEGIN_SRC elisp
-     (use-package guide-key
-       :init (add-to-list 'guide-key/guide-key-sequence "C-x c"))
    #+END_SRC
 
    However, I need to use [[http://www.emacswiki.org/emacs/EtagsSelect#toc3][this function]] to use IDO in conjunctions
