@@ -1410,10 +1410,11 @@
    #+BEGIN_SRC elisp
      (use-package recentf
        :init
-       (setq recentf-max-menu-items 25)
-       (setq recentf-auto-cleanup 'never)
-       ;; (setq recentf-keep '(file-remote-p file-readable-p))
+       (setq recentf-max-menu-items 25
+             recentf-auto-cleanup 'never
+             recentf-keep '(file-remote-p file-readable-p))
        (recentf-mode 1)
+       (delete-file "~/.emacs.d/ido.last")
        :bind ("C-c f f" . recentf-open-files))
    #+END_SRC
 
