@@ -362,6 +362,7 @@
      (use-package which-key
        :ensure t
        :defer 10
+       :diminish which-key-mode
        :config
 
        ;; Replacements for how KEY is replaced when which-key displays
