@@ -165,7 +165,9 @@ other systems with a graphical front-end.
              (background-color    (face-background 'default nil 'default))
              (primary-color       (face-foreground 'mode-line nil))
              (secondary-color     (face-background 'secondary-selection nil 'region))
+             (base-height         (face-attribute 'default :height))
              (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
+
         (custom-theme-set-faces 'ha/org-theme
                                 `(org-agenda-structure ((t (:inherit default :height 2.0 :underline nil))))
                                 `(org-verbatim ((t (:inherit 'fixed-pitched :foreground "#aef"))))
@@ -178,10 +180,14 @@ other systems with a graphical front-end.
                                 `(org-level-7 ((t (,@headline ,@ha/variable-font-tuple))))
                                 `(org-level-6 ((t (,@headline ,@ha/variable-font-tuple))))
                                 `(org-level-5 ((t (,@headline ,@ha/variable-font-tuple))))
-                                `(org-level-4 ((t (,@headline ,@ha/variable-font-tuple :height 1.1))))
-                                `(org-level-3 ((t (,@headline ,@ha/variable-font-tuple :height 1.25))))
-                                `(org-level-2 ((t (,@headline ,@ha/variable-font-tuple :height 1.5))))
-                                `(org-level-1 ((t (,@headline ,@ha/variable-font-tuple :height 1.75))))
+                                `(org-level-4 ((t (,@headline ,@ha/variable-font-tuple
+                                                              :height ,(round (* 1.1 base-height))))))
+                                `(org-level-3 ((t (,@headline ,@ha/variable-font-tuple
+                                                              :height ,(round (* 1.25 base-height))))))
+                                `(org-level-2 ((t (,@headline ,@ha/variable-font-tuple
+                                                              :height ,(round (* 1.5 base-height))))))
+                                `(org-level-1 ((t (,@headline ,@ha/variable-font-tuple
+                                                              :height ,(round (* 1.75 base-height))))))
                                 `(org-document-title ((t (,@headline ,@ha/variable-font-tuple :height 1.5 :underline nil)))))))
   #+END_SRC
 
