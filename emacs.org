@@ -10,18 +10,35 @@
 
 ** Emacs Executable
 
-   While I often use [[http://emacsformacosx.com/builds][Emacs for Mac]], lately, I've been building from
-   [[http://brew.sh/][Homebrew]] with the following dependency:
+   While I often use [[http://emacsformacosx.com/builds][Emacs for Mac]], lately, I've been building Emacs
+   from source using [[http://brew.sh/][Homebrew]]. I start by adding the following dependency:
 
    #+BEGIN_SRC sh :tangle no
      brew cask install xquartz
    #+END_SRC
 
-   And then built from source especially for the Mac:
+   *Note:* I've been running into an issue where I want Emacs to display
+   ligatures as well as work with the visual regular expression
+   package.  To get the both to work, I find I need to build from
+   source after applying [[https://github.com/minimal/emacs/commit/812dd5119645a09bc025a9dddedad9474d12ecb6][this patch]]. According to the Homebrew
+   documentation (see [[https://github.com/Homebrew/brew/blob/master/share/doc/homebrew/Formula-Cookbook.md#patches][the Patches section]]), we first:
 
    #+BEGIN_SRC sh :tangle no
-     brew install emacs --HEAD --use-git-head --with-cocoa \
-           --with-gnutls --srgb --with-librsvg --with-ns
+     brew edit emacs
+   #+END_SRC
+
+   And add the following section
+
+   #+BEGIN_EXAMPLE
+   patch do
+     url "https://github.com/minimal/emacs/commit/812dd5119645a09bc025a9dddedad9474d12ecb6.diff"
+   end
+   #+END_EXAMPLE
+
+   And then build from source especially for the Mac:
+
+   #+BEGIN_SRC sh :tangle no
+     brew install emacs --HEAD --use-git-head --with-cocoa --with-gnutls --srgb --with-librsvg --with-ns --with-imagemagick
 
      brew linkapps emacs
    #+END_SRC
