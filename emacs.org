@@ -1369,41 +1369,6 @@
    *Note:*: the =snippets= directory contains directories for each
    mode, e.g.  =clojure-mode= and =org-mode=.
 
-** Spelling Correction with Abbreviation Mode
-
-   According to [[http://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][this discussion]], we can correct a misspelled word
-   with =C-x C-i= and it will use the abbreviation mode to
-   automatically correct that word...as long as you misspell it the
-   same way each time.
-
-   #+BEGIN_SRC elisp
-     (defun ha/ispell-word-then-abbrev (p)
-       "Call `ispell-word'. Then create an abbrev for the correction made.
-     With prefix P, create local abbrev. Otherwise it will be global."
-       (interactive "P")
-       (let ((bef (downcase (or (thing-at-point 'word) ""))) aft)
-         (call-interactively 'ispell-word)
-         (setq aft (downcase (or (thing-at-point 'word) "")))
-         (unless (string= aft bef)
-           (message "\"%s\" now expands to \"%s\" %sally"
-                    bef aft (if p "loc" "glob"))
-           (define-abbrev
-             (if p global-abbrev-table local-abbrev-table)
-             bef aft))))
-
-     (global-set-key (kbd "C-x C-i") 'ha/ispell-word-then-abbrev)
-   #+END_SRC
-
-   Need to turn on the mode, but not necessarily show it:
-
-   #+BEGIN_SRC elisp
-     (use-package abbrev
-       :bind ("C-c T a" . abbrev-mode)
-       :init (setq save-abbrevs t)
-             (setq-default abbrev-mode t)
-       :diminish abbrev-mode)
-   #+END_SRC
-
 ** Spell Checking
 
    I like spell checking with [[http://www.emacswiki.org/emacs/FlySpell][FlySpell]], which uses the built-in
@@ -1448,6 +1413,84 @@
 
    ASpell automatically configures a personal dictionary
    at =~/.aspell.en.pws=, so no need to configure that.
+
+   According to [[http://pragmaticemacs.com/emacs/jump-back-to-previous-typo/][this essay]], we can make a =flyspell-goto-previous-error=
+   (which really should be added to the official =flyspell= project):
+
+   #+BEGIN_SRC elisp
+     (defun flyspell-goto-previous-error (arg)
+       "Go to arg previous spelling error."
+       (interactive "p")
+       (while (not (= 0 arg))
+         (let ((pos (point))
+               (min (point-min)))
+           (when (and (eq (current-buffer) flyspell-old-buffer-error)
+                      (eq pos flyspell-old-pos-error))
+             (if (= flyspell-old-pos-error min)
+                 ;; goto beginning of buffer
+                 (progn
+                   (message "Restarting from end of buffer")
+                   (goto-char (point-max)))
+               (backward-word 1))
+             (setq pos (point)))
+
+           ;; seek the next error
+           (while (and (> pos min)
+                       (let ((ovs (overlays-at pos))
+                             (r '()))
+                         (while (and (not r) (consp ovs))
+                           (if (flyspell-overlay-p (car ovs))
+                               (setq r t)
+                             (setq ovs (cdr ovs))))
+                         (not r)))
+             (backward-word 1)
+             (setq pos (point)))
+           ;; save the current location for next invocation
+           (setq arg (1- arg))
+           (setq flyspell-old-pos-error pos)
+           (setq flyspell-old-buffer-error (current-buffer))
+           (goto-char pos)
+           (if (= pos min)
+               (progn
+                 (message "No more miss-spelled words!")
+                 (setq arg 0))))))
+   #+END_SRC
+
+** Spell Correction with Abbreviation Mode
+
+   According to [[http://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html][this discussion]], we can correct a misspelled word with
+   ~Super-;~ (similar to ~C-;~), but it will use the abbreviation mode to
+   automatically correct that word...as long as you misspell it the
+   same way each time.
+
+   #+BEGIN_SRC elisp
+     (defun ha/ispell-word-then-abbrev (p)
+       "Call `ispell-word'. Then create an abbrev for the correction made.
+     With prefix P, create local abbrev. Otherwise it will be global."
+       (interactive "P")
+       (flyspell-goto-previous-error 1)
+       (let ((bef (downcase (or (thing-at-point 'word) ""))) aft)
+         (call-interactively 'ispell-word)
+         (setq aft (downcase (or (thing-at-point 'word) "")))
+         (unless (string= aft bef)
+           (define-abbrev
+             (if p global-abbrev-table local-abbrev-table)
+             bef aft)
+           (abbrev-edit-save-to-file abbrev-file-name)
+           (message "\"%s\" now expands to \"%s\" %s"
+                    bef aft (if p "locally" "globally"))))
+   #+END_SRC
+
+   Need to turn on the mode, but not necessarily show it:
+
+   #+BEGIN_SRC elisp
+     (use-package abbrev
+       :bind ("C-c T a" . abbrev-mode)
+             ("A-;" . ha/ispell-word-then-abbrev)
+       :init (setq save-abbrevs t)
+             (setq-default abbrev-mode t)
+       :diminish abbrev-mode)
+   #+END_SRC
 
 * Miscellaneous Settings
 ** Line Numbers
