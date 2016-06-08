@@ -61,13 +61,8 @@
      ;; Load our Literate Programming version of our Dot Emacs
      ;; file, from file: ~/Work/dot-files/emacs.org
      (unless (boundp 'aquamacs-version)
-      (load-file "~/.emacs.d/elisp/init-main.el")
-
-      (if (window-system)
-        (require 'init-client)
-        (require 'init-server)
-
-      (server-start))
+       (load-file "~/.emacs.d/elisp/init-main.el")
+       (server-start))
    #+END_SRC
 
    I only load this from a "normal" Emacs distribution, which
@@ -144,10 +139,11 @@
 
      (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
                               ("gnu"       . "http://elpa.gnu.org/packages/")
-                              ("melpa"     . "http://melpa.milkbox.net/packages/")
+                              ("melpa"     . "http://melpa.org/packages/")
                               ("marmalade" . "http://marmalade-repo.org/packages/")))
 
      (package-initialize)
+     (package-refresh-contents)
    #+END_SRC
 
    The package management system doesn't come with a
