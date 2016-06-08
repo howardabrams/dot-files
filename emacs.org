@@ -1600,10 +1600,11 @@
    file is reloaded.
 
    #+BEGIN_SRC elisp
-     (require 'saveplace)
-     (setq-default save-place t)
-     (setq save-place-forget-unreadable-files t)
-     (setq save-place-skip-check-regexp "\\`/\\(?:cdrom\\|floppy\\|mnt\\|/[0-9]\\|\\(?:[^@/:]*@\\)?[^@/:]*[^@/:.]:\\)")
+     (use-package saveplace
+        :init
+        (setq-default save-place t)
+        (setq save-place-forget-unreadable-files t)
+              save-place-skip-check-regexp "\\`/\\(?:cdrom\\|floppy\\|mnt\\|/[0-9]\\|\\(?:[^@/:]*@\\)?[^@/:]*[^@/:.]:\\)"))
    #+END_SRC
 
 ** Better Searching and Visual Regular Expressions
@@ -1735,7 +1736,7 @@
    We access stuff by loading the =etags= package:
 
    #+BEGIN_SRC elisp
-     (require 'etags)
+     (use-package etags)
    #+END_SRC
 
    Now, use the following keys:
@@ -1950,6 +1951,18 @@
        (add-hook 'emacs-lisp-mode-hook 'global-prettify-symbols-mode)
        (add-hook 'emacs-lisp-mode-hook 'activate-aggressive-indent))
    #+END_SRC
+
+*** Dash List Library
+
+    [[https://github.com/magnars/dash.el][Dash]] is cool and useful for dealing with collections in a standard
+    functional way.
+
+    #+BEGIN_SRC elisp
+      (use-package dash
+        :ensure t
+        :defer 60
+        :config (eval-after-load "dash" '(dash-enable-font-lock)))
+    #+END_SRC
 
 *** Paredit
 
