@@ -157,7 +157,6 @@ other systems with a graphical front-end.
     (defun ha/change-theme (theme org-block-style)
       "Changes the color scheme and reset the mode line."
       (funcall theme)
-      (powerline-reset)
       (funcall org-block-style)
 
       (let* ((ha/fixed-font-tuple (list :font ha/fixed-font-family))
@@ -191,15 +190,12 @@ other systems with a graphical front-end.
                                 `(org-document-title ((t (,@headline ,@ha/variable-font-tuple :height 1.5 :underline nil)))))))
   #+END_SRC
 
-  And the default startup goes to...night...unless I'm at work, and
-  then we'll take the bright shiny theme.
+  And the default startup goes to...night...
 
   #+BEGIN_SRC elisp
-    (if (equal "howard.abrams" user-login-name)
-      (ha/change-theme 'color-theme-sanityinc-tomorrow-day
-                       'org-src-color-blocks-light)
       (ha/change-theme 'color-theme-sanityinc-tomorrow-night
-                       'org-src-color-blocks-dark))
+                       'org-src-color-blocks-dark)
+      (set-face-background 'region "darkblue")
   #+END_SRC
 
   My main reason for wanting to use the color theme project is to
