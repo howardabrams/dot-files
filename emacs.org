@@ -1020,7 +1020,7 @@
    The [[http://www.masteringemacs.org/articles/2014/04/10/dired-shell-commands-find-xargs-replacement/][dired-x project]] seems useful:
 
    #+BEGIN_SRC elisp
-     (require 'dired-x)
+     (use-package dired-x)
    #+END_SRC
 
 ** Editing Root Files
@@ -1242,7 +1242,9 @@
              recentf-auto-cleanup 'never
              recentf-keep '(file-remote-p file-readable-p))
        (recentf-mode 1)
-       (delete-file "~/.emacs.d/ido.last")
+       (let ((last-ido "~/.emacs.d/ido.last"))
+         (when (file-exists-p last-ido)
+           (delete-file last-ido)))
        :bind ("C-c f f" . recentf-open-files))
    #+END_SRC
 
