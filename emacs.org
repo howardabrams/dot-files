@@ -2154,7 +2154,9 @@
    #+BEGIN_SRC elisp
      (use-package git-gutter-fringe
         :ensure t
-        :config (git-gutter-mode 1))
+        :diminish git-gutter-mode
+        :init (setq git-gutter-fr:side 'right-fringe)
+        :config (global-git-gutter-mode t))
    #+END_SRC
 
    I want to have special mode for Git's =configuration= file:
