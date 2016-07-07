@@ -1023,32 +1023,6 @@
      (use-package dired-x)
    #+END_SRC
 
-** Editing Root Files
-
-   Once I wrote a =find-file-as-root= function (graciously borrowed from
-   [[http://emacs-fu.blogspot.com/2013/03/editing-with-root-privileges-once-more.html][Emacs Fu]]), however, [[http://emacsredux.com/blog/2013/04/21/edit-files-as-root/][bbatsov]] gave me a better idea to lend some
-   /advice/ to =find-file=, so that non-writable files would be
-   automatically /re-opened/ using the =sudo= feature of Tramp.
-
-   My version works with both local and remotely access files:
-
-   #+BEGIN_SRC elisp
-     (defadvice ido-find-file (after find-file-sudo activate)
-       "Find file as root if necessary."
-       (unless (and buffer-file-name
-                    (file-writable-p buffer-file-name))
-         (let* ((file-name (buffer-file-name))
-                (file-root (if (string-match "/ssh:\\([^:]+\\):\\(.*\\)" file-name)
-                               (concat "/ssh:"  (match-string 1 file-name)
-                                       "|sudo:" (match-string 1 file-name)
-                                       ":"      (match-string 2 file-name))
-                             (concat "/sudo:localhost:" file-name))))
-           (find-alternate-file file-root))))   
-   #+END_SRC
-
-   No special key-bindings, just load up a file, and if I can't write
-   it, it will automatically ask me for my credentials, and away I go.
-
 ** IDO (Interactively DO Things)
 
    According to [[http://www.masteringemacs.org/articles/2010/10/10/introduction-to-ido-mode/][Mickey]], IDO is the greatest thing.
@@ -1087,6 +1061,32 @@
        :config
        (ido-vertical-mode 1))
    #+END_SRC
+
+*** Editing Root Files
+
+    Once I wrote a =find-file-as-root= function (graciously borrowed from
+    [[http://emacs-fu.blogspot.com/2013/03/editing-with-root-privileges-once-more.html][Emacs Fu]]), however, [[http://emacsredux.com/blog/2013/04/21/edit-files-as-root/][bbatsov]] gave me a better idea to lend some
+    /advice/ to =find-file=, so that non-writable files would be
+    automatically /re-opened/ using the =sudo= feature of Tramp.
+
+    My version works with both local and remotely access files:
+
+    #+BEGIN_SRC elisp
+      (defadvice ido-find-file (after find-file-sudo activate)
+        "Find file as root if necessary."
+        (unless (and buffer-file-name
+                     (file-writable-p buffer-file-name))
+          (let* ((file-name (buffer-file-name))
+                 (file-root (if (string-match "/ssh:\\([^:]+\\):\\(.*\\)" file-name)
+                                (concat "/ssh:"  (match-string 1 file-name)
+                                        "|sudo:" (match-string 1 file-name)
+                                        ":"      (match-string 2 file-name))
+                              (concat "/sudo:localhost:" file-name))))
+            (find-alternate-file file-root))))   
+    #+END_SRC
+
+    No special key-bindings, just load up a file, and if I can't write
+    it, it will automatically ask me for my credentials, and away I go.
 
 ** SMEX
 
@@ -1495,6 +1495,7 @@
    #+END_SRC
 
 * Miscellaneous Settings
+
 ** Line Numbers
 
    Turn =linum-mode= on/off with =Command-K= (see the [[*Macintosh][Macintosh]]
