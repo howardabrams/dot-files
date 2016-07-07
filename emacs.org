@@ -1781,7 +1781,8 @@
    We access stuff by loading the =etags= package:
 
    #+BEGIN_SRC elisp
-     (use-package etags)
+     (use-package etags
+        :init (setq tags-revert-without-query 1))
    #+END_SRC
 
    Now, use the following keys:
