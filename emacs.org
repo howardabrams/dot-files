@@ -1050,7 +1050,7 @@
         :config (flx-ido-mode 1))
    #+END_SRC
 
-   According to [[https://gist.github.com/rkneufeld/5126926][Ryan Kneufeld]], we could make IDO work vertically,
+   According to [[https://gist.github.com/rkneufeld/5126926][Ryan Neufeld]], we could make IDO work vertically,
    which is much easier to read. For this, I use [[https://github.com/gempesaw/ido-vertical-mode.el][ido-vertically]]:
 
    #+BEGIN_SRC elisp
@@ -1061,6 +1061,27 @@
        :config
        (ido-vertical-mode 1))
    #+END_SRC
+
+*** IDO File Listing by Modified Time
+
+    This sorts an IDO filelist by /mtime/ instead of alphabetically.
+
+    #+BEGIN_SRC elisp
+      (defun ido-sort-mtime ()
+        (setq ido-temp-list
+              (sort ido-temp-list
+                    (lambda (a b)
+                      (time-less-p
+                       (sixth (file-attributes (concat ido-current-directory b)))
+                       (sixth (file-attributes (concat ido-current-directory a)))))))
+        (ido-to-end  ;; move . files to end (again)
+         (delq nil (mapcar
+                    (lambda (x) (and (char-equal (string-to-char x) ?.) x))
+                    ido-temp-list))))
+
+      (add-hook 'ido-make-file-list-hook 'ido-sort-mtime)
+      (add-hook 'ido-make-dir-list-hook 'ido-sort-mtime)
+    #+END_SRC
 
 *** Editing Root Files
 
@@ -1082,7 +1103,7 @@
                                         "|sudo:" (match-string 1 file-name)
                                         ":"      (match-string 2 file-name))
                               (concat "/sudo:localhost:" file-name))))
-            (find-alternate-file file-root))))   
+            (find-alternate-file file-root))))
     #+END_SRC
 
     No special key-bindings, just load up a file, and if I can't write
