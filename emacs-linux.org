@@ -7,38 +7,6 @@
 Mostly key bindings for the Super key to work as a Command key on
 Linux.
 
-* Key Bindings
-
-  #+BEGIN_SRC elisp
-    (global-set-key (kbd "s-z") 'undo-tree-undo)
-    (global-set-key (kbd "s-y") 'undo-tree-redo)
-    (global-set-key (kbd "s-Z") 'undo-tree-redo)
-    (global-set-key (kbd "s-x") 'kill-region)
-    (global-set-key (kbd "s-c") 'kill-ring-save)
-    (global-set-key (kbd "s-v") 'yank)
-
-    (global-set-key (kbd "s-a") 'mark-whole-buffer)
-    (global-set-key (kbd "s-f") 'isearch-forward-regexp)
-
-    (global-set-key (kbd "s-o") 'ido-find-file)
-    (global-set-key (kbd "s-s") 'save-buffer)
-    (global-set-key (kbd "s-+") 'text-scale-increase)
-    (global-set-key (kbd "s--") 'text-scale-decrease)
-    (global-set-key (kbd "s-l") 'goto-line)
-    (global-set-key (kbd "s-w") 'bury-buffer)
-    (global-set-key (kbd "s-M-w") 'kill-this-buffer)
-
-    (global-set-key (kbd "s-<up>") 'beginning-of-buffer)
-    (global-set-key (kbd "s-<down>") 'end-of-buffer)
-    (global-set-key (kbd "s-<left>") 'smarter-move-beginning-of-line)
-    (global-set-key (kbd "s-<right>") 'move-end-of-line)
-
-    (global-set-key (kbd "M-<up>") 'backward-page)
-    (global-set-key (kbd "M-<down>") 'forward-page)
-    (global-set-key (kbd "M-<left>") 'backward-word)
-    (global-set-key (kbd "M-<right>") 'forward-word)
-  #+END_SRC
-
 * Notifications
 
   Perhaps I would want to tie into the Linux notification system.

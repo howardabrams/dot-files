@@ -9,6 +9,62 @@ other systems with a graphical front-end.
 
 * Key Bindings
 
+  Bind a number of global keys for use with the Command key (need to
+  use both the =A-= and =s-= modifiers so that it works with both Mac and
+  Linux).
+
+  #+BEGIN_SRC elisp
+    (bind-keys
+     ("s-z" . undo-tree-undo)
+     ("A-z" . undo-tree-undo)
+     ("s-y" . undo-tree-redo)
+     ("A-y" . undo-tree-redo)
+     ("s-Z" . undo-tree-redo)
+     ("A-Z" . undo-tree-redo)
+     ("s-x" . kill-region)
+     ("A-x" . kill-region)
+     ("s-c" . kill-ring-save)
+     ("A-c" . kill-ring-save)
+     ("s-v" . yank)
+     ("A-v" . yank)
+
+     ("s-a" . mark-whole-buffer)
+     ("A-a" . mark-whole-buffer)
+     ("s-f" . isearch-forward-regexp)
+     ("A-f" . isearch-forward-regexp)
+
+     ("s-s" . save-buffer)
+     ("A-s" . save-buffer)
+     ("s-+" . text-scale-increase)
+     ("A-+" . text-scale-increase)
+     ("s--" . text-scale-decrease)
+     ("A--" . text-scale-decrease)
+     ("s-_" . text-scale-decrease)
+     ("A-_" . text-scale-decrease)
+     ("s-l" . goto-line)
+     ("A-l" . goto-line)
+     ("s-w" . bury-buffer)
+     ("A-w" . bury-buffer)
+     ("s-M-w" . kill-this-buffer)
+     ("A-M-w" . kill-this-buffer)
+
+     ("s-<up>" . beginning-of-buffer)
+     ("A-<up>" . beginning-of-buffer)
+     ("s-<down>" . end-of-buffer)
+     ("A-<down>" . end-of-buffer)
+     ("s-<left>" . smarter-move-beginning-of-line)
+     ("A-<left>" . smarter-move-beginning-of-line)
+     ("s-<right>" . move-end-of-line)
+     ("A-<right>" . move-end-of-line)
+
+     ("M-<up>" . backward-page)
+     ("M-<down>" . forward-page)
+     ("M-<left>" . backward-word)
+     ("M-<right>" . forward-word))
+  #+END_SRC
+
+* Key Bindings
+
   Gotta get rid of the bloody =C-x C-c=, for it is too close to the
   tangling key binding of =C-c C-v= ... besides, I never quit Emacs.
 
@@ -193,9 +249,16 @@ other systems with a graphical front-end.
   And the default startup goes to...night...
 
   #+BEGIN_SRC elisp
-      (ha/change-theme 'color-theme-sanityinc-tomorrow-night
-                       'org-src-color-blocks-dark)
-      (set-face-background 'region "darkblue")
+    (ha/change-theme 'color-theme-sanityinc-tomorrow-night
+                     'org-src-color-blocks-dark)
+  #+END_SRC
+
+  And the best colored highlighting of selected text needs to be both
+  bright, but not obscure the white text in the foreground (see
+  =list-colors-display=). Favorites so far are =purple4= and =DarkOrange3=:
+
+  #+BEGIN_SRC elisp
+    (set-face-background 'region "blue4")
   #+END_SRC
 
   My main reason for wanting to use the color theme project is to

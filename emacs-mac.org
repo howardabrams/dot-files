@@ -16,54 +16,17 @@ then, only during a graphical run.
     (setq mac-option-modifier 'meta)
   #+END_SRC
 
-  However, I like the ability to use the Command key to turn a
-  standard Emacs into a more Macintosh-specific application.
-  (See [[http://stackoverflow.com/questions/162896/emacs-on-mac-os-x-leopard-key-bindings][these online notes]])
+  Once upon a time, I thought I would get confused and hit a
+  Mac-specific keybinding with the "Command" key in Emacs, so I used
+  the =mac-key-mode= to turn a standard Emacs into a more
+  Macintosh-specific application. However, I find my fingers behaving
+  the exact opposite, as I often hit =Option-b= to jump back a word when
+  typing in the search bar in my browser.
 
   #+BEGIN_SRC elisp
-    (unless (boundp 'aquamacs-version)
-      (use-package mac-key-mode
-        :ensure t
-        :init
-        (mac-key-mode)
-        :config
-        (define-key mac-key-mode-map (kbd "A-o") 'ido-find-file)
-
-        ;; I'd rather selectively bind Meta-I to my italics function,
-        ;; instead of showing the file in the Finder.
-        (define-key mac-key-mode-map (kbd "A-i") nil)
-        (define-key mac-key-mode-map (kbd "A-m") nil)
-        (define-key mac-key-mode-map (kbd "A-2") 'mac-key-show-in-finder)
-
-        (define-key mac-key-mode-map (kbd "A-+") 'text-scale-increase)
-        (define-key mac-key-mode-map (kbd "A-_") 'text-scale-decrease)
-        (define-key mac-key-mode-map (kbd "A-l") 'goto-line)
-
-        ;; Command-Q is awful (too easy to hit) ... especially next to
-        ;; the more benign key binding to close a window: Cmd-W
-        (define-key mac-key-mode-map (kbd "A-q") 'dont-kill-emacs)
-
-        (define-key mac-key-mode-map (kbd "A-w") 'bury-buffer)
-        (define-key mac-key-mode-map (kbd "A-M-w") 'kill-this-buffer)))
-  #+END_SRC
-
-  Since the default ls for the Mac isn't so good, I always have the
-  GNU ls version available in =/usr/local/bin/gls=.
-
-  #+BEGIN_SRC elisp
-    (require 'ls-lisp)
-    (setq ls-lisp-use-insert-directory-program t)
-    (setq insert-directory-program "/usr/local/bin/gls")
-  #+END_SRC
-
-* Undo and Redo
-
-  Special Cmd-Z binding for the special undo world.
-
-  #+BEGIN_SRC elisp
-    (unless (boundp 'aquamacs-version)
-      (define-key mac-key-mode-map (kbd "A-z") 'undo-tree-undo)
-      (define-key mac-key-mode-map (kbd "A-S-z") 'undo-tree-redo))
+    ;; Command-Q is awful (too easy to hit) ... especially next to
+    ;; the more benign key binding to close a window: Cmd-W
+    (bind-key "A-q" 'dont-kill-emacs)
   #+END_SRC
 
 * Ligatures in Code
@@ -119,6 +82,17 @@ then, only during a graphical run.
        (add-to-list 'dash-at-point-mode-alist '(sh-mode . "bash"))
        (add-to-list 'dash-at-point-mode-alist '(emacs-lisp-mode . "elisp")))
    #+END_SRC
+
+* Brew and ls
+
+  Since the default ls for the Mac isn't so good, I always have the
+  GNU ls version available in =/usr/local/bin/gls=.
+
+  #+BEGIN_SRC elisp
+    (require 'ls-lisp)
+    (setq ls-lisp-use-insert-directory-program t)
+    (setq insert-directory-program "/usr/local/bin/gls")
+  #+END_SRC
 
 * Notifications
 

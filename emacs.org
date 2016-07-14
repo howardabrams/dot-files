@@ -1533,8 +1533,8 @@
          (fringe-mode '(8 . 0))
          (linum-mode 1)))
 
-       (global-set-key (kbd "A-C-K") 'linum-off-mode)
-       (global-set-key (kbd "s-C-K") 'linum-off-mode)  ;; For Linux
+     (bind-keys ("A-C-K" . linum-off-mode)
+                ("s-C-K" . linum-off-mode))
    #+END_SRC
 
    I'm intrigued with the [[https://github.com/coldnew/linum-relative][linum-relative]] mode (especially since I can
@@ -1597,7 +1597,6 @@
                (interactive)
                (bc-set)
                (recenter-top-bottom))
-       :config (unbind-key "A-." mac-key-mode-map)
        :bind (("C-l" . ha/mark-and-center)
               ("A-," . bc-previous)
               ("A-." . bc-next)))
