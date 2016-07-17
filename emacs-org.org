@@ -428,22 +428,26 @@ Emacs love affair.
   evaluate them and tangle them out to a file.
 
   #+BEGIN_SRC elisp
-   (use-package org
-     :config
-     (org-babel-do-load-languages
-      'org-babel-load-languages
-      '((sh         . t)
-        (js         . t)
-        (emacs-lisp . t)
-        (perl       . t)
-        (scala      . t)
-        (clojure    . t)
-        (python     . t)
-        (ruby       . t)
-        (dot        . t)
-        (css        . t)
-        (plantuml   . t))))
+    (use-package org
+      :config
+      (add-to-list 'org-src-lang-modes '("dot" . "graphviz-dot"))
+
+      (org-babel-do-load-languages 'org-babel-load-languages
+                                   '((sh         . t)
+                                     (js         . t)
+                                     (emacs-lisp . t)
+                                     (perl       . t)
+                                     (scala      . t)
+                                     (clojure    . t)
+                                     (python     . t)
+                                     (ruby       . t)
+                                     (dot        . t)
+                                     (css        . t)
+                                     (plantuml   . t))))
   #+END_SRC
+
+  This setting also addresses the issue to associate the =dot= language
+  with the =graphviz-dot= mode.
 
   It seems to automatically recognize the language used in a source
   block, but if not, call =org-babel-lob-ingest= to add all the
