@@ -60,6 +60,10 @@
 ;;
 ;;; Code:
 
+(defcustom knife--knife-command "knife"
+  "The command to run `knife'. This can be changed to
+  `proxychains4 -q knife' to work through certain tunnels.")
+
 (defcustom knife--config-directory "~/.chef"
   "Default directory for Chef configuration files. Directory read
   when a `knife' command ends with a `-c'.")
@@ -74,7 +78,7 @@
 (defun knife--build-command-line ()
   "Build a `knife' command line string by using IDO to select
 each command and sub-command."
-  (let ((cmd-list '("knife")))    ; We'll prepend to this list...
+  (let ((cmd-list '(knife--knife-command))) ; We'll prepend to this list...
 
     ;; Created a few helper functions to make the code in this
     ;; function easier to parse and read ... of course, these
