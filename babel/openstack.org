@@ -33,7 +33,7 @@ hit the =C-c C-v i= to add these sections.
   headers from the =nova= command.
 
   #+NAME: os-table
-  #+BEGIN_SRC elisp :results value table :var data="" :var header="f"
+  #+BEGIN_SRC elisp :results value table :var data="" :var header="ignore"
     (cl-flet* ((non-border-p     (line) (not (string-match "^ *[\+-]+-" line)))
                (separate-row     (line) (split-string line " *| *"))
 
@@ -49,10 +49,9 @@ hit the =C-c C-v i= to add these sections.
              (table-data (mapcar #'trim-row-cells
                                  (mapcar #'separate-row
                                          (filter #'non-border-p rows)))))
-        (if (and (equalp "f" header)  ;; Set 'header' to any other string...
-                 (equalp "ID" (car (car table-data))))
-            (cdr table-data)
-          table-data)))
+        (cond ((equalp header "no")   (cdr table-data))
+              ((equalp header "yes")  (append (list (car table-data) 'hline) (cdr table-data)))
+              ( t                      table-data))))
   #+END_SRC
 
   To verify this code, we first begin with a typical output from a
