@@ -91,7 +91,7 @@
    to make sure the following directories have been created.
 
    #+BEGIN_SRC elisp
-     (let* ((subdirs '("elisp" "backups" "snippets" "ac-dict"))
+     (let* ((subdirs '("elisp" "backups"))
             (fulldirs (mapcar (lambda (d) (ha/emacs-subdirectory d)) subdirs)))
        (dolist (dir fulldirs)
          (when (not (file-exists-p dir))
@@ -140,25 +140,11 @@
      (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
                               ("gnu"       . "http://elpa.gnu.org/packages/")
                               ("melpa"     . "http://melpa.org/packages/")
-                              ("marmalade" . "http://marmalade-repo.org/packages/")))
+                              ("marmalade" . "https://marmalade-repo.org/packages/")
+                             ))
 
      (package-initialize)
      (package-refresh-contents)
-   #+END_SRC
-
-   The package management system doesn't come with a
-   programmatic way to specify what packages /should/ be
-   installed. Here is my solution until I convert to [[Use-Package][use-package]].
-
-   #+BEGIN_SRC elisp
-     (defun packages-install (packages)
-       "Given a list of packages, this will install them from the standard locations."
-       (let ((to-install (inverse-filter 'package-installed-p packages)))
-         (when to-install
-           (package-refresh-contents)
-           (dolist (it to-install)
-               (package-install it)
-           (delete-other-windows)))))
    #+END_SRC
 
 ** Use-Package
@@ -223,7 +209,7 @@
    #+END_SRC
 
    If you trust your Emacs session on your computer, you can have
-   Emacs cache the password. Not sure I do...
+   Emacs cache the password.
 
    #+BEGIN_SRC elisp
      (setq epa-file-cache-passphrase-for-symmetric-encryption t)
@@ -289,65 +275,6 @@
    #+END_SRC
 
 * Key Bindings
-** Hydra Sequences
-
-   I’m starting to appreciate the [[https://github.com/abo-abo/hydra][Hydra project]].
-
-   #+BEGIN_SRC elisp
-     (use-package hydra
-       :ensure t
-       :config
-       (hydra-add-font-lock))
-   #+END_SRC
-
-   Easily manipulate the size of the windows using the arrow keys in a
-   particular buffer window.
-
-   #+BEGIN_SRC elisp
-     (require 'windmove)
-
-     (defun hydra-move-splitter-left (arg)
-       "Move window splitter left."
-       (interactive "p")
-       (if (let ((windmove-wrap-around))
-             (windmove-find-other-window 'right))
-           (shrink-window-horizontally arg)
-         (enlarge-window-horizontally arg)))
-
-     (defun hydra-move-splitter-right (arg)
-       "Move window splitter right."
-       (interactive "p")
-       (if (let ((windmove-wrap-around))
-             (windmove-find-other-window 'right))
-           (enlarge-window-horizontally arg)
-         (shrink-window-horizontally arg)))
-
-     (defun hydra-move-splitter-up (arg)
-       "Move window splitter up."
-       (interactive "p")
-       (if (let ((windmove-wrap-around))
-             (windmove-find-other-window 'up))
-           (enlarge-window arg)
-         (shrink-window arg)))
-
-     (defun hydra-move-splitter-down (arg)
-       "Move window splitter down."
-       (interactive "p")
-       (if (let ((windmove-wrap-around))
-             (windmove-find-other-window 'up))
-           (shrink-window arg)
-         (enlarge-window arg)))
-
-     (defhydra hydra-splitter (global-map "<f9>")
-       "splitter"
-       ("<left>" hydra-move-splitter-left)
-       ("<down>" hydra-move-splitter-down)
-       ("<up>" hydra-move-splitter-up)
-       ("<right>" hydra-move-splitter-right))
-   #+END_SRC
-
-   Other Hydra sequences are associated with the package they control.
-
 ** Displaying Command Sequences
 
    Many command sequences may be logical, but who can remember them
@@ -385,15 +312,12 @@
              which-key-description-replacement-alist
              '(("Prefix Command" . "prefix")
                ("\\`calc-"       . "") ; Hide "calc-" prefixes when listing M-x calc keys
-               ("/body\\'"       . "") ; Remove display the "/body" portion of hydra fn names
                ("\\`projectile-" . "𝓟/")
-               ("\\`hydra-"      . "+𝐇/")
                ("\\`org-babel-"  . "ob/"))
 
              ;; Underlines commands to emphasize some functions:
              which-key-highlighted-command-list
-             '(("\\`hydra-" . which-key-group-description-face)
-               "\\(rectangle-\\)\\|\\(-rectangle\\)"
+             '("\\(rectangle-\\)\\|\\(-rectangle\\)"
                "\\`org-"))
 
        ;; Change what string to display for a given *complete* key binding
@@ -730,11 +654,26 @@
 
 ** Multiple Cursors
 
-   While I'm not sure how often I will use [[https://github.com/emacsmirror/multiple-cursors][multiple-cursors]] project,
-   I'm going to try to remember it is there. It doesn't have any
-   default keybindings, so I set up the suggested:
+   I like Magmar's [[https://github.com/emacsmirror/multiple-cursors][multiple-cursors]] project.  It doesn't have any
+    default keybindings, so I set up these:
 
    #+BEGIN_SRC elisp
+     (use-package multiple-cursors
+       :ensure t
+       :bind (("C-c C-. ."   . mc/mark-all-dwim)
+              ("C-c C-. C-." . mc/mark-all-like-this-dwim)
+              ("C-c C-. n"   . mc/mark-next-like-this)
+              ("C-c C-. p"   . mc/mark-previous-like-this)
+              ("C-c C-. a"   . mc/mark-all-like-this)
+              ("C-c C-. N"   . mc/mark-next-symbol-like-this)
+              ("C-c C-. P"   . mc/mark-previous-symbol-like-this)
+              ("C-c C-. A"   . mc/mark-all-symbols-like-this)
+              ("C-c C-. f"   . mc/mark-all-like-this-in-defun)
+              ("C-c C-. l"   . mc/edit-lines)
+              ("C-c C-. e"   . mc/edit-ends-of-lines)))
+   #+END_SRC
+
+   #+BEGIN_SRC elisp :tangle no
      (use-package multiple-cursors
        :ensure t
        :config
@@ -935,10 +874,24 @@
    for files in a particular "project". Its necessity is less now that
    IDO with flexible matching seems to always just find what I need.
 
+   However, I really like the ability to search (with =ag= or =grep=) that
+   is limited to the project:
+
    #+BEGIN_SRC elisp
      (use-package projectile
        :ensure t
-       :init (projectile-global-mode 1)
+       :init (projectile-global-mode 0)
+       :bind (("C-c p s" . projectile-ag)
+              ("C-c p g" . projectile-grep)))
+   #+END_SRC
+
+   Projectile is currently causing grief to the rest of my system, and
+   while trying to debug it, let's turn it off:
+
+   #+BEGIN_SRC elisp :tangle no
+     (use-package projectile
+       :ensure t
+       :init (projectile-global-mode 0)
        :commands projectile-ag
        :config
        (setq projectile-switch-project-action 'projectile-commander

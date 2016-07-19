@@ -77,7 +77,12 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
           ("__"   . ?⁈)))
 
       :config
-      (add-hook 'clojure-mode-hook 'global-prettify-symbols-mode))
+      (add-hook 'clojure-mode-hook 'global-prettify-symbols-mode)
+      :bind (("C-c d f" . cider-code)
+             ("C-c d g" . cider-grimoire)
+             ("C-c d w" . cider-grimoire-web)
+             ("C-c d c" . clojure-cheatsheet)
+             ("C-c d d" . dash-at-point)))
   #+END_SRC
 
   Need to figure out how to get the color identifiers mode to work
@@ -303,25 +308,6 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
 
   Of course, the /real problem/ is trying to remember all the
   [[https://github.com/clojure-emacs/clj-refactor.el/wiki][refactoring options]]. Remember: =C-c . h h=
-
-* Clojure Docs
-
-  So many Clojure documentation resources, what is a hacker to do?
-
-  Use [[https://github.com/abo-abo/hydra][Hydra]], of course!
-
-  #+BEGIN_SRC elisp
-    (use-package hydra
-      :ensure t
-      :config
-      (defhydra hydra-clojure-docs (clojure-mode-map "C-c d" :color blue)
-        "Clojure Documentation"
-        ("f" cider-code "functional")
-        ("g" cider-grimoire "grimoire")
-        ("w" cider-grimoire-web "web examples")
-        ("c" clojure-cheatsheet "cheatsheet")
-        ("d" dash-at-point "dash")))
-  #+END_SRC
 
 * 4Clojure
 

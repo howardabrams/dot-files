@@ -73,8 +73,7 @@ then, only during a graphical run.
    #+BEGIN_SRC elisp
      (use-package dash-at-point
        :ensure t
-       :init
-       (global-set-key (kbd "C-c d") 'dash-at-point-with-docset)
+       :bind ("C-c d d" . dash-at-point-with-docset)
        :config
        (add-to-list 'dash-at-point-mode-alist '(clojure-mode . "clojure"))
        (add-to-list 'dash-at-point-mode-alist '(ruby-mode . "ruby"))
