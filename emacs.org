@@ -1477,50 +1477,36 @@
    programming modes.
 
    #+BEGIN_SRC elisp
-     (add-hook 'prog-mode-hook 'linum-mode)
+     (use-package linum
+       :init
+       (add-hook 'prog-mode-hook 'linum-mode)
+       (add-hook 'linum-mode-hook (lambda () (set-face-attribute 'linum nil :height 110)))
+
+       :config
+       (defun linum-fringe-toggle ()
+         "Toggles the line numbers as well as the fringe."    (interactive)
+         (cond (linum-mode (fringe-mode '(0 . 0))
+                           (linum-mode -1))
+               (t          (fringe-mode '(8 . 0))
+                           (linum-mode 1))))
+
+       :bind (("A-C-k"   . linum-mode)
+              ("s-C-k"   . linum-mode)
+              ("A-C-M-k" . linum-fringe-toggle)
+              ("s-C-M-k" . linum-fringe-toggle)))
    #+END_SRC
 
-   If we make the line numbers a fixed size, then increasing or
-   decreasing the font size doesn't truncate the numbers:
+   *Note:* make the line numbers a fixed size, then increasing or
+   decreasing the font size doesn't truncate the numbers.
 
-   #+BEGIN_SRC elisp
-     (defun fix-linum-size ()
-       (interactive)
-       (set-face-attribute 'linum nil :height 110))
-
-     (add-hook 'linum-mode-hook 'fix-linum-size)
-   #+END_SRC
-
-   If we alternate between line numbers and no-line numbers, I also
-   have to turn on/off the fringe. Actually, this is really only
-   useful when giving presentations.
-
-   #+BEGIN_SRC elisp
-     (defun linum-off-mode ()
-       "Toggles the line numbers as well as the fringe. This allows me
-     to maximize the screen estate."
-       (interactive)
-       (if linum-mode
-           (progn
-             (fringe-mode '(0 . 0))
-             (linum-mode -1))
-         (fringe-mode '(8 . 0))
-         (linum-mode 1)))
-
-     (bind-keys ("A-C-K" . linum-off-mode)
-                ("s-C-K" . linum-off-mode))
-   #+END_SRC
-
-   I'm intrigued with the [[https://github.com/coldnew/linum-relative][linum-relative]] mode (especially since I can
-   toggle between them). The idea is that I can see the line that I
-   want to jump to (like one 9 lines away), and then =C-9 C-n= to
+   The [[https://github.com/coldnew/linum-relative][linum-relative]] mode allows one to see the /destination/ line as a
+   relative distance (like one 9 lines lower), and then =C-9 C-n= can
    quickly pop to it.
 
    #+BEGIN_SRC elisp
      (use-package linum-relative
        :ensure t
        :config
-       ;; Otherwise, let's take advantage of the relative line numbering:
        (defun linum-new-mode ()
          "If line numbers aren't displayed, then display them.
           Otherwise, toggle between absolute and relative numbers."
