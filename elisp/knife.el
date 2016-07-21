@@ -78,7 +78,10 @@
 (defun knife--build-command-line ()
   "Build a `knife' command line string by using IDO to select
 each command and sub-command."
-  (let ((cmd-list '(knife--knife-command))) ; We'll prepend to this list...
+
+  ;; Create a list of parts for the `knife' command invocation.
+  ;; Begin with the actual `knife' executable:
+  (let ((cmd-list (list knife--knife-command)))
 
     ;; Created a few helper functions to make the code in this
     ;; function easier to parse and read ... of course, these
