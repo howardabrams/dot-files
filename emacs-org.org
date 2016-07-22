@@ -121,7 +121,7 @@ Emacs love affair.
   actually affecting the text file or the behavior).
 
   #+BEGIN_SRC elisp
-     (use-package org-mode
+     (use-package org
        :init
        (font-lock-add-keywords 'org-mode
         '(("^ +\\([-*]\\) "
@@ -274,9 +274,9 @@ Emacs love affair.
   like them automatically searched when I generate agendas.
 
   #+BEGIN_SRC elisp
-(setq org-agenda-files '("~/Dropbox/org/personal"
-                         "~/Dropbox/org/technical"
-                         "~/Dropbox/org/project"))
+    (setq org-agenda-files '("~/Dropbox/org/personal"
+                             "~/Dropbox/org/technical"
+                             "~/Dropbox/org/project"))
   #+END_SRC
 
 * Auto Note Capturing
