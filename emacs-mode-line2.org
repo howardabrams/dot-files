@@ -13,41 +13,41 @@ creating a better mode line in Emacs.
   that I get cleaner mode-lines with [[PowerLine][PowerLine]], so while I'm leaving
   this configuration code here, I'm actually not tangling it.
 
-#+BEGIN_SRC elisp
-  (require 'smart-mode-line)
-  (if after-init-time (sml/setup)
-    (add-hook 'after-init-hook 'sml/setup))
+  #+BEGIN_SRC elisp
+    (use-package smart-mode-line
+      :ensure t
+      :init (add-hook 'after-init-hook 'sml/setup)
+      :config
+      ;; Shorten a couple of well-known directories ... these need to be first:
+      (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" ":Goo:"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Google/" ":Goo:"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/google/" ":Goo:"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Dropbox/" ":DB:"))
 
-  (custom-set-variables '(sml/active-background-color "dark blue"))
-#+END_SRC
+      ;; Fix a couple of long project names with an icon:
+      (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/technical/" "[τεκ]"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Google/technical/" "[τεκ]"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/technical/" "[τεκ]"))
 
-    Especially since you can limit the pathname of the displayed
-    filename.
+      (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/Notes/" "[✏]"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Google/Notes/" "[✏]"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Notes/" "[✏]"))
 
-#+BEGIN_SRC elisp
-  (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" ":Goo:"))
-  (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/technical" ":Tech:"))
-  (add-to-list 'sml/replacer-regexp-list '("^~/Other/dot-files" ":.:"))
-  (add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-api/server/" ":API:"))
-  (add-to-list 'sml/replacer-regexp-list '("^~/Work/wpc-fai/ci/" ":CI:"))
-#+END_SRC
+      (add-to-list 'sml/replacer-regexp-list '("^~/Other/dot-files/" "[•]"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Work/dot-files/" "[•]"))
 
-    Hiding some Minor modes in the mode line is real swell. This
-    leaves the mode-line with only important stuff.
+      (sml/apply-theme 'dark))
+  #+END_SRC
 
-#+BEGIN_SRC elisp
-  (setq useless-minor-modes '(" AC"   ;; First must have a space. :-(
-                              "GitGutter"
-                              "Undo-Tree"
-                              "Fly"
-                              "ARev"
-                              "Abbrev"
-                              "Fill"
-                              "ColorIds"
-                              "FIC"
-                              "FlyC.*"))
-  (setq sml/hidden-modes (mapconcat 'identity useless-minor-modes "\\| *"))
-#+END_SRC
+  Hiding some Minor modes in the mode line is real swell, the
+  =use-package= does most of this, but a few it doesn't.
+
+  #+BEGIN_SRC elisp
+  (setq useless-minor-modes '(" Fill"   ;; First entry must have a space.
+                              "wg"
+                              "Projectile.*"))
+  (setq rm-blacklist (mapconcat 'identity useless-minor-modes "\\| "))
+  #+END_SRC
 
 * Technical Artifacts
 

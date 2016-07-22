@@ -239,7 +239,7 @@
    My [[file:emacs-mode-line.org][mode-line code]] is now more complex in order to make it more simpler.
 
    #+BEGIN_SRC elisp
-     (require 'init-mode-line)
+     (require 'init-mode-line2)
    #+END_SRC
 
 ** Whitespace Mode
