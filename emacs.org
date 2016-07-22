@@ -346,7 +346,7 @@
             about before remembering what its binding.
    - *F3* - Define a keyboard macro
    - *F4* - Replay a keyboard macro
-   - *F5* - Use org-mode’s Mark Ring feature globally
+   - *F5* - Move/Drop/Delete a visual 'mark'
    - *F6* - Open to temporary, changeable commands...
    - *F7* - Switch to another window ... Control goes the other way.
    - *F8* - Switch to buffer
@@ -354,8 +354,6 @@
      and other odd bindings that I actually don't use that often.
 
    #+BEGIN_SRC elisp
-     (global-set-key (kbd "<f5>") 'org-mark-ring-push)
-     (global-set-key (kbd "C-<f5>") 'org-mark-ring-goto)
      (global-set-key (kbd "<f7>") 'other-window)
      (global-set-key (kbd "C-<f7>") (lambda () (interactive) (other-window -1)))
    #+END_SRC
@@ -1454,7 +1452,7 @@
              bef aft)
            (abbrev-edit-save-to-file abbrev-file-name)
            (message "\"%s\" now expands to \"%s\" %s"
-                    bef aft (if p "locally" "globally"))))
+                    bef aft (if p "locally" "globally")))))
    #+END_SRC
 
    Need to turn on the mode, but not necessarily show it:
@@ -1519,48 +1517,83 @@
              ("s-k" . linum-new-mode))   ;; For Linux
    #+END_SRC
 
-** Breadcrumbs
+** Better Bookmarks
 
-   I often flubber my attempts at walking back through the movements
-   with those two key sequences. Better to set this variable so that
-   repeated =C-SPC= continue to pop back through the ring:
+   For me, bookmarks serve two functions. First, as a way to jump
+   back to interesting places by name (and annotate those places), and
+   second, as form of /bread crumbs/ while I'm toiling around a large
+   codebase.
 
+   For normal bookmarks, I'd rather use Helm:
    #+BEGIN_SRC elisp
-     (setq set-mark-command-repeat-pop t)
+     (use-package bookmark
+       :init (setq bookmark-save-flag 1)
+       :config
+       (defun ha/add-bookmark (name)
+         (interactive
+          (list (let* ((filename  (file-name-base (buffer-file-name)))
+                       (project   (projectile-project-name))
+                       (func-name (which-function))
+                       (initial   (format "%s::%s:%s " project filename func-name)))
+                  (read-string "Bookmark: " initial))))
+         (bookmark-set name))
+       :bind  (("C-c b m" . ha/add-bookmark)
+               ("C-x r m" . ha/add-bookmark)
+               ("C-x r b" . helm-bookmarks))
    #+END_SRC
 
-   More than the breadcrumbs left by marking, the [[http://www.emacswiki.org/emacs/GotoChg][goto-chg]] project
-   let's me walk back to where I last edited, which is usually more
-   accurate:
+*** Visual Bookmarks... Breadcrumbs
 
-   #+BEGIN_SRC elisp
-     (use-package goto-chg
-       :ensure t
-       :bind (("M-p" . goto-last-change)
-              ("M-n" . goto-last-change-reverse)))
-   #+END_SRC
+    For dropping visual breadcrumbs throughout a single file or
+    multiple files, we use the [[https://github.com/joodland/bm][BM package]].
 
-   Use =C-u 0 M-p= shows a description of the change you made at each point.
+    #+BEGIN_SRC elisp
+      (use-package bm
+        :ensure t
+        :init
+        (setq bm-highlight-style 'bm-highlight-only-fringe
+              bm-cycle-all-buffers t)
+        :config
+        ;; Make a more bookmarky symbol for a 'mark':
+        (define-fringe-bitmap 'bm-marker-left [127 127 127 127 127 119 99 65] 8 8 'center)
+        (let ((fringe-backgd (face-background 'fringe)))
+          (set-face-attribute 'bm-fringe-face nil
+                              :foreground "green" :background fringe-backgd))
 
-   However, if walking back through your /historical trail/ crosses
-   files, then dropping some phat marks is the correct approach.
+        (defun bm-bookmark-defun ()
+          "Drops a temporary breadcrumb/bookmark at the beginning of the current defun."
+          (interactive)
+          (save-excursion
+            (beginning-of-defun)
+            (bm-toggle)))
 
-   Leave a mark every time I re-center the screen. Then, walk back and
-   forth through its history (using the [[https://github.com/pheaver/breadcrumb][breadcrumb]] project):
+        :bind (("C-<f5>" . bm-toggle)
+               ("<f5>"   . bm-next)
+               ("M-<f5>" . bm-previous)
+               ("C-c b s" . bm-show)
+               ("C-c b r" . bm-bookmark-regexp)
+               ("C-c b f" . bm-bookmark-defun)
+               ("C-c b A" . bm-bookmark-annotate)
+               ("C-c b a" . bm-bookmark-show-annotation)
+               ("<left-margin> <mouse-1>" . bm-toggle-mouse)
+               ("<left-fringe> <mouse-1>" . bm-toggle-mouse)))
+    #+END_SRC
 
-   #+BEGIN_SRC elisp
-     (use-package breadcrumb
-       :load-path "~/Other/breadcrumb/"
-       :commands bc-set bc-previous bc-next
-       :init (defun ha/mark-and-center ()
-               "Recenter the display and drops a breadcrumb."
-               (interactive)
-               (bc-set)
-               (recenter-top-bottom))
-       :bind (("C-l" . ha/mark-and-center)
-              ("A-," . bc-previous)
-              ("A-." . bc-next)))
-   #+END_SRC
+    - C-F5 :: bm-toggle to drop a mark or remove it
+    - F5 :: bm-next to go to the next mark
+    - M-F5 :: bm-previous to go to the previous mark
+
+    - C-c b s :: bm-show brings up a buffer with all the little marks
+         and the contents their line (see =bm-show-all= for all buffers)
+    - C-c b r :: bm-bookmark-regexp to create a bunch of bookmarks
+    - C-c b f :: bm-bookmark-function to bookmark the start of the function
+    - C-c b A :: bm-bookmark-annotate Annotate the mark
+    - C-c b a ::  Show the annotation (if any of the mark) ... would be
+         nice if this could be automatically displayed.
+
+    The biggest question is if I want =bm-previous= to go to the previous
+    logical mark in the file or last mark that was set... perhaps we
+    do both with different keys?
 
 ** Smart Comments
 
@@ -1608,7 +1641,7 @@
      (use-package saveplace
         :init
         (setq-default save-place t)
-        (setq save-place-forget-unreadable-files t)
+        (setq save-place-forget-unreadable-files t
               save-place-skip-check-regexp "\\`/\\(?:cdrom\\|floppy\\|mnt\\|/[0-9]\\|\\(?:[^@/:]*@\\)?[^@/:]*[^@/:.]:\\)"))
    #+END_SRC
 
