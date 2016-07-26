@@ -113,7 +113,7 @@ each command and sub-command."
                     "list" "show" "upload" "xargs"))
 
       ;; The RECIPE command is odd, in that it only has a 'list' option:
-      
+
       (if (first cmd-list "recipe")
           (push "list" cmd-list)
 
@@ -131,7 +131,7 @@ each command and sub-command."
                       ("user" '("create" "delete" "edit" "list" "reregister" "show")))))
 
       ;; If the sub-command was RUN_LIST, then we can add another sub-sub-command:
-      
+
       (when (first cmd-list "run_list")
         (choose-cmd '("add" "remove" "set")))
 
@@ -141,7 +141,7 @@ each command and sub-command."
 
       ;; The DATA BAG FROM FILE command asks for
       ;; the name of the data bag before the file:
-      
+
       (when (and (second cmd-list "data bag") (first cmd-list "from file"))
         (choose-str)                 ; data bag BAG
         (choose-file))               ; data bag BAG FILE
@@ -178,7 +178,9 @@ Given a prefix option, it simply re-runs the previous command."
       (push knife-cmd knife--previous-commands))
 
     (message "Running: %s" knife-cmd)
-    (shell-command knife-cmd)))
+    (shell-command (format "EDITOR=emacsclient %s &" knife-cmd))))
+
+(provide 'knife)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; knife.el ends here
