@@ -1555,7 +1555,7 @@
               bm-cycle-all-buffers t)
         :config
         ;; Make a more bookmarky symbol for a 'mark':
-        (define-fringe-bitmap 'bm-marker-left [127 127 127 127 127 119 99 65] 8 8 'center)
+        (define-fringe-bitmap 'bm-marker-left [254 254 254 254 254 238 198 130] 8 8 'center)
         (let ((fringe-backgd (face-background 'fringe)))
           (set-face-attribute 'bm-fringe-face nil
                               :foreground "green" :background fringe-backgd))
