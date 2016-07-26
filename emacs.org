@@ -234,14 +234,6 @@
 
   Most of the display settings actually come from the [[file:emacs-mac.org][Mac initialization file]].
 
-** Mode Line
-
-   My [[file:emacs-mode-line.org][mode-line code]] is now more complex in order to make it more simpler.
-
-   #+BEGIN_SRC elisp
-     (require 'init-mode-line2)
-   #+END_SRC
-
 ** Whitespace Mode
 
    You don't want this on all the time, but nice to turn it on every
@@ -389,7 +381,7 @@
 
    #+BEGIN_SRC elisp
      (defun ha/highlite-logs ()
-       "Highlight certain lines in specific files. Currently, only log files are supported."
+       "Highlight certain lines in specific files.  Currently, only log files are supported."
        (interactive)
        (when (equal "log" (file-name-extension (buffer-file-name)))
              (hi-lock-mode 1)
@@ -410,7 +402,7 @@
 
    #+BEGIN_SRC elisp
      (defun ha/sprint-retrospective-highlighting ()
-       "Highlights the good, the bad and the improvements to make when taking notes."
+       "Highlight the good, the bad and the improvements to make when taking notes."
        (interactive)
        (hi-lock-mode t)
        (highlight-lines-matching-regexp "^   [-*] " 'hi-black-b)
@@ -468,7 +460,7 @@
 
    #+BEGIN_SRC elisp
      (defun narrow-or-widen-dwim (p)
-       "If the buffer is narrowed, it widens. Otherwise, it narrows intelligently.
+       "If the buffer is narrowed, it widens.  Otherwise, it narrows intelligently.
      Intelligently means: region, subtree, or defun, whichever applies
      first.
 
@@ -539,10 +531,9 @@
 
    #+BEGIN_SRC elisp
      (defun ha/window-standard-size (arg)
-       "Sets the size of the current window to 80 characters, unless
-     it already is 80 characters, in which case, set it back to its
-     previous size. A prefix ARG can be given to set the window to a
-     particular width."
+       "Set size of the current window to 80 characters.
+     If already is 80 characters, reset to its previous size.  A
+     prefix ARG can be given to set the window to a particular width."
        (interactive "p")
 
        ;; If not already set, let's store the current window width in our
@@ -632,7 +623,7 @@
 
    #+BEGIN_SRC elisp
      (defun unfill-paragraph ()
-       "Takes a multi-line paragraph and makes it into a single line of text."
+       "Convert a multi-line paragraph into a single line of text."
        (interactive)
        (let ((fill-column (point-max)))
          (fill-paragraph nil)))
@@ -795,12 +786,15 @@
 
    #+BEGIN_SRC elisp
      (defun surround (start end txt)
-       "Wraps the specified region (or the current 'symbol / word'
-     with some textual markers that this function requests from the
-     user. Opening-type text, like parens and angle-brackets will
+       "Wrap region with textual markers.
+
+      Without active region (START and END), use the current 'symbol /
+     word' at point instead of TXT.
+
+     Useful for wrapping parens and angle-brackets to also
      insert the matching closing symbol.
 
-     This function also supports some org-mode wrappers:
+     This function also supports some `org-mode' wrappers:
 
        - `#s` wraps the region in a source code block
        - `#e` wraps it in an example block
@@ -843,26 +837,18 @@
      (global-set-key (kbd "C-+") 'surround)
    #+END_SRC
 
-   To make it easier to call from other functions, let's wrap that
-   wrapper:
-
-   #+BEGIN_SRC elisp
-     (defun surround-text (txt)
-       (if (region-active-p)
-           (surround (region-beginning) (region-end) txt)
-         (surround nil nil txt)))
-   #+END_SRC
-
    This function returns an interactive lambda expression, suitable
    for adding to a key-binding:
 
    #+BEGIN_SRC elisp
      (defun surround-text-with (surr-str)
-       "Returns an interactive function that when called, will surround the region (or word) with the SURR-STR string."
+       "Return an interactive function that when called, surrounds region (or word) with string, SURR-STR."
        (lexical-let ((text surr-str))
-         (lambda ()
-           (interactive)
-           (surround-text text))))
+           (lambda ()
+             (interactive)
+             (if (region-active-p)
+                 (surround (region-beginning) (region-end) text)
+               (surround nil nil text)))))
    #+END_SRC
 
 * Loading and Finding Files
@@ -1019,6 +1005,7 @@
 
     #+BEGIN_SRC elisp
       (defun ido-sort-mtime ()
+        "Reorder the IDO file list to sort from most recently modified."
         (setq ido-temp-list
               (sort ido-temp-list
                     (lambda (a b)
@@ -1152,6 +1139,7 @@
 
     #+BEGIN_SRC elisp
       (defun locate-org-files (search-string)
+        "Adjust `locate-with-filter' to only search `org-mode' files with SEARCH-STRING."
         (interactive "sSearch string: ")
         (locate-with-filter search-string ".org$"))
 
@@ -1184,10 +1172,11 @@
 
     #+BEGIN_SRC elisp
       (defun find-notes (words)
-        "Uses my 'find-notes' shell script as a better grep
-      utility. Not only does it show the results in a clickable list,
-      it also highlights the result, allowing us to put more context in
-      the output."
+        "Search `org-mode' files in specific directories for WORDS.
+
+      Uses `find-notes' shell script as a better grep utility.  Not only
+      does it show the results in a clickable list, it also highlights
+      the result, allowing us to put more context in the output."
         (interactive "sSearch for words:")
         (let ((program (concat (getenv "HOME") "/bin/find-notes"))
               (buffer-name (concat "*find-notes: " words "*")))
@@ -1247,7 +1236,7 @@
 
    #+BEGIN_SRC elisp
      (defun save-all ()
-       "Saves all dirty buffers without asking for confirmation."
+       "Save all dirty buffers without asking for confirmation."
        (interactive)
        (save-some-buffers t))
 
@@ -1393,7 +1382,7 @@
 
    #+BEGIN_SRC elisp
      (defun flyspell-goto-previous-error (arg)
-       "Go to arg previous spelling error."
+       "Go to ARG previous spelling error."
        (interactive "p")
        (while (not (= 0 arg))
          (let ((pos (point))
@@ -1439,8 +1428,9 @@
 
    #+BEGIN_SRC elisp
      (defun ha/ispell-word-then-abbrev (p)
-       "Call `ispell-word'. Then create an abbrev for the correction made.
-     With prefix P, create local abbrev. Otherwise it will be global."
+       "Call `ispell-word'.  After create an abbrev for the correction made.
+     With prefix P, create local abbrev.  Otherwise it will be
+     global."
        (interactive "P")
        (flyspell-goto-previous-error 1)
        (let ((bef (downcase (or (thing-at-point 'word) ""))) aft)
@@ -1539,7 +1529,7 @@
          (bookmark-set name))
        :bind  (("C-c b m" . ha/add-bookmark)
                ("C-x r m" . ha/add-bookmark)
-               ("C-x r b" . helm-bookmarks))
+               ("C-x r b" . helm-bookmarks)))
    #+END_SRC
 
 *** Visual Bookmarks... Breadcrumbs

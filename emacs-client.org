@@ -249,8 +249,7 @@ other systems with a graphical front-end.
   And the default startup goes to...night...
 
   #+BEGIN_SRC elisp
-    (ha/change-theme 'color-theme-sanityinc-tomorrow-night
-                     'org-src-color-blocks-dark)
+    (require 'init-mode-line2)
   #+END_SRC
 
   And the best colored highlighting of selected text needs to be both

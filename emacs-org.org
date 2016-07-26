@@ -96,14 +96,16 @@ Emacs love affair.
   Now we can associate some keystrokes to the org-mode:
 
   #+BEGIN_SRC elisp
-    (add-hook 'org-mode-hook
-          (lambda ()
-            (local-set-key (kbd "A-b") 'org-text-bold)
-            (local-set-key (kbd "s-b") 'org-text-bold)    ;; For Linux
-            (local-set-key (kbd "A-i") 'org-text-italics)
-            (local-set-key (kbd "s-i") 'org-text-italics)
-            (local-set-key (kbd "A-=") 'org-text-code)
-            (local-set-key (kbd "s-=") 'org-text-code)))
+    (use-package org
+      :config
+       (bind-key "A-b" (surround-text-with "+") org-mode-map)
+       (bind-key "s-b" (surround-text-with "*") org-mode-map)
+       (bind-key "A-i" (surround-text-with "/") org-mode-map)
+       (bind-key "s-i" (surround-text-with "/") org-mode-map)
+       (bind-key "A-=" (surround-text-with "=") org-mode-map)
+       (bind-key "s-=" (surround-text-with "=") org-mode-map)
+       (bind-key "A-`" (surround-text-with "~") org-mode-map)
+       (bind-key "s-`" (surround-text-with "~") org-mode-map))
   #+END_SRC
 
 * Color and Display
