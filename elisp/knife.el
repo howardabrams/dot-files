@@ -19,6 +19,11 @@
 ;;  remembers it, so that calling `M-x knife' again, allows you to
 ;;  select a previous knife call, or create another.
 ;;
+;;  If you're `knife' command work with the default configuration
+;;  file, then you can start a `knife client show' or `knife node
+;;  show', it will automatically populate the list of the available
+;;  nodes.
+;;
 ;;  If the command typed ends with a -c, it prompts for a knife
 ;;  configuration file (change the `knife--config-directory' for the
 ;;  default directory for this).
@@ -49,6 +54,10 @@
 ;;              choices will *appear* with an initial `knife' command,
 ;;              but it uses your command during execution.
 ;;
+;;   - v.1.4 :: Starting a sub-command to `knife node' or `knife
+;;              client' will pre-populate it with the list of
+;;              available nodes or clients.
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; This program is free software; you can redistribute it and/or
@@ -70,6 +79,9 @@
 ;;
 ;;; Code:
 
+(require 'cl)
+(require 's)
+
 (defcustom knife--knife-command "knife"
   "The command to run `knife'. This can be changed to
   `proxychains4 -q knife' to work through certain tunnels.")
@@ -82,7 +94,7 @@
   "Default directory for Chef cookbooks. Directory read when a
   `knife' commands ends with a `-o'.")
 
-(defvar knife--previous-commands '("<New Request>")
+(defvar knife--previous-commands '("<<New Request>>")
   "A list of all `knife` commands we've used.  Add to this list
 some predefined commands you often use:
 
@@ -92,6 +104,27 @@ some predefined commands you often use:
 Just make sure that you do NOT pre-pend the `knife' command, as
 that will automatically be added with the contents of
 `knife--knife-command'.")
+
+(defun knife--host-list (cmd)
+  "Return a list of all nodes the default `knife' command knows."
+  (let ((knife-cmd (format "%s %s list" knife--knife-command cmd)))
+    (shell-command knife-cmd)
+    (let* ((buf "*Shell Command Output*")
+           (nodes (with-current-buffer buf
+                    (let ((output (buffer-string)))
+                      (bury-buffer buf)
+                      (s-split "\n" output)))))
+
+      (mapcar (lambda (e) (if (string-empty-p e) "<<other>>" e))
+              nodes))))
+
+(defun knife--node-list ()
+  "Return a list of all Chef nodes."
+  (knife--host-list "node"))
+
+(defun knife--client-list ()
+  "Return a list of all Chef clients."
+  (knife--host-list "client"))
 
 (defun knife--build-command-line ()
   "Build a `knife' command line string by using IDO to select
@@ -105,17 +138,19 @@ each command and sub-command."
     ;; function easier to parse and read ... of course, these
     ;; mini-functions may require a bit of explanation:
 
-    (cl-flet* (;; Combine our list into a string, but in reverse:
+    (cl-flet* ((cmd-push (option) (when (not (s-starts-with-p "<" option))
+                                    (push option cmd-list)))
+
+               ;; Combine our list into a string, but in reverse:
                (join (lst) (concat (mapconcat 'identity (reverse lst) " ") " "))
                ;; Wrappers around completing-read for each type of data:
                (choose-cmd (options)
-                           (push (ido-completing-read (join cmd-list)
-                                                      options) cmd-list))
+                           (cmd-push (ido-completing-read (join cmd-list) options)))
                (choose-file (&optional dir)
-                            (push (ido-read-file-name (join cmd-list) dir) cmd-list))
+                            (cmd-push (ido-read-file-name (join cmd-list) dir)))
                (choose-dir (&optional dir)
-                           (push (ido-read-directory-name (join cmd-list) dir) cmd-list))
-               (choose-str () (push (read-string (join cmd-list)) cmd-list))
+                           (cmd-push (ido-read-directory-name (join cmd-list) dir)))
+               (choose-str () (cmd-push (read-string (join cmd-list))))
 
                (first (lst elt)   (equal (car lst) elt))
                (second (lst elt)  (equal (cadr lst) elt))
@@ -133,7 +168,7 @@ each command and sub-command."
       ;; The RECIPE command is odd, in that it only has a 'list' option:
 
       (if (first cmd-list "recipe")
-          (push "list" cmd-list)
+          (cmd-push "list")
 
         ;; Many of the other options, accept a SUB-COMMAND, add one
         ;; based on the command at the top of the `cmds' list:
@@ -148,21 +183,31 @@ each command and sub-command."
                       ("tag" '("create" "delete" "list"))
                       ("user" '("create" "delete" "edit" "list" "reregister" "show")))))
 
-      ;; If the sub-command was RUN_LIST, then we can add another sub-sub-command:
-
-      (when (first cmd-list "run_list")
+      (cond
+       ;; If the sub-command was RUN_LIST, then we can add another sub-sub-command:
+       ((first cmd-list "run_list")
         (choose-cmd '("add" "remove" "set")))
 
-      ;; Some sub-commands ask for a file:
-      (when (or (first cmd-list "metadata from") (first cmd-list "from file"))
+       ;; Asking for a client subcommand probably requires adding a node name:
+       ((and (second cmd-list "node")
+             (not (or (first cmd-list "list")
+                      (first cmd-list "create"))))
+        (choose-cmd (knife--node-list)))
+
+       ((and (second cmd-list "client")
+             (not (or (first cmd-list "list")
+                      (first cmd-list "create"))))
+        (choose-cmd (knife--client-list)))
+
+       ;; Some sub-commands ask for a file:
+       ((or (first cmd-list "metadata from") (first cmd-list "from file"))
         (choose-file))
 
-      ;; The DATA BAG FROM FILE command asks for
-      ;; the name of the data bag before the file:
-
-      (when (and (second cmd-list "data bag") (first cmd-list "from file"))
+       ;; The DATA BAG FROM FILE command asks for
+       ;; the name of the data bag before the file:
+       ((and (second cmd-list "data bag") (first cmd-list "from file"))
         (choose-str)                 ; data bag BAG
-        (choose-file))               ; data bag BAG FILE
+        (choose-file)))               ; data bag BAG FILE
 
       ;; Final options are just added to the list:
       (choose-str)
@@ -187,20 +232,26 @@ like references to a configuration file.
 
 Given a prefix option, it simply re-runs the previous command."
   (interactive)
-  (let ((new-cmd (car (last knife--previous-commands)))
-        (knife-args (ido-completing-read "Run Command: "
-                                         (mapcar (lambda (e) (format "knife %s" e)) knife--previous-commands))))
-    (when (equal knife-args new-cmd)
-      ;; Requested a new command, so let's go through the process
-      ;; and reset the 'knife-args' to the new choice:
-      (setq knife-args (knife--build-command-line))
-      (push knife-args knife--previous-commands))
+  (let ((new-cmd (car (last knife--previous-commands))))
+    (cl-flet* ((convert-entry (e) (if (equal new-cmd e)
+                                      e
+                                    (format "knife %s" e)))
+               (converted-history () (mapcar #'convert-entry
+                                             knife--previous-commands)))
+      (let* ((knife-choice (ido-completing-read "Run: " (converted-history)))
+             (knife-args   (if (not (equal knife-choice new-cmd))
+                               (replace-regexp-in-string "^knife " "" knife-choice)
 
-    (let ((knife-cmd (format "EDITOR=emacsclient %s %s &"
-                             knife--knife-command
-                             knife-args)))
-      (message "Running: %s" knife-cmd)
-      (shell-command knife-cmd))))
+                             ;; Requested a new command, so historically store this choice
+                             (push (knife--build-command-line) knife--previous-commands)
+                             ;; And then use the args for the knife command
+                             (car knife--previous-commands))))
+
+
+        (let ((knife-cmd (format "EDITOR=emacsclient %s %s &"
+                                 knife--knife-command knife-args)))
+          (message "Running: %s" knife-cmd)
+          (shell-command knife-cmd))))))
 
 (provide 'knife)
 
