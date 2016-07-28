@@ -39,6 +39,16 @@
 ;;
 ;;   - v.1.2 :: Pulled out hard-coded strings into customizable values.
 ;;
+;;   - v.1.3 :: Init files can pre-load knife commands into the
+;;              `knife--previous-commands' list, these should not
+;;              contain the `knife' command, as the variable,
+;;              `knife--knife-command' will be automatically
+;;              pre-pended to it.
+;;
+;;              Note: if you customize the command, your previous
+;;              choices will *appear* with an initial `knife' command,
+;;              but it uses your command during execution.
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; This program is free software; you can redistribute it and/or
@@ -73,7 +83,15 @@
   `knife' commands ends with a `-o'.")
 
 (defvar knife--previous-commands '("<New Request>")
-  "A list of all `knife` commands we've used.")
+  "A list of all `knife` commands we've used.  Add to this list
+some predefined commands you often use:
+
+    (add-to-list 'knife--previous-commands \"node list\")
+    (add-to-list 'knife--previous-commands \"cookbook list\")
+
+Just make sure that you do NOT pre-pend the `knife' command, as
+that will automatically be added with the contents of
+`knife--knife-command'.")
 
 (defun knife--build-command-line ()
   "Build a `knife' command line string by using IDO to select
@@ -159,7 +177,7 @@ each command and sub-command."
         (choose-str))
 
       ;; The actual knife command line is just a join of what was specified:
-      (join cmd-list))))
+      (join (butlast cmd-list)))))
 
 (defun knife ()
   "An IDO interface to the `knife` command. Each step prompts for
@@ -170,15 +188,19 @@ like references to a configuration file.
 Given a prefix option, it simply re-runs the previous command."
   (interactive)
   (let ((new-cmd (car (last knife--previous-commands)))
-        (knife-cmd (ido-completing-read "Run Command: " knife--previous-commands)))
-    (when (equal knife-cmd new-cmd)
+        (knife-args (ido-completing-read "Run Command: "
+                                         (mapcar (lambda (e) (format "knife %s" e)) knife--previous-commands))))
+    (when (equal knife-args new-cmd)
       ;; Requested a new command, so let's go through the process
-      ;; and reset the 'knife-cmd' to the new choice:
-      (setq knife-cmd (knife--build-command-line))
-      (push knife-cmd knife--previous-commands))
+      ;; and reset the 'knife-args' to the new choice:
+      (setq knife-args (knife--build-command-line))
+      (push knife-args knife--previous-commands))
 
-    (message "Running: %s" knife-cmd)
-    (shell-command (format "EDITOR=emacsclient %s &" knife-cmd))))
+    (let ((knife-cmd (format "EDITOR=emacsclient %s %s &"
+                             knife--knife-command
+                             knife-args)))
+      (message "Running: %s" knife-cmd)
+      (shell-command knife-cmd))))
 
 (provide 'knife)
 
