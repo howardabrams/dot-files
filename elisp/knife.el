@@ -1,4 +1,4 @@
-;;; KNIFE --- Runs Chef's knife command with ido completions
+;;; KNIFE --- Runs Chef's knife command with argument completion
 ;;
 ;; Author: Howard Abrams <howard.abrams@gmail.com>
 ;; Copyright © 2016, Howard Abrams, all rights reserved.
@@ -12,26 +12,29 @@
 ;;  the results.
 ;;
 ;;  Anyone who plays with Chef's `knife' command realizes that, while
-;;  flexible, has a dizzying array of options, commands, sub-commands
-;;  and sometimes, sub-sub-commands. I figured that I could use the
-;;  IDO's `ido-completing-read' function at each step along the way to
-;;  build up the command line. Once you've executed it once, it
+;;  flexible, it has a dizzying array of options, commands,
+;;  sub-commands and sometimes, sub-sub-commands. I figured that I
+;;  could use the IDO's `ido-completing-read' function at each step
+;;  along the way to build up the command line (or at least,
+;;  `completing-read'). Once you've executed a command sequence, it
 ;;  remembers it, so that calling `M-x knife' again, allows you to
-;;  select a previous knife call, or create another.
+;;  select a previous knife call, or create a new invocation.
 ;;
-;;  If you're `knife' command work with the default configuration
+;;  If you're `knife' command works with the default configuration
 ;;  file, then you can start a `knife client show' or `knife node
-;;  show', it will automatically populate the list of the available
-;;  nodes.
+;;  show', and it will automatically populate the list of the
+;;  available nodes.
 ;;
-;;  If the command typed ends with a -c, it prompts for a knife
-;;  configuration file (change the `knife--config-directory' for the
-;;  default directory for this).
+;;  If the command sequence ends with a `-c', it prompts for a knife
+;;  configuration file (change `knife--config-directory' for the
+;;  default directory).
 ;;
-;;  If the command typed ends with a -o, it prompts for a directory
+;;  If the command typed ends with a `-o', it prompts for a directory
 ;;  containing the cookbook you want to upload (change the
 ;;  `knife--repository-directory' for the default directory value for
 ;;  this).
+;;
+;;  What next?
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -57,6 +60,8 @@
 ;;   - v.1.4 :: Starting a sub-command to `knife node' or `knife
 ;;              client' will pre-populate it with the list of
 ;;              available nodes or clients.
+;;
+;;   - v.1.5 :: Removed the hard dependency on IDO... still nice to have.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -106,17 +111,15 @@ that will automatically be added with the contents of
 `knife--knife-command'.")
 
 (defun knife--host-list (cmd)
-  "Return a list of all nodes the default `knife' command knows."
-  (let ((knife-cmd (format "%s %s list" knife--knife-command cmd)))
-    (shell-command knife-cmd)
-    (let* ((buf "*Shell Command Output*")
-           (nodes (with-current-buffer buf
-                    (let ((output (buffer-string)))
-                      (bury-buffer buf)
-                      (s-split "\n" output)))))
-
-      (mapcar (lambda (e) (if (string-empty-p e) "<<other>>" e))
-              nodes))))
+  "Return list of all systems the default `knife' command knows.
+CMD can either be `node' or `client' to get the nodes or clients
+respectively."
+  (let* ((knife-cmd (format "%s %s list" knife--knife-command cmd))
+         (output    (shell-command-to-string knife-cmd))
+         (nodes     (split-string output)))   ; No node can have an embedded space, right?
+    ;; Append a string that begins with a < character, which if
+    ;; selected, tells the caller the user wants to select no node.
+    (nconc nodes '("<<other>>"))))
 
 (defun knife--node-list ()
   "Return a list of all Chef nodes."
@@ -130,31 +133,54 @@ that will automatically be added with the contents of
   "Build a `knife' command line string by using IDO to select
 each command and sub-command."
 
-  ;; Create a list of parts for the `knife' command invocation.
-  ;; Begin with the actual `knife' executable:
-  (let ((cmd-list (list knife--knife-command)))
+  ;; Create a list of parts for the `knife' command invocation.  Begin
+  ;; with the word `knife' as a prompt... it will be replaced with the
+  ;; contents of `knife--knife-command':
+  (let ((cmd-list '("knife")))
 
     ;; Created a few helper functions to make the code in this
-    ;; function easier to parse and read ... of course, these
-    ;; mini-functions may require a bit of explanation:
+    ;; function easier to parse and read, without polluting the global
+    ;; name-space:
 
-    (cl-flet* ((cmd-push (option) (when (not (s-starts-with-p "<" option))
+    (cl-flet* (;; Like `push', but won't push our global indication of
+               ;; a *new entry*... that is, something that starts with <
+               (cmd-push (option) (when (not (s-starts-with-p "<" option))
                                     (push option cmd-list)))
 
-               ;; Combine our list into a string, but in reverse:
+               ;; Combine our list into a string, but in reverse. Used for prompts
                (join (lst) (concat (mapconcat 'identity (reverse lst) " ") " "))
-               ;; Wrappers around completing-read for each type of data:
+
+               ;; Wrapper around the IDO function so that library is
+               ;; not a direct dependency. Helm too? Maybe later.
+               (c-read (prompt options)
+                       (if #'ido-completing-read
+                           (ido-completing-read prompt options)
+                         (completing-read prompt options)))
+
+               (c-read-file (prompt dir)
+                            (if #'ido-read-file-name
+                                (ido-read-file-name prompt dir)
+                              (read-file-name prompt dir)))
+               (c-read-dir (prompt dir)
+                           (if #'ido-read-directory-name
+                               (ido-read-directory-name prompt dir)
+                             (read-directory-name prompt dir)))
+
+               ;; Wrappers around completing-read for each type of
+               ;; data that creates a prompt based on the `cmd-list'
+               ;; entered so far:
                (choose-cmd (options)
-                           (cmd-push (ido-completing-read (join cmd-list) options)))
+                           (cmd-push (c-read (join cmd-list) options)))
                (choose-file (&optional dir)
-                            (cmd-push (ido-read-file-name (join cmd-list) dir)))
+                            (cmd-push (c-read-file (join cmd-list) dir)))
                (choose-dir (&optional dir)
-                           (cmd-push (ido-read-directory-name (join cmd-list) dir)))
+                           (cmd-push (c-read-dir (join cmd-list) dir)))
                (choose-str () (cmd-push (read-string (join cmd-list))))
 
+               ;; Predicates without a -p:
                (first (lst elt)   (equal (car lst) elt))
                (second (lst elt)  (equal (cadr lst) elt))
-               (first-ends-with (lst elt) (string-suffix-p elt (car lst))))
+               (ends-with (lst elt) (string-suffix-p elt (car lst))))
 
       ;; Top-level KNIFE commands:
       (choose-cmd '("client" "configure" "cookbook" "data bag"
@@ -184,7 +210,8 @@ each command and sub-command."
                       ("user" '("create" "delete" "edit" "list" "reregister" "show")))))
 
       (cond
-       ;; If the sub-command was RUN_LIST, then we can add another sub-sub-command:
+       ;; If the sub-command was RUN_LIST, then we can add another
+       ;; sub-sub-command:
        ((first cmd-list "run_list")
         (choose-cmd '("add" "remove" "set")))
 
@@ -206,8 +233,8 @@ each command and sub-command."
        ;; The DATA BAG FROM FILE command asks for
        ;; the name of the data bag before the file:
        ((and (second cmd-list "data bag") (first cmd-list "from file"))
-        (choose-str)                 ; data bag BAG
-        (choose-file)))               ; data bag BAG FILE
+        (choose-str)                    ; data bag BAG
+        (choose-file)))                 ; data bag BAG FILE
 
       ;; Final options are just added to the list:
       (choose-str)
@@ -215,8 +242,8 @@ each command and sub-command."
       ;; If the knife command sequence ends with a -c, we choose a
       ;; file. If it ends with a -o, we choose a directory. We then
       ;; ask for more options:
-      (while (or (first-ends-with cmd-list "-c") (first-ends-with cmd-list "-o"))
-        (if (first-ends-with cmd-list "-c")
+      (while (or (ends-with cmd-list "-c") (ends-with cmd-list "-o"))
+        (if (ends-with cmd-list "-c")
             (choose-file knife--config-directory)
           (choose-dir knife--repository-directory))
         (choose-str))
@@ -232,21 +259,28 @@ like references to a configuration file.
 
 Given a prefix option, it simply re-runs the previous command."
   (interactive)
-  (let ((new-cmd (car (last knife--previous-commands))))
-    (cl-flet* ((convert-entry (e) (if (equal new-cmd e)
+  (let ((new-cmd-str (car (last knife--previous-commands))))
+
+    (cl-flet* (;; Unless E is the <<new-cmd-str>>, prepend the word "knife":
+               (convert-entry (e) (if (equal new-cmd-str e)
                                       e
                                     (format "knife %s" e)))
+               ;; All historical entries will be converted to have 'knife' prepended:
                (converted-history () (mapcar #'convert-entry
                                              knife--previous-commands)))
-      (let* ((knife-choice (ido-completing-read "Run: " (converted-history)))
-             (knife-args   (if (not (equal knife-choice new-cmd))
+
+      ;; Choose a historical knife command ... or a <<new-cmd-str>>:
+      (let* ((knife-choice (if #'ido-completing-read
+                               (ido-completing-read "Run: " (converted-history))
+                             (completing-read "Run: " (converted-history))))
+
+             (knife-args   (if (not (equal knife-choice new-cmd-str))
                                (replace-regexp-in-string "^knife " "" knife-choice)
 
                              ;; Requested a new command, so historically store this choice
                              (push (knife--build-command-line) knife--previous-commands)
                              ;; And then use the args for the knife command
                              (car knife--previous-commands))))
-
 
         (let ((knife-cmd (format "EDITOR=emacsclient %s %s &"
                                  knife--knife-command knife-args)))
