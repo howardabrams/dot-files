@@ -173,10 +173,7 @@ other systems with a graphical front-end.
        '(org-block
          ((t (:background "#FFFFEA"))))
        '(org-block-end-line
-         ((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF"))))
-
-       '(mode-line-buffer-id ((t (:foreground "#005000" :bold t))))
-       '(which-func ((t (:foreground "#008000"))))))
+         ((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF"))))))
 
     (defun org-src-color-blocks-dark ()
       "Colors the block headers and footers to make them stand out more for dark themes"
@@ -189,10 +186,7 @@ other systems with a graphical front-end.
        '(org-block
          ((t (:background "#000000"))))
        '(org-block-end-line
-         ((t (:foreground "#008ED1" :background "#002E41"))))
-
-       '(mode-line-buffer-id ((t (:foreground "black" :bold t))))
-       '(which-func ((t (:foreground "green"))))))
+         ((t (:foreground "#008ED1" :background "#002E41"))))))
   #+END_SRC
 
   No matter, the theme, I like /some/ of the ideas in the [[https://github.com/jonnay/emagicians-starter-kit/blob/master/themes/org-beautify-theme.org][EMagicians Starter Kit]],
@@ -249,6 +243,21 @@ other systems with a graphical front-end.
   And the default startup goes to...night...
 
   #+BEGIN_SRC elisp
+    (ha/change-theme 'color-theme-sanityinc-tomorrow-night 'org-src-color-blocks-dark)
+
+    (custom-set-faces
+     '(mode-line           ((t (:background "blue4"   :foreground "gray90"))))
+     '(mode-line-inactive  ((t (:background "#404045" :foreground "gray60"))))
+     '(mode-line-buffer-id ((t (                      :foreground "gold1"   :weight ultra-bold))))
+     '(which-func          ((t (                      :foreground "orange"))))
+     '(show-paren-match    ((t (:background "default" :foreground "#afa"    :weight ultra-bold))))
+     '(show-paren-mismatch ((t (:background "default" :foreground "#cc6666" :weight ultra-bold)))))
+  #+END_SRC
+
+  My mode line has become quite complicated, so I've pulled it out
+  into its own file:
+
+  #+BEGIN_SRC elisp
     (require 'init-mode-line2)
   #+END_SRC
 
@@ -257,7 +266,7 @@ other systems with a graphical front-end.
   =list-colors-display=). Favorites so far are =purple4= and =DarkOrange3=:
 
   #+BEGIN_SRC elisp
-    (set-face-background 'region "blue4")
+    (set-face-background 'region "blue3")
   #+END_SRC
 
   My main reason for wanting to use the color theme project is to

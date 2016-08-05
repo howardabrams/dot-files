@@ -19,10 +19,14 @@ creating a better mode line in Emacs.
       :init (add-hook 'after-init-hook 'sml/setup)
       :config
       ;; Shorten a couple of well-known directories ... these need to be first:
-      (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" ":Goo:"))
-      (add-to-list 'sml/replacer-regexp-list '("^~/Google/" ":Goo:"))
-      (add-to-list 'sml/replacer-regexp-list '("^~/google/" ":Goo:"))
-      (add-to-list 'sml/replacer-regexp-list '("^~/Dropbox/" ":DB:"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" "𝔾:"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Google/" "𝔾:"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/google/" "𝔾:"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Dropbox/" "◰:"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Work/" "𝕎:"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Workspace/" "𝕎:"))
+
+      (add-to-list 'sml/replacer-regexp-list '("^~/website/" "[]"))
 
       ;; Fix a couple of long project names with an icon:
       (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/technical/" "[τεκ]"))
@@ -33,8 +37,8 @@ creating a better mode line in Emacs.
       (add-to-list 'sml/replacer-regexp-list '("^~/Google/Notes/" "[✏]"))
       (add-to-list 'sml/replacer-regexp-list '("^~/Notes/" "[✏]"))
 
-      (add-to-list 'sml/replacer-regexp-list '("^~/Other/dot-files/" "[•]"))
-      (add-to-list 'sml/replacer-regexp-list '("^~/Work/dot-files/" "[•]"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Other/dot-files/" "[◕]"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Work/dot-files/" "[◕]"))
 
       (sml/apply-theme 'dark))
   #+END_SRC
