@@ -569,6 +569,7 @@
    #+BEGIN_SRC elisp
      (use-package workgroups2
        :ensure t
+       :diminish workgroups-mode
        :init
        (setq wg-prefix-key (kbd "C-c a")
              wg-session-file "~/.emacs.d/workgroups"
@@ -2193,6 +2194,8 @@
 
    I like having Magit to run in a /full screen/ mode, and add the
    above =defadvice= idea from [[https://github.com/magnars/.emacs.d/blob/master/setup-magit.el][Sven Magnars]].
+
+   *Note:* Use the [[https://github.com/jwiegley/emacs-release/blob/master/lisp/vc/smerge-mode.el][smerge-mode]] that is now part of Emacs.
 
 ** Markdown
 
