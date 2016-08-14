@@ -63,7 +63,6 @@ other systems with a graphical front-end.
      ("M-<right>" . forward-word))
   #+END_SRC
 
-* Key Bindings
 
   Gotta get rid of the bloody =C-x C-c=, for it is too close to the
   tangling key binding of =C-c C-v= ... besides, I never quit Emacs.

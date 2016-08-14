@@ -139,9 +139,8 @@
 
      (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
                               ("gnu"       . "http://elpa.gnu.org/packages/")
-                              ("melpa"     . "http://melpa.org/packages/")
-                              ("marmalade" . "https://marmalade-repo.org/packages/")
-                             ))
+                              ("melpa"     . "http://stable.melpa.org/packages/")
+                              ("marmalade" . "http://marmalade-repo.org/packages/")))
 
      (package-initialize)
      (package-refresh-contents)
@@ -567,7 +566,7 @@
    existing bugs in that project, I've switched to [[https://github.com/pashinin/workgroups2][workgroups2]]:
 
    #+BEGIN_SRC elisp
-     (use-package workgroups2
+     (use-package workgroups
        :ensure t
        :diminish workgroups-mode
        :init
@@ -1594,7 +1593,6 @@
 
    #+BEGIN_SRC elisp
      (use-package smart-comment
-       :ensure t
        :bind ("M-;" . smart-comment))
    #+END_SRC
 
@@ -1804,15 +1802,6 @@
      (use-package idomenu
        :ensure t
        :bind ("C-c i" . idomenu))
-   #+END_SRC
-
-   And if I'm lazy and willing to use the mouse:
-
-   #+BEGIN_SRC elisp
-     (use-package imenu+
-       :ensure t
-       :init (add-hook 'prog-mode-hook 'imenup-add-defs-to-menubar)
-             (add-hook 'org-mode-hook  'imenup-add-defs-to-menubar))
    #+END_SRC
 
    If I don't know what I'm after, Helm is better:
@@ -2230,10 +2219,10 @@
    #+BEGIN_SRC elisp
      (let ((plantuml-jar (car (file-expand-wildcards "/usr/local/Cellar/plantuml/*/plantuml*.jar"))))
        (if plantuml-jar
-           (use-package plantuml-mode
+           (use-package puml-mode
              :ensure t
              :init
-             (setq plantuml-jar-path     plantuml-jar
+             (setq puml-plantuml-jar-path plantuml-jar
                    org-plantuml-jar-path plantuml-jar))))
    #+END_SRC
 

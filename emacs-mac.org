@@ -14,6 +14,7 @@ then, only during a graphical run.
 
   #+BEGIN_SRC elisp
     (setq mac-option-modifier 'meta)
+    (setq mac-command-modifier 'super)
   #+END_SRC
 
   Once upon a time, I thought I would get confused and hit a
@@ -70,7 +71,7 @@ then, only during a graphical run.
    The [[http://kapeli.com/][Dash product]] is nice, and [[https://github.com/Kapeli/dash-at-point][this project]] allows Emacs to open
    Dash for documentation of anything with a =C-c d= keystroke:
 
-   #+BEGIN_SRC elisp
+   #+BEGIN_SRC elisp :tangle no
      (use-package dash-at-point
        :ensure t
        :bind ("C-c d d" . dash-at-point-with-docset)

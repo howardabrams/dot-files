@@ -324,25 +324,6 @@ some significant differences to address. To this end, I [[http://www.howardism.o
     (setq eshell-highlight-prompt nil)
   #+END_SRC
 
-* Stack the Buffer
-
-  One of the few things I miss about ZShell is the ability to easily
-  save off a half-finished command for later invocation. I now have
-  =M-q= functionality with [[https://github.com/tom-tan/esh-buf-stack][esh-buf-stack]]:
-
-  #+BEGIN_SRC elisp
-    (use-package esh-buf-stack
-      :ensure t
-      :commands eshell-push-command
-      :config
-      (setup-eshell-buf-stack)
-      (define-key eshell-mode-map (kbd "M-q") 'eshell-push-command))
-  #+END_SRC
-
-  If half-way through typing a long command and need something else,
-  just =M-q= to hide it, type the new command, and continue where I
-  left off.
-
 * Shell Here
 
   If I make an alias that closes a window easily, I can have a quick
