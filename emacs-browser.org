@@ -101,15 +101,17 @@ hide lots of useless text for various web pages.
       ;; Now we need to display the current setting. The variables are
       ;; pretty typical and have the goodies, but I just need to get rid
       ;; of the word "url" or "browser", and the results are pretty close:
-      (message "Browser set to: %s"
-               (car
-                (filter (lambda (x)
-                          (if (or (equal "url" x)
-                                  (equal "browse" x)
-                                  (equal "browser" x))
-                              nil
-                            t))
-                        (split-string (format "%s" browse-url-browser-function) "-")))))
+      (cl-flet ((remove-bad-parts (l)
+                                  (-filter (lambda (s) (pcase s
+                                                    ("url"     nil)
+                                                    ("browse"  nil)
+                                                    ("browser" nil)
+                                                    (_  t))) l)))
+        (message "Browser set to: %s"
+                 (-> (symbol-name browse-url-browser-function)
+                     (split-string "-")
+                     remove-bad-parts
+                     car))))
 
     (global-set-key (kbd "C-c w d") 'ha-switch-default-browser)
     #+END_SRC

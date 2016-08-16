@@ -268,20 +268,6 @@ other systems with a graphical front-end.
     (set-face-background 'region "blue3")
   #+END_SRC
 
-  My main reason for wanting to use the color theme project is to
-  switch between /black on white/ during the day, and /white on
-  black/ at night. Because I have to pass function references to
-  my =define-sequence= macro, I use the =list= function call instead of
-  quoting the list:
-
-  #+BEGIN_SRC elisp
-    (define-sequence 'personal-theme-map "<f9> d" 'ha/change-theme
-      (list (list "d" 'color-theme-sanityinc-tomorrow-day      'org-src-color-blocks-light)  ; White on Black
-            (list "l" 'color-theme-sanityinc-tomorrow-eighties 'org-src-color-blocks-dark)   ; Lt. Gray on Gray
-            (list "m" 'color-theme-sanityinc-tomorrow-bright   'org-src-color-blocks-dark)   ; Bright on Black
-            (list "n" 'color-theme-sanityinc-tomorrow-night    'org-src-color-blocks-dark))) ; White on Gray
-  #+END_SRC
-
 * Undo and Redo
 
   According to [[http://ergoemacs.org/emacs/emacs_best_redo_mode.html][this article]], I get better functionality than

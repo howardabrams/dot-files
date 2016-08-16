@@ -119,13 +119,6 @@
      (add-to-list 'load-path (ha/emacs-subdirectory "elisp"))
    #+END_SRC
 
-   Load up my special collection of enhancements to Emacs Lisp:
-
-   #+BEGIN_SRC elisp
-     (require 'cl)
-     (require 'init-support)
-   #+END_SRC
-
 * Package Initialization
 ** Package Manager
 
@@ -158,6 +151,23 @@
 
      (require 'use-package)
    #+END_SRC
+
+** Init File Support
+
+   Load up my collection of enhancements to Emacs Lisp, including [[https://github.com/magnars/dash.el][dash]]
+   and [[https://github.com/magnars/s.el][s]] for string manipulation, as much of my initialization code
+   depends on it.
+
+   #+BEGIN_SRC elisp
+     (require 'cl)
+
+     (use-package dash
+       :ensure t
+       :config (eval-after-load "dash" '(dash-enable-font-lock)))
+
+     (use-package s
+       :ensure t)
+    #+END_SRC
 
 * Variables
 
@@ -1970,18 +1980,6 @@
        (add-hook 'emacs-lisp-mode-hook 'global-prettify-symbols-mode)
        (add-hook 'emacs-lisp-mode-hook 'activate-aggressive-indent))
    #+END_SRC
-
-*** Dash List Library
-
-    [[https://github.com/magnars/dash.el][Dash]] is cool and useful for dealing with collections in a standard
-    functional way.
-
-    #+BEGIN_SRC elisp
-      (use-package dash
-        :ensure t
-        :defer 60
-        :config (eval-after-load "dash" '(dash-enable-font-lock)))
-    #+END_SRC
 
 *** Paredit
 
