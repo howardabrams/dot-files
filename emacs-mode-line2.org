@@ -7,6 +7,34 @@
 This literate programming file tangles out the configuration for
 creating a better mode line in Emacs.
 
+* General Settings
+
+  Much of what is on the mode line isn't helpful:
+
+  #+BEGIN_SRC elisp
+    (setq size-indication-mode nil
+          column-number-mode nil
+          line-number-mode nil)
+  #+END_SRC
+
+  Let's trim the list of minor modes with few unicode icons, using the
+  magic of =setf=:
+
+  #+BEGIN_SRC elisp
+    (dolist (mm '((auto-revert-mode   . "♺")
+                  (auto-fill-function . "⤶")
+                  (visual-line-mode   . "⤵")
+                  (isearch-mode       . "⁇")
+                  (paredit-mode       . "⁐")
+                  (smartparens-mode   . "⦅⦆")))
+
+      (let ((mode (car mm))
+            (repl (list (concat " " (cdr mm)))))
+
+        (when (assq (car mm) minor-mode-alist)
+          (setf (cdr (assq (car mm) minor-mode-alist)) repl))))
+  #+END_SRC
+
 * Smart Mode Line
 
   While I like the cleanliness of the [[https://github.com/Bruce-Connor/smart-mode-line][Smart Mode Line]], I actually feel
@@ -18,27 +46,26 @@ creating a better mode line in Emacs.
       :ensure t
       :init (add-hook 'after-init-hook 'sml/setup)
       :config
-      ;; Shorten a couple of well-known directories ... these need to be first:
-      (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" "𝔾:"))
-      (add-to-list 'sml/replacer-regexp-list '("^~/Google/" "𝔾:"))
-      (add-to-list 'sml/replacer-regexp-list '("^~/google/" "𝔾:"))
-      (add-to-list 'sml/replacer-regexp-list '("^~/Dropbox/" "◰:"))
-      (add-to-list 'sml/replacer-regexp-list '("^~/Work/" "𝕎:"))
-      (add-to-list 'sml/replacer-regexp-list '("^~/Workspace/" "𝕎:"))
-
-      (add-to-list 'sml/replacer-regexp-list '("^~/website/" "[]"))
-
       ;; Fix a couple of long project names with an icon:
-      (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/technical/" "[τεκ]"))
-      (add-to-list 'sml/replacer-regexp-list '("^~/Google/technical/" "[τεκ]"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/website/" "[]"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/technical/" "[⎙]"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Google/technical/" "[⎙]"))
       (add-to-list 'sml/replacer-regexp-list '("^~/technical/" "[τεκ]"))
 
-      (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/Notes/" "[✏]"))
-      (add-to-list 'sml/replacer-regexp-list '("^~/Google/Notes/" "[✏]"))
-      (add-to-list 'sml/replacer-regexp-list '("^~/Notes/" "[✏]"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/Notes/" "[✎]"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Google/Notes/" "[✎]"))
+      (add-to-list 'sml/replacer-regexp-list '("^~/Notes/" "[✎]"))
 
       (add-to-list 'sml/replacer-regexp-list '("^~/Other/dot-files/" "[◕]"))
       (add-to-list 'sml/replacer-regexp-list '("^~/Work/dot-files/" "[◕]"))
+
+      ;; Shorten a couple of well-known directories ... these need to be first:
+      ;; (add-to-list 'sml/replacer-regexp-list '("^~/Google Drive/" "𝔾:") t)
+      ;; (add-to-list 'sml/replacer-regexp-list '("^~/Google/" "𝔾:") t)
+      ;; (add-to-list 'sml/replacer-regexp-list '("^~/google/" "𝔾:") t)
+      ;; (add-to-list 'sml/replacer-regexp-list '("^~/Dropbox/" "◰:") t)
+      ;; (add-to-list 'sml/replacer-regexp-list '("^~/Work/" "♨:") t)
+      ;; (add-to-list 'sml/replacer-regexp-list '("^~/Workspace/" "♨:"))
 
       (sml/apply-theme 'dark))
   #+END_SRC
@@ -46,7 +73,7 @@ creating a better mode line in Emacs.
   Hiding some Minor modes in the mode line is real swell, the
   =use-package= does most of this, but a few it doesn't.
 
-  #+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp :tangle no
   (setq useless-minor-modes '(" Fill"   ;; First entry must have a space.
                               "wg"
                               "Projectile.*"))
