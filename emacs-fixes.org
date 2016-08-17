@@ -126,6 +126,7 @@ ever do that?
 
   #+BEGIN_SRC elisp
     (global-set-key [remap paredit-kill] (bol-with-prefix paredit-kill))
+    (global-set-key [remap sp-kill-hybrid-sexp] (bol-with-prefix sp-kill-hybrid-sexp))
     (global-set-key [remap org-kill-line] (bol-with-prefix org-kill-line))
     (global-set-key [remap kill-line] (bol-with-prefix kill-line))
 

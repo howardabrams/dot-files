@@ -576,7 +576,7 @@
    existing bugs in that project, I've switched to [[https://github.com/pashinin/workgroups2][workgroups2]]:
 
    #+BEGIN_SRC elisp
-     (use-package workgroups
+     (use-package workgroups2
        :ensure t
        :diminish workgroups-mode
        :init
@@ -876,7 +876,8 @@
        :ensure t
        :init (projectile-global-mode 0)
        :bind (("C-c p s" . projectile-ag)
-              ("C-c p g" . projectile-grep)))
+              ("C-c p g" . projectile-grep)
+              ("C-c p R" . projectile-regenerate-tags)))
    #+END_SRC
 
    Projectile is currently causing grief to the rest of my system, and
@@ -885,7 +886,7 @@
    #+BEGIN_SRC elisp :tangle no
      (use-package projectile
        :ensure t
-       :init (projectile-global-mode 0)
+       :init (projectile-global-mode 1)
        :commands projectile-ag
        :config
        (setq projectile-switch-project-action 'projectile-commander
@@ -1990,7 +1991,6 @@
     #+BEGIN_SRC elisp
       (use-package paredit
         :ensure t
-        :diminish paredit-mode
         :init
           (add-hook 'emacs-lisp-mode-hook 'paredit-mode))
     #+END_SRC
@@ -2216,12 +2216,12 @@
 
    #+BEGIN_SRC elisp
      (let ((plantuml-jar (car (file-expand-wildcards "/usr/local/Cellar/plantuml/*/plantuml*.jar"))))
-       (if plantuml-jar
-           (use-package puml-mode
-             :ensure t
-             :init
-             (setq puml-plantuml-jar-path plantuml-jar
-                   org-plantuml-jar-path plantuml-jar))))
+       (ignore-errors
+         (use-package plantuml-mode
+           :if plantuml-jar
+           :init
+           (setq plantuml-jar-path plantuml-jar
+                 org-plantuml-jar-path plantuml-jar))))
    #+END_SRC
 
    And the [[http://ppareit.github.com/graphviz-dot-mode/][mode for Graphviz]]:
