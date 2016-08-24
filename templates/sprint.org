@@ -15,16 +15,6 @@
 
 * Sprint Retrospective
 
-** Keep Doing (Good)
-
-** Stop Doing (Bad)
-
-** Start Doing (Improvements)
-
-** Status/Accomplishments
-
-** Retrospective Meeting
-
 * Notes for Next Sprint
 
 #+DESCRIPTION: Notes taken during $1

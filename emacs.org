@@ -132,7 +132,7 @@
 
      (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
                               ("gnu"       . "http://elpa.gnu.org/packages/")
-                              ("melpa"     . "http://stable.melpa.org/packages/")
+                              ("melpa"     . "http://melpa.org/packages/")
                               ("marmalade" . "http://marmalade-repo.org/packages/")))
 
      (package-initialize)
@@ -239,6 +239,21 @@
       (when (fboundp 'horizontal-scroll-bar-mode)
         (horizontal-scroll-bar-mode -1))
       (scroll-bar-mode -1))            ;; Scrollbars are waste screen estate
+  #+END_SRC
+
+  My mode line has become quite complicated, so I've pulled it out
+  into its own file:
+
+  #+BEGIN_SRC elisp
+    (require 'init-mode-line2)
+  #+END_SRC
+
+  And the best colored highlighting of selected text needs to be both
+  bright, but not obscure the white text in the foreground (see
+  =list-colors-display=). Favorites so far are =purple4= and =DarkOrange3=:
+
+  #+BEGIN_SRC elisp
+    (set-face-background 'region "blue3")
   #+END_SRC
 
   Most of the display settings actually come from the [[file:emacs-mac.org][Mac initialization file]].
@@ -374,6 +389,23 @@
     #+BEGIN_SRC elisp
       (require 'init-f2)
     #+END_SRC
+
+* Undo and Redo
+
+  According to [[http://ergoemacs.org/emacs/emacs_best_redo_mode.html][this article]], I get better functionality than
+  the =redo+= plugin (which I can't seem to get working well).
+
+  #+BEGIN_SRC elisp
+    (use-package undo-tree
+      :ensure t
+      :diminish undo-tree-mode
+      :init
+      (global-undo-tree-mode 1)
+      :config
+      (defalias 'redo 'undo-tree-redo)
+      :bind (("C-z" . undo)     ; Zap to character isn't helpful
+             ("C-S-z" . redo)))
+  #+END_SRC
 
 ** Highlighting and Narrowing
 
@@ -572,21 +604,16 @@
    #+END_SRC
 
    While [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]] is easy to keep the current window configuration
-   /clean/, the [[https://github.com/tlh/workgroups.el][workgroups]] project has more features. However, due to
-   existing bugs in that project, I've switched to [[https://github.com/pashinin/workgroups2][workgroups2]]:
+   /clean/, the [[https://github.com/tlh/workgroups.el][workgroups]] project has some nice features.
 
    #+BEGIN_SRC elisp
-     (use-package workgroups2
+     (use-package workgroups
        :ensure t
        :diminish workgroups-mode
-       :init
-       (setq wg-prefix-key (kbd "C-c a")
-             wg-session-file "~/.emacs.d/workgroups"
-             wg-mode-line-display-on nil
-             ;; What to do on Emacs exit / workgroups-mode exit?
-             wg-emacs-exit-save-behavior           'save      ; Options: 'save 'ask nil
-             wg-workgroups-mode-exit-save-behavior 'save)
-       (workgroups-mode 1))
+       :config
+       (setq wg-prefix-key (kbd "C-c a"))
+       (workgroups-mode 1)
+       (wg-load "~/.emacs.d/workgroups"))
    #+END_SRC
 
    Short answer for using it:
@@ -596,6 +623,22 @@
    - ~C-c a u~ to have that view as the base for that name
    - ~C-c a v~ to switch to a particular workgroup view.
    - ~C-c a C-s~ to save all workgroup views to the file.
+
+   I'm tempted to switch to [[https://github.com/pashinin/workgroups2][workgroups2]] (but it has its own bugs):
+
+   #+BEGIN_SRC elisp :tangle no
+     (use-package workgroups2
+       :ensure t
+       :diminish workgroups-mode
+       :init
+       (setq wg-prefix-key (kbd "C-c a")
+             wg-session-file "~/.emacs.d/workgroups2"
+             wg-mode-line-display-on nil
+             ;; What to do on Emacs exit / workgroups-mode exit?
+             wg-emacs-exit-save-behavior           'save      ; Options: 'save 'ask nil
+             wg-workgroups-mode-exit-save-behavior 'save)
+       (workgroups-mode 1))
+   #+END_SRC
 
 ** Better Jumping
 

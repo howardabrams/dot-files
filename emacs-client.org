@@ -253,38 +253,6 @@ other systems with a graphical front-end.
      '(show-paren-mismatch ((t (:background "default" :foreground "#cc6666" :weight ultra-bold)))))
   #+END_SRC
 
-  My mode line has become quite complicated, so I've pulled it out
-  into its own file:
-
-  #+BEGIN_SRC elisp
-    (require 'init-mode-line2)
-  #+END_SRC
-
-  And the best colored highlighting of selected text needs to be both
-  bright, but not obscure the white text in the foreground (see
-  =list-colors-display=). Favorites so far are =purple4= and =DarkOrange3=:
-
-  #+BEGIN_SRC elisp
-    (set-face-background 'region "blue3")
-  #+END_SRC
-
-* Undo and Redo
-
-  According to [[http://ergoemacs.org/emacs/emacs_best_redo_mode.html][this article]], I get better functionality than
-  the =redo+= plugin (which I can't seem to get working well).
-
-  #+BEGIN_SRC elisp
-    (use-package undo-tree
-      :ensure t
-      :diminish undo-tree-mode
-      :init
-      (global-undo-tree-mode 1)
-      :config
-      (defalias 'redo 'undo-tree-redo)
-      :bind (("C-z" . undo)     ; Zap to character isn't helpful
-             ("C-S-z" . redo)))
-  #+END_SRC
-
 * Frame and Window Size
 
   I often want to put the window fullscreen:
