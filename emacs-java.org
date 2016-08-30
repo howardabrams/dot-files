@@ -1,0 +1,77 @@
+#+TITLE:  Emacs Java
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@workday.com
+#+DATE:   2016 Jan 12
+#+TAGS:   emacs java technical initialization
+
+Not sure if and when I will get back to doing Java development (so
+many more interesting languages), but I started my Java career with
+Emacs...
+
+* Java Mode Tweaks
+
+  The high school students that I mentor use Eclipse, and the default
+  style for it is Tabs, so I make an exception to my normal rule:
+
+  #+BEGIN_SRC elisp
+    (use-package java-mode
+      :init (add-hook 'java-mode-hook (lambda ()
+                                        (setq c-basic-offset 4
+                                              tab-width 4
+                                              indent-tabs-mode t))))
+  #+END_SRC
+
+  Hook up the [[https://github.com/Fuco1/smartparens][smartparens]] to Java:
+
+  #+BEGIN_SRC elisp
+    (use-package smartparens
+      :ensure t
+      :init (add-hook 'java-mode-hook 'smartparens-mode))
+  #+END_SRC
+
+  A nice collection of stealable Java snippets:
+
+  #+BEGIN_SRC elisp
+    (use-package java-snippets
+      :ensure t)
+  #+END_SRC
+
+  Enhanced Tags functionality for Java:
+
+  #+BEGIN_SRC elisp
+    (use-package jtags
+      :ensure t
+      :init (add-hook 'java-mode-hook 'jtags-mode))
+  #+END_SRC
+
+* Other Ideas
+
+  If Eclim isn't complete enough, I may want to think about:
+
+  - Turn on semantic mode for Java source code
+  - Deal with Java Imports using [[http://elpa.gnu.org/packages/javaimp.html][this package]]
+  - Run java, and then use JDB to connect:
+    #+BEGIN_SRC sh :tangle no
+      java -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y
+    #+END_SRC
+
+* Technical Artifacts
+
+   Allowing us to easily load these settings:
+
+   #+BEGIN_SRC elisp
+     (provide 'init-java)
+   #+END_SRC
+
+   Before you can build this on a new system, make sure that you put
+   the cursor over any of these properties, and hit: =C-c C-c=
+
+#+DESCRIPTION: A literate programming version of my Emacs Initialization script for dealing with Java
+#+PROPERTY:    results silent
+#+PROPERTY:    header-args:sh  :tangle no
+#+PROPERTY:    tangle ~/.emacs.d/elisp/init-java.el
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
