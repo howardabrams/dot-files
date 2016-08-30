@@ -131,6 +131,26 @@ developing Ruby in Emacs.
 
   To start eval-ing, do: =M-x inf-ruby=
 
+  To run on a remote server:
+  #+BEGIN_SRC elisp :tangle no
+    (defun inf-ruby-remote (remote)
+      "Run an inferior Ruby process on a remote server."
+      (interactive "sHost: ")
+      (let ((default-directory (format "/ssh:%s:" remote)))
+        (inf-ruby)))
+  #+END_SRC
+
+  However, I need to specify a particular version, and I haven't
+  figured out how to call a particular Ruby implementation:
+
+  #+BEGIN_SRC elisp
+    (defun inf-ruby-remote (remote)
+      "Run an inferior Ruby process on a remote server."
+      (interactive "sHost: ")
+      (let ((default-directory (format "/ssh:%s:/opt/ruby2.0/embedded/bin" remote)))
+        (run-ruby "/opt/ruby2.0/embedded/bin/irb" (format "%s:ruby" remote))))
+  #+END_SRC
+
 * Smart Parens
 
   Can I get the same wonder from *paredit* and Lisp in my Ruby using
