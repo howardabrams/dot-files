@@ -1985,6 +1985,21 @@
                                           '(("\\<\\(FIX\\|FIXME\\|TODO\\|BUG\\|HACK\\):" 1 font-lock-warning-face t)))))
     #+END_SRC
 
+*** XML
+
+    Can't believe we are still dealing with this awful data format.
+
+    #+BEGIN_SRC elisp
+      (setq nxml-slash-auto-complete-flag t)
+    #+END_SRC
+
+    Remember a couple of bindings:
+
+    - ~C-c C-i~ :: Type =<p= and then this, to have the other tag inserted
+         and the cursor in the middle.
+    - ~C-c C-f~ :: Finish any opened tag that needs to be completed.
+    - ~C-c C-s C-a~ :: After putting in the schema, use this to refresh it
+
 ** Shell Scripts
 
    Files in my =bin= directory (but /only/ if it doesn't have any
