@@ -326,17 +326,7 @@ some significant differences to address. To this end, I [[http://www.howardism.o
 
 * Shell Here
 
-  If I make an alias that closes a window easily, I can have a quick
-  "x" alias that quickly exits and [[file:emacs.org::*Macintosh][closes the window]].
-
-  #+BEGIN_SRC elisp
-    (defun eshell/x ()
-      "Closes the EShell session and gets rid of the EShell window."
-      (kill-buffer)
-      (delete-window))
-  #+END_SRC
-
-  Now making little Shells whenever I need them makes sense:
+  Making little Shells whenever I need them:
 
   #+BEGIN_SRC elisp
     (defun eshell-here ()
@@ -357,7 +347,24 @@ some significant differences to address. To this end, I [[http://www.howardism.o
         (insert (concat "ls"))
         (eshell-send-input)))
 
-    (global-set-key (kbd "C-!") 'eshell-here)
+    (bind-key "C-!" eshell-here)
+  #+END_SRC
+
+  Used to ~C-d~ exiting from a shell? Want it to keep working, but still
+  allow deleting a character? We can have it both (thanks to [[https://github.com/wasamasa/dotemacs/blob/master/init.org#eshell][wasamasa]]):
+
+  #+BEGIN_SRC elisp
+    (defun ha/eshell-quit-or-delete-char (arg)
+      (interactive "p")
+      (if (and (eolp) (looking-back eshell-prompt-regexp))
+          (progn
+           (eshell-life-is-too-much) ; Why not? (eshell/exit)
+           (delete-window))
+        (delete-forward-char arg)))
+
+    (use-package eshell
+      :bind (:map eshell-mode-map
+                  (("C-d" . ha/eshell-quit-or-delete-char))))
   #+END_SRC
 
 * Shell There
