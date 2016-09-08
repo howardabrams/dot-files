@@ -48,7 +48,7 @@ hit the =C-c C-v i= to add these sections.
       (let* ((rows (split-string data "[\n\r]+" t))
              (table-data (mapcar #'trim-row-cells
                                  (mapcar #'separate-row
-                                         (filter #'non-border-p rows)))))
+                                         (-filter #'non-border-p rows)))))
         (cond ((equalp header "no")   (cdr table-data))
               ((equalp header "yes")  (append (list (car table-data) 'hline) (cdr table-data)))
               ( t                      table-data))))
