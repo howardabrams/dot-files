@@ -16,6 +16,7 @@ Emacs love affair.
       :ensure t        ; But it comes with Emacs now!?
       :init
       (setq org-use-speed-commands t
+            org-return-follows-links t
             org-hide-emphasis-markers t
             org-completion-use-ido t
             org-outline-path-complete-in-steps nil
