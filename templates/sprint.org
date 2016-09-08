@@ -17,6 +17,17 @@
 
 * Notes for Next Sprint
 
+** Support Section
+
+   We should always allow the display of this file for a
+   demonstration.
+
+  #+BEGIN_SRC elisp :results silent
+    (use-package demo-it
+      :config
+      (demo-it-single-presentation (buffer-file-name) 3 :both "Sprint Demonstration"))
+  #+END_SRC
+
 #+DESCRIPTION: Notes taken during $1
 #+PROPERTY:    results drawer
 #+PROPERTY:    tangle no
