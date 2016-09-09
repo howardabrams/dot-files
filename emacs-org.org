@@ -142,7 +142,7 @@ Emacs love affair.
 
   #+BEGIN_SRC elisp
     (use-package org-journal
-      :ensure ;TODO:
+      :ensure t
        :init
        (setq org-journal-dir "~/journal/")
        (setq org-journal-date-format "#+TITLE: Journal Entry- %e %b %Y (%A)")
