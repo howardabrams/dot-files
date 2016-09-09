@@ -141,19 +141,16 @@ Emacs love affair.
   anything else:
 
   #+BEGIN_SRC elisp
-     (use-package org-journal
-        :ensure t
-        :init
-        (setq org-journal-dir "~/journal/")
-        (setq org-journal-date-format "#+TITLE: Journal Entry- %Y-%b-%d (%A)")
-        (setq org-journal-time-format ""))
+    (use-package org-journal
+      :ensure ;TODO:
+       :init
+       (setq org-journal-dir "~/journal/")
+       (setq org-journal-date-format "#+TITLE: Journal Entry- %e %b %Y (%A)")
+       (setq org-journal-time-format ""))
   #+END_SRC
 
   The time format is the heading for each section. I set it to a
   blank since I really don't care about the time I add a section.
-
-  Nice to /automatically/ insert a specific header if the journal entry
-  file is empty using [[https://www.gnu.org/software/emacs/manual/html_node/autotype/Autoinserting.html][auto-insert]].
 
   A function to easily load today (and yesterday's) journal entry.
 
@@ -177,7 +174,8 @@ Emacs love affair.
   #+BEGIN_SRC elisp
     (defun get-journal-file-yesterday ()
       "Return filename for yesterday's journal entry."
-      (let ((daily-name (format-time-string "%Y%m%d" (time-subtract (current-time) (days-to-time 1)))))
+      (let ((yesterday (time-subtract (current-time) (days-to-time 1)))
+            (daily-name (format-time-string "%Y%m%d" yesterday)))
         (expand-file-name (concat org-journal-dir daily-name))))
 
     (defun journal-file-yesterday ()
@@ -188,24 +186,64 @@ Emacs love affair.
     (global-set-key (kbd "C-c f y") 'journal-file-yesterday)
   #+END_SRC
 
-  Seems like I need to have the inserted template match the file's
-  name, not necessarily today's date:
+** Auto Insert a Journal Template
+
+  Nice to /automatically/ insert a specific header if the journal entry
+  file is empty using [[https://www.gnu.org/software/emacs/manual/html_node/autotype/Autoinserting.html][auto-insert]].
+
+  When I create a new journal entry, I want a snappy title and a
+  checklist of daily tasks.  The template should insert a date that
+  matches the file's name, not necessarily the current date.
+
+  Also the inserted daily information and check-lists should only
+  happen if I am creating today's journal, not catching up with the
+  past... oh, and we might have special dailies to be inserted based
+  on the day of the week. Guess I /could/ use YAS snippets, but then the
+  code amount of code would over-shadow the text, so we'll make a
+  function.
 
   #+BEGIN_SRC elisp
     (defun journal-file-insert ()
       "Insert's the journal heading based on the file's name."
       (interactive)
       (when (string-match "\\(20[0-9][0-9]\\)\\([0-9][0-9]\\)\\([0-9][0-9]\\)" (buffer-name))
-        (let ((year  (string-to-number (match-string 1 (buffer-name))))
-              (month (string-to-number (match-string 2 (buffer-name))))
-              (day   (string-to-number (match-string 3 (buffer-name))))
-              (datim nil))
-          (setq datim (encode-time 0 0 0 day month year))
-          (insert (format-time-string org-journal-date-format datim))
-          (insert "\n\n"))))  ; Start with a blank separating line
+        (let* ((year  (string-to-number (match-string 1 (buffer-name))))
+               (month (string-to-number (match-string 2 (buffer-name))))
+               (day   (string-to-number (match-string 3 (buffer-name))))
+               (datim (encode-time 0 0 0 day month year)))
 
-     (add-to-list 'auto-insert-alist '(".*/[0-9]*$" . journal-file-insert))
+          (insert (format-time-string org-journal-date-format datim))
+          (insert "\n\n\n") ; Start with a blank separating line
+
+          ;; Note: The `insert-file-contents' leaves the cursor at the
+          ;; beginning, so the easiest approach is to insert these files
+          ;; in reverse order:
+
+          ;; If the journal entry I'm creating matches today's date:
+          (when (equal (file-name-base (buffer-file-name))
+                       (format-time-string "%Y%m%d"))
+            (insert-file-contents "journal-dailies-end.org")
+            (insert "\n")
+
+            ;; Insert dailies that only happen once a week:
+            (let ((weekday-template (downcase
+                                     (format-time-string "journal-%a.org"))))
+              (when (file-exists-p weekday-template)
+                (insert-file-contents weekday-template)))
+            (insert-file-contents "journal-dailies.org")
+
+            (previous-line 2)))))
+
+        (define-auto-insert "/[0-9]\\{8\\}$" [journal-file-insert])
   #+END_SRC
+
+  To use this, make the following files:
+  - =journal-dailies.org= to contain the /real/ dailies
+  - =journal-dailies-end.org= to contain any follow-up notes
+  - =journal-mon.org= for additional text to be inserted on Monday journals
+  - And a =journal-XYZ.org= for each additional weekday
+
+** Displaying Last Year's Journal Entry
 
   I really would really like to read what I did last year "at this
   time", and by that, I mean, 365 days ago, plus or minus a few to get
