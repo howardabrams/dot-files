@@ -119,6 +119,23 @@
      (add-to-list 'load-path (ha/emacs-subdirectory "elisp"))
    #+END_SRC
 
+** Modernizing Emacs
+
+   With a long history of working on small machines without gigabytes
+   of RAM, we might as well let Emacs be the beast it has always
+   dreamed.
+
+   First, let’s increase the cache before starting garbage collection:
+   #+BEGIN_SRC elisp
+     (setq gc-cons-threshold 50000000)
+   #+END_SRC
+
+   Found [[https://github.com/wasamasa/dotemacs/blob/master/init.org#init][here]] how to remove the warnings from the GnuTLS library when
+   using HTTPS... increase the minimum prime bits size:
+   #+BEGIN_SRC elisp
+     (setq gnutls-min-prime-bits 4096)
+   #+END_SRC
+
 * Package Initialization
 ** Package Manager
 
@@ -222,6 +239,25 @@
 
    #+BEGIN_SRC elisp
      (setq epa-file-cache-passphrase-for-symmetric-encryption t)
+   #+END_SRC
+
+** Misc Variable Settings
+
+   Does anyone type =yes= anymore?
+   #+BEGIN_SRC elisp
+     (fset 'yes-or-no-p 'y-or-n-p)
+   #+END_SRC
+
+   Fix the scrolling to keep point in the center:
+   #+BEGIN_SRC elisp
+     (setq scroll-conservatively 10000
+           scroll-preserve-screen-position t)
+   #+END_SRC
+
+   I've been using Emacs for too long to need to re-enable each
+   feature bit-by-bit:
+   #+BEGIN_SRC elisp
+     (setq disabled-command-function nil)
    #+END_SRC
 
 * Display Settings
@@ -603,42 +639,71 @@
        :init (winner-mode 1))
    #+END_SRC
 
-   While [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]] is easy to keep the current window configuration
-   /clean/, the [[https://github.com/tlh/workgroups.el][workgroups]] project has some nice features.
+   But I would like to jump between different layout configurations
+   based on purpose or project. I started with Eyebrowse, but I'm
+   currently experimenting with other options.
 
-   #+BEGIN_SRC elisp
-     (use-package workgroups
-       :ensure t
-       :diminish workgroups-mode
-       :config
-       (setq wg-prefix-key (kbd "C-c a"))
-       (workgroups-mode 1)
-       (wg-load "~/.emacs.d/workgroups"))
-   #+END_SRC
+*** Perspective
 
-   Short answer for using it:
+    The [[https://github.com/nex3/perspective-el][perspective project]] and the
 
-   - ~C-c a c~ to create and name a new /view/
-   - Configure the screen as you like it
-   - ~C-c a u~ to have that view as the base for that name
-   - ~C-c a v~ to switch to a particular workgroup view.
-   - ~C-c a C-s~ to save all workgroup views to the file.
+    #+BEGIN_SRC elisp
+      (use-package perspective
+        :ensure t
+        :defer 1
+        :bind ("C-x x x" . persp-switch-last)
+        :config (persp-mode)
+        (defun persp-update-modestring ()
+          "Update `persp-modestring' to reflect the current perspectives.
+      Has no effect when `persp-show-modestring' is nil."
+          (when persp-show-modestring
+              (setq persp-modestring (propertize (persp-name persp-curr) 'face 'persp-selected-face))))
+        (use-package persp-projectile
+          :ensure t
+          :bind (:map projectile-mode-map
+                      ("X" . projectile-persp-switch-project))))
+    #+END_SRC
 
-   I'm tempted to switch to [[https://github.com/pashinin/workgroups2][workgroups2]] (but it has its own bugs):
+*** Workgroups
 
-   #+BEGIN_SRC elisp :tangle no
-     (use-package workgroups2
-       :ensure t
-       :diminish workgroups-mode
-       :init
-       (setq wg-prefix-key (kbd "C-c a")
-             wg-session-file "~/.emacs.d/workgroups2"
-             wg-mode-line-display-on nil
-             ;; What to do on Emacs exit / workgroups-mode exit?
-             wg-emacs-exit-save-behavior           'save      ; Options: 'save 'ask nil
-             wg-workgroups-mode-exit-save-behavior 'save)
-       (workgroups-mode 1))
-   #+END_SRC
+  While [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]] is easy to keep the current window configuration
+  /clean/, the [[https://github.com/tlh/workgroups.el][workgroups]] project has some nice features.
+
+  #+BEGIN_SRC elisp :tangle no
+    ; (load-file "~/.emacs.d/elpa/workgroups-20110726.941/workgroups.el")
+
+    (use-package workgroups
+      :ensure t
+      :diminish workgroups-mode
+      :config
+      (setq wg-prefix-key (kbd "C-c a"))
+      (workgroups-mode 1)
+      (wg-load "~/.emacs.d/workgroups"))
+  #+END_SRC
+
+  Short answer for using it:
+
+  - ~C-c a c~ to create and name a new /view/
+  - Configure the screen as you like it
+  - ~C-c a u~ to have that view as the base for that name
+  - ~C-c a v~ to switch to a particular workgroup view.
+  - ~C-c a C-s~ to save all workgroup views to the file.
+
+  I'm tempted to switch to [[https://github.com/pashinin/workgroups2][workgroups2]] (but it has its own bugs):
+
+  #+BEGIN_SRC elisp :tangle no
+    (use-package workgroups2
+      :ensure t
+      :diminish workgroups-mode
+      :init
+      (setq wg-prefix-key (kbd "C-c a")
+            wg-session-file "~/.emacs.d/workgroups2"
+            wg-mode-line-display-on nil
+            ;; What to do on Emacs exit / workgroups-mode exit?
+            wg-emacs-exit-save-behavior           'save      ; Options: 'save 'ask nil
+            wg-workgroups-mode-exit-save-behavior 'save)
+      (workgroups-mode 1))
+  #+END_SRC
 
 ** Better Jumping
 
@@ -914,7 +979,7 @@
    However, I really like the ability to search (with =ag= or =grep=) that
    is limited to the project:
 
-   #+BEGIN_SRC elisp
+   #+BEGIN_SRC elisp :tangle no
      (use-package projectile
        :ensure t
        :init (projectile-global-mode 0)
@@ -926,9 +991,10 @@
    Projectile is currently causing grief to the rest of my system, and
    while trying to debug it, let's turn it off:
 
-   #+BEGIN_SRC elisp :tangle no
+   #+BEGIN_SRC elisp
      (use-package projectile
        :ensure t
+       :diminish projectile-mode
        :init (projectile-global-mode 1)
        :commands projectile-ag
        :config
@@ -1279,8 +1345,12 @@
                       (ha/emacs-subdirectory "backups")))))
    #+END_SRC
 
-   Make backups of files, even when they're in version control
+   Tramp should do the same:
+   #+BEGIN_SRC elisp
+     (setq tramp-backup-directory-alist backup-directory-alist)
+   #+END_SRC
 
+   Make backups of files, even when they're in version control:
    #+BEGIN_SRC elisp
      (setq vc-make-backup-files t)
    #+END_SRC
@@ -1351,9 +1421,13 @@
      (use-package company
        :ensure t
        :init
+       (setq company-dabbrev-downcase nil
+             company-dabbrev-ignore-case t
+             company-show-numbers t)
        (add-hook 'after-init-hook 'global-company-mode)
        :config
        (add-to-list 'company-backends 'company-math-symbols-unicode)
+       :bind ("C-:" . company-complete)  ; In case I don't want to wait
        :diminish company-mode)
    #+END_SRC
 
@@ -1780,7 +1854,8 @@
 
     #+BEGIN_SRC elisp
       (use-package eldoc
-        :diminish eldoc-mode)
+        :diminish eldoc-mode
+        :init  (setq eldoc-idle-delay 0.1))
     #+END_SRC
 
 *** Tag Support
@@ -2031,12 +2106,14 @@
 
    #+BEGIN_SRC elisp
      (use-package lisp-mode
+       :bind (:map emacs-lisp-mode-map ("C-c C-z" . ielm))
        :init
        (defconst lisp--prettify-symbols-alist
-         '(("lambda"  . ?λ)
-           ("."       . ?•)))
+         '(("lambda"  . ?λ)      ; Shrink this
+           ("."       . ?•)))    ; Enlarge this
        :config
        (add-hook 'emacs-lisp-mode-hook 'global-prettify-symbols-mode)
+       (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
        (add-hook 'emacs-lisp-mode-hook 'activate-aggressive-indent))
    #+END_SRC
 
@@ -2378,6 +2455,13 @@
 
    #+BEGIN_SRC elisp
      (require 'init-local nil t)
+   #+END_SRC
+
+   Let's get happy:
+
+   #+BEGIN_SRC elisp
+     (defun display-startup-echo-area-message ()
+       (message "Happy hacking!"))
    #+END_SRC
 
    After the first load, we can reload this with a require:
