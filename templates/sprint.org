@@ -1,7 +1,7 @@
-#+TITLE:  ${1:`(capitalize (file-name-nondirectory (file-name-sans-extension (buffer-file-name))))`}
-#+AUTHOR: `(user-full-name)`
+#+TITLE:  Sprint `(format-time-string "%Y")`-`(sprint-number)`
+#+AUTHOR: `user-full-name`
 #+EMAIL:  `user-mail-address`
-#+DATE:   `(org-time-stamp-inactive)`
+#+DATE:   `(sprint-date-range)`
 
 * Work Issues
 
@@ -28,7 +28,7 @@
       (demo-it-single-presentation (buffer-file-name) 3 :both "Sprint Demonstration"))
   #+END_SRC
 
-#+DESCRIPTION: Notes taken during $1
+#+DESCRIPTION: Notes taken during Sprint #`(sprint-number)`
 #+PROPERTY:    results drawer
 #+PROPERTY:    tangle no
 #+PROPERTY:    eval no-export
