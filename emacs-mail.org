@@ -128,7 +128,7 @@ email messages that arrive on my GMail account.
 
     (setq send-mail-function            'smtpmail-send-it
           message-send-mail-function    'smtpmail-send-it
-          smtpmail-auth-credentials     (expand-file-name "~/.authinfo")
+          smtpmail-auth-credentials     (expand-file-name "~/.authinfo.gpg")
           smtpmail-stream-type          'tls
           smtpmail-smtp-server          "smtp.gmail.com"
           smtpmail-smtp-service         465)
@@ -137,8 +137,10 @@ email messages that arrive on my GMail account.
   To send email to an Exchange server, change the port:
 
   #+BEGIN_SRC elisp :tangle no
-      (setq send-mail-function  'smtpmail-send-it
-          smtpmail-smtp-server  "outlook.office365.com"
+    (setq send-mail-function  'smtpmail-send-it
+          message-send-mail-function    'smtpmail-send-it
+          smtpmail-auth-credentials     (expand-file-name "~/.authinfo.gpg")
+          smtpmail-smtp-server  "smtp.office365.com"
           smtpmail-stream-type  'starttls
           smtpmail-smtp-service 587)
   #+END_SRC
