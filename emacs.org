@@ -426,22 +426,22 @@
       (require 'init-f2)
     #+END_SRC
 
-* Undo and Redo
+** Undo and Redo
 
-  According to [[http://ergoemacs.org/emacs/emacs_best_redo_mode.html][this article]], I get better functionality than
-  the =redo+= plugin (which I can't seem to get working well).
+   According to [[http://ergoemacs.org/emacs/emacs_best_redo_mode.html][this article]], I get better functionality than
+   the =redo+= plugin (which I can't seem to get working well).
 
-  #+BEGIN_SRC elisp
-    (use-package undo-tree
-      :ensure t
-      :diminish undo-tree-mode
-      :init
-      (global-undo-tree-mode 1)
-      :config
-      (defalias 'redo 'undo-tree-redo)
-      :bind (("C-z" . undo)     ; Zap to character isn't helpful
-             ("C-S-z" . redo)))
-  #+END_SRC
+   #+BEGIN_SRC elisp
+     (use-package undo-tree
+       :ensure t
+       :diminish undo-tree-mode
+       :init
+       (global-undo-tree-mode 1)
+       :config
+       (defalias 'redo 'undo-tree-redo)
+       :bind (("C-z" . undo)     ; Zap to character isn't helpful
+              ("C-S-z" . redo)))
+   #+END_SRC
 
 ** Highlighting and Narrowing
 
@@ -585,125 +585,6 @@
       :bind ("S-<f8>" . kpm-list)
             ("C-x C-b" . kpm-list))
    #+END_SRC
-
-** Controlling Window Size
-
-   Often, while on my laptop, I want the current window to be ‘large
-   enough for work’, and this is bound to =<f9> .= (period).
-
-   #+BEGIN_SRC elisp
-     (global-unset-key (kbd "C-c w"))
-     (global-set-key (kbd "C-c w r") 'ha/window-standard-size)
-   #+END_SRC
-
-   If I've enlarged the window, I can restore that window to its
-   original size, so this requires a /buffer local variable/:
-
-   #+BEGIN_SRC elisp
-     (make-variable-buffer-local 'window-width-original)
-   #+END_SRC
-
-   Now a function that either changes the width to 80, or back to the
-   original size if already at 80.
-
-   #+BEGIN_SRC elisp
-     (defun ha/window-standard-size (arg)
-       "Set size of the current window to 80 characters.
-     If already is 80 characters, reset to its previous size.  A
-     prefix ARG can be given to set the window to a particular width."
-       (interactive "p")
-
-       ;; If not already set, let's store the current window width in our
-       ;; buffer-local variable.
-       (if (not (local-variable-p 'window-width-original))
-           (setq window-width-original (window-width)))
-
-       ;; The 'goal' is 80 unless we get a better argument, C-u 60 ...
-       (let* ((goal-width (if (> arg 8) arg 80))
-              (new-width (- goal-width (window-width))))
-
-         (if (= new-width 0)    ; Already enlarged? Restore:
-             (enlarge-window-horizontally (- window-width-original goal-width))
-           (enlarge-window-horizontally new-width))))
-   #+END_SRC
-
-** Controlling Window Placement
-
-   Change window configuration and then return to the old
-   configuration with [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]].  Use =Control-C Arrow= keys to
-   cycle through window/frame configurations.
-
-   #+BEGIN_SRC elisp
-     (use-package winner
-       :ensure t
-       :init (winner-mode 1))
-   #+END_SRC
-
-   But I would like to jump between different layout configurations
-   based on purpose or project. I started with Eyebrowse, but I'm
-   currently experimenting with other options.
-
-*** Perspective
-
-    The [[https://github.com/nex3/perspective-el][perspective project]] and the
-
-    #+BEGIN_SRC elisp
-      (use-package perspective
-        :ensure t
-        :defer 1
-        :bind ("C-x x x" . persp-switch-last)
-        :config (persp-mode)
-        (defun persp-update-modestring ()
-          "Update `persp-modestring' to reflect the current perspectives.
-      Has no effect when `persp-show-modestring' is nil."
-          (when persp-show-modestring
-              (setq persp-modestring (propertize (persp-name persp-curr) 'face 'persp-selected-face))))
-        (use-package persp-projectile
-          :ensure t
-          :bind (:map projectile-mode-map
-                      ("X" . projectile-persp-switch-project))))
-    #+END_SRC
-
-*** Workgroups
-
-  While [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]] is easy to keep the current window configuration
-  /clean/, the [[https://github.com/tlh/workgroups.el][workgroups]] project has some nice features.
-
-  #+BEGIN_SRC elisp :tangle no
-    ; (load-file "~/.emacs.d/elpa/workgroups-20110726.941/workgroups.el")
-
-    (use-package workgroups
-      :ensure t
-      :diminish workgroups-mode
-      :config
-      (setq wg-prefix-key (kbd "C-c a"))
-      (workgroups-mode 1)
-      (wg-load "~/.emacs.d/workgroups"))
-  #+END_SRC
-
-  Short answer for using it:
-
-  - ~C-c a c~ to create and name a new /view/
-  - Configure the screen as you like it
-  - ~C-c a u~ to have that view as the base for that name
-  - ~C-c a v~ to switch to a particular workgroup view.
-  - ~C-c a C-s~ to save all workgroup views to the file.
-
-  I'm tempted to switch to [[https://github.com/pashinin/workgroups2][workgroups2]] (but it has its own bugs):
-
-  #+BEGIN_SRC elisp :tangle no
-    (use-package workgroups2
-      :ensure t
-      :diminish workgroups-mode
-      :init
-      (setq wg-prefix-key (kbd "C-c a")
-            wg-session-file "~/.emacs.d/workgroups2"
-            wg-mode-line-display-on nil
-            ;; What to do on Emacs exit / workgroups-mode exit?
-            wg-emacs-exit-save-behavior           'save      ; Options: 'save 'ask nil
-            wg-workgroups-mode-exit-save-behavior 'save)
-      (workgroups-mode 1))
-  #+END_SRC
 
 ** Better Jumping
 
@@ -970,6 +851,7 @@
    #+END_SRC
 
 * Loading and Finding Files
+
 ** Projectile
 
    The [[https://github.com/bbatsov/projectile][Projectile]] project is a nifty way to run commands and search
@@ -1011,6 +893,10 @@
          "Open a *shell* buffer for the project."
          (projectile-run-shell))
 
+       (def-projectile-commander-method ?X
+         "Open a Direx buffer on the side."
+         (call-interactively #'ha/projectile-direx))
+
        (def-projectile-commander-method ?F
          "Git fetch."
          (magit-status)
@@ -1034,6 +920,135 @@
    #+END_SRC
 
   Much of the previous section came from [[http://endlessparentheses.com/improving-projectile-with-extra-commands.html][this essay]].
+
+** Direx
+
+   The [[https://github.com/m2ym/direx-el][direx]] package is a tree-based variation of dired, and it gives
+   an /ide-like/ look and feel. Not sure of its useful-ness.
+
+   #+BEGIN_SRC elisp
+     (use-package direx
+       :ensure t
+       :bind (("C-c p X" . ha/projectile-direx)
+              :map direx:direx-mode-map
+              ("q" . kill-buffer-and-window))
+       :init
+       (defun kill-buffer-and-window (&optional buffer)
+         "Kills the buffer and closes the window it is in."
+         (interactive)
+         (kill-buffer buffer)
+         (delete-window))
+
+       (defun ha/projectile-direx (prefix)
+         "Start direx in the top-level of a project in a buffer window
+          that spans the entire left side of the frame."
+         (interactive "P")
+         (let ((file-name (file-name-nondirectory (buffer-file-name)))
+               (buffer (direx:find-directory-reuse-noselect (projectile-project-root)))
+               (window (ha/split-main-window 'left 30)))
+           (select-window window)
+           (direx:maybe-goto-current-buffer-item buffer)
+           (switch-to-buffer buffer)
+           (search-forward file-name))))
+   #+END_SRC
+
+   The following helper function creates a window at the top-level,
+   ignoring other windows in the frame.
+
+   #+BEGIN_SRC elisp
+     (defun ha/split-main-window (direction size)
+       "Split the main window in the DIRECTION where DIRECTION is a
+     symbol with possible values of 'right, 'left, 'above or 'below
+     and SIZE is the final size of the windows, if the window is split
+     horizontally (i.e. DIRECTION 'below or 'above) SIZE is assumed to
+     be the target height otherwise SIZE is assumed to be target width."
+       (let* ((new-window (split-window (frame-root-window) nil direction))
+              (horizontal (member direction '(right left))))
+         (save-excursion
+           (select-window new-window)
+           (enlarge-window (- size (if horizontal
+                                       (window-width)
+                                     (window-height)))
+                           horizontal))
+         new-window))
+   #+END_SRC
+
+** Controlling Window Placement
+
+   Change window configuration and then return to the old
+   configuration with [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]].  Use =Control-C Arrow= keys to
+   cycle through window/frame configurations.
+
+   #+BEGIN_SRC elisp
+     (use-package winner
+       :ensure t
+       :init (winner-mode 1))
+   #+END_SRC
+
+   But I would like to jump between different layout configurations
+   based on purpose or project. I started with Eyebrowse, but I'm
+   currently experimenting with other options.
+
+*** Perspective
+
+    The [[https://github.com/nex3/perspective-el][perspective project]] and the
+
+    #+BEGIN_SRC elisp
+      (use-package perspective
+        :ensure t
+        :bind ("C-x x x" . persp-switch-last)
+        :config (persp-mode)
+        (defun persp-update-modestring ()
+          "Update `persp-modestring' to reflect the current perspective."
+          (when persp-show-modestring
+              (setq persp-modestring (propertize (persp-name persp-curr) 'face 'persp-selected-face))))
+
+        (use-package persp-projectile
+          :ensure t
+          :bind (:map projectile-mode-map
+                      ("X" . projectile-persp-switch-project))))
+    #+END_SRC
+
+*** Workgroups
+
+  While [[http://www.emacswiki.org/emacs/WinnerMode][winner-mode]] is easy to keep the current window configuration
+  /clean/, the [[https://github.com/tlh/workgroups.el][workgroups]] project has some nice features.
+
+  #+BEGIN_SRC elisp :tangle no
+    ; (load-file "~/.emacs.d/elpa/workgroups-20110726.941/workgroups.el")
+
+    (use-package workgroups
+      :ensure t
+      :diminish workgroups-mode
+      :config
+      (setq wg-prefix-key (kbd "C-c a"))
+      (workgroups-mode 1)
+      (wg-load "~/.emacs.d/workgroups"))
+  #+END_SRC
+
+  Short answer for using it:
+
+  - ~C-c a c~ to create and name a new /view/
+  - Configure the screen as you like it
+  - ~C-c a u~ to have that view as the base for that name
+  - ~C-c a v~ to switch to a particular workgroup view.
+  - ~C-c a C-s~ to save all workgroup views to the file.
+
+  I'm tempted to switch to [[https://github.com/pashinin/workgroups2][workgroups2]] (but it has its own bugs):
+
+  #+BEGIN_SRC elisp :tangle no
+    (use-package workgroups2
+      :ensure t
+      :diminish workgroups-mode
+      :init
+      (setq wg-prefix-key (kbd "C-c a")
+            wg-session-file "~/.emacs.d/workgroups2"
+            wg-mode-line-display-on nil
+            ;; What to do on Emacs exit / workgroups-mode exit?
+            wg-emacs-exit-save-behavior           'save      ; Options: 'save 'ask nil
+            wg-workgroups-mode-exit-save-behavior 'save)
+      (workgroups-mode 1))
+  #+END_SRC
 
 ** Dired Options
 
@@ -1421,8 +1436,7 @@
      (use-package company
        :ensure t
        :init
-       (setq company-dabbrev-downcase nil
-             company-dabbrev-ignore-case t
+       (setq company-dabbrev-ignore-case t
              company-show-numbers t)
        (add-hook 'after-init-hook 'global-company-mode)
        :config
