@@ -215,7 +215,7 @@ some significant differences to address. To this end, I [[http://www.howardism.o
   project. Ignoring the =.git= directories seem like a good idea.
 
   #+BEGIN_SRC elisp :tangle no
-    ((setq  )etq eshell-cmpl-cycle-completions nil
+    (setq eshell-cmpl-cycle-completions nil
           eshell-save-history-on-exit t
           eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
   #+END_SRC
@@ -347,7 +347,7 @@ some significant differences to address. To this end, I [[http://www.howardism.o
         (insert (concat "ls"))
         (eshell-send-input)))
 
-    (bind-key "C-!" eshell-here)
+    (bind-key "C-!" 'eshell-here)
   #+END_SRC
 
   Used to ~C-d~ exiting from a shell? Want it to keep working, but still
