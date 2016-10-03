@@ -5,7 +5,11 @@
 #+TAGS:   emacs
 
 My frustration with shells makes me enjoy Emacs Shell, but there are
-some significant differences to address. To this end, I [[http://www.howardism.org/Technical/Emacs/eshell-fun.html][documented most features]].
+some significant differences to address. To this end, I [[http://www.howardism.org/Technical/Emacs/eshell-fun.html][documented
+most features]].
+
+I find it a shame that I can not successfully use =use-package= with the
+=eshell= package. It loads quick enough, that I'll simply deal with it.
 
 * Basics
 
@@ -29,34 +33,56 @@ some significant differences to address. To this end, I [[http://www.howardism.o
      (setenv "PAGER" "cat")
    #+END_SRC
 
-** Don’t Modify the Text
+* Configuration
 
-   Scrolling through the output and searching for results that can be
-   copied to the kill ring is a great feature of Eshell. However,
-   instead of running =end-of-buffer= key-binding, the following
-   setting means any other key will jump back to the prompt:
+  Scrolling through the output and searching for results that can be
+  copied to the kill ring is a great feature of Eshell. However,
+  instead of running =end-of-buffer= key-binding, the following
+  setting means any other key will jump back to the prompt:
 
-   #+BEGIN_SRC elisp
-     (setq eshell-scroll-to-bottom-on-input t)
-   #+END_SRC
+  #+BEGIN_SRC elisp
+      (setq eshell-scroll-to-bottom-on-input 'all
+            eshell-error-if-no-glob t
+            eshell-hist-ignoredups t
+            eshell-save-history-on-exit t
+            eshell-prefer-lisp-functions nil)
+  #+END_SRC
 
-   *Note:* hitting return on any other line will copy that line to the
-    prompt and immediately execute it.
+   I can never seem to remember that =find= and =chmod= behave
+   differently from Emacs than their Unix counterparts, so the last
+   setting will prefer the native implementations.
+
+* Visual Executables
+
+  Eshell would get somewhat confused if I ran the following commands
+  directly through the normal Elisp library, as these need the better
+  handling of ansiterm:
+
+  #+BEGIN_SRC elisp
+      (add-hook 'eshell-mode-hook (lambda ()
+          (add-to-list 'eshell-visual-commands "ssh")
+          (add-to-list 'eshell-visual-commands "tail")))
+  #+END_SRC
 
 * Aliases
 
   Gotta have some [[http://www.emacswiki.org/emacs/EshellAlias][shell aliases]], right?
 
   #+BEGIN_SRC elisp
-    (defalias 'e 'find-file)
-    (defalias 'ff 'find-file)
-    (defalias 'emacs 'find-file)
-  #+END_SRC
+      (add-hook 'eshell-mode-hook (lambda ()
+          (eshell/alias "e" "find-file")
+          (eshell/alias "ff" "find-file")
+          (eshell/alias "emacs" "find-file")
+          (eshell/alias "ee" "find-file-other-window")
 
-  Replacing the window with the new buffer may not be what I want.
+          (eshell/alias "gd" "magit-diff-unstaged")
+          (eshell/alias "gds" "magit-diff-staged")
 
-  #+BEGIN_SRC elisp
-    (defalias 'ee 'find-file-other-window)
+          ;; The 'ls' executable requires the Gnu version on the Mac
+          (let ((ls (if (file-exists-p "/usr/local/bin/gls")
+                        "/usr/local/bin/gls"
+                      "/bin/ls")))
+            (eshell/alias "ll" (concat ls " -AlohG --color=always")))))
   #+END_SRC
 
   Pull up dired, but without parameters, just use the current directory.
@@ -65,27 +91,6 @@ some significant differences to address. To this end, I [[http://www.howardism.o
     (defun eshell/d (&rest args)
       (dired (pop args) "."))
   #+END_SRC
-
-  Some of my favorite bash aliases, can be even more helpful in
-  Eshell. Like ‘ll’:
-
-  #+BEGIN_SRC elisp
-    (add-hook 'eshell-mode-hook
-              (lambda ()
-                ;; The 'ls' executable requires the Gnu version on the Mac
-                (let ((ls (if (file-exists-p "/usr/local/bin/gls")
-                              "/usr/local/bin/gls"
-                            "/bin/ls")))
-                  (eshell/alias "ll" (concat ls " -AlohG --color=always")))))
-  #+END_SRC
-
-   I can never seem to remember that =find= and =chmod= behave
-   differently from Emacs than their Unix counterparts, so at this
-   time, I will prefer the native implementations.
-
-   #+BEGIN_SRC elisp
-     (setq eshell-prefer-lisp-functions nil)
-   #+END_SRC
 
 ** Git
 
@@ -97,13 +102,6 @@ some significant differences to address. To this end, I [[http://www.howardism.o
      (defun eshell/gst (&rest args)
          (magit-status (pop args) nil)
          (eshell/echo))   ;; The echo command suppresses output
-   #+END_SRC
-
-   What about =gd= to call the Diff command?
-
-   #+BEGIN_SRC elisp
-     (defalias 'gd 'magit-diff-unstaged)
-     (defalias 'gds 'magit-diff-staged)
    #+END_SRC
 
 ** Find File
@@ -196,30 +194,6 @@ some significant differences to address. To this end, I [[http://www.howardism.o
   eshell session, so we just add it to the =eshell-pred-load-hook=
   which is sufficient.
 
-* Visual Executables
-
-  Eshell would get somewhat confused if I ran the following commands
-  directly through the normal Elisp library, as these need the better
-  handling of ansiterm:
-
-  #+BEGIN_SRC elisp
-    (add-hook 'eshell-mode-hook
-       (lambda ()
-          (add-to-list 'eshell-visual-commands "ssh")
-          (add-to-list 'eshell-visual-commands "tail")))
-  #+END_SRC
-
-* Ignoring Directories
-
-  Great shell with some good tweaks taken from [[https://github.com/eschulte/emacs24-starter-kit/blob/master/starter-kit-eshell.org][the Starter Kit]]
-  project. Ignoring the =.git= directories seem like a good idea.
-
-  #+BEGIN_SRC elisp :tangle no
-    (setq eshell-cmpl-cycle-completions nil
-          eshell-save-history-on-exit t
-          eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
-  #+END_SRC
-
 * Special Prompt
 
   Following [[http://blog.liangzan.net/blog/2012/12/12/customizing-your-emacs-eshell-prompt/][these instructions]], we build a better prompt with the Git
@@ -275,11 +249,7 @@ some significant differences to address. To this end, I [[http://www.howardism.o
              (mapconcat (lambda (elm) elm)
                         (last p-lst 2)
                         "/"))
-          pwd  ;; Otherwise, we just return the PWD
-          )))
-
-    ;; Turn off the default prompt.
-    (setq eshell-highlight-prompt nil)
+          pwd)))  ;; Otherwise, we just return the PWD
   #+END_SRC
 
   Break up the directory into a "parent" and a "base":
@@ -354,17 +324,17 @@ some significant differences to address. To this end, I [[http://www.howardism.o
   allow deleting a character? We can have it both (thanks to [[https://github.com/wasamasa/dotemacs/blob/master/init.org#eshell][wasamasa]]):
 
   #+BEGIN_SRC elisp
-    (defun ha/eshell-quit-or-delete-char (arg)
-      (interactive "p")
-      (if (and (eolp) (looking-back eshell-prompt-regexp))
-          (progn
-           (eshell-life-is-too-much) ; Why not? (eshell/exit)
-           (delete-window))
-        (delete-forward-char arg)))
+      (defun ha/eshell-quit-or-delete-char (arg)
+        (interactive "p")
+        (if (and (eolp) (looking-back eshell-prompt-regexp))
+            (progn
+              (eshell-life-is-too-much) ; Why not? (eshell/exit)
+              (delete-window))
+          (delete-forward-char arg)))
 
-    (use-package eshell
-      :bind (:map eshell-mode-map
-                  (("C-d" . ha/eshell-quit-or-delete-char))))
+      (add-hook 'eshell-mode-hook (lambda ()
+         (define-key eshell-mode-map (kbd "C-d")
+                                     'ha/eshell-quit-or-delete-char)))
   #+END_SRC
 
 * Shell There
