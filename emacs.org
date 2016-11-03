@@ -2145,17 +2145,6 @@
           (add-hook 'emacs-lisp-mode-hook 'paredit-mode))
     #+END_SRC
 
-*** Colored Variables
-
-    Color each variable, and downplay standard key words:
-
-    #+BEGIN_SRC elisp
-      (use-package color-identifiers-mode
-        :ensure t
-        :init
-        (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode))
-    #+END_SRC
-
 *** Nicer Paren Matching
 
     The reverse mode of the default parenthesis matching doesn’t match
