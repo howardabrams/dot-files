@@ -329,7 +329,8 @@ I find it a shame that I can not successfully use =use-package= with the
         (if (and (eolp) (looking-back eshell-prompt-regexp))
             (progn
               (eshell-life-is-too-much) ; Why not? (eshell/exit)
-              (delete-window))
+              (ignore-errors
+                (delete-window)))
           (delete-forward-char arg)))
 
       (add-hook 'eshell-mode-hook (lambda ()
