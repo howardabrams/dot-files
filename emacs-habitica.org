@@ -1,0 +1,166 @@
+#+TITLE:  Connecting Emacs to Habitica
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2017 Jan 24
+#+TAGS:   habitica lisp
+
+I've been surprised at how motivating [[http://www.habitica.com][Habitica]] has been. While, I
+first heard about it after stumbling upon the [[https://github.com/abrochard/emacs-habitica][Emacs integration]], I
+figured I would have a little fun at building my own integration.
+
+* Connection to Habitica
+
+  Before we do anything, we need to be able to send messages through
+  the [[https://habitica.com/apidoc/][Habitica API]]. Assume I've set the following variables:
+
+  - ~habitica-uid~
+  - ~habitica-token~
+
+  We'll start with the [[https://github.com/abrochard/emacs-habitica][this package]], and its variables and functions:
+  - ~habitica-base~
+  - ~habitica--send-request~
+
+  #+BEGIN_SRC elisp
+  (use-package habitica
+     :ensure t)
+  #+END_SRC
+
+  A function for creating tasks based on an associated list.
+  To do this, we convert the list to a HTTP data string:
+
+  #+BEGIN_SRC elisp
+    (defun ha/create-habitica-task (task)
+      "Create a task based on the details of the associated list, TASK."
+      (when (not (assoc 'type task))
+        (setq task (cons '(type . "todo") task)))
+
+      (flet ((combine-tuple (tup) (format "%s=%s" (car tup) (cdr tup))))
+        (let ((data (mapconcat 'combine-tuple task "&")))
+          (habitica--send-request "/tasks/user" "POST" data))))
+  #+END_SRC
+
+  Now we can easily create a comprehensive task with all sorts of
+  parameters:
+
+  #+BEGIN_SRC elisp :tangle no
+    (ha/create-habitica-task '((text . "Delete this")
+                               (notes . "Just an idea")
+                               (priority . 1.5)))
+  #+END_SRC
+
+  I also like the idea that I could add checklists to an existing
+  task:
+
+  #+BEGIN_SRC elisp
+    (defun ha/habitica-add-checklist (id item)
+      "Add to a task ID an ITEM as a checklist."
+      (habitica--send-request (format "/tasks/%s/checklist" id) "POST"
+                              (format "text=%s" item)))
+  #+END_SRC
+
+* Org Section to Todo
+
+  I would like to be able to create a Habitica Todo from any org-mode
+  section. Essentially, the title should be the actual task and the
+  contents should be the associated notes.
+
+  First, we need code to grab the section title based on the header:
+  #+BEGIN_SRC elisp
+    (defun ha/org-get-header ()
+      "Extract and return the Header of the current org section."
+      (substring-no-properties (org-get-heading t t)))
+  #+END_SRC
+
+  That should be the text of the task. We should put the rest of the
+  header as a note?  Of course, we really need to convert this to
+  Markdown, so we should attempt to high-light the current subtree:
+
+  #+BEGIN_SRC elisp
+    (require 'ox-md)
+
+    (defun ha/org-get-section-contents ()
+      "Returns the contents of the current section as a Markdown-formatted string."
+      (save-excursion
+        (save-restriction
+          (let (start end results
+                      (filename (buffer-name))
+                      (filepath (buffer-file-name)))
+            (org-next-visible-heading 1)
+            (setq end (point))
+            (org-previous-visible-heading 1)
+            (forward-line)
+            (setq start (point))
+            (narrow-to-region start end)
+            (org-md-export-as-markdown)
+            (setq results (buffer-string))
+
+            ;; (bury-buffer) ... still trying to figure this out
+            (format "%s \n\n See: [%s](%s)" results filename filepath)))))
+  #+END_SRC
+
+  Can I extract any bullet items from it for use as a checklist:
+
+  #+BEGIN_SRC elisp
+    (defun ha/org-get-section-bullet-list ()
+      "Returns a list of the embedded bullet items from current org section."
+      (let ((buf (substring-no-properties (org-get-entry)))
+            (start 0)
+            (results ()))
+        (while (string-match "^ +[-*+] \\(.+\\)" buf start)
+          (setq results (append results (list (match-string 1 buf))))
+          (setq start (match-end 1)))
+        results))
+  #+END_SRC
+
+  Put it all together as a series of variables:
+
+  #+BEGIN_SRC elisp
+    (defun ha/org-section-to-habitica ()
+      "Extracts the current org-mode section as a TODO in Habitica."
+      (interactive)
+      (let* ((text (ha/org-get-header))
+             (notes (ha/org-get-section-contents))
+             (checklist (ha/org-get-section-bullet-list))
+             (details `((text . ,text)
+                        (notes . ,notes)
+                        (priority . 1.5)))
+             (task (ha/create-habitica-task details))
+             (taskid (cdr (assoc 'id task))))
+
+        (when (> (length checklist) 0)
+          (dolist (item checklist)
+            (ha/habitica-add-checklist taskid item)))
+        (message "Created: %s" text)))
+  #+END_SRC
+
+  So let's see how well this works by adding the following section as
+  a task:
+
+** Connect Emacs to Habitica
+
+   Extract an org-mode section as a task in Habitica.
+
+   - Write functions to extract the org-mode section
+   - Write function to create the task
+   - Test the bloody thing
+   - Write a blog entry explaining it
+
+* Technical Artifacts
+
+  Make sure that we can simply =require= this library.
+
+#+BEGIN_SRC elisp
+  (provide 'init-habitica)
+#+END_SRC
+
+  Before you can build this on a new system, make sure that you put
+  the cursor over any of these properties, and hit: =C-c C-c=
+
+#+PROPERTY:    results silent
+#+PROPERTY:    header-args:sh  :tangle no
+#+PROPERTY:    tangle ~/.emacs.d/elisp/init-habitica.el
+#+PROPERTY:    eval no-export
+#+PROPERTY:    comments org
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
