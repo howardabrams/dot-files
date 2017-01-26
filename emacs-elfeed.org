@@ -25,6 +25,8 @@ Let's load it up if it is installed.
 #+BEGIN_SRC elisp
   (setq elfeed-feeds
         '("http://www.howardism.org/index.xml"     ;; My Blog
+          "http://planet.emacsen.org/atom.xml"     ;; Emacs RSS
+          "http://sachachua.com/blog/category/emacs-news/feed"
           "http://endlessparentheses.com/atom.xml" ;; Emacs Blog
           "http://www.masteringemacs.org/feed/"    ;; Emacs Blog
           "http://emacs-fu.blogspot.com/feeds/posts/default"
