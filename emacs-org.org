@@ -213,7 +213,7 @@ Emacs love affair.
              (datim (encode-time 0 0 0 day month year)))
 
           (insert (format-time-string org-journal-date-format datim))
-          (insert "\n\n") ; Start with a blank separating line
+          (insert "\n\n  $0\n") ; Start with a blank separating line
 
           ;; Note: The `insert-file-contents' leaves the cursor at the
           ;; beginning, so the easiest approach is to insert these files
@@ -229,9 +229,14 @@ Emacs love affair.
                                      (format-time-string "journal-%a.org"))))
               (when (file-exists-p weekday-template)
                 (insert-file-contents weekday-template)))
-            (insert-file-contents "journal-dailies.org"))))
+            (insert-file-contents "journal-dailies.org")
+            (insert "$0")
 
-        (define-auto-insert "/[0-9]\\{8\\}$" [journal-file-insert])
+            (let ((contents (buffer-string)))
+              (delete-region (point-min) (point-max))
+              (yas-expand-snippet contents (point-min) (point-max)))))))
+
+    (define-auto-insert "/[0-9]\\{8\\}$" [journal-file-insert])
   #+END_SRC
 
   To use this, make the following files:
