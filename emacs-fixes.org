@@ -362,6 +362,15 @@ ever do that?
   (global-set-key (kbd "C-c f p") 'find-file-decrement)
 #+END_SRC
 
+* Kill This Buffer
+
+  I rarely want to kill any buffer but the one I'm looking at.
+
+  #+BEGIN_SRC elisp
+    (global-set-key (kbd "C-x k") 'kill-this-buffer)
+    (global-set-key (kbd "C-x K") 'kill-buffer)
+  #+END_SRC
+
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.
