@@ -234,7 +234,7 @@ Emacs love affair.
 
             (let ((contents (buffer-string)))
               (delete-region (point-min) (point-max))
-              (yas-expand-snippet contents (point-min) (point-max)))))))
+              (yas-expand-snippet contents (point-min) (point-max))))))
 
     (define-auto-insert "/[0-9]\\{8\\}$" [journal-file-insert])
   #+END_SRC
