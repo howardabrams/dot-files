@@ -251,6 +251,8 @@ other systems with a graphical front-end.
      '(which-func          ((t (                      :foreground "orange"))))
      '(show-paren-match    ((t (:background "default" :foreground "#afa"    :weight ultra-bold))))
      '(show-paren-mismatch ((t (:background "default" :foreground "#cc6666" :weight ultra-bold)))))
+
+    (set-face-attribute 'region nil :background "#00a")
   #+END_SRC
 
 * Frame and Window Size
