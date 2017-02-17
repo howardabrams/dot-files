@@ -16,6 +16,23 @@
        :ensure t)
   #+END_SRC
 
+* CSS
+
+  Dunno why CSS doesn't honor the 2 spacing indent I have globally:
+
+  #+BEGIN_SRC elisp
+    (use-package css
+       :init
+        (setq css-indent-offset 2))
+  #+END_SRC
+
+  Need the smart parens:
+
+  #+BEGIN_SRC elisp
+    (use-package smartparens
+      :init (add-hook 'css-mode-hook 'smartparens-mode))
+  #+END_SRC
+
 * Surround with Tag
 
   Seems that even the SGML mode doesn't care about properly formatted
@@ -78,7 +95,6 @@
   - =C-M-x= :: Evaluate the top-level form around the point.
   - =C-c C-k= :: Load the current buffer.
   - =C-c C-z= :: Select the REPL buffer.
-
 
 * Impatient Mode
 
