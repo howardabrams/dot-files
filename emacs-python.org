@@ -138,7 +138,7 @@ revolves around the [[https://elpy.readthedocs.io/en/latest/introduction.html][E
    #+END_SRC
 
    While, the [[http://elpy.readthedocs.org/en/latest/concepts.html#virtual-envs][Elpy Project]] deals with the =virtualenvwrapper= (using the
-   =pyvenv-workon= function), we need to install
+   =pyvenv-workon= function), we need to install [[https://github.com/proofit404/pyenv-mode][pyenv-mode]] for Emacs:
 
    #+BEGIN_SRC elisp
    (use-package pyenv-mode
@@ -163,6 +163,9 @@ revolves around the [[https://elpy.readthedocs.io/en/latest/introduction.html][E
         :ensure t)
    #+END_SRC
 
+   *Note:* Since Elpy runs Python in the home directory, it doesn't deal
+   with any /local/ environment, so only use =pyenv global=.
+
 * Basics
 
   WSGI files are just Python files in disguise, so tell them to use
@@ -181,9 +184,9 @@ revolves around the [[https://elpy.readthedocs.io/en/latest/introduction.html][E
 
       :config
       (setq python-indent-offset 4)
+      (add-hook 'python-mode-hook 'smartparens-mode)
       (add-hook 'python-mode-hook 'color-identifiers-mode))
   #+END_SRC
-
 
 * Lint
 
