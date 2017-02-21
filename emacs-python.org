@@ -219,6 +219,7 @@ revolves around the [[https://elpy.readthedocs.io/en/latest/introduction.html][E
 
   #+BEGIN_SRC elisp
     (use-package jedi
+      :ensure t
       :init
       (add-to-list 'company-backends 'company-jedi)
       (use-package company-jedi
