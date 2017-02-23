@@ -94,7 +94,9 @@ revolves around the [[https://elpy.readthedocs.io/en/latest/introduction.html][E
    specify the version of Python you want to use:
 
    #+BEGIN_SRC sh
-      pyenv virtualenv foobar 2.7.5
+      pyenv global 3.4.2       # Step 1. Set the version
+      pyenv virtualenv foobar  # Step 2. Create environment
+      pyenv activate foobar    # STep 3. Use environment
    #+END_SRC
 
    Now commands like =pip= will isolate the module for this particular
