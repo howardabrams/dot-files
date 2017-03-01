@@ -1176,8 +1176,8 @@
 
 ** Helm
 
-   Obviously, Helm would be helpful if I can learn all the bindings,
-   so:
+   The [[https://github.com/emacs-helm/helm][helm project]], while helpful, can be quite intrusive, so I have
+   it available, and try to remember to use its features with ~C-x c~:
 
    #+BEGIN_SRC elisp
      (use-package helm
@@ -1187,6 +1187,40 @@
    #+END_SRC
 
    Re-read [[http://tuhdo.github.io/helm-intro.html][this essay on Helm]].
+
+   The [[https://github.com/ShingoFukuyama/helm-swoop][helm-swoop]] project has a nice DWIM replacement for
+   =isearch-forward-symbol-at-point= (bound to ~M-s .~):
+
+   #+BEGIN_SRC elisp
+   (use-package helm-swoop
+     :ensure t
+     :init
+              ;; If this value is t, split window inside the current window
+        (setq helm-swoop-split-with-multiple-windows t
+              ;; If you prefer fuzzy matching
+              helm-swoop-use-fuzzy-match t)
+     :bind
+        ("M-s s" . helm-swoop)  ;; overbind M-i ?
+        ("M-s S" . helm-multi-swoop)
+        (:map helm-swoop-map
+          ("C-r" . helm-previous-line)
+          ("C-s" . helm-next-line))
+        (:map helm-multi-swoop-map
+          ("C-r" . helm-previous-line)
+          ("C-s" . helm-next-line)))
+   #+END_SRC
+
+   A poor-person's variable renaming refactoring is to use:
+   - ~M-x helm-multi-swoop-projectile~
+
+   *Note:* While in =isearch=, his ~M-i~ to switch over to =helm-swoop=.
+
+   While in a search, the following keys are available:
+   - ~M-i~ :: Switch to =helm-multi-swoop=
+   - ~C-c C-e~ :: Edit the matching buffer (like rename all
+        variables). Save with ~C-x C-s~
+
+   Giving it a prefix (with ~C-u~) specifies the number of lines of context.
 
 ** Grep for my Notes
 
