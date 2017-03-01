@@ -46,12 +46,10 @@ developing Ruby in Emacs.
             ruby-indent-tabs-mode nil)
       (add-hook 'ruby-mode 'superword-mode)
 
-      :config
-      (bind-key "M-<down>" 'ruby-forward-sexp)
-      (bind-key "M-<up>" 'ruby-backward-sexp)
-      ;; Don't care to have to start up Ruby if I'm just jumping around
-      (bind-key "M-." 'find-tag)
-      (bind-key "C-c C-e" 'ruby-send-region))  ;; Rebind since Rubocop uses C-c C-r
+      :bind
+      (([(meta down)] . ruby-forward-sexp)
+       ([(meta up)]   . ruby-backward-sexp)
+       (("C-c C-e"    . ruby-send-region))))  ;; Rebind since Rubocop uses C-c C-r
   #+END_SRC
 
   Being able to select code using expand-region, and then sending it

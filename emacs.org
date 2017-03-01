@@ -1912,11 +1912,15 @@
    a /language option/:
 
    #+BEGIN_SRC sh :tangle ~/.ctags :comments no
-    --langdef=org
-    --langmap=org:.org
-    --regex-org=/^\*+[ \t]+([a-zA-Z0-9_ ]+)/\1/d,definition/
+     --langdef=org
+     --langmap=org:.org
+     --regex-org=/^\*+[ \t]+([a-zA-Z0-9_ ]+)/\1/d,definition/
+
+     --exclude=vendor
+     --exclude=.git
    #+END_SRC
 
+   Also, add various directories and filenames that should be ignored.
    We access stuff by loading the =etags= package:
 
    #+BEGIN_SRC elisp
@@ -1988,15 +1992,7 @@
    #+END_SRC
 
    Emacs 25 changed has now deprecated the famous [[info:emacs#Tags][Tags and Friends]],
-   like =find-tags= for =xref=. Some point, I will have to learn how
-   to configure it, but until then, I'll just rebind to my old mates:
-
-   #+BEGIN_SRC elisp :tangle no
-     (global-set-key (kbd "M-.") 'find-tag)
-     (global-set-key (kbd "C-M-.") 'find-tag-regexp)
-     (global-set-key (kbd "M-,") 'pop-tag-mark)
-     (global-set-key (kbd "M-i") 'imenu-anywhere)
-   #+END_SRC
+   like =find-tags= for =xref=.
 
    Note: This prompt needs to go away:
 
