@@ -1991,6 +1991,23 @@
      (setq tags-add-tables nil)
    #+END_SRC
 
+   What if the marker stack is empty? M-, returns an error. Let's do a
+   DWIM function:
+
+   #+BEGIN_SRC elisp
+     (defun ha/xref-pop-marker-stack (arg)
+       "Pops the marker stack, unless I haven't searched a tag/xref
+     with `M-.' and there is nothing to return to, in which case, let's
+     jump back to the last change."
+       (interactive "P")
+       (condition-case nil
+           (xref-pop-marker-stack)
+         (error
+          (goto-last-change arg))))
+
+     (bind-key "M-," 'ha/xref-pop-marker-stack)
+   #+END_SRC
+
 *** Code Block Folding
 
     The [[info:emacs#Hideshow][Hide Show Minor]] mode allows us to /fold/ all functions
