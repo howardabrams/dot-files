@@ -595,21 +595,12 @@
    #+Begin_SRC elisp
      (use-package avy
        :ensure t
-       :commands avy-goto-word-1 avy-goto-char-1 avy-goto-line avy-goto-char-timer
        :bind
-       ("C-c j"   . avy-goto-word-1)
-       ("A-j"     . avy-goto-word-1)    ; The Mac Command key
-       ("s-j"     . avy-goto-word-1)    ; The Command key on Linux
-       ("A-h"     . avy-goto-char-2)
-       ("s-h"     . avy-goto-char-2)
-       ("C-c k k" . avy-goto-char-timer)
-       ("A-J"     . avy-goto-char-timer)    ; The Mac Command key
-       ("s-J"     . avy-goto-char-timer)    ; The Command key on Linux
-       ("C-c k j" . avy-goto-word-1)
-       ("C-c k c" . avy-goto-char-1)
-       ("C-c k l" . avy-goto-line)
-       ("C-c k p" . avy-pop-mark)
-       ("A-,"     . avy-pop-mark))
+       ("C-c j"   . avy-goto-word-timer)
+       ("A-j"     . avy-goto-word-timer)    ; The Mac Command key
+       ("s-j"     . avy-goto-word-timer)    ; The Command key on Linux
+       ("A-J"     . avy-pop-mark)           ; The Mac Command key
+       ("s-J"     . avy-pop-mark))          ; The Command key on Linux
    #+END_SRC
 
    Other options (that require more of my memory), are bound
