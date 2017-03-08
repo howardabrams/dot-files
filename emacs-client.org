@@ -37,6 +37,8 @@ other systems with a graphical front-end.
      ("A-s" . save-buffer)
      ("s-+" . text-scale-increase)
      ("A-+" . text-scale-increase)
+     ("s-=" . text-scale-increase)
+     ("A-=" . text-scale-increase)
      ("s--" . text-scale-decrease)
      ("A--" . text-scale-decrease)
      ("s-_" . text-scale-decrease)
@@ -63,6 +65,33 @@ other systems with a graphical front-end.
      ("M-<right>" . forward-word))
   #+END_SRC
 
+  According to [[http://emacsninja.com/posts/making-emacs-more-presentable.html][this article]], we can update the =text-scale-XYZ=
+  functions to work on a frame instead of just a buffer:
+
+  #+BEGIN_SRC elisp
+    (defun ha/text-scale-frame-change (fn)
+      (let* ((current-font-name (frame-parameter nil 'font))
+             (decomposed-font-name (x-decompose-font-name current-font-name))
+             (font-size (string-to-int (aref decomposed-font-name 5))))
+        (aset decomposed-font-name 5 (int-to-string (funcall fn font-size)))
+        (set-frame-font (x-compose-font-name decomposed-font-name))))
+
+    (defun ha/text-scale-frame-increase ()
+      (interactive)
+      (ha/text-scale-frame-change '1+))
+
+    (defun ha/text-scale-frame-decrease ()
+      (interactive)
+      (ha/text-scale-frame-change '1-))
+
+    (bind-keys
+     ("s-C-+" . ha/text-scale-frame-increase)
+     ("A-C-+" . ha/text-scale-frame-increase)
+     ("s-C-=" . ha/text-scale-frame-increase)
+     ("A-C-=" . ha/text-scale-frame-increase)
+     ("s-C--" . ha/text-scale-frame-decrease)
+     ("A-C--" . ha/text-scale-frame-decrease))
+  #+END_SRC
 
   Gotta get rid of the bloody =C-x C-c=, for it is too close to the
   tangling key binding of =C-c C-v= ... besides, I never quit Emacs.
