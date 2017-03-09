@@ -2440,6 +2440,49 @@
        (define-key jabber-chat-mode-map [escape] 'my-jabber-chat-delete-or-bury))
    #+END_SRC
 
+* Frivolous
+
+  Life must be more whimsical. To begin, install the =fortune= package:
+  #+BEGIN_SRC sh :tangle no
+    brew install fortune   # Installs in /usr/local/share/games/fortunes
+  #+END_SRC
+  Or, if on Ubuntu:
+  #+BEGIN_SRC sh :tangle no
+    sudo apt-get install fortune # Installs in /usr/share/games/fortunes
+  #+END_SRC
+
+  Let's create a variable for knowing if we have everything installed:
+  #+BEGIN_SRC elisp
+    (defvar ha/can-haz-cookie-p nil "Is true if the fortune system has been correctly configured")
+  #+END_SRC
+
+  Since fortune installs quite a few files (some of which we don't
+  like), and we may want to run the same code on multiple operating
+  systems, we write a little wrapper function around the =cookie=
+  function to pick one of our favorite files (if available) at random:
+
+  #+BEGIN_SRC elisp
+    (defun ha/cookie ()
+      "Returns a phrase from a random `fortune' file from standard locations."
+      (interactive)
+      (condition-case nil
+          (let* ((favs "computers$\\|definitions$\\|drugs$\\|fortunes$\\|goedel$\\|linuxcookie$\\|magic$")
+                 (paths '("/usr/share/games/fortunes" "/usr/local/share/games/fortunes"))
+                 (path (car (-filter 'file-exists-p paths)))
+                 (files (directory-files path t favs))
+                 (file (nth (random (length files)) files)))
+            (setq ha/can-haz-cookie-p t)
+            (message "%s" (cookie file)))
+        (error (message "Happy Hacking!"))))
+  #+END_SRC
+
+  And let's display a frivolous message each time we return to Emacs:
+
+  #+BEGIN_SRC elisp
+    (when ha/can-haz-cookie-p
+      (add-hook 'focus-in-hook 'ha/cookie))
+  #+END_SRC
+
 * Technical Artifacts
 
 ** Setting up the Exec Path
@@ -2478,11 +2521,11 @@
      (require 'init-local nil t)
    #+END_SRC
 
-   Let's get happy:
+   Finally, let's get happy:
 
    #+BEGIN_SRC elisp
      (defun display-startup-echo-area-message ()
-       (message "Happy hacking!"))
+       (ha/cookie))
    #+END_SRC
 
    After the first load, we can reload this with a require:
