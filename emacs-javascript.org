@@ -4,10 +4,9 @@
 #+DATE:   [2014-02-01 Sat][2014-02-01 Sat]
 #+TAGS:   emacs javascript
 
-   JavaScript should have three parts:
-   - Syntax highlight (already included)
-   - Syntax verification (with flycheck)
-   - Interactive REPL ... using Skewer
+Unlike other language development, JavaScript, for me, has two
+components, a front-end, browser-based interface, as well as a
+back-end, server-side interface through Node.
 
 * JS2 Mode
 
@@ -54,6 +53,29 @@
   #+END_SRC
 
   Now load and edit a JavaScript file, like [[file:~/jshint-code-test.js][jshint-code-test.js]].
+
+* Tern
+
+  The [[http://ternjs.net/doc/manual.html#emacs][Tern]] project is a JavaScript analyzer that can be used to
+  improve the JavaScript integration with editors like Emacs.
+
+  #+BEGIN_SRC elisp
+  (use-package tern
+     :ensure t
+     :init (add-hook 'js2-mode-hook (lambda () (tern-mode t)))
+     :config
+       (use-package company-tern
+          :ensure t
+          :init (add-to-list 'company-backends 'company-tern)))
+  #+END_SRC
+
+  The following additional keys are bound:
+
+  - ~M-.~ :: Jump to the definition of the thing under the cursor.
+  - M-, :: Brings you back to last place you were when you pressed ~M-.~.
+  - ~C-c C-r~ :: Rename the variable under the cursor.
+  - ~C-c C-c~ :: Find the type of the thing under the cursor.
+  - ~C-c C-d~ :: Find docs of the thing under the cursor. Press again to open the associated URL (if any).
 
 * Refactoring JavaScript
 
