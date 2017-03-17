@@ -97,29 +97,7 @@ other systems with a graphical front-end.
   tangling key binding of =C-c C-v= ... besides, I never quit Emacs.
 
   #+BEGIN_SRC elisp
-    (defun dont-kill-emacs ()
-      "This just prints a message with the correct way to stop Emacs."
-      (interactive)
-      (message "If you really want to quit emacs, call `save-buffers-kill-emacs' directly."))
-
-    (global-set-key (kbd "C-x C-c") 'dont-kill-emacs)
-  #+END_SRC
-
-  I would like Command-W to close a frame, but only if it only has a
-  single window in it. I found this code on [[http://www.emacswiki.org/emacs/frame-cmds.el][this site]].
-
-  #+BEGIN_SRC elisp
-  (defun delete-single-window (&optional window)
-    "Remove WINDOW from the display.  Default is `selected-window'.
-  If WINDOW is the only one in its frame, then `delete-frame' too."
-    (interactive)
-    (save-current-buffer
-      (setq window (or window (selected-window)))
-      (select-window window)
-      (kill-buffer)
-      (if (one-window-p t)
-          (delete-frame)
-          (delete-window (selected-window)))))
+    (setq confirm-kill-emacs 'yes-or-no-p)
   #+END_SRC
 
 * Font Settings
