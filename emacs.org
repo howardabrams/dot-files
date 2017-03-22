@@ -588,23 +588,33 @@
 
 ** Better Jumping
 
-   Mostly using the [[https://github.com/abo-abo/avy][avy]] project's [[help:avy-goto-word-1][avy-goto-word-1]] function, so I bind
+   Mostly using the [[https://github.com/abo-abo/avy][avy]] project's [[help:avy-goto-word-timer][avy-goto-word-1]] function, so I bind
    that to =C-c j=, but the recent update to include a timer feature,
    seems awful sweet:
 
-   #+Begin_SRC elisp
+   #+BEGIN_SRC elisp
      (use-package avy
        :ensure t
-       :bind
-       ("C-c j"   . avy-goto-word-timer)
-       ("A-j"     . avy-goto-word-timer)    ; The Mac Command key
-       ("s-j"     . avy-goto-word-timer)    ; The Command key on Linux
-       ("A-J"     . avy-pop-mark)           ; The Mac Command key
-       ("s-J"     . avy-pop-mark))          ; The Command key on Linux
+       :init (setq avy-background t))
    #+END_SRC
 
-   Other options (that require more of my memory), are bound
-   to =C-c k=.
+   Shame that the =:bind= option for =use-package= doesn't actually work.
+   Let's do a temporary fix:
+
+   #+BEGIN_SRC elisp
+     (global-set-key (kbd "s-h") 'avy-goto-char-timer)
+     (global-set-key (kbd "s-H") 'avy-pop-mark)
+   #+END_SRC
+
+   The [[https://github.com/tam17aki/ace-isearch][ace-isearch]] looks like a simple approach to integrate many
+   types of searches into a single entry point:
+
+   #+BEGIN_SRC elisp
+     (use-package ace-isearch
+       :ensure t
+       :init
+       (global-ace-isearch-mode +1))
+   #+END_SRC
 
 ** Unfill Paragraph
 
@@ -1193,22 +1203,22 @@
    =isearch-forward-symbol-at-point= (bound to ~M-s .~):
 
    #+BEGIN_SRC elisp
-   (use-package helm-swoop
-     :ensure t
-     :init
-              ;; If this value is t, split window inside the current window
-        (setq helm-swoop-split-with-multiple-windows t
-              ;; If you prefer fuzzy matching
-              helm-swoop-use-fuzzy-match t)
-     :bind
-        ("M-s s" . helm-swoop)  ;; overbind M-i ?
+     (use-package helm-swoop
+       :ensure t
+       :init
+       ;; If this value is t, split window inside the current window
+       (setq helm-swoop-split-with-multiple-windows t
+             ;; If you prefer fuzzy matching
+             helm-swoop-use-fuzzy-match t)
+       :bind
+       (("M-s s" . helm-swoop)  ;; overbind M-i ?
         ("M-s S" . helm-multi-swoop)
         (:map helm-swoop-map
-          ("C-r" . helm-previous-line)
-          ("C-s" . helm-next-line))
+              ("C-r" . helm-previous-line)
+              ("C-s" . helm-next-line))
         (:map helm-multi-swoop-map
-          ("C-r" . helm-previous-line)
-          ("C-s" . helm-next-line)))
+              ("C-r" . helm-previous-line)
+              ("C-s" . helm-next-line))))
    #+END_SRC
 
    A poor-person's variable renaming refactoring is to use:
@@ -1222,6 +1232,11 @@
         variables). Save with ~C-x C-s~
 
    Giving it a prefix (with ~C-u~) specifies the number of lines of context.
+
+   #+BEGIN_SRC elisp
+     (define-key helm-swoop-map (kbd "C-s") 'helm-next-line)
+     (define-key helm-swoop-map (kbd "C-r") 'helm-previous-line)
+   #+END_SRC
 
 ** Grep for my Notes
 
