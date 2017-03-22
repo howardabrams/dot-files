@@ -136,7 +136,7 @@ revolves around the [[https://elpy.readthedocs.io/en/latest/introduction.html][E
    directory to a virtual environment:
 
    #+BEGIN_SRC sh
-     pyenv local foobar
+     pyenv local 2.6.6@foobar
    #+END_SRC
 
    While, the [[http://elpy.readthedocs.org/en/latest/concepts.html#virtual-envs][Elpy Project]] deals with the =virtualenvwrapper= (using the
@@ -209,12 +209,12 @@ revolves around the [[https://elpy.readthedocs.io/en/latest/introduction.html][E
 
   The ELPY project automatically adds support [[http://elpy.readthedocs.org/en/latest/ide.html#testing][for testing]].
 
-* Jedi or Rope
+* Jedi
 
   For auto-completion (and refactoring) for Python, you get two
   choices: [[http://rope.sourceforge.net/ropemacs.html][Rope]] or [[https://github.com/tkf/emacs-jedi][Jedi]]. Rope, while claiming more features, seems to
-  crash and lock up my Emacs connections, so I'm back to using
-  Jedi...for now. See [[http://www.masteringemacs.org/articles/2013/01/10/jedi-completion-library-python/][this article]], and maybe [[http://tkf.github.io/emacs-jedi/][these instructions]].
+  crash and not work. Besides, Jedi is a better name.
+  See [[http://www.masteringemacs.org/articles/2013/01/10/jedi-completion-library-python/][this article]], and maybe [[http://tkf.github.io/emacs-jedi/][these instructions]].
 
   Elpy will automatically use either, however, I want to hook Jedi to
   Company mode:
@@ -229,10 +229,30 @@ revolves around the [[https://elpy.readthedocs.io/en/latest/introduction.html][E
         (setq company-jedi-python-bin "python")))
   #+END_SRC
 
+* Anaconda
+
+  While [[https://github.com/jorgenschaefer/elpy/wiki][ELPY]] tries to be the all-in-one Python IDE, [[https://github.com/proofit404/anaconda-mode][Anaconda]] is
+  thinner wrapper around Jedi, which seems to work a bit better for me
+  and the fact that I need to use =pyenv= (instead of =pyvenv=).
+
+  #+BEGIN_SRC elisp
+    (use-package anaconda-mode
+      :ensure t
+      :init (add-hook 'python-mode-hook 'anaconda-mode)
+            (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+      :config (use-package company-anaconda
+                :ensure t
+                :init (add-hook 'python-mode-hook 'anaconda-mode)
+                (eval-after-load "company"
+                  '(add-to-list 'company-backends '(company-anaconda :with company-capf)))))
+  #+END_SRC
+
+  Oh, make sure we have [[https://github.com/proofit404/company-anaconda][Company-Anaconda]] configured too.
+
 * ELPY
 
   According to the [[https://github.com/jorgenschaefer/elpy/wiki][ELPY Web Site]], grab the latest version:
-  #+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp :tangle no
     (add-to-list 'package-archives
                '("elpy" . "http://jorgenschaefer.github.io/packages/"))
   #+END_SRC
@@ -243,7 +263,7 @@ revolves around the [[https://elpy.readthedocs.io/en/latest/introduction.html][E
 
   Once this has been installed, we can enable it:
 
-  #+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp :tangle no
     (use-package elpy
       :ensure t
       :commands elpy-enable
