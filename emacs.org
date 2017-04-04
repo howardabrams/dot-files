@@ -321,7 +321,8 @@
 
    #+BEGIN_SRC elisp
      (use-package fill
-       :bind ("C-c T f" . auto-fill-mode)
+       :bind (("C-c T f" . auto-fill-mode)
+              ("C-c T t" . toggle-truncate-lines))
        :init (add-hook 'org-mode-hook 'turn-on-auto-fill)
        :diminish auto-fill-mode)
    #+END_SRC
