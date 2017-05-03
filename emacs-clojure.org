@@ -60,8 +60,14 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
   to [[https://github.com/capitaomorte/yasnippet][Yasnippets]], is simply to clone the repository into my =snippets=
   directory:
 
-  #+BEGIN_SRC sh
-    git clone http://github.com/swannodette/clojure-snippets snippets/clojure-mode
+  #+BEGIN_SRC sh :tangle no
+    git clone http://github.com/swannodette/clojure-snippets ~/.emacs/snippets/clojure-mode
+  #+END_SRC
+
+  Or we could just install it as a package:
+  #+BEGIN_SRC elisp
+  (use-package clojure-snippets
+    :ensure t)
   #+END_SRC
 
 * Clojure Mode
@@ -218,7 +224,7 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
             ;; Stop error buffer from popping up while working in buffers other than the REPL:
             nrepl-popup-stacktraces nil)
 
-      (add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
+      ;; (add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
       (add-hook 'cider-mode-hook 'company-mode)
 
       (add-hook 'cider-repl-mode-hook 'paredit-mode)
