@@ -206,6 +206,7 @@ other systems with a graphical front-end.
       (funcall org-block-style)
 
       (let* ((ha/fixed-font-tuple (list :font ha/fixed-font-family))
+             ; (ha/varible-font-tuple (list :font ha/variable-font-family))
              (base-font-color     (face-foreground 'default nil 'default))
              (background-color    (face-background 'default nil 'default))
              (primary-color       (face-foreground 'mode-line nil))
@@ -215,7 +216,7 @@ other systems with a graphical front-end.
 
         (when ha/fixed-font-family
           (set-frame-font ha/fixed-font-family)
-          (set-face-attribute 'default nil :font ha/fixed-font-family :height 150)
+          (set-face-attribute 'default nil :font ha/fixed-font-family :height 140)
           (set-face-font 'default ha/fixed-font-family))
 
         ;; Noticeable?
@@ -238,11 +239,11 @@ other systems with a graphical front-end.
                                 `(org-level-4 ((t (,@headline ,@ha/variable-font-tuple
                                                               :height 1.1))))
                                 `(org-level-3 ((t (,@headline ,@ha/variable-font-tuple
-                                                              :height 1.25))))
+                                                              :height 1.1))))
                                 `(org-level-2 ((t (,@headline ,@ha/variable-font-tuple
-                                                              :height 1.5))))
+                                                              :height 1.1))))
                                 `(org-level-1 ((t (,@headline ,@ha/variable-font-tuple
-                                                              :height 1.75))))
+                                                              :height 2.1))))
                                 `(org-document-title ((t (,@headline ,@ha/variable-font-tuple :height 1.5 :underline nil)))))))
   #+END_SRC
 
