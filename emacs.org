@@ -1708,55 +1708,12 @@
 *** Visual Bookmarks... Breadcrumbs
 
     For dropping visual breadcrumbs throughout a single file or
-    multiple files, we use the [[https://github.com/joodland/bm][BM package]].
+    multiple files, use my [[file:elisp/better-breadcrumbs.el][better-breadcrumbs]] mode.
 
     #+BEGIN_SRC elisp
-      (use-package bm
-        :ensure t
-        :init
-        (setq bm-highlight-style 'bm-highlight-only-fringe
-              bm-cycle-all-buffers t)
-        :config
-        ;; Make a more bookmarky symbol for a 'mark':
-        (define-fringe-bitmap 'bm-marker-left [254 254 254 254 254 238 198 130] 8 8 'center)
-        (let ((fringe-backgd (face-background 'fringe)))
-          (set-face-attribute 'bm-fringe-face nil
-                              :foreground "green" :background fringe-backgd))
-
-        (defun bm-bookmark-defun ()
-          "Drops a temporary breadcrumb/bookmark at the beginning of the current defun."
-          (interactive)
-          (save-excursion
-            (beginning-of-defun)
-            (bm-toggle)))
-
-        :bind (("C-<f5>" . bm-toggle)
-               ("<f5>"   . bm-next)
-               ("M-<f5>" . bm-previous)
-               ("C-c b s" . bm-show)
-               ("C-c b r" . bm-bookmark-regexp)
-               ("C-c b f" . bm-bookmark-defun)
-               ("C-c b A" . bm-bookmark-annotate)
-               ("C-c b a" . bm-bookmark-show-annotation)
-               ("<left-margin> <mouse-1>" . bm-toggle-mouse)
-               ("<left-fringe> <mouse-1>" . bm-toggle-mouse)))
+      (require 'better-breadcrumb-mode)
+      (better-breadcrumb-mode +1)
     #+END_SRC
-
-    - C-F5 :: bm-toggle to drop a mark or remove it
-    - F5 :: bm-next to go to the next mark
-    - M-F5 :: bm-previous to go to the previous mark
-
-    - C-c b s :: bm-show brings up a buffer with all the little marks
-         and the contents their line (see =bm-show-all= for all buffers)
-    - C-c b r :: bm-bookmark-regexp to create a bunch of bookmarks
-    - C-c b f :: bm-bookmark-function to bookmark the start of the function
-    - C-c b A :: bm-bookmark-annotate Annotate the mark
-    - C-c b a ::  Show the annotation (if any of the mark) ... would be
-         nice if this could be automatically displayed.
-
-    The biggest question is if I want =bm-previous= to go to the previous
-    logical mark in the file or last mark that was set... perhaps we
-    do both with different keys?
 
 ** Smart Comments
 

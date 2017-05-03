@@ -1,0 +1,35 @@
+The following example may be useful is following along with how
+breadcrumb drops would work. Keep in mind this works with marks
+(crumbs) in different file buffers.
+
+Breadcrumb marker D    (Line: 5 Pos: 181)
+               ^
+Breadcrumb marker B    (Line: 7 Pos: 225)
+^
+Breadcrumb marker F    (Line: 9 Pos: 287)
+                  ^
+Breadcrumb marker C    (Line: 11 Pos: 336)
+     ^
+Breadcrumb marker A    (Line: 13 Pos: 399)
+                  ^
+Breadcrumb marker E    (Line: 15 Pos: 446)
+  ^
+
+
+
+
+Local Variables:
+mode: text
+mode: better-breadcrumb
+eval: (cl-flet ((crumb-at (chrpt &optional note)
+                     (goto-char chrpt)
+                     (bbc--new-breadcrumb note)))
+    (setq bbc--breadcrumbs
+          (list
+           (crumb-at 399 "The start of something good")
+           (crumb-at 225)
+           (crumb-at 336 "This is the middle of my trail.")
+           (crumb-at 181)
+           (crumb-at 446 "The end of the fun.")))
+    (setq bbc--current-crumb 2))
+End:
