@@ -371,6 +371,32 @@ ever do that?
     (global-set-key (kbd "C-x K") 'kill-buffer)
   #+END_SRC
 
+* Better Transpose Word
+
+  Seems that the prefix feature of the =traspose-words= function is
+  backwards... at least, for case my use whatever
+
+  #+BEGIN_SRC elisp
+    (defun ha/transpose-words (pre)
+      "Wrapper around `transpose-words' and `org-transpose-words'
+    that works more intuitively when you are at the end of the line."
+      (interactive "p")
+      (let ((wrap-this (if (equal major-mode 'org-mode)
+                           'org-transpose-words
+                         'transpose-words)))
+        ;; At the end of the line with a positive prefix?
+        (when (looking-at "\s*$")
+          (cond
+           ;; No prefix? Send last word back before the previous...
+           ((null pre) (setq pre -1))
+           ;; Call it with a negative version of the prefix...
+           ((> pre 0)  (setq pre (- 0 pre)))))
+        (funcall wrap-this pre)))
+
+    (define-key org-mode-map [remap org-transpose-words] #'ha/transpose-words)
+    (global-set-key [remap transpose-words] #'ha/transpose-words)
+  #+END_SRC
+
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.
