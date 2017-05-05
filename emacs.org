@@ -604,17 +604,13 @@
 
    #+BEGIN_SRC elisp
      (global-set-key (kbd "s-h") 'avy-goto-char-timer)
+     (global-set-key (kbd "s-j") 'avy-goto-char-timer)
      (global-set-key (kbd "s-H") 'avy-pop-mark)
-   #+END_SRC
-
-   The [[https://github.com/tam17aki/ace-isearch][ace-isearch]] looks like a simple approach to integrate many
-   types of searches into a single entry point:
-
-   #+BEGIN_SRC elisp
-     (use-package ace-isearch
-       :ensure t
-       :init
-       (global-ace-isearch-mode +1))
+     (global-set-key (kbd "s-J") 'avy-pop-mark)
+     (global-set-key (kbd "A-h") 'avy-goto-char-timer)
+     (global-set-key (kbd "A-j") 'avy-goto-char-timer)
+     (global-set-key (kbd "A-H") 'avy-pop-mark)
+     (global-set-key (kbd "A-J") 'avy-pop-mark)
    #+END_SRC
 
 ** Unfill Paragraph
