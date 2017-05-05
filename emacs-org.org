@@ -187,6 +187,28 @@ Emacs love affair.
   syntax high-lighting parameters. These are used to help bring out
   the source code during literate programming mode.
 
+* Better Pasting
+
+  Assuming the =pandoc= project has been installed, we can take HTML
+  code, copied from a browser into the system's clipboard, and convert
+  it to =org-mode= format before yanking it into buffer.
+
+  #+BEGIN_SRC elisp
+    (defun ha/paste-html-to-org ()
+      "Assumes the contents of the system clip/paste-board to be
+    HTML, this calls out to `pandoc' to convert it for the org-mode
+    format."
+      (interactive)
+      (let* ((clip (if (eq system-type 'darwin)
+                       "pbpaste -Prefer rts"
+                     "xclip -out -selection 'clipboard' -t text/html"))
+             (format (if (eq mode-name "Org") "org" "markdown"))
+             (pandoc (concat "pandoc -f rts -t " format))
+             (cmd    (concat clip " | " pandoc))
+             (text   (shell-command-to-string cmd)))
+        (kill-new text)
+        (yank)))
+  #+END_SRC
 * Journaling
 
   Didn't realize that [[http://www.emacswiki.org/emacs/OrgJournal][org-journal]] essentially does what I have been
