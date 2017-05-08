@@ -393,7 +393,8 @@ ever do that?
            ((> pre 0)  (setq pre (- 0 pre)))))
         (funcall wrap-this pre)))
 
-    (define-key org-mode-map [remap org-transpose-words] #'ha/transpose-words)
+    (add-hook 'org-mode-hook (lambda()
+                              (define-key org-mode-map [remap org-transpose-words] #'ha/transpose-words)))
     (global-set-key [remap transpose-words] #'ha/transpose-words)
   #+END_SRC
 
