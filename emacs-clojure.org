@@ -475,9 +475,9 @@ The following instructions create a fully blinged-out Emacs-Clojure setup.
 #+DESCRIPTION: A literate programming version of my Emacs Initialization of Clojure
 #+PROPERTY:    header-args   :results silent
 #+PROPERTY:    header-args:clojure   :tangle no
-#+PROPERTY:    header-args:sh  :tangle no
-#+PROPERTY:    tangle ~/.emacs.d/elisp/init-clojure.el
-#+PROPERTY:    eval no-export
+#+PROPERTY:    header-args:sh     :tangle no
+#+PROPERTY:    header-args:elisp  :tangle ~/.emacs.d/elisp/init-clojure.el
+#+PROPERTY:    header-args:       :results silent   :eval no-export   :comments org
 #+PROPERTY:    comments no
 #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
 #+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil

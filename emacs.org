@@ -38,7 +38,7 @@
    And then build from source especially for the Mac:
 
    #+BEGIN_SRC sh :tangle no
-     brew install emacs --HEAD --use-git-head --with-cocoa --with-gnutls --srgb --with-librsvg --with-ns --with-imagemagick
+     brew install emacs --HEAD --use-git-head --with-cocoa --with-gnutls --with-librsvg --with-ns --with-imagemagick
 
      brew linkapps emacs
    #+END_SRC
@@ -1209,13 +1209,7 @@
              helm-swoop-use-fuzzy-match t)
        :bind
        (("M-s s" . helm-swoop)  ;; overbind M-i ?
-        ("M-s S" . helm-multi-swoop)
-        (:map helm-swoop-map
-              ("C-r" . helm-previous-line)
-              ("C-s" . helm-next-line))
-        (:map helm-multi-swoop-map
-              ("C-r" . helm-previous-line)
-              ("C-s" . helm-next-line))))
+        ("M-s S" . helm-multi-swoop)))
    #+END_SRC
 
    A poor-person's variable renaming refactoring is to use:
@@ -1230,7 +1224,7 @@
 
    Giving it a prefix (with ~C-u~) specifies the number of lines of context.
 
-   #+BEGIN_SRC elisp
+   #+BEGIN_SRC elisp :tangle no
      (define-key helm-swoop-map (kbd "C-s") 'helm-next-line)
      (define-key helm-swoop-map (kbd "C-r") 'helm-previous-line)
    #+END_SRC
@@ -2517,11 +2511,9 @@
    the cursor over any of these properties, and hit: =C-c C-c=
 
 #+DESCRIPTION: A literate programming version of my Emacs Initialization script, loaded by the .emacs file.
-#+PROPERTY:    results silent
-#+PROPERTY:    header-args:sh  :tangle no
-#+PROPERTY:    tangle ~/.emacs.d/elisp/init-main.el
-#+PROPERTY:    eval no-export
-#+PROPERTY:    comments org
+#+PROPERTY:    header-args:elisp  :tangle ~/.emacs.d/elisp/init-main.el
+#+PROPERTY:    header-args:sh     :tangle no
+#+PROPERTY:    header-args:       :results silent   :eval no-export   :comments org
 #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
 #+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
 #+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js

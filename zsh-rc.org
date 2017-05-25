@@ -115,7 +115,5 @@ things here are for callable functions, aliases and the like.
   The following are the tangled settings. Type: =C-c C-v t=
   to create the script file.
 
-#+PROPERTY: tangle ~/.zshrc
-#+PROPERTY: comments org
-#+PROPERTY: shebang #!/usr/local/bin/zsh
+#+PROPERTY: header-args:sh :tangle ~/.zshrc :shebang #!/usr/local/bin/zsh :comments org
 #+DESCRIPTION: Functions, aliases and other resources for ZShell

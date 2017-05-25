@@ -20,16 +20,6 @@ According to [[http://shreevatsa.wordpress.com/2008/03/30/zshbash-startup-files-
 Machine-specific gunk goes in the standard =.bashrc= and =~/.zshrc= files,
 and global variables are stored in =.profile= and =.zsh_profile=.
 
-* Technical Gunk
-
-  The following are the tangled settings. Type: =C-c C-v t=
-  to create the script file.
-
-#+PROPERTY: tangle ~/.sh-funcs.sh
-#+PROPERTY: comments org
-#+PROPERTY: shebang #!/bin/sh
-#+DESCRIPTION: Aliases and functions shareable between Bash and Zsh
-
 * Editor
 
   Another wrapper around =emacsclient= but this is a blocking
@@ -494,3 +484,11 @@ alias gf-changed='git status --porcelain | grep "^ M" | cut -c4-'
       source ~/.bash.d/bashmarks.sh
   fi
 #+END_SRC
+
+* Technical Gunk
+
+  The following are the tangled settings. Type: =C-c C-v t=
+  to create the script file.
+
+#+PROPERTY: header-args: :tangle ~/.sh-funcs.sh :shebang #!/bin/sh :comments org
+#+DESCRIPTION: Aliases and functions shareable between Bash and Zsh

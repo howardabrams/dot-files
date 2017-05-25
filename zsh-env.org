@@ -109,8 +109,5 @@ between my other scripts, but so far I haven't thought of anything.
   The following are the tangled settings. Type: =C-c C-v t=
   to create the script file.
 
-#+PROPERTY: tangle ~/.zshenv
-#+PROPERTY: comments org
-#+PROPERTY: shebang #!/usr/local/bin/zsh
 #+DESCRIPTION: Global environment variables for ZShell
-
+#+PROPERTY: header-args: :tangle ~/.zshenv :shebang #!/usr/local/bin/zsh :comments org

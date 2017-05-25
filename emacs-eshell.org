@@ -625,11 +625,11 @@ I find it a shame that I can not successfully use =use-package= with the
   #+END_SRC
 
 #+DESCRIPTION: A literate programming version of my Emacs Initialization of Eshell
-#+PROPERTY:    results silent
-#+PROPERTY:    tangle ~/.emacs.d/elisp/init-eshell.el
+
+#+PROPERTY:    header-args:elisp  :tangle ~/.emacs.d/elisp/init-eshell.el
 #+PROPERTY:    header-args:sh :tangle no
-#+PROPERTY:    eval no-export
-#+PROPERTY:    comments org
+#+PROPERTY:    header-args:       :results silent   :eval no-export   :comments org
+
 #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
 #+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
 #+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js

@@ -333,7 +333,5 @@ Type "help", "copyright", "credits" or "license" for more information.
   The following are the tangled settings. Type: =C-c C-v t=
   to create the script file.
 
-#+PROPERTY: tangle ~/.profile
-#+PROPERTY: comments org
-#+PROPERTY: shebang #!/bin/sh
 #+DESCRIPTION: Global environment variables for all shells
+#+PROPERTY: header-args:sh :tangle ~/.profile :shebang #!/bin/sh :comments org
