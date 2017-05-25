@@ -249,7 +249,7 @@ call with a prefix (C-u) prompts for a note to annotate it."
            ([left-margin mouse-1] . bbc-drop-crumb))
   :group 'bbc)
 
-(provide 'better-breadcrumb-mode)
+(provide 'better-breadcrumbs)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; better-breadbbc--breadcrumbs.el ends here
