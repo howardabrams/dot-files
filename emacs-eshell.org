@@ -304,6 +304,9 @@ I find it a shame that I can not successfully use =use-package= with the
     (setq eshell-highlight-prompt nil)
   #+END_SRC
 
+  Here is the result:
+  [[http://imgur.com/nkpwII0.png]]
+
 * Shell Here
 
   Making little Shells whenever I need them:
