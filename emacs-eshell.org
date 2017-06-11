@@ -270,14 +270,24 @@ I find it a shame that I can not successfully use =use-package= with the
             (let* ((directory (split-directory-prompt (pwd-shorten-dirs (pwd-replace-home (eshell/pwd)))))
                    (parent (car directory))
                    (name (cadr directory))
-                   (branch (or (curr-dir-git-branch-string (eshell/pwd)) "")))
+                   (branch (or (curr-dir-git-branch-string (eshell/pwd)) ""))
+                   (ruby (string-trim (shell-command-to-string "~/.rvm/bin/rvm-prompt")))
+                   (python (concat "Py:" (pyenv-mode-version))))
 
               (if (eq 'dark (frame-parameter nil 'background-mode))
                   (concat   ;; Prompt for Dark Themes
+                   (propertize "┌─ " 'face `(:foreground "green"))
                    (propertize parent 'face `(:foreground "#8888FF"))
-                   (propertize name   'face `(:foreground "#8888FF" :weight bold))
-                   (propertize branch 'face `(:foreground "green"))
-                   (propertize " $"   'face `(:weight ultra-bold))
+                   (propertize name   'face `(:foreground "#aaaaFF" :weight bold))
+                   (propertize " ──" 'face `(:foreground "green"))
+                   (propertize branch 'face `(:foreground "yellow"))
+                   (propertize " ── " 'face `(:foreground "green"))
+                   (propertize ruby 'face `(:foreground "red"))
+                   (propertize " ── " 'face `(:foreground "green"))
+                   (propertize python 'face `(:foreground "#5555FF"))
+                   (propertize "\n" 'face `(:foreground "green"))
+                   (propertize "└→" 'face `(:foreground "green"))
+                   (propertize (if (= (user-uid) 0) " #" " $") 'face `(:weight ultra-bold))
                    (propertize " "    'face `(:weight bold)))
 
                 (concat    ;; Prompt for Light Themes
