@@ -267,9 +267,8 @@ I find it a shame that I can not successfully use =use-package= with the
   #+BEGIN_SRC elisp
     (defun ruby-prompt ()
       "Returns a string (may be empty) based on the current Ruby Virtual Environment."
-      (let* ((executable "~/.rvm/bin/rvm-prompt"))
-        (if (file-exists-p executable)
-            ;; Need to trim the carriage return, but re-add a space:
+      (let ((executable "~/.rvm/bin/rvm-prompt"))
+        (when (file-exists-p executable)
             (string-trim (shell-command-to-string executable)))))
 
     (defun python-prompt ()
@@ -309,10 +308,10 @@ I find it a shame that I can not successfully use =use-package= with the
                (propertize name     'face for-dir)
                (propertize " ──"    'face for-bars)
                (propertize branch   'face for-git)
-               (when ruby
+               (when (not (s-blank? ruby))
                  (concat (propertize " ── " 'face for-bars)
                          (propertize ruby   'face for-ruby)))
-               (when python
+               (when (not (s-blank? python))
                  (concat (propertize " ── " 'face for-bars)
                          (propertize python 'face for-python)))
                (propertize "\n"     'face for-bars)
