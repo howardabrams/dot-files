@@ -261,41 +261,65 @@ I find it a shame that I can not successfully use =use-package= with the
         (list "" directory)))
   #+END_SRC
 
+  Using virtual environments for certain languages is helpful to know,
+  especially since I change them based on the directory.
+
+  #+BEGIN_SRC elisp
+    (defun ruby-prompt ()
+      "Returns a string (may be empty) based on the current Ruby Virtual Environment."
+      (let* ((executable "~/.rvm/bin/rvm-prompt"))
+        (if (file-exists-p executable)
+            ;; Need to trim the carriage return, but re-add a space:
+            (string-trim (shell-command-to-string executable)))))
+
+    (defun python-prompt ()
+      "Returns a string (may be empty) based on the current Python Virtual Environment."
+      (when (functionp #'pyenv-mode-version)
+          ;; Need to trim the carriage return, but re-add a space:
+          (concat "Py:" (pyenv-mode-version))))
+  #+END_SRC
+
   Now tie it all together with a prompt function can color each of the
   prompts components.
 
   #+BEGIN_SRC elisp
     (setq eshell-prompt-function
           (lambda ()
-            (let* ((directory (split-directory-prompt (pwd-shorten-dirs (pwd-replace-home (eshell/pwd)))))
+            (let* ((directory (split-directory-prompt
+                               (pwd-shorten-dirs
+                                (pwd-replace-home (eshell/pwd)))))
                    (parent (car directory))
                    (name (cadr directory))
                    (branch (or (curr-dir-git-branch-string (eshell/pwd)) ""))
-                   (ruby (string-trim (shell-command-to-string "~/.rvm/bin/rvm-prompt")))
-                   (python (concat "Py:" (pyenv-mode-version))))
+                   (ruby (ruby-prompt))
+                   (python (python-prompt))
 
-              (if (eq 'dark (frame-parameter nil 'background-mode))
-                  (concat   ;; Prompt for Dark Themes
-                   (propertize "┌─ " 'face `(:foreground "green"))
-                   (propertize parent 'face `(:foreground "#8888FF"))
-                   (propertize name   'face `(:foreground "#aaaaFF" :weight bold))
-                   (propertize " ──" 'face `(:foreground "green"))
-                   (propertize branch 'face `(:foreground "yellow"))
-                   (propertize " ── " 'face `(:foreground "green"))
-                   (propertize ruby 'face `(:foreground "red"))
-                   (propertize " ── " 'face `(:foreground "green"))
-                   (propertize python 'face `(:foreground "#5555FF"))
-                   (propertize "\n" 'face `(:foreground "green"))
-                   (propertize "└→" 'face `(:foreground "green"))
-                   (propertize (if (= (user-uid) 0) " #" " $") 'face `(:weight ultra-bold))
-                   (propertize " "    'face `(:weight bold)))
+                   (dark-env (eq 'dark (frame-parameter nil 'background-mode)))
+                   (for-bars                 `(:foreground "green"))
+                   (for-parent  (if dark-env `(:foreground "#8888FF") `(:foreground "blue")))
+                   (for-dir     (if dark-env `(:foreground "#aaaaFF" :weight bold)
+                                             `(:foreground "blue" :weight bold)))
+                   (for-git     (if dark-env `(:foreground "yellow")
+                                             `(:foreground "dark yellow")))
+                   (for-ruby                 `(:foreground "red"))
+                   (for-python               `(:foreground "#5555FF")))
 
-                (concat    ;; Prompt for Light Themes
-                 (propertize parent 'face `(:foreground "blue"))
-                 (propertize name   'face `(:foreground "blue" :weight bold))
-                 (propertize branch 'face `(:foreground "dark green"))
-                 (propertize " $"   'face `(:weight ultra-bold))
-                 (propertize " "    'face `(:weight bold)))))))
+              (concat
+               (propertize "┌─ "    'face for-bars)
+               (propertize parent   'face for-parent)
+               (propertize name     'face for-dir)
+               (propertize " ──"    'face for-bars)
+               (propertize branch   'face for-git)
+               (when ruby
+                 (propertize " ── " 'face for-bars)
+                 (propertize ruby   'face for-ruby))
+               (when python
+                 (propertize " ── " 'face for-bars)
+                 (propertize python 'face for-python))
+               (propertize "\n"     'face for-bars)
+               (propertize "└→"     'face for-bars)
+               (propertize (if (= (user-uid) 0) " #" " $") 'face `(:weight ultra-bold))
+               (propertize " "    'face `(:weight bold))))))
   #+END_SRC
 
   Turn off the default prompt, otherwise, it won't use ours:
