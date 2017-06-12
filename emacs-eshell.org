@@ -295,12 +295,11 @@ I find it a shame that I can not successfully use =use-package= with the
                    (python (python-prompt))
 
                    (dark-env (eq 'dark (frame-parameter nil 'background-mode)))
-                   (for-bars                 `(:foreground "green"))
+                   (for-bars                 `(:weight bold))
                    (for-parent  (if dark-env `(:foreground "#8888FF") `(:foreground "blue")))
                    (for-dir     (if dark-env `(:foreground "#aaaaFF" :weight bold)
                                              `(:foreground "blue" :weight bold)))
-                   (for-git     (if dark-env `(:foreground "yellow")
-                                             `(:foreground "dark yellow")))
+                   (for-git                  `(:foreground "green"))
                    (for-ruby                 `(:foreground "red"))
                    (for-python               `(:foreground "#5555FF")))
 
@@ -311,11 +310,11 @@ I find it a shame that I can not successfully use =use-package= with the
                (propertize " ──"    'face for-bars)
                (propertize branch   'face for-git)
                (when ruby
-                 (propertize " ── " 'face for-bars)
-                 (propertize ruby   'face for-ruby))
+                 (concat (propertize " ── " 'face for-bars)
+                         (propertize ruby   'face for-ruby)))
                (when python
-                 (propertize " ── " 'face for-bars)
-                 (propertize python 'face for-python))
+                 (concat (propertize " ── " 'face for-bars)
+                         (propertize python 'face for-python)))
                (propertize "\n"     'face for-bars)
                (propertize "└→"     'face for-bars)
                (propertize (if (= (user-uid) 0) " #" " $") 'face `(:weight ultra-bold))
