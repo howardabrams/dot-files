@@ -4,7 +4,14 @@
 # --
 #+BEGIN_SRC dot :file ${1:img/}.${2:png} :cmdline -Kdot -T$2 :exports results :results silent
   digraph G {
-    node [shape=box]
+    rankdir=LR;
+    bgcolor="#ffffff00" # RGBA (with alpha)
+    node [shape=box,
+          color="gray",    # node border color
+          fillcolor=white, # node fill color
+          style="filled,solid",
+          fontname="Verdana"]
+    edge [ penwidth=2, color=white ]
     $0
     node [label=""] Base
   }
