@@ -528,9 +528,11 @@
           ((= num 0)                (ha/highlight-block))
           ((= num 1)                (fancy-narrow-to-defun))
           (t                        (progn (ha/expand-region num)
-                                           (fancy-narrow-to-region (region-beginning) (region-end))))))
+                                           (fancy-narrow-to-region (region-beginning) (region-end))
+                                           (setq mark-active nil)))))
 
-       :bind ("C-M-+" . ha/highlight-section))
+       :bind (("C-M-+" . ha/highlight-section)
+              ("C-<f12>" . ha/highlight-section)))
    #+END_SRC
 
    This nifty function from [[http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html][Endless Parenthesis]] is a nice replacement
