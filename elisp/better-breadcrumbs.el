@@ -246,6 +246,9 @@ When enabled, Better Breadcrumbs provides the following keys:
   * C-c ,    \\[bbc-previous-crumb]
   * C-c C->  Drops crumb at the beginning of the current function
 
+Since `C-c .' conflicts with an org-mode binding, `C-c C-,'
+aliases to `bbc-next-crumb'.
+
 Note: Calling `bbc-drop-crumb' a second time deletes the crumb,
 call with a prefix (C-u) prompts for a note to annotate it."
   ;; The initial value.
@@ -256,6 +259,7 @@ call with a prefix (C-u) prompts for a note to annotate it."
   ;; The minor mode bindings.
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-c .")   'bbc-next-crumb)
+            (define-key map (kbd "C-c C-,") 'bbc-next-crumb)
             (define-key map (kbd "C-c ,")   'bbc-previous-crumb)
             (define-key map (kbd "C-c >")   'bbc-drop-crumb)
             (define-key map (kbd "C-c C->") 'bbc-drop-crumb-defun)
