@@ -21,7 +21,7 @@
 ;;  contain one breadcrumb, and dropping a crumb on a line that
 ;;  already has one, deletes it instead.
 ;;
-;;  Typically one turns on \\[better-breadcrumb-mode] to add keybindings.
+;;  Typically one turns on \\[better-breadcrumbs-mode] to add keybindings.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; This program is free software; you can redistribute it and/or
@@ -205,7 +205,19 @@ last breadcrumb marker in the trail. See \\[bbc-previous-crumb]
 for moving to a previously dropped breadcrumb marker."
   (interactive)
   (when (< bbc--current-crumb (1- (length bbc--breadcrumbs)))
-      (setq bbc--current-crumb (1+ bbc--current-crumb)))
+    (setq bbc--current-crumb (1+ bbc--current-crumb)))
+  (bbc-follow-crumb))
+
+(defun bbc-first-crumb ()
+  "Sets the point to the first breadcrumb on the stack."
+  (interactive)
+  (setq bbc--current-crumb 0)
+  (bbc-follow-crumb))
+
+(defun bbc-latest-crumb ()
+  "Sets the point to the latest created breadcrumb on the trail."
+  (interactive)
+  (setq bbc--current-crumb (1- (length bbc--breadcrumbs)))
   (bbc-follow-crumb))
 
 
@@ -219,15 +231,15 @@ See \\[bbc-drop-crumb] for details of a breadcrumb marker behavior."
     (bbc-drop-crumb prefix)))
 
 
-(define-minor-mode better-breadcrumb-mode
-  "Toggle Better Breadcrumb mode.
+(define-minor-mode better-breadcrumbs-mode
+  "Toggle Better Breadcrumbs mode.
 
 Interactively with no argument, this command toggles the mode.
 A positive prefix argument enables the mode, any other prefix
 argument disables it.  From Lisp, argument omitted or nil enables
 the mode, `toggle' toggles the state.
 
-When enabled, Better Breadcrumb provides the following keys:
+When enabled, Better Breadcrumbs provides the following keys:
 
   * C-c >    \\[bbc-drop-crumb]
   * C-c .    \\[bbc-next-crumb]
@@ -236,20 +248,21 @@ When enabled, Better Breadcrumb provides the following keys:
 
 Note: Calling `bbc-drop-crumb' a second time deletes the crumb,
 call with a prefix (C-u) prompts for a note to annotate it."
- ;; The initial value.
- :init-value nil
- ;; The indicator for the mode line.
- :lighter " ⁛"
- :global t
- ;; The minor mode bindings.
- :keymap '(([C-c .] . bbc-next-crumb)
-           ([C-c \,] . bbc-previous-crumb)
-           ([C-c >] . bbc-drop-crumb)
-           ([C-c C->] . bbc-drop-crumb-defun)
-           ([left-margin mouse-1] . bbc-drop-crumb))
+  ;; The initial value.
+  :init-value nil
+  ;; The indicator for the mode line.
+  :lighter " ⁛"
+  :global t
+  ;; The minor mode bindings.
+  :keymap (let ((map (make-sparse-keymap)))
+            (define-key map (kbd "C-c .")   'bbc-next-crumb)
+            (define-key map (kbd "C-c ,")   'bbc-previous-crumb)
+            (define-key map (kbd "C-c >")   'bbc-drop-crumb)
+            (define-key map (kbd "C-c C->") 'bbc-drop-crumb-defun)
+            map)
   :group 'bbc)
 
 (provide 'better-breadcrumbs)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; better-breadbbc--breadcrumbs.el ends here
+;;; better-breadcrumbs.el ends here
