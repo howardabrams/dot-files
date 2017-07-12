@@ -1703,8 +1703,9 @@
     multiple files, use my [[file:elisp/better-breadcrumbs.el][better-breadcrumbs]] mode.
 
     #+BEGIN_SRC elisp
-      (require 'better-breadcrumbs)
-      (better-breadcrumb-mode +1)
+      ; (require 'better-breadcrumbs)
+      (load-library "better-breadcrumbs")
+      (better-breadcrumbs-mode +1)
     #+END_SRC
 
 ** Smart Comments
