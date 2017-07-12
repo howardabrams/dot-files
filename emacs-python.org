@@ -192,8 +192,8 @@ revolves around the [[https://elpy.readthedocs.io/en/latest/introduction.html][E
 
 * Lint
 
-  My company has standardized on the =pep8= project, just make sure you've
-  install the [[https://flake8.readthedocs.org/en/2.3.0/][Flake8]] library.
+  Standardized on the =pep8= project, just make sure you've install the
+  [[https://flake8.readthedocs.org/en/2.3.0/][Flake8]] library.
 
   #+BEGIN_SRC sh
     pip install --upgrade flake8
@@ -224,8 +224,11 @@ revolves around the [[https://elpy.readthedocs.io/en/latest/introduction.html][E
       :ensure t
       :init
       (add-to-list 'company-backends 'company-jedi)
+      :config
       (use-package company-jedi
+        :ensure t
         :init
+        (add-hook 'python-mode-hook (lambda () (add-to-list 'company-backends 'company-jedi)))
         (setq company-jedi-python-bin "python")))
   #+END_SRC
 
@@ -235,7 +238,7 @@ revolves around the [[https://elpy.readthedocs.io/en/latest/introduction.html][E
   thinner wrapper around Jedi, which seems to work a bit better for me
   and the fact that I need to use =pyenv= (instead of =pyvenv=).
 
-  #+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp :tangle no
     (use-package anaconda-mode
       :ensure t
       :init (add-hook 'python-mode-hook 'anaconda-mode)
@@ -252,7 +255,7 @@ revolves around the [[https://elpy.readthedocs.io/en/latest/introduction.html][E
 * ELPY
 
   According to the [[https://github.com/jorgenschaefer/elpy/wiki][ELPY Web Site]], grab the latest version:
-  #+BEGIN_SRC elisp :tangle no
+  #+BEGIN_SRC elisp :tangle no :results silent
     (add-to-list 'package-archives
                '("elpy" . "http://jorgenschaefer.github.io/packages/"))
   #+END_SRC
@@ -263,7 +266,7 @@ revolves around the [[https://elpy.readthedocs.io/en/latest/introduction.html][E
 
   Once this has been installed, we can enable it:
 
-  #+BEGIN_SRC elisp :tangle no
+  #+BEGIN_SRC elisp :results silent
     (use-package elpy
       :ensure t
       :commands elpy-enable
