@@ -1499,10 +1499,9 @@
 
 ** Spell Checking
 
-   I like spell checking with [[http://www.emacswiki.org/emacs/FlySpell][FlySpell]], which uses the built-in
-   spell-check settings of [[https://www.gnu.org/software/ispell/][ispell]].
-
-   The [[http://aspell.net][ASpell]] project is better supported than ISpell.
+   Spell checking with [[http://www.emacswiki.org/emacs/FlySpell][FlySpell]], which uses the built-in settings of
+   [[https://www.gnu.org/software/ispell/][ispell]].   The [[http://aspell.net][ASpell]] project is better supported than ISpell, and
+   it seems to be better than Hunspell for programming modes.
 
    #+BEGIN_SRC sh :tangle no
      brew install aspell
@@ -1525,27 +1524,66 @@
 
        :config
        (setq ispell-program-name "/usr/local/bin/aspell"
+             ispell-local-dictionary "en_US"
              ispell-dictionary "american" ; better for aspell
              ispell-extra-args '("--sug-mode=ultra" "--lang=en_US")
-             ispell-list-command "--list")
-
-       (add-to-list 'ispell-local-dictionary-alist '(nil
-                                                     "[[:alpha:]]"
-                                                     "[^[:alpha:]]"
-                                                     "['‘’]"
-                                                     t
-                                                     ("-d" "en_US")
-                                                     nil
-                                                     utf-8)))
+             ispell-list-command "--list"
+             ispell-local-dictionary-alist '(("en_US" "[[:alpha:]]" "[^[:alpha:]]" "['‘’]"
+                                           t ; Many other characters
+                                           ("-d" "en_US") nil utf-8))))
    #+END_SRC
 
    ASpell automatically configures a personal dictionary
    at =~/.aspell.en.pws=, so no need to configure that.
 
+   A possibly nifty feature of aspell is the ability to spellcheck
+   individual words in CamelCase that is used extensively in some
+   code (for details, see [[http://blog.binchen.org/posts/what-s-the-best-spell-check-set-up-in-emacs.html][this article]]).
+
+   #+BEGIN_SRC elisp :tangle no
+     (use-package flyspell
+       :config
+       (defun flyspell-detect-ispell-args (&optional run-together)
+         "if RUN-TOGETHER is true, spell check the CamelCase words."
+         (let (args)
+           (setq args (list "--sug-mode=ultra" "--lang=en_US"))
+           (if run-together
+               (setq args (append args '("--run-together" "--run-together-limit=5" "--run-together-min=2"))))
+           args))
+
+       ;; ispell-cmd-args is useless, it's the list of *extra* arguments we will append to the ispell process when "ispell-word" is called.
+       ;; ispell-extra-args is the command arguments which will *always* be used when start ispell process
+       (setq-default ispell-extra-args (flyspell-detect-ispell-args t))
+
+       (defadvice ispell-word (around my-ispell-word activate)
+         (let ((old-ispell-extra-args ispell-extra-args))
+           (ispell-kill-ispell t)
+           (setq ispell-extra-args (flyspell-detect-ispell-args))
+           ad-do-it
+           (setq ispell-extra-args old-ispell-extra-args)
+           (ispell-kill-ispell t)))
+
+       (defadvice flyspell-auto-correct-word (around my-flyspell-auto-correct-word activate)
+         (let ((old-ispell-extra-args ispell-extra-args))
+           (ispell-kill-ispell t)
+           ;; use emacs original arguments
+           (setq ispell-extra-args (flyspell-detect-ispell-args))
+           ad-do-it
+           ;; restore our own ispell arguments
+           (setq ispell-extra-args old-ispell-extra-args)
+           (ispell-kill-ispell t)))
+
+       (defun text-mode-hook-setup ()
+         ;; Turn off RUN-TOGETHER option when spell check text-mode
+         (setq-local ispell-extra-args (flyspell-detect-ispell-args)))
+
+       (add-hook 'text-mode-hook 'text-mode-hook-setup))
+   #+END_SRC
+
    According to [[http://pragmaticemacs.com/emacs/jump-back-to-previous-typo/][this essay]], we can make a =flyspell-goto-previous-error=
    (which really should be added to the official =flyspell= project):
 
-   #+BEGIN_SRC elisp
+   #+BEGIN_SRC elisp :tangle no
      (defun flyspell-goto-previous-error (arg)
        "Go to ARG previous spelling error."
        (interactive "p")
