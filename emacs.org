@@ -2132,95 +2132,11 @@
 
 ** Emacs Lisp
 
-   Sure, everything here is in Emacs Lisp, but this section helps me
-   write more of that... like making snazzy symbols and colorizing the
-   variables.
-
-   The [[https://github.com/ankurdave/color-identifiers-mode][color-identifiers]] project (unlike [[https://github.com/Fanael/rainbow-identifiers][others]]), downplay the
-   keywords, and increase the colorizing of the variables.
+   See [[file:emacs-elisp.org][emacs-elisp]] for details of my setup for programming Emacs Lisp.
 
    #+BEGIN_SRC elisp
-     (use-package color-identifiers-mode
-       :ensure t
-       :init
-         (add-hook 'emacs-lisp-mode-hook 'color-identifiers-mode)
-       :diminish color-identifiers-mode)
+     (require 'init-elisp)
    #+END_SRC
-
-   The only real snazzy symbol that I like is replacing the =lambda=
-   with λ:
-
-   #+BEGIN_SRC elisp
-     (use-package lisp-mode
-       :bind (:map emacs-lisp-mode-map ("C-c C-z" . ielm))
-       :init
-       (defconst lisp--prettify-symbols-alist
-         '(("lambda"  . ?λ)      ; Shrink this
-           ("."       . ?•)))    ; Enlarge this
-       :config
-       (add-hook 'emacs-lisp-mode-hook 'global-prettify-symbols-mode)
-       (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
-       (add-hook 'emacs-lisp-mode-hook 'activate-aggressive-indent))
-   #+END_SRC
-
-*** Paredit
-
-    One of the cooler features of Emacs is the [[http://emacswiki.org/emacs/ParEdit][ParEdit mode]] which
-    keeps all parenthesis balanced in Lisp-oriented languages.
-    See this [[http://www.emacswiki.org/emacs/PareditCheatsheet][cheatsheet]].
-
-    #+BEGIN_SRC elisp
-      (use-package paredit
-        :ensure t
-        :init
-          (add-hook 'emacs-lisp-mode-hook 'paredit-mode))
-    #+END_SRC
-
-*** Nicer Paren Matching
-
-    The reverse mode of the default parenthesis matching doesn’t match
-    as well, so [[http://www.emacswiki.org/emacs/ShowParenMode][this code]] just makes it bold and more obvious:
-
-    #+BEGIN_SRC elisp
-      (use-package paren
-        :init
-        (set-face-background 'show-paren-match (face-background 'default))
-        (set-face-foreground 'show-paren-match "#afa")
-        (set-face-attribute  'show-paren-match nil :weight 'black)
-        (set-face-background 'show-paren-mismatch (face-background 'default))
-        (set-face-foreground 'show-paren-mismatch "#c66")
-        (set-face-attribute  'show-paren-mismatch nil :weight 'black))
-    #+END_SRC
-
-    While we are at it, let's dim the parens:
-
-    #+BEGIN_SRC elisp
-      (use-package paren-face
-        :ensure t
-        :init
-        (global-paren-face-mode))
-    #+END_SRC
-
-*** Insert Comment of Eval
-
-    While writing and documenting Emacs Lisp code, it would be helpful
-    to insert the results of evaluation of an s-expression directly
-    into the code as a comment:
-
-    #+BEGIN_SRC elisp
-      (use-package lisp-mode
-        :config (defun eval-and-comment-output ()
-                  "Add the output of the sexp as a comment after the sexp"
-                  (interactive)
-                  (save-excursion
-                    (end-of-line)
-                    (condition-case nil
-                        (princ (concat " ; -> " (pp-to-string (eval (preceding-sexp))))
-                               (current-buffer))
-                      (error (message "Invalid expression")))))
-
-        :bind ("C-x e" . eval-and-comment-output))
-    #+END_SRC
 
 ** Clojure
 
