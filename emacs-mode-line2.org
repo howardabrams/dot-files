@@ -17,8 +17,9 @@ creating a better mode line in Emacs.
           line-number-mode nil)
   #+END_SRC
 
-  Let's trim the list of minor modes with few unicode icons, using the
-  magic of =setf=:
+  I normally just use =diminish= in the =use-package= declaration to hide
+  some minor modes, but let's use the magic of =setf=, to /trim/ a mode's
+  display to a unicode icon:
 
   #+BEGIN_SRC elisp
     (dolist (mm '((auto-revert-mode   . "♺")
