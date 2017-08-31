@@ -4,14 +4,6 @@
 #+DATE:   2015 Jan 04
 #+TAGS:   technical emacs
 
-The *F2* is used to enter odd characters not normally available or
-phrases I want to type a bit too often.
-
-    #+BEGIN_SRC elisp
-      (define-prefix-command 'f2-global-map)
-      (global-set-key (kbd "<f2>") 'f2-global-map)
-    #+END_SRC
-
 * Pairs
 
   While ~M-'~ inserts a pair of single quotes, I would also like to
@@ -35,50 +27,56 @@ phrases I want to type a bit too often.
 
 * Unicode Characters
 
-  Some of my frequently used Unicode characters:
+  The *F2* is used to enter odd characters not normally available or
+  phrases I want to type a bit too often.
 
   #+BEGIN_SRC elisp
-    (bind-keys :map f2-global-map
-               ("<up>" "↑")
-               ("<down>" "↓")
-               ("<left>" "←")
-               ("<right>" "→")
-               ("S-<up>" "⇑")
-               ("S-<down>" "⇓")
-               ("S-<left>" "⇐")
-               ("S-<right>" "⇒")
+    (mapc (lambda (tuple)
+            (define-key key-translation-map
+                (kbd (concat "<f2> " (nth 0 tuple))) ; Keybinding
+                (kbd (nth 1 tuple))))                ; Character to insert
+          '(("<up>" "↑")
+            ("<down>" "↓")
+            ("<left>" "←")
+            ("<right>" "→")
+            ("S-<up>" "⇑")
+            ("S-<down>" "⇓")
+            ("S-<left>" "⇐")
+            ("S-<right>" "⇒")
 
-               ("p" "▯")   ;; Representation of a cursor
+            ("p" "▯")   ;; Representation of a cursor
+            ("'" "’")
+            ("\"" "‘")
 
-               ("'" "’")
-               ("\"" "‘")
+            ("8" "•")
+            ("*" "°")
+            ("d" "†")
+            ("D" "‡")
+            ("-" "—")
+            ("." "…")
+            (";" "😉")
+            (")" "☺")
 
-               ("8" "•")
-               ("*" "°")
-               ("d" "†")
-               ("D" "‡")
-               ("-" "—")
-               ("." "…")
-               (";" "😉")
-               (")" "☺")
+            ("a" "α")   ;; Lowercase Greek is uppercase
+            ("b" "β")
+            ("e" "ε")
+            ("l" "λ")
+            ("p" "π")
+            ("m" "μ")
+            ("t" "θ")
 
-               ("A" "α")   ;; Lowercase Greek is uppercase
-               ("B" "β")
-               ("E" "ε")
-               ("L" "λ")
-               ("P" "π")
-               ("M" "μ")
-               ("T" "θ")
+            ("!" "¹")   ; For footnotes and things
+            ("@" "²")
+            ("#" "³")
+            ("$" "⁴")
 
-               ("!" "¹")   ; For footnotes and things
-               ("@" "²")
-               ("#" "³")
-               ("$" "⁴")
-
-               ("2" "½")   ; Fractions
-               ("3" "⅓")
-               ("4" "¼"))
+            ("2" "½")   ; Fractions
+            ("3" "⅓")
+            ("4" "¼")))
 #+END_SRC
+
+#+RESULTS:
+| ¼ |
 
 * Technical Artifacts
 
