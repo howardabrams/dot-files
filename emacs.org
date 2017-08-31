@@ -1542,7 +1542,7 @@
    individual words in CamelCase that is used extensively in some
    code (for details, see [[http://blog.binchen.org/posts/what-s-the-best-spell-check-set-up-in-emacs.html][this article]]).
 
-   #+BEGIN_SRC elisp :tangle no
+   #+BEGIN_SRC elisp
      (use-package flyspell
        :config
        (defun flyspell-detect-ispell-args (&optional run-together)
