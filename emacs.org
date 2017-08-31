@@ -171,9 +171,8 @@
 
 ** Init File Support
 
-   Load up my collection of enhancements to Emacs Lisp, including [[https://github.com/magnars/dash.el][dash]]
-   and [[https://github.com/magnars/s.el][s]] for string manipulation, as much of my initialization code
-   depends on it.
+   Load up a collection of enhancements to Emacs Lisp, including [[https://github.com/magnars/dash.el][dash]],
+   [[https://github.com/magnars/s.el][s]] for string manipulation, and [[https://github.com/rejeep/f.el][f]] for file manipulation.
 
    #+BEGIN_SRC elisp
      (require 'cl)
@@ -183,6 +182,9 @@
        :config (eval-after-load "dash" '(dash-enable-font-lock)))
 
      (use-package s
+       :ensure t)
+
+     (use-package f
        :ensure t)
     #+END_SRC
 
