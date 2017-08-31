@@ -215,6 +215,16 @@
   evaluate a function, and when it is run, it will drop you into the
   debugger.
 
+* Suggesting
+
+  Intrigued to play with Wilfred Hughes' project, [[https://github.com/Wilfred/suggest.el][suggest]]:
+
+  #+BEGIN_SRC elisp
+    (use-package suggest)
+  #+END_SRC
+
+  To use, simply: =M-x suggest=
+
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.
