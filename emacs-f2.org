@@ -12,154 +12,73 @@ phrases I want to type a bit too often.
       (global-set-key (kbd "<f2>") 'f2-global-map)
     #+END_SRC
 
+* Pairs
+
+  While ~M-'~ inserts a pair of single quotes, I would also like to
+  insert a pair of unicode quotes:
+
+  #+BEGIN_SRC elisp
+    (defun insert-single-quotes (p)
+      "Inserts a pair of unicode rounded quotes, `SINGLE TURNED COMMA
+    QUOTATION MARK' and `SINGLE COMMA QUOTATION MARK'."
+      (interactive "P")
+      (insert-pair p 8216 8217))
+
+    (defun insert-double-quotes (p)
+      "Inserts a pair of unicode double rounded quotes."
+      (interactive "P")
+      (insert-pair p 8220 8221))
+
+    (bind-key "M-C-'"  #'insert-single-quotes)  ; ‘Nice!’
+    (bind-key "M-C-\"" #'insert-double-quotes)  ; “Goody”
+  #+END_SRC
+
 * Unicode Characters
 
   Some of my frequently used Unicode characters:
 
-#+BEGIN_SRC elisp
-  (define-key f2-global-map (kbd "<up>") "↑")
-  (define-key f2-global-map (kbd "<down>") "↓")
-  (define-key f2-global-map (kbd "<left>") "←")
-  (define-key f2-global-map (kbd "<right>") "→")
-  (define-key f2-global-map (kbd "S-<up>") "⇑")
-  (define-key f2-global-map (kbd "S-<down>") "⇓")
-  (define-key f2-global-map (kbd "S-<left>") "⇐")
-  (define-key f2-global-map (kbd "S-<right>") "⇒")
+  #+BEGIN_SRC elisp
+    (bind-keys :map f2-global-map
+               ("<up>" "↑")
+               ("<down>" "↓")
+               ("<left>" "←")
+               ("<right>" "→")
+               ("S-<up>" "⇑")
+               ("S-<down>" "⇓")
+               ("S-<left>" "⇐")
+               ("S-<right>" "⇒")
 
-  (define-key f2-global-map (kbd "p") "▯")   ;; Representation of a cursor
+               ("p" "▯")   ;; Representation of a cursor
 
-  (define-key f2-global-map (kbd "'") "’")
-  (define-key f2-global-map (kbd "\"") "‘")
+               ("'" "’")
+               ("\"" "‘")
 
-  (define-key f2-global-map (kbd "8") "•")
-  (define-key f2-global-map (kbd "*") "°")
-  (define-key f2-global-map (kbd "d") "†")
-  (define-key f2-global-map (kbd "D") "‡")
-  (define-key f2-global-map (kbd "-") "—")
-  (define-key f2-global-map (kbd ".") "…")
-  (define-key f2-global-map (kbd ";") "😉")
-  (define-key f2-global-map (kbd ")") "☺")
+               ("8" "•")
+               ("*" "°")
+               ("d" "†")
+               ("D" "‡")
+               ("-" "—")
+               ("." "…")
+               (";" "😉")
+               (")" "☺")
 
-  (define-key f2-global-map (kbd "A") "α")   ;; Lowercase Greek is uppercase
-  (define-key f2-global-map (kbd "B") "β")
-  (define-key f2-global-map (kbd "E") "ε")
-  (define-key f2-global-map (kbd "L") "λ")
-  (define-key f2-global-map (kbd "P") "π")
-  (define-key f2-global-map (kbd "M") "μ")
-  (define-key f2-global-map (kbd "T") "θ")
+               ("A" "α")   ;; Lowercase Greek is uppercase
+               ("B" "β")
+               ("E" "ε")
+               ("L" "λ")
+               ("P" "π")
+               ("M" "μ")
+               ("T" "θ")
+
+               ("!" "¹")   ; For footnotes and things
+               ("@" "²")
+               ("#" "³")
+               ("$" "⁴")
+
+               ("2" "½")   ; Fractions
+               ("3" "⅓")
+               ("4" "¼"))
 #+END_SRC
-
-  Most key-bindings accept a string that will be inserted, but some
-  strings (notably those with Unicode symbols that refer to numbers),
-  actually become a prefix, so a little closure should do the trick:
-
-  #+BEGIN_SRC elisp
-  (require 'cl)
-
-  (defun ha/insert (ch)
-    (lexical-let ((chr ch))
-       (lambda () (interactive) (insert chr))))
-  #+END_SRC
-
-  Key-bindings for special numeric symbols:
-
-  #+BEGIN_SRC elisp
-  (define-key f2-global-map (kbd "!") (ha/insert "¹"))
-  (define-key f2-global-map (kbd "@") (ha/insert "²"))
-  (define-key f2-global-map (kbd "#") (ha/insert "³"))
-  (define-key f2-global-map (kbd "$") (ha/insert "⁴"))
-
-  (define-key f2-global-map (kbd "2") (ha/insert "½"))
-  (define-key f2-global-map (kbd "3") (ha/insert "⅓"))
-  (define-key f2-global-map (kbd "4") (ha/insert "¼"))
-  #+END_SRC
-
-* Italic and Bold Letters
-
-  For mathematical and other equations, I like to be able to enter
-  bold and italic letters, but instead of a series of calls and the
-  matching glyph, I can create a function that uses the =lexical-let=
-  to return a lambda expression suitable for passing on to =mapcar*=:
-
-  #+BEGIN_SRC elisp
-    (defun ha/letter-mapping (key-prefix)
-      (lexical-let ((keyprefix key-prefix))
-        (lambda (chr glyph)
-          (define-key f2-global-map
-            (kbd (concat keyprefix (string chr))) (string glyph)))))
-  #+END_SRC
-
-  The mathematical italic Capital A in Unicode is U+1D434 and Z is U+1D44D.
-  A sequence mapping the letters ‘A’ to ‘Z’ are /zipped/ together:
-
-  #+BEGIN_SRC elisp
-  (mapcar* (ha/letter-mapping "M-")
-           (number-sequence 65 90)
-           (number-sequence #x01D434 #x01D44D))
-  #+END_SRC
-
-  So 𝐴 is entered with a =F2 M-A=
-
-  Do the same thing with the lower case letters, were
-  Lowercase italic a is U+1D44E and z is U+1D467:
-
-  #+BEGIN_SRC elisp
-  (mapcar* (ha/letter-mapping "M-")
-           (number-sequence 97 122)
-           (number-sequence #x01D44E #x01D467))
-  #+END_SRC
-
-  We’ll bind both the Meta and Control keys for the bold and italic expressions.
-  Where capital bold A is U+1D468, and lower bold a is U+1D482:
-
-  #+BEGIN_SRC elisp
-  (mapcar* (ha/letter-mapping "C-M-")
-           (number-sequence 65 90)
-           (number-sequence #x01D468 #x01D481))
-
-  (mapcar* (ha/letter-mapping "C-M-")
-           (number-sequence 97 122)
-           (number-sequence #x01D482 #x01D49B))
-  #+END_SRC
-
-* Math Symbols
-
-  I really don’t type that much math, but in trying to translate some
-  mathematically-minded papers, I realize that I could use a few:
-
-  #+BEGIN_SRC elisp
-  (define-key f2-global-map (kbd "=") "≡")
-  (define-key f2-global-map (kbd ":") "≔")
-  (define-key f2-global-map (kbd "~") "≝")
-  #+END_SRC
-
-  Most math, however, should be based on the meta prefix:
-
-  #+BEGIN_SRC elisp
-  (define-key f2-global-map (kbd "M-.") "∴")  ; Therefore
-  (define-key f2-global-map (kbd "M-,") "∵")  ; Therefore
-  (define-key f2-global-map (kbd "M-t") "⊢")  ; Turnstile ... to assert
-  (define-key f2-global-map (kbd "M-T") "≜")  ; Should be a triangle over equal sign
-  (define-key f2-global-map (kbd "M-n") "∅")  ; Empty Set
-  (define-key f2-global-map (kbd "M-e") "∃")  ; There exists
-  (define-key f2-global-map (kbd "M-E") "∄")  ; There does not exist
-  (define-key f2-global-map (kbd "M-i") "∩")  ; Intersection
-  (define-key f2-global-map (kbd "M-u") "∪")  ; Union
-  (define-key f2-global-map (kbd "M-6") "⋀")  ; Conjunction
-  (define-key f2-global-map (kbd "M-^") "⋁")  ; Disjunction
-  (define-key f2-global-map (kbd "M-*") "✕")  ; Multiply
-  (define-key f2-global-map (kbd "M-/") "÷")  ; Divide
-  (define-key f2-global-map (kbd "M-!") "¬")  ; Logical Not
-  #+END_SRC
-
-* Favorite Phrases
-
-  What do I really need to enter that often that auto-completion
-  doesn’t immediately solve?
-
-  #+BEGIN_SRC elisp
-    (define-key f2-global-map (kbd "H") "Howard Abrams")
-  #+END_SRC
 
 * Technical Artifacts
 
