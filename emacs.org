@@ -2231,14 +2231,12 @@
        :ensure t)
    #+END_SRC
 
-   What about being able to see the [[https://github.com/voins/mo-git-blame][Git blame]] in a buffer?
+   Finally, I want to play with [[https://github.com/pidu/git-timemachine][Git Time Machine]] project for stepping
+   backward through the version history of a file:
 
    #+BEGIN_SRC elisp
-     (use-package mo-git-blame
-        :ensure t)
+     (use-package git-timemachine)
    #+END_SRC
-
-   Run =mo-git-blame-current= to see the goodies.
 
 ** Magit
 
