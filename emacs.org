@@ -644,8 +644,8 @@
 
 ** Multiple Cursors
 
-   I like Magmar's [[https://github.com/emacsmirror/multiple-cursors][multiple-cursors]] project.  It doesn't have any
-    default keybindings, so I set up these:
+   I'm intrigued with Magmar's [[https://github.com/emacsmirror/multiple-cursors][multiple-cursors]] project.  It doesn't
+    have any default keybindings, so I set up these:
 
    #+BEGIN_SRC elisp
      (use-package multiple-cursors
@@ -672,6 +672,17 @@
               ("C-c C-. C-e" . mc/edit-ends-of-lines)
               ("C-M-<mouse-1>" . mc/add-cursor-on-click)))
    #+END_SRC
+
+   However, Like [[http://nullprogram.com/blog/2017/09/07/][Chris Wellons said]]:
+   #+BEGIN_QUOTE
+    I’ve come to the conclusion that multiple cursors is all hat and
+    no cattle. It doesn’t compose well with other editing commands, it
+    doesn’t scale up to large operations, and it’s got all sorts of
+    flaky edge cases (off-screen cursors). Nearly anything you can do
+    with multiple cursors, you can do better with old,
+    well-established editing paradigms.
+   #+END_QUOTE
+   That said, I'm still going to impress my friends with it.
 
 ** Expand Region
 
