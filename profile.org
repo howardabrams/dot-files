@@ -179,6 +179,17 @@ Type "help", "copyright", "credits" or "license" for more information.
     export PYENV_VIRTUALENV_DISABLE_PROMPT=1
   #+END_SRC
 
+  Completion for =pip= comes from the command: =pip completion --bash=:
+  #+BEGIN_SRC sh
+    _pip_completion()
+    {
+        COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
+                       COMP_CWORD=$COMP_CWORD \
+                       PIP_AUTO_COMPLETE=1 $1 ) )
+    }
+    complete -o default -F _pip_completion pip
+  #+END_SRC
+
 * Ruby
 
   Install [[https://rvm.io/][RVM]] via:
@@ -213,6 +224,11 @@ Type "help", "copyright", "credits" or "license" for more information.
 
   #+BEGIN_SRC sh :tangle no
     gem install bundler
+  #+END_SRC
+
+  RVM can give /completion/ capabilities to Bash:
+  #+BEGIN_SRC sh
+  [[ -r $rvm_path/scripts/completion ]] && . $rvm_path/scripts/completion
   #+END_SRC
 
 * Prompt
