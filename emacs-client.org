@@ -297,6 +297,76 @@ other systems with a graphical front-end.
   (setq ring-bell-function 'ignore)
   #+END_SRC
 
+* Dimming and Finding Cursor
+
+  When I type, I would rather not see the cursor, for at the point
+  where I am typing, I know where I am typing. Of course, when I'm
+  moving around the screen (or even when Emacs is idle), I want to
+  know clearly the location of cursor.
+
+  I've previously made the cursor an obnoxious color, and let's save
+  that value:
+  #+BEGIN_SRC elisp
+    (defvar cursor-initial-color (face-attribute 'cursor :background)
+        "The initial value of the cursor that will be use when re-showing it.")
+  #+END_SRC
+
+  If I type a character or maybe two, I don't want to hide the
+  cursor... only when I start to really get typing:
+  #+BEGIN_SRC elisp
+    (defvar cursor-number-chars-before-hiding 2
+       "The number of characters one needs to type before we hide the cursor.")
+  #+END_SRC
+
+  Of course, I need to have some sort of state variable that counts
+  the number of characters that have been typed:
+  #+BEGIN_SRC elisp
+    (defvar cursor-current-number-chars 0)
+  #+END_SRC
+
+  Now let's have a couple of functions that will /show/ and /hide/ the
+  cursor (or at least, lessen its visibility):
+  #+BEGIN_SRC elisp
+    (defun cursor-hide (arg)
+      "Hides cursor by setting the color to the background color.
+    This only happens after a number of characters have been
+    typed (defined by the `cursor-number-chars-before-hiding'
+    variable)."
+      (setq cursor-current-number-chars (1+ cursor-current-number-chars))
+      (when (> cursor-current-number-chars cursor-number-chars-before-hiding)
+        (set-cursor-color (background-color-at-point))))
+
+    (defun cursor-show ()
+      "Shows the cursor. At least, sets it to a particular
+    color (stored/defined in `cursor-initial-color'. Note: This also
+    resets the `cursor-current-number-chars' variable, so that it
+    won't be hid until a number of characters have been typed."
+      (setq cursor-current-number-chars 0)
+      (set-cursor-color cursor-initial-color))
+  #+END_SRC
+
+  After entering a text that is inserted into a buffer, hide the
+  cursor by using some advice:
+  #+BEGIN_SRC elisp
+    (advice-add 'self-insert-command :after #'cursor-hide)
+  #+END_SRC
+
+  After I'm done typing (that is, when the cursor is idle), show the cursor:
+  #+BEGIN_SRC elisp
+    (setq my-cursor-timer (run-with-idle-timer 1 t #'cursor-show))
+  #+END_SRC
+
+  Let's make the cursor more noticeable whenever the window scrolls
+  (which seems to be the time when I need to visually look for it):
+
+  #+BEGIN_SRC elisp
+    (use-package beacon
+      :ensure t
+      :defer  t
+      :init  (beacon-mode +1)
+      :config (setq beacon-color cursor-initial-color))
+  #+END_SRC
+
 * Twitter
 
   I know, I know, reading my [[http://www.emacswiki.org/emacs-en/TwitteringMode][twitter feed in Emacs]] is pretty geeking
