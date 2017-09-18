@@ -81,7 +81,7 @@ developing Ruby in Emacs.
   #+END_SRC
 
   When jumping from project to project, need to run the command:
-  =rvm-use= ... which must be done before starting an Eshell (that
+  =rvm-use=... which must be done before starting an Eshell (that
   is, if you’re into that sort of thing).
 
   Start with a default Gemset by placing the following in your local
@@ -89,6 +89,11 @@ developing Ruby in Emacs.
 
   #+BEGIN_SRC elisp :tangle no
     (rvm-use "ruby-2.0.0" "p643")
+  #+END_SRC
+
+  Note: Run the following regularly:
+  #+BEGIN_SRC sh
+    rvm get latest
   #+END_SRC
 
 * Ruby Functional Doc
