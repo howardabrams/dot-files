@@ -76,9 +76,24 @@ Emacs love affair.
   #+BEGIN_SRC elisp
     (use-package org-drill
       :ensure org-plus-contrib)
+
+    (use-package org-mime
+      :ensure t)
   #+END_SRC
 
 * Local Key Bindings
+
+  Trying an experiment to see if I like inserting two spaces at the
+  end of a sentence:
+  #+BEGIN_SRC elisp
+    (defun ha/insert-two-spaces (N)
+      "Inserts two spaces at the end of sentences."
+      (interactive "p")
+      (when (looking-back "[!?.] " 2)
+        (insert " ")))
+
+    (advice-add 'org-self-insert-command :after #'ha/insert-two-spaces)
+  #+END_SRC
 
   A couple of short-cut keys to make it easier to edit text.
 
@@ -99,14 +114,18 @@ Emacs love affair.
   #+BEGIN_SRC elisp
     (use-package org
       :config
-       (bind-key "A-b" (surround-text-with "+") org-mode-map)
-       (bind-key "s-b" (surround-text-with "*") org-mode-map)
-       (bind-key "A-i" (surround-text-with "/") org-mode-map)
-       (bind-key "s-i" (surround-text-with "/") org-mode-map)
-       (bind-key "A-=" (surround-text-with "=") org-mode-map)
-       (bind-key "s-=" (surround-text-with "=") org-mode-map)
-       (bind-key "A-`" (surround-text-with "~") org-mode-map)
-       (bind-key "s-`" (surround-text-with "~") org-mode-map))
+       (bind-keys :map org-mode-map
+       ("A-b" . (surround-text-with "+"))
+       ("s-b" . (surround-text-with "*"))
+       ("A-i" . (surround-text-with "/"))
+       ("s-i" . (surround-text-with "/"))
+       ("A-=" . (surround-text-with "="))
+       ("s-=" . (surround-text-with "="))
+       ("A-`" . (surround-text-with "~"))
+       ("s-`" . (surround-text-with "~"))
+
+       ("C-s-f" . forward-sentence)
+       ("C-s-b" . backward-sentence)))
   #+END_SRC
 
 ** Better Org Return
@@ -550,6 +569,7 @@ Emacs love affair.
 
       (org-babel-do-load-languages 'org-babel-load-languages
                                    '((shell      . t)
+                                     (sh         . t)
                                      (js         . t)
                                      (emacs-lisp . t)
                                      (perl       . t)
