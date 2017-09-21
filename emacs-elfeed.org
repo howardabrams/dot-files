@@ -10,6 +10,7 @@ Let's load it up if it is installed.
 
 #+BEGIN_SRC elisp
   (use-package elfeed
+    :ensure   t
     :commands elfeed
     :init     (define-key personal-global-map (kbd "r") 'elfeed))
 #+END_SRC
@@ -35,6 +36,8 @@ Let's load it up if it is installed.
           "http://emacshorrors.com/feed.atom"
           "http://swannodette.github.com/atom.xml" ;; David Nolen, duh.
           "http://batsov.com/atom.xml"             ;; Bozhidar Batsov
+
+          "https://apod.nasa.gov/apod.rss"         ;; Nasa's Picture of the Day
           "http://twogreenleaves.org/index.php?feed=rss"
 
           "https://medium.com/feed/@hlship/"       ;; Programming
@@ -43,8 +46,6 @@ Let's load it up if it is installed.
           "http://steve-yegge.blogspot.com/atom.xml"
           "http://www.rkn.io/feed.xml"))    ;; Programming
 #+END_SRC
-
-  Then kick it off with: =C-x w=
 
   *Note:* I plan on updating my feed list somewhat organically, so
    that I don't get overwhelmed with too much information.
