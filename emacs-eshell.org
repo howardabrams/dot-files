@@ -808,32 +808,37 @@ I find it a shame that I can not successfully use =use-package= with the
   Also, while =M-p= cycles through the history, =M-P= actually moves
   up the history in the buffer (easier than =C-c p= and =C-c n=?):
 
-  #+BEGIN_SRC elisp
-    (add-hook 'eshell-mode-hook
-         (lambda ()
-           (local-set-key (kbd "M-P") 'eshell-previous-prompt)
-           (local-set-key (kbd "M-N") 'eshell-next-prompt)
-           (local-set-key (kbd "M-R") 'eshell-list-history)
-           (local-set-key (kbd "M-r")
-                  (lambda ()
-                    (interactive)
-                    (insert
-                     (ido-completing-read "Eshell history: "
-                                          (delete-dups
-                                           (ring-elements eshell-history-ring))))))))
-  #+END_SRC
-
-* Smarter Shell
-
-  After reading Mickey Petersen's [[http://www.masteringemacs.org/articles/2010/12/13/complete-guide-mastering-eshell/][Mastering EShell]] article, I like the
-  /smart/ approach where the cursor stays on the command (where it can
-  be re-edited). Sure, it takes a little while to get used to...
+  Since eshell's history often gets confused with blank lines in the
+  output, we can fix that with a better replacement functions pegged
+  to the =eshell-prompt-regexp= string:
 
   #+BEGIN_SRC elisp
-    (require 'em-smart)
-    (setq eshell-where-to-jump 'begin)
-    (setq eshell-review-quick-commands nil)
-    (setq eshell-smart-space-goes-to-end t)
+      (defun eshell-next-prompt (n)
+        "Move to end of Nth next prompt in the buffer. See `eshell-prompt-regexp'."
+        (interactive "p")
+        (re-search-forward eshell-prompt-regexp nil t n)
+        (when eshell-highlight-prompt
+          (while (not (get-text-property (line-beginning-position) 'read-only) )
+            (re-search-forward eshell-prompt-regexp nil t n)))
+        (eshell-skip-prompt))
+
+      (defun eshell-previous-prompt (n)
+        "Move to end of Nth previous prompt in the buffer. See `eshell-prompt-regexp'."
+        (interactive "p")
+        (backward-char)
+        (eshell-next-prompt (- n)))
+
+      (defun eshell-insert-history ()
+        "Displays the eshell history to select and insert back into your eshell."
+        (interactive)
+        (insert (ido-completing-read "Eshell history: "
+                                     (delete-dups
+                                      (ring-elements eshell-history-ring)))))
+
+      (add-hook 'eshell-mode-hook (lambda ()
+          (define-key eshell-mode-map (kbd "M-S-P") 'eshell-previous-prompt)
+          (define-key eshell-mode-map (kbd "M-S-N") 'eshell-next-prompt)
+          (define-key eshell-mode-map (kbd "M-r") 'eshell-insert-history)))
   #+END_SRC
 
 * Helpers
@@ -850,14 +855,29 @@ I find it a shame that I can not successfully use =use-package= with the
              (full-cmd (concat cmd " " file-name)))
         (shell-command full-cmd)))
 
+    (bind-key "A-1" #'execute-command-on-file-buffer)
+
     (defun execute-command-on-file-directory (cmd)
       (interactive "sCommand to execute: ")
       (let* ((dir-name (file-name-directory (buffer-file-name)))
              (full-cmd (concat "cd " dir-name "; " cmd)))
         (shell-command full-cmd)))
 
-    (global-set-key (kbd "A-1") 'execute-command-on-file-buffer)
-    (global-set-key (kbd "A-!") 'execute-command-on-file-directory)
+    (bind-key "A-!" #'execute-command-on-file-directory)
+    (bind-key "s-!" #'execute-command-on-file-directory)
+  #+END_SRC
+
+  Some prompts, shells and terminal programs that display the exit
+  code as an icon in the fringe. So can the [[http://projects.ryuslash.org/eshell-fringe-status/][eshell-fringe-status]]
+  project. Seems to me, that if would be useful to rejuggle those
+  fringe markers so that the marker matched the command entered
+  (instead of seeing a red mark, and needing to scroll back in order
+  to wonder what command it was that made it). Still...
+
+  #+BEGIN_SRC elisp
+  (use-package eshell-fringe-status
+    :init
+    (add-hook 'eshell-mode-hook 'eshell-fringe-status-mode))
   #+END_SRC
 
 * Technical Artifacts
