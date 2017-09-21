@@ -68,7 +68,11 @@ creating a better mode line in Emacs.
       ;; (add-to-list 'sml/replacer-regexp-list '("^~/Work/" "♨:") t)
       ;; (add-to-list 'sml/replacer-regexp-list '("^~/Workspace/" "♨:"))
 
-      (sml/apply-theme 'dark))
+      (sml/apply-theme 'dark)
+
+      ;; Since I almost always use Git, let's shorten its display:
+      (setcdr (assq 'vc-mode mode-line-format)
+        '((:eval (replace-regexp-in-string "^ Git" "\xe0a0" vc-mode)))))
   #+END_SRC
 
   Hiding some Minor modes in the mode line is real swell, the
