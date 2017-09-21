@@ -470,14 +470,16 @@ install the memoized function over the original function."
                 'help-echo help-message)))
 
 (defpowerline modified
-  (let ((state (vc-git-state (buffer-file-name))))
-    (cond ((buffer-modified-p)  (powerline-get-icon "pencil" "✦" "Modified buffer"))
-          ((eq state 'edited)   (powerline-get-icon "pencil" "✦" "Modified buffer, unregistered changes"))
-          ((eq state 'unregistered) (powerline-get-icon "question" "❓" "Unregistered file in VCS"))
-          ((eq state 'missing)  (powerline-get-icon "exclamation" "⁈" "File exists only in VCS, not on the hard disk"))
-          ((eq state 'ignored)  (powerline-get-icon "ban" "♟" "Ignored file in VCS"))
-          ((eq state 'added)    (powerline-get-icon "plus" "➕" "File will be registered in VCS in the next commit"))
-          (t " "))))
+  (condition-case ex
+      (let ((state (vc-git-state (buffer-file-name))))
+        (cond ((buffer-modified-p)  (powerline-get-icon "pencil" "✦" "Modified buffer"))
+              ((eq state 'edited)   (powerline-get-icon "pencil" "✦" "Modified buffer, unregistered changes"))
+              ((eq state 'unregistered) (powerline-get-icon "question" "❓" "Unregistered file in VCS"))
+              ((eq state 'missing)  (powerline-get-icon "exclamation" "⁈" "File exists only in VCS, not on the hard disk"))
+              ((eq state 'ignored)  (powerline-get-icon "ban" "♟" "Ignored file in VCS"))
+              ((eq state 'added)    (powerline-get-icon "plus" "➕" "File will be registered in VCS in the next commit"))
+              (t " ")))
+    (error (powerline-get-icon "exclamation" "⁈" (car ex)))))
 
 (defpowerline major-mode  (propertize (format-mode-line mode-name)
                                       'help-echo "Major mode\n\ mouse-1: Display major mode menu\n\ mouse-2: Show help for major mode\n\ mouse-3: Toggle minor modes"
