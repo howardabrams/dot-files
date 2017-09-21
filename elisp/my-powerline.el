@@ -611,24 +611,23 @@ install the memoized function over the original function."
 ;; (setq display-time-format "%I:%M")
 ;; (display-time-mode)
 
-(setq mode-line-format
-      (list "%e"
-            '(:eval (list
-                     (powerline-lcl           'left       powerline-color1)
-                     (powerline-modified      'left       powerline-color1)
-                     (powerline-arrow         'right  nil powerline-color1)
-                     (powerline-buffer-id     'left   nil powerline-color2)
-                     (powerline-project-vc    'left       powerline-color2)
-                     (powerline-arrow         'left       powerline-color2 powerline-color1)
-                     (powerline-major-mode    'left       powerline-color1)
-                     (powerline-minor-modes   'left       powerline-color1)
-                     (powerline-narrow        'left       powerline-color1 powerline-color2)
-                     (powerline-lang-version  'center     powerline-color2)
-                     ;; (powerline-which-function 'right nil powerline-color2)
-                     (powerline-pull-right (list
-                                            (powerline-which-function 'right nil powerline-color2))))
+(setq-default mode-line-format
+              (list "%e"
+                    '(:eval (list
+                             (powerline-lcl           'left       powerline-color1)
+                             (powerline-modified      'left       powerline-color1)
+                             (powerline-arrow         'right  nil powerline-color1)
+                             (powerline-buffer-id     'left   nil powerline-color2)
+                             (powerline-project-vc    'left       powerline-color2)
+                             (powerline-arrow         'left       powerline-color2 powerline-color1)
+                             (powerline-major-mode    'left       powerline-color1)
+                             (powerline-minor-modes   'left       powerline-color1)
+                             (powerline-narrow        'left       powerline-color1 powerline-color2)
+                             (powerline-lang-version  'center     powerline-color2)
+                             (powerline-pull-right (list
+                                                    (powerline-which-function 'right nil powerline-color2))))
 
-                    )))
+                            )))
 
 (provide 'my-powerline)
 
