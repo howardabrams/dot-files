@@ -13,7 +13,7 @@
    While I often use [[http://emacsformacosx.com/builds][Emacs for Mac]], lately, I've been building Emacs
    from source using [[http://brew.sh/][Homebrew]]. I start by adding the following dependency:
 
-   #+BEGIN_SRC sh :tangle no
+   #+BEGIN_SRC shell
      brew cask install xquartz
    #+END_SRC
 
@@ -23,7 +23,7 @@
    source after applying [[https://github.com/minimal/emacs/commit/812dd5119645a09bc025a9dddedad9474d12ecb6][this patch]]. According to the Homebrew
    documentation (see [[https://github.com/Homebrew/brew/blob/master/share/doc/homebrew/Formula-Cookbook.md#patches][the Patches section]]), we first:
 
-   #+BEGIN_SRC sh :tangle no
+   #+BEGIN_SRC shell
      brew edit emacs
    #+END_SRC
 
@@ -37,7 +37,7 @@
 
    And then build from source especially for the Mac:
 
-   #+BEGIN_SRC sh :tangle no
+   #+BEGIN_SRC shell
      brew install emacs --HEAD --use-git-head --with-cocoa --with-gnutls --with-librsvg --with-ns --with-imagemagick
 
      brew linkapps emacs
@@ -49,7 +49,7 @@
 
    All Homebrew options for Emacs can be seen with the command:
 
-   #+BEGIN_SRC sh :tangle no
+   #+BEGIN_SRC shell
      brew options emacs
    #+END_SRC
 
@@ -224,7 +224,7 @@
 
    To get started on the Mac, install the goodies:
 
-   #+BEGIN_SRC sh :tangle no
+   #+BEGIN_SRC shell
      brew install gpg
    #+END_SRC
 
@@ -283,7 +283,7 @@
   into its own file:
 
   #+BEGIN_SRC elisp
-    (require 'init-mode-line2)
+    (require 'my-powerline)
   #+END_SRC
 
   And the best colored highlighting of selected text needs to be both
@@ -1252,7 +1252,7 @@
    I use the standard [[http://emacswiki.org/emacs/GrepMode#toc1][grep package]] in Emacs, but need a later
    version of Gnu Grep. On Mac OS X, run these two commands:
 
-   #+BEGIN_SRC sh
+   #+BEGIN_SRC shell
      brew tap homebrew/dupes
      brew install homebrew/dupes/grep
    #+END_SRC
@@ -1262,7 +1262,7 @@
     With [[https://twitter.com/_wilfredh][Wilfred Hughes]]' fancy [[https://github.com/Wilfred/ag.el/#agel][ag package]], I’ve switch from [[http://beyondgrep.com][ack]] to the
     [[http://geoff.greer.fm/2011/12/27/the-silver-searcher-better-than-ack/][Silver Searcher]]:
 
-    #+BEGIN_SRC sh
+    #+BEGIN_SRC shell
       brew install ag
     #+END_SRC
 
@@ -1516,7 +1516,7 @@
    [[https://www.gnu.org/software/ispell/][ispell]].   The [[http://aspell.net][ASpell]] project is better supported than ISpell, and
    it seems to be better than Hunspell for programming modes.
 
-   #+BEGIN_SRC sh :tangle no
+   #+BEGIN_SRC shell
      brew install aspell
    #+END_SRC
 
@@ -1910,26 +1910,26 @@
    thirty years, we are still using good ol’ ctags...well,
    [[http://ctags.sourceforge.net][Exuberant Ctags]].   Install with Homebrew:
 
-   #+BEGIN_SRC sh :tangle no
+   #+BEGIN_SRC shell
      brew install --HEAD ctags
    #+END_SRC
 
    On Ubuntu Linux, do:
 
-   #+BEGIN_SRC sh :tangle no
+   #+BEGIN_SRC shell
      sudo apt-get install -y exuberant-ctags
    #+END_SRC
 
    Note: for every project, run the following command:
 
-   #+BEGIN_SRC sh :tangle no
+   #+BEGIN_SRC shell
      ctags -e -R .
    #+END_SRC
 
    I want to be able to add headers from my =org-mode= files as
    a /language option/:
 
-   #+BEGIN_SRC sh :tangle ~/.ctags :comments no
+   #+BEGIN_SRC shell :tangle ~/.ctags :comments no
      --langdef=org
      --langmap=org:.org
      --regex-org=/^\*+[ \t]+([a-zA-Z0-9_ ]+)/\1/d,definition/
@@ -2303,7 +2303,7 @@
 
    Install the [[http://www.graphviz.org/][Graphviz]] and [[http://plantuml.sourceforge.net/download.html][PlantUML]] projects using Homebrew:
 
-   #+BEGIN_SRC sh :tangle no
+   #+BEGIN_SRC shell
      brew install graphviz
      brew link graphviz
      brew install plantuml
@@ -2384,11 +2384,11 @@
 * Frivolous
 
   Life must be more whimsical. To begin, install the =fortune= package:
-  #+BEGIN_SRC sh :tangle no
+  #+BEGIN_SRC shell
     brew install fortune   # Installs in /usr/local/share/games/fortunes
   #+END_SRC
   Or, if on Ubuntu:
-  #+BEGIN_SRC sh :tangle no
+  #+BEGIN_SRC shell
     sudo apt-get install fortune # Installs in /usr/share/games/fortunes
   #+END_SRC
 
@@ -2480,8 +2480,8 @@
 
 #+DESCRIPTION: A literate programming version of my Emacs Initialization script, loaded by the .emacs file.
 #+PROPERTY:    header-args:elisp  :tangle ~/.emacs.d/elisp/init-main.el
-#+PROPERTY:    header-args:sh     :tangle no
-#+PROPERTY:    header-args:       :results silent   :eval no-export   :comments org
+#+PROPERTY:    header-args:shell  :tangle no
+#+PROPERTY:    header-args        :results silent   :eval no-export   :comments org
 #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
 #+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
 #+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js

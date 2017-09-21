@@ -11,25 +11,25 @@ things here are for callable functions, aliases and the like.
   settings, select the =Keyboard= tab and select the checkbox for
   =Use option as meta key= to take avantage of these.
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   bindkey -e
 #+END_SRC
 
   =Meta-u= to chdir to the parent directory and then display the contents.
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   bindkey -s '\eu' '^Ucd ..; ls^M'
 #+END_SRC
 
   Since =AUTO_PUSHD= is set, =Meta-p= pops the dir stack
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   bindkey -s '\ep' '^Upopd >/dev/null; dirs -v^M'
 #+END_SRC
 
   Pipe the current command through less with =Meta-l=
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   bindkey -s "\el" " 2>&1|less^M"
 #+END_SRC
 
@@ -38,13 +38,13 @@ things here are for callable functions, aliases and the like.
   I still wonder how important it is to start up the =compinstall=,
   and auto load the =compinit=. I suppose it wouldn't hurt, eh?
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   zstyle :compinstall filename '/Users/howard.abrams/.zshrc'
 #+END_SRC
 
   Add my own custom completion scripts:
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   fpath=(~/.zsh/completion $fpath)
 
   autoload -Uz compinit
@@ -53,7 +53,7 @@ things here are for callable functions, aliases and the like.
 
   Show completion menu when number of options is at least 2
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   zstyle ':completion:*' menu select=2
   zstyle ":completion:*:descriptions" format "%B%d%b"
 #+END_SRC
@@ -61,7 +61,7 @@ things here are for callable functions, aliases and the like.
   Only do completion for Git, as we don't use any other version
   control system anymore.
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   zstyle ":vcs_info:*" enable git  # svn
 #+END_SRC
 
@@ -70,7 +70,7 @@ things here are for callable functions, aliases and the like.
   Using the modules from [[https://github.com/robbyrussell/oh-my-zsh][Oh My Zsh]].
   The plugins are in =~/.oh-my-zsh/plugins/*=
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   plugins=(osx terminalapp gnu-utils lein npm)
 #+END_SRC
 
@@ -78,7 +78,7 @@ things here are for callable functions, aliases and the like.
   We will check to see which is installed, and then add that
   completion module:
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   if [[ -d /usr/local/Cellar ]]
   then
       plugins+=(brew)      # Adds a "brews" command
@@ -91,7 +91,7 @@ things here are for callable functions, aliases and the like.
 
   Load up the modules and other goodies from Oh my Zsh.
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   source $ZSH/oh-my-zsh.sh
 #+END_SRC
 
@@ -100,7 +100,7 @@ things here are for callable functions, aliases and the like.
   Each machine I'm on (work or home), may have some special functions
   or aliases, so let's load anything that begins with =.zshrc-=:
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   if [[ -f $HOME/.zshrc-* ]]
   then
       for SH_FILE in $HOME/.zshrc-*
@@ -115,5 +115,5 @@ things here are for callable functions, aliases and the like.
   The following are the tangled settings. Type: =C-c C-v t=
   to create the script file.
 
-#+PROPERTY: header-args:sh :tangle ~/.zshrc :shebang #!/usr/local/bin/zsh :comments org
+#+PROPERTY: header-args:shell :tangle ~/.zshrc :shebang #!/usr/local/bin/zsh :comments org
 #+DESCRIPTION: Functions, aliases and other resources for ZShell

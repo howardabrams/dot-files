@@ -569,7 +569,6 @@ Emacs love affair.
 
       (org-babel-do-load-languages 'org-babel-load-languages
                                    '((shell      . t)
-                                     (sh         . t)
                                      (js         . t)
                                      (emacs-lisp . t)
                                      (perl       . t)

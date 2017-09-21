@@ -12,7 +12,7 @@ a shell-slut, and dabble between Zshell and Fish.
 
   Make sure that [[http://brew.sh/][Homebrew]] is both installed and configured correctly.
 
-#+BEGIN_SRC sh
+  #+BEGIN_SRC shell
   if which osascript >/dev/null 2>&1
   then
     export ON_A_MAC=1
@@ -23,7 +23,7 @@ a shell-slut, and dabble between Zshell and Fish.
     echo "ZOMG! No Homebrew installed! Installing now..."
     ruby -e "`curl -fsSL https://raw.github.com/mxcl/homebrew/go/install`"
   fi
-#+END_SRC
+  #+END_SRC
 
 * Fuck
 
@@ -43,13 +43,13 @@ Type "help", "copyright", "credits" or "license" for more information.
 
   We just need to install it with Homebrew:
 
-  #+BEGIN_SRC sh :tangle no
+  #+BEGIN_SRC shell :tangle no
     brew install thefuck
   #+END_SRC
 
   And then include it in this =.profile= file:
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC shell
     eval "$(thefuck --alias)"
   #+END_SRC
 
@@ -58,36 +58,36 @@ Type "help", "copyright", "credits" or "license" for more information.
    We want to add these directories, but only if they exist. This
    makes this more portable between my computers.
 
-#+BEGIN_SRC sh
-  OLDPATH=$PATH
-  PATH=$HOME/bin
+   #+BEGIN_SRC shell
+     OLDPATH=$PATH
+     PATH=$HOME/bin
 
-  for DIR in /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/sbin
-  do
-    if [ -d $DIR ]
-    then
-        PATH=$PATH:$DIR
-    fi
-  done
+     for DIR in /opt/local/bin /opt/local/sbin /usr/local/bin /usr/local/sbin
+     do
+       if [ -d $DIR ]
+       then
+           PATH=$PATH:$DIR
+       fi
+     done
 
-  PATH=$PATH:$OLDPATH
-#+END_SRC
+     PATH=$PATH:$OLDPATH
+   #+END_SRC
 
 * Emacs
 
   Set =EDITOR= to start up an =emacsclient=, but do that from the one
   I built from Homebrew:
 
-#+BEGIN_SRC sh
+  #+BEGIN_SRC shell
   export ALTERNATE_EDITOR=/usr/local/bin/emacs
   export EDITOR=/usr/local/bin/emacsclient
-#+END_SRC
+  #+END_SRC
 
 * Global Aliases
 
   I dislike =more=, especially since =less= is now really sweet.
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   alias more=less
 #+END_SRC
 
@@ -95,13 +95,13 @@ Type "help", "copyright", "credits" or "license" for more information.
 
   Use Homebrew to install the [[https://github.com/yyuu/pyenv][pyenv]] project:
 
-  #+BEGIN_SRC sh :tangle no
+  #+BEGIN_SRC shell :tangle no
     brew install pyenv
   #+END_SRC
 
   Initialize the project with the following code:
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC shell
     export PYENV_ROOT="${HOME}/.pyenv"
 
     if [ -d "${PYENV_ROOT}" ]; then
@@ -112,14 +112,14 @@ Type "help", "copyright", "credits" or "license" for more information.
 
   Install a particular version of Python:
 
-  #+BEGIN_SRC sh :tangle no
+  #+BEGIN_SRC shell :tangle no
     pyenv install 2.7.5
     pyenv global 2.7.5
   #+END_SRC
 
   Use a particular Python version with:
 
-  #+BEGIN_SRC sh :tangle no
+  #+BEGIN_SRC shell :tangle no
     pyenv virtualenv $NAME    # Creates the virtual env
     pyenv activate $NAME      # Choose the virtual env
     pyenv deactivate          # Stops using it
@@ -129,7 +129,7 @@ Type "help", "copyright", "credits" or "license" for more information.
   appropriate Python version with the =local= command (do this just
   once):
 
-  #+BEGIN_SRC sh :tangle no
+  #+BEGIN_SRC shell :tangle no
     pyenv local <virtualenv or version>
   #+END_SRC
 
@@ -141,7 +141,7 @@ Type "help", "copyright", "credits" or "license" for more information.
   Enhance =pyenv= with the [[https://github.com/yyuu/pyenv-virtualenv][pyenv-virtualenv]] plugin. If installed, this
   code initializes it:
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC shell
     if which pyenv-virtualenv-init > /dev/null
     then
         eval "$(pyenv virtualenv-init -)"
@@ -150,20 +150,20 @@ Type "help", "copyright", "credits" or "license" for more information.
 
   Create a virtual environment with:
 
-  #+BEGIN_SRC sh :tangle no
+  #+BEGIN_SRC shell :tangle no
     pyenv virtualenv 2.7.10 lp-demo
   #+END_SRC
 
   List the created virtual environments:
 
-  #+BEGIN_SRC sh :tangle no
+  #+BEGIN_SRC shell :tangle no
     pyenv virtualenvs
   #+END_SRC
 
   It seems that the =local= command may make this a moot point,
   activate a virtual environment manually with:
 
-  #+BEGIN_SRC sh :tangle no
+  #+BEGIN_SRC shell :tangle no
     pyenv activate <name>
     pyenv deactivate
   #+END_SRC
@@ -175,12 +175,12 @@ Type "help", "copyright", "credits" or "license" for more information.
   I like the prompt changing feature that will be removed from some
   future release. Let's turn it on.
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC shell
     export PYENV_VIRTUALENV_DISABLE_PROMPT=1
   #+END_SRC
 
   Completion for =pip= comes from the command: =pip completion --bash=:
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC shell
     _pip_completion()
     {
         COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
@@ -194,20 +194,20 @@ Type "help", "copyright", "credits" or "license" for more information.
 
   Install [[https://rvm.io/][RVM]] via:
 
-  #+BEGIN_SRC sh :tangle no
+  #+BEGIN_SRC shell :tangle no
     gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
     curl -sSL https://get.rvm.io | bash -s stable
   #+END_SRC
 
   And then just source the following:
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC shell
     source $HOME/.rvm/scripts/rvm
   #+END_SRC
 
   Create new virtual environments with:
 
-  #+BEGIN_SRC sh :tangle no
+  #+BEGIN_SRC shell :tangle no
     rvm install 2.0.0
     rvm use ruby-2.0.0-p643
     rvm gemset create chef
@@ -216,18 +216,18 @@ Type "help", "copyright", "credits" or "license" for more information.
 
   And use those environements with:
 
-  #+BEGIN_SRC sh :tangle no
+  #+BEGIN_SRC shell :tangle no
     rvm use ruby-2.0.0-p643@chef
   #+END_SRC
 
   And now =gem= commands work as expected:
 
-  #+BEGIN_SRC sh :tangle no
+  #+BEGIN_SRC shell :tangle no
     gem install bundler
   #+END_SRC
 
   RVM can give /completion/ capabilities to Bash:
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC shell
   [[ -r $rvm_path/scripts/completion ]] && . $rvm_path/scripts/completion
   #+END_SRC
 
@@ -235,7 +235,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 
   A helper function to help trim down lengthy directories:
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC shell
     function _trim_dir {
         V='[[:alnum:]._-]'
         D='[[:alnum:]._/-]'
@@ -246,7 +246,7 @@ Type "help", "copyright", "credits" or "license" for more information.
   The =__git_ps1= is nice, but can be lengthy when pulling down Gerrit
   reviews, so let's make a simpler branch:
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC shell
     function _mygit_ps1 {
       __git_ps1 " :%s" | sed 's|^ :review/.*/\([0-9]*\)$| :review-\1|'
     }
@@ -255,7 +255,7 @@ Type "help", "copyright", "credits" or "license" for more information.
   the first or second directory name ... any maybe the name of the Git
   project. Holy hell, so many exceptions and so few patterns...
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC shell
     function prompt_dir {
         PWD=$(pwd)
 
@@ -310,7 +310,7 @@ Type "help", "copyright", "credits" or "license" for more information.
   Virtual Environment (in red) ... of course, now I have no room to
   type commands. ;-)
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC shell
     export PS1='\[\e[1;34m\]$(prompt_dir)\[\e[1;32m\]$(_mygit_ps1)\[\e[0m\] \$ '
 
     if [ -d ~/.rvm ]
@@ -326,7 +326,7 @@ Type "help", "copyright", "credits" or "license" for more information.
   Load up my [[file:sh-functions.org][shared functions]]. These can be shared with Bash, Fish and
   Zshell.
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC shell
     if [ -f $HOME/.sh-funcs.sh ]
     then
         . $HOME/.sh-funcs.sh
@@ -335,7 +335,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 
   Host-specific values, are stored in a separate profile.
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC shell
     if [ -x $HOME/.profile-local ]
     then
       . $HOME/.profile-local
@@ -350,4 +350,4 @@ Type "help", "copyright", "credits" or "license" for more information.
   to create the script file.
 
 #+DESCRIPTION: Global environment variables for all shells
-#+PROPERTY: header-args:sh :tangle ~/.profile :shebang #!/bin/sh :comments org
+#+PROPERTY: header-args:shell :tangle ~/.profile :shebang #!/bin/sh :comments org

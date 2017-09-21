@@ -14,7 +14,7 @@ the current Git status.
   We first need to load the special prompt features as well as the
   nicer color variables:
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   setopt prompt_subst
   autoload -U colors && colors
 #+END_SRC
@@ -36,7 +36,7 @@ the current Git status.
    - green
    - yellow
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   my_prompt_string() {
     local ST=$?
     PROMPT_SAD="%{%F{red}%}(O_o)%{$reset_color%}"
@@ -53,10 +53,9 @@ the current Git status.
 
   The prompt is simply the execution of our =my_prompt_string= function.
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   PROMPT='$(my_prompt_string)'
 #+END_SRC
-
 
 * Git Prompt
 
@@ -65,7 +64,7 @@ the current Git status.
 
    Modify the colors and symbols in these variables as desired.
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   GIT_PROMPT_SYMBOL="%{$fg[blue]%}±"
   GIT_PROMPT_PREFIX="%{$fg[green]%}[%{$reset_color%}"
   GIT_PROMPT_SUFFIX="%{$fg[green]%}]%{$reset_color%}"
@@ -79,7 +78,7 @@ the current Git status.
 
    Show Git branch/tag, or name-rev if on detached head
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   parse_git_branch() {
     (git symbolic-ref -q HEAD || git name-rev --name-only --no-undefined --always HEAD) 2> /dev/null
   }
@@ -87,7 +86,7 @@ the current Git status.
 
    Show different symbols as appropriate for various Git repository states
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   parse_git_state() {
     # Compose this value via multiple conditional appends.
     local GIT_STATE=""
@@ -127,7 +126,7 @@ the current Git status.
 
    If inside a Git repository, print its branch and state
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   git_prompt_string() {
     local git_where="$(parse_git_branch)"
     [ -n "$git_where" ] && echo "$GIT_PROMPT_SYMBOL$(parse_git_state)$GIT_PROMPT_PREFIX%{$fg[yellow]%}${git_where#(refs/heads/|tags/)}$GIT_PROMPT_SUFFIX"
@@ -136,10 +135,9 @@ the current Git status.
 
    Set the right-hand prompt. Not sure why we don't use =RPROMPT=.
 
-#+BEGIN_SRC sh
+#+BEGIN_SRC shell
   RPROMPT='$(git_prompt_string)'
 #+END_SRC
-
 
 * Technical Gunk
 
@@ -147,5 +145,5 @@ the current Git status.
   to create the script file.
 
 #+DESCRIPTION: A prompt configuration...er, theme for Zsh
-#+PROPERTY: header-args:sh :tangle ~/.oh-my-zsh/themes/happiness.zsh-theme
-#+PROPERTY: header-args:   :shebang #!/usr/local/bin/zsh :comments org
+#+PROPERTY: header-args:shell :tangle ~/.oh-my-zsh/themes/happiness.zsh-theme :shebang #!/usr/local/bin/zsh
+#+PROPERTY: header-args:    :comments org
