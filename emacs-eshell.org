@@ -33,6 +33,16 @@ I find it a shame that I can not successfully use =use-package= with the
      (setenv "PAGER" "cat")
    #+END_SRC
 
+** Navigation and Keys
+
+   Eshell comes with some interesting features:
+   - ~M-RET~ can be used to accumulate further commands while a command is currently running.  Since all input is passed to the subprocess being executed, there is no automatic input queueing as there is with other shells.
+   - ~C-c C-t~ can be used to truncate the buffer if it grows too large.
+   - ~C-c C-r~ will move point to the beginning of the output of the last command.  With a prefix argument, it will narrow to view only that output.
+   - ~C-c C-o~ will delete the output from the last command.
+   - ~C-c C-f~ will move forward a complete shell argument.
+   - ~C-c C-b~ will move backward a complete shell argument.
+
 * Configuration
 
   Scrolling through the output and searching for results that can be
@@ -45,7 +55,8 @@ I find it a shame that I can not successfully use =use-package= with the
             eshell-error-if-no-glob t
             eshell-hist-ignoredups t
             eshell-save-history-on-exit t
-            eshell-prefer-lisp-functions nil)
+            eshell-prefer-lisp-functions nil
+            eshell-destroy-buffer-when-process-dies t)
   #+END_SRC
 
    I can never seem to remember that =find= and =chmod= behave
@@ -70,10 +81,10 @@ I find it a shame that I can not successfully use =use-package= with the
 
   #+BEGIN_SRC elisp
       (add-hook 'eshell-mode-hook (lambda ()
-          (eshell/alias "e" "find-file")
-          (eshell/alias "ff" "find-file")
-          (eshell/alias "emacs" "find-file")
-          (eshell/alias "ee" "find-file-other-window")
+          (eshell/alias "e" "find-file $1")
+          (eshell/alias "ff" "find-file $1")
+          (eshell/alias "emacs" "find-file $1")
+          (eshell/alias "ee" "find-file-other-window $1")
 
           (eshell/alias "gd" "magit-diff-unstaged")
           (eshell/alias "gds" "magit-diff-staged")
