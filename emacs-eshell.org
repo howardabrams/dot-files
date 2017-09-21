@@ -371,242 +371,409 @@ I find it a shame that I can not successfully use =use-package= with the
   Here is the result:
   [[http://imgur.com/nkpwII0.png]]
 
-* Shell Here
+* Shell Windows
 
-  Making little Shells whenever I need them:
+  Now that I often need to quickly pop into remote systems to run a
+  shell or commands, I create helper functions to create those buffer
+  windows.  Each begin with =eshell-=:
 
-  #+BEGIN_SRC elisp
-    (defun eshell-here ()
-      "Opens up a new shell in the directory associated with the
-    current buffer's file. The eshell is renamed to match that
-    directory to make multiple eshell windows easier."
-      (interactive)
-      (let* ((parent (if (buffer-file-name)
-                         (file-name-directory (buffer-file-name))
-                       default-directory))
-             (height (/ (window-total-height) 3))
-             (name   (car (last (split-string parent "/" t)))))
-        (split-window-vertically (- height))
-        (other-window 1)
-        (eshell "new")
-        (rename-buffer (concat "*eshell: " name "*"))
+** Shell Here
 
-        (insert (concat "ls"))
-        (eshell-send-input)))
-
-    (bind-key "C-!" 'eshell-here)
-  #+END_SRC
-
-  Used to ~C-d~ exiting from a shell? Want it to keep working, but still
-  allow deleting a character? We can have it both (thanks to [[https://github.com/wasamasa/dotemacs/blob/master/init.org#eshell][wasamasa]]):
-
-  #+BEGIN_SRC elisp
-      (defun ha/eshell-quit-or-delete-char (arg)
-        (interactive "p")
-        (if (and (eolp) (looking-back eshell-prompt-regexp))
-            (progn
-              (eshell-life-is-too-much) ; Why not? (eshell/exit)
-              (ignore-errors
-                (delete-window)))
-          (delete-forward-char arg)))
-
-      (add-hook 'eshell-mode-hook (lambda ()
-         (define-key eshell-mode-map (kbd "C-d")
-                                     'ha/eshell-quit-or-delete-char)))
-  #+END_SRC
-
-* Shell There
-  :PROPERTIES:
-  :CUSTOM_ID: remote-shell
-  :END:
-
-  Would be nice to be able to run an eshell session and use Tramp to
-  connect to the remote host in one fell swoop:
-
-  #+BEGIN_SRC elisp
-    (defun eshell-there (host)
-      (interactive "sHost: ")
-      (let ((default-directory (format "/%s:" host)))
-        (eshell host)))
-  #+END_SRC
-
-  While Eshell /can/ operate on remote systems, it doesn't work too
-  well.  Instead, it is better to use the =shell= command.  Since all
-  the shell functions that Emacs supplies work with Tramp
-  references. This makes it very easy to spawn a shell, or a shell
-  command on a remote system...even as root.
-
-   Since the Tramp syntax is a bit verbose, a few /wrapper functions/
-   would make things easier. Also, having a list of /favorite hosts/
-   with simpler names would also be a nice feature.
-
-   Since Emacs doesn't have a memoize function, define a global
-   variable, =remote-shell-fav-hosts=, a hash that maps nicknames of
-   hosts to their IP address.
-
-   #+BEGIN_SRC elisp
-    (defvar remote-shell-fav-hosts (make-hash-table :test 'equal)
-      "Table of host aliases for IPs or other actual references.")
-   #+END_SRC
-
-   Can we make a list of what hosts are /pre-known/? What if no hosts
-   have been defined? In this case, we want to call the function,
-   =remote-shell-fav-hosts-get= to populate it:
-
-   #+BEGIN_SRC elisp
-     (defun remote-shell-fav-hosts-map ()
-       "Returns the mapping between our simple names of our favorite
-     hosts and their IP address. If the map is empty, and the function
-     `remote-shell-fav-hosts-get' has been defined, it calls that
-     function to populate the map prior to returning it. This may
-     return an empty map."
-       (when (and #'remote-shell-fav-hosts-get
-                  (hash-table-empty-p remote-shell-fav-hosts))
-         (remote-shell-fav-hosts-get))
-       remote-shell-fav-hosts)
-   #+END_SRC
-
-   In order to populate the =completing-read=, we need a list of hosts:
-
-   #+BEGIN_SRC elisp
-     (defun remote-shell-fav-hosts-list ()
-       "Simply returns a list of known hosts from the cached map, or
-     populates it first if it is empty and the
-     `remote-shell-fav-hosts-get' function has been defined."
-       (hash-table-keys (remote-shell-fav-hosts-map)))
-   #+END_SRC
-
-   Most remote access is done with Tramp, so this function simplifies
-   the complex Tramp string creation, mostly using an =sudo= pipe for
-   =root= access. If the =remote-shell-fav-hosts= hash is empty, we'll
-   populate it when this is called.
-
-   #+BEGIN_SRC elisp
-     (defun remote-shell-tramp-connection (hostname &optional root directory)
-       "Return a TRAMP connection string to HOSTNAME. If ROOT is
-     non-nil, returns an sudo compatible string."
-       (when (null directory)
-         (setq directory ""))
-
-       ;; The ip address is either the value from a key in our cache, or whatever we pass in:
-       (let ((ipaddr (gethash hostname (remote-shell-fav-hosts-map) hostname)))
-         (if root
-             (format "/ssh:%s|sudo:%s:%s" ipaddr ipaddr directory)
-             (format "/ssh:%s:%s"         ipaddr directory))))
-   #+END_SRC
-
-   If the window containing the results of the shell connection or
-   shell command is the same, we can take advantage of that from
-   multiple functions, so:
-
-   #+BEGIN_SRC elisp
-     (defun remote-shell-buffer-name (hostname &optional command-str default-name)
-       "Returns a standard format for our remote shell command buffer
-     windows based on the HOSTNAME and the COMMAND-STR. Uses
-     DEFAULT-NAME if specified."
-       (cond
-        (default-name     default-name)
-        (command-str      (let ((command (car (split-string command-str))))
-                             (format "*%s:%s*" hostname command)))
-        (t                (format "*%s*" hostname))))
-   #+END_SRC
-
-   Our simple wrapper function for accessing a remote shell, should
-   use =ido= if available.
-
-   #+BEGIN_SRC elisp
-     (defun remote-shell (hostname &optional root)
-       "Start an shell experience on HOSTNAME, that can be an alias to
-     a virtual machine in the overcloud. With prefix command, opens
-     the shell as the root user account."
-       (interactive
-        (list (if #'ido-completing-read
-                  (ido-completing-read "Hostname: " (remote-shell-fav-hosts-list))
-                (completing-read "Hostname: " (remote-shell-fav-hosts-list)))))
-
-       (when (equal current-prefix-arg '(4))
-         (setq root t))
-       (let ((default-directory (remote-shell-tramp-connection hostname root)))
-         (shell (remote-shell-buffer-name hostname))))
-   #+END_SRC
-
-   Instead of starting a shell, what if we just ran a command using the
-   =shell-command= (so that commands that end in a =&= are automatically
-   ran asynchronously.
-
-   #+BEGIN_SRC elisp
-     (defun remote-shell-command (hostname command
-                                           &optional root bufname directory)
-       "On HOSTNAME, run COMMAND (if the command ends with &, run
-     asynchronously). With a `C-u' prefix, run the command as ROOT.
-     When non-interactive, you can specify BUFNAME for the buffer's
-     name, and DIRECTORY where the command should run."
-       (interactive
-        (list (if #'ido-completing-read
-                  (ido-completing-read "Hostname: " (remote-shell-fav-hosts-list))
-                (completing-read "Hostname: " (remote-shell-fav-hosts-list)))
-              (read-string "Command: ")))
-       (when (equal current-prefix-arg '(4))
-         (setq root t))
-       (let ((default-directory (remote-shell-tramp-connection hostname root directory)))
-         (shell-command command (remote-shell-buffer-name hostname command bufname))))
-   #+END_SRC
-
-   With the above helper functions, we can loop over a list of machines,
-   and kick off remote work on each one:
-
-   #+BEGIN_SRC elisp
-     (defun remote-shell-commands (clients command
-                                           &optional root async directory)
-       "On each host entry in CLIENTS, run the shell COMMAND,
-     optionally as ROOT. If ASYNC is non-nil, appends the `&' to the
-     shell command in order to run it asynchronously. Runs the command
-     in the default home directory unless DIRECTORY is specified."
-       (if async
-           (setq command (concat command " &")))
-       (dolist (host clients)
-         (remote-shell-command host command root nil directory)))
-   #+END_SRC
-
-   The results of each command is stored in a separate buffer, and
-   since we know what the names are, this command will attempt to load
-   them on the side... yeah, this is a bit ugly.
-
-   #+BEGIN_SRC elisp
-     (defun remote-shell-commands-show (clients command)
-       "Shows each buffer of a previously executed command. For example:
-
-             (let ((my-favs '(\"os-controller\" \"contrail-controller\"
-                              \"compute\" \"nagios\" \"elk\"))
-                   (command \"chef-client\"))
-               (remote-shell-commands my-favs command t t)
-               (remote-shell-commands-show my-favs command))"
-
-       (delete-other-windows)
-       (let ((first-time t))
-         (dolist (host clients)
-           (if (not first-time)
-               (split-window-vertically)
-             (split-window-horizontally)
-             (setq first-time nil))
-
-           (other-window 1)
-           (switch-to-buffer (remote-shell-buffer-name host command))
-           (balance-windows)
-           (sit-for 0.5))))
-   #+END_SRC
-
-   All this work allows me to do magic:
+   Making little Shells whenever I need them:
 
    #+BEGIN_SRC elisp :tangle no
-     (let ((my-favs '("os-controller" "contrail-controller"
-                      "compute" "nagios" "elk"))
-           (command "chef-client"))
-       (remote-shell-commands my-favs command t t)
-       (remote-shell-commands-show my-favs command))
+     (defun eshell-here ()
+       "Opens up a new shell in the directory associated with the
+     current buffer's file. The eshell is renamed to match that
+     directory to make multiple eshell windows easier."
+       (interactive)
+       (let* ((parent (if (buffer-file-name)
+                          (file-name-directory (buffer-file-name))
+                        default-directory))
+              (height (/ (window-total-height) 3))
+              (name   (car (last (split-string parent "/" t)))))
+         (split-window-vertically (- height))
+         (other-window 1)
+         (eshell "new")
+         (rename-buffer (concat "*eshell: " name "*"))
+
+         (insert (concat "ls"))
+         (eshell-send-input)))
+
+     (bind-key "C-!" 'eshell-here)
    #+END_SRC
 
-   Check out this [[https://www.youtube.com/watch?v=pSjrwSI4OHk][YouTube video recording]] of this section in action.
+   Let's try a version that doesn't put the current working directory
+   in the mode-line's buffer title:
+
+   #+BEGIN_SRC elisp
+     (defun eshell-here ()
+       "Opens up a new shell in the directory associated with the
+         current buffer's file. The eshell is renamed to match that
+         directory to make multiple eshell windows easier."
+       (interactive)
+       (let* ((height (/ (window-total-height) 3)))
+         (split-window-vertically (- height))
+         (other-window 1)
+         (eshell "new")
+         (insert (concat "ls"))
+         (eshell-send-input)))
+
+     (bind-key "C-!" 'eshell-here)
+   #+END_SRC
+
+   Used to ~C-d~ exiting from a shell? Want it to keep working, but still
+   allow deleting a character? We can have it both (thanks to [[https://github.com/wasamasa/dotemacs/blob/master/init.org#eshell][wasamasa]]):
+
+   #+BEGIN_SRC elisp
+       (defun ha/eshell-quit-or-delete-char (arg)
+         (interactive "p")
+         (if (and (eolp) (looking-back eshell-prompt-regexp))
+             (progn
+               (eshell-life-is-too-much) ; Why not? (eshell/exit)
+               (ignore-errors
+                 (delete-window)))
+           (delete-forward-char arg)))
+
+       (add-hook 'eshell-mode-hook (lambda ()
+          (define-key eshell-mode-map (kbd "C-d")
+                                      'ha/eshell-quit-or-delete-char)))
+   #+END_SRC
+
+** Shell There
+   :PROPERTIES:
+   :CUSTOM_ID: remote-shell
+   :END:
+
+   Would be nice to be able to run an eshell session and use Tramp to
+   connect to the remote host in one fell swoop:
+
+   #+BEGIN_SRC elisp
+     (defun eshell-there (host)
+       "Creates an eshell session that uses Tramp to automatically
+     connect to a remote system, HOST.  The hostname can be either the
+     IP address, or FQDN, and can specify the user account, as in
+     root@blah.com. HOST can also be a complete Tramp reference."
+       (interactive "sHost: ")
+
+       (let* ((default-directory
+                (cond
+                 ((string-match-p "^/" host) host)
+
+                 ((string-match-p (ha/eshell-host-regexp 'full) host)
+                  (string-match (ha/eshell-host-regexp 'full) host) ;; Why!?
+                  (let* ((user1 (match-string 2 host))
+                         (host1 (match-string 3 host))
+                         (user2 (match-string 6 host))
+                         (host2 (match-string 7 host)))
+                    (if host1
+                        (ha/eshell-host->tramp user1 host1)
+                      (ha/eshell-host->tramp user2 host2))))
+
+                 (t (format "/%s:" host)))))
+         (eshell-here)))
+   #+END_SRC
+
+   Note that this function uses functions defined below.
+
+** Shell Here to There
+
+   Since I have Org files that contains tables of system to remotely
+   connect to, I figured I should have a little function that can jump
+   to a host found listed anywhere on the line.
+
+   The regular expression associated with IP addresses, hostnames, user
+   accounts (of the form, =jenkins@my.build.server=, or even full Tramp
+   references, is a bit...uhm, hairy.  And since I want to reuse these,
+   I will hide them in a function:
+
+   #+BEGIN_SRC elisp
+     (defun ha/eshell-host-regexp (regexp)
+       "Returns a particular regular expression based on symbol, REGEXP"
+       (let* ((user-regexp      "\\(\\([[:alpha:].]+\\)@\\)?")
+              (tramp-regexp     "\\b/ssh:[:graph:]+")
+              (ip-char          "[[:digit:]]")
+              (ip-plus-period   (concat ip-char "+" "\\."))
+              (ip-regexp        (concat "\\(\\(" ip-plus-period "\\)\\{3\\}" ip-char "+\\)"))
+              (host-char        "[[:alpha:][:digit:]-]")
+              (host-plus-period (concat host-char "+" "\\."))
+              (host-regexp      (concat "\\(\\(" host-plus-period "\\)+" host-char "+\\)"))
+              (horrific-regexp  (concat "\\b"
+                                        user-regexp ip-regexp
+                                        "\\|"
+                                        user-regexp host-regexp
+                                        "\\b")))
+         (cond
+          ((eq regexp 'tramp) tramp-regexp)
+          ((eq regexp 'host)  host-regexp)
+          ((eq regexp 'full)  horrific-regexp))))
+   #+END_SRC
+
+   The function to scan a line for hostname patterns uses different
+   function calls that what I could use for =eshell-there=, so let's
+   =save-excursion= and hunt around:
+
+   #+BEGIN_SRC elisp
+     (defun ha/eshell-scan-for-hostnames ()
+       "Helper function to scan the current line for any hostnames, IP
+     or Tramp references.  This returns a tuple of the username (if
+     found) and the hostname.
+
+     If a Tramp reference is found, the username part of the tuple
+     will be `nil'."
+       (save-excursion
+         (goto-char (line-beginning-position))
+         (if (search-forward-regexp (ha/eshell-host-regexp 'tramp) (line-end-position) t)
+             (cons nil (buffer-substring-no-properties (match-beginning 0) (match-end 0)))
+
+           ;; Returns the text associated with match expression, NUM or `nil' if no match was found.
+           (cl-flet ((ha/eshell-get-expression (num) (if-let ((first (match-beginning num))
+                                                              (end   (match-end num)))
+                                                         (buffer-substring-no-properties first end))))
+
+             (search-forward-regexp (ha/eshell-host-regexp 'full) (line-end-position))
+
+             ;; Until this is completely robust, let's keep this debugging code here:
+             ;; (message (mapconcat (lambda (tup) (if-let ((s (car tup))
+             ;;                                       (e (cadr tup)))
+             ;;                                  (buffer-substring-no-properties s e)
+             ;;                                "null"))
+             ;;             (-partition 2 (match-data t)) " -- "))
+
+             (let ((user1 (ha/eshell-get-expression 2))
+                   (host1 (ha/eshell-get-expression 3))
+                   (user2 (ha/eshell-get-expression 6))
+                   (host2 (ha/eshell-get-expression 7)))
+               (if host1
+                   (cons user1 host1)
+                 (cons user2 host2)))))))
+   #+END_SRC
+
+   Tramp reference can be long when attempting to connect as another
+   user account using the pipe symbol.
+
+   #+BEGIN_SRC elisp
+     (defun ha/eshell-host->tramp (username hostname &optional prefer-root)
+       "Returns a TRAMP reference based on a USERNAME and HOSTNAME
+     that refers to any host or IP address."
+       (cond ((string-match-p "^/" host)
+                host)
+             ((or (and prefer-root (not username)) (equal username "root"))
+                (format "/ssh:%s|sudo:%s:" hostname hostname))
+             ((or (null username) (equal username user-login-name))
+                (format "/ssh:%s:" hostname))
+             (t
+                (format "/ssh:%s|sudo:%s|sudo@%s:%s:" hostname hostname username hostname))))
+   #+END_SRC
+
+   Finally
+   #+BEGIN_SRC elisp
+     (defun eshell-here-on-line (p)
+       "Search the current line for an IP address or hostname, and call the `eshell-there' function.
+
+     Call with PREFIX to connect with the `root' useraccount, via
+     `sudo'."
+       (interactive "p")
+       (destructuring-bind (user host) (ha/eshell-scan-for-hostnames)
+         (let ((default-directory (ha/eshell-host->tramp user host (> p 1))))
+           (message "Connecting to: %s" default-directory)
+           ;; With the `default-directory' set to a Tramp reference, rock on!
+           (eshell-here))))
+
+     (bind-key "M-s-1" #'eshell-here-on-line)
+   #+END_SRC
+
+** Shell Favorites
+
+    Since the Tramp syntax is a bit verbose, a few /wrapper functions/
+    would make things easier. Also, having a list of /favorite hosts/
+    with simpler names would also be a nice feature.
+
+    Since Emacs doesn't have a memoize function, define a global
+    variable, =remote-shell-fav-hosts=, a hash that maps nicknames of
+    hosts to their IP address.
+
+    #+BEGIN_SRC elisp
+     (defvar remote-shell-fav-hosts (make-hash-table :test 'equal)
+       "Table of host aliases for IPs or other actual references.")
+    #+END_SRC
+
+    Can we make a list of what hosts are /pre-known/? What if no hosts
+    have been defined? In this case, we want to call the function,
+    =remote-shell-fav-hosts-get= to populate it:
+
+    #+BEGIN_SRC elisp
+      (defun remote-shell-fav-hosts-map ()
+        "Returns the mapping between our simple names of our favorite
+      hosts and their IP address. If the map is empty, and the function
+      `remote-shell-fav-hosts-get' has been defined, it calls that
+      function to populate the map prior to returning it. This may
+      return an empty map."
+        (when (and #'remote-shell-fav-hosts-get
+                   (hash-table-empty-p remote-shell-fav-hosts))
+          (remote-shell-fav-hosts-get))
+        remote-shell-fav-hosts)
+    #+END_SRC
+
+    In order to populate the =completing-read=, we need a list of hosts:
+
+    #+BEGIN_SRC elisp
+      (defun remote-shell-fav-hosts-list ()
+        "Simply returns a list of known hosts from the cached map, or
+      populates it first if it is empty and the
+      `remote-shell-fav-hosts-get' function has been defined."
+        (hash-table-keys (remote-shell-fav-hosts-map)))
+    #+END_SRC
+
+    Most remote access is done with Tramp, so this function simplifies
+    the complex Tramp string creation, mostly using an =sudo= pipe for
+    =root= access. If the =remote-shell-fav-hosts= hash is empty, we'll
+    populate it when this is called.
+
+    #+BEGIN_SRC elisp
+      (defun remote-shell-tramp-connection (hostname &optional root directory)
+        "Return a TRAMP connection string to HOSTNAME. If ROOT is
+      non-nil, returns an sudo compatible string."
+        (when (null directory)
+          (setq directory ""))
+
+        ;; The ip address is either the value from a key in our cache, or whatever we pass in:
+        (let ((ipaddr (gethash hostname (remote-shell-fav-hosts-map) hostname)))
+          (if root
+              (format "/ssh:%s|sudo:%s:%s" ipaddr ipaddr directory)
+              (format "/ssh:%s:%s"         ipaddr directory))))
+    #+END_SRC
+
+    If the window containing the results of the shell connection or
+    shell command is the same, we can take advantage of that from
+    multiple functions, so:
+
+    #+BEGIN_SRC elisp
+      (defun remote-shell-buffer-name (hostname &optional command-str default-name)
+        "Returns a standard format for our remote shell command buffer
+      windows based on the HOSTNAME and the COMMAND-STR. Uses
+      DEFAULT-NAME if specified."
+        (cond
+         (default-name     default-name)
+         (command-str      (let ((command (car (split-string command-str))))
+                              (format "*%s:%s*" hostname command)))
+         (t                (format "*%s*" hostname))))
+    #+END_SRC
+
+    Our simple wrapper function for accessing a remote shell, should
+    use =ido= if available.
+
+    #+BEGIN_SRC elisp
+      (defun remote-shell (hostname &optional root)
+        "Start an shell experience on HOSTNAME, that can be an alias to
+      a virtual machine from my 'cloud' server. With prefix command, opens
+      the shell as the root user account."
+        (interactive
+         (list (if (fboundp #'ido-completing-read)
+                   (ido-completing-read "Hostname: " (remote-shell-fav-hosts-list))
+                 (completing-read "Hostname: " (remote-shell-fav-hosts-list)))))
+        (when (equal current-prefix-arg '(4))
+          (setq root t))
+        (let ((default-directory (remote-shell-tramp-connection hostname root)))
+          (shell (remote-shell-buffer-name hostname))))
+    #+END_SRC
+
+    With the way Emacs Lisp's =interactive= behaves, I'm not sure how to
+    DRY this function to be a simple alias with the exception of
+    using eshell:
+
+    #+BEGIN_SRC elisp
+      (defun eshell-favorite (hostname &optional root)
+        "Start an shell experience on HOSTNAME, that can be an alias to
+      a virtual machine from my 'cloud' server. With prefix command, opens
+      the shell as the root user account."
+        (interactive
+         (list (if (fboundp #'ido-completing-read)
+                   (ido-completing-read "Hostname: " (remote-shell-fav-hosts-list))
+                 (completing-read "Hostname: " (remote-shell-fav-hosts-list)))))
+        (when (equal current-prefix-arg '(4))
+          (setq root t))
+        (let ((default-directory (remote-shell-tramp-connection hostname root)))
+          (eshell (remote-shell-buffer-name hostname))))
+    #+END_SRC
+
+    Instead of starting a shell, what if we just ran a command using the
+    =shell-command= (so that commands that end in a =&= are automatically
+    ran asynchronously.
+
+    #+BEGIN_SRC elisp
+      (defun remote-shell-command (hostname command
+                                            &optional root bufname directory)
+        "On HOSTNAME, run COMMAND (if the command ends with &, run
+      asynchronously). With a `C-u' prefix, run the command as ROOT.
+      When non-interactive, you can specify BUFNAME for the buffer's
+      name, and DIRECTORY where the command should run."
+        (interactive
+         (list (if #'ido-completing-read
+                   (ido-completing-read "Hostname: " (remote-shell-fav-hosts-list))
+                 (completing-read "Hostname: " (remote-shell-fav-hosts-list)))
+               (read-string "Command: ")))
+        (when (equal current-prefix-arg '(4))
+          (setq root t))
+        (let ((default-directory (remote-shell-tramp-connection hostname root directory)))
+          (shell-command command (remote-shell-buffer-name hostname command bufname))))
+    #+END_SRC
+
+    With the above helper functions, we can loop over a list of machines,
+    and kick off remote work on each one:
+
+    #+BEGIN_SRC elisp
+      (defun remote-shell-commands (clients command
+                                            &optional root async directory)
+        "On each host entry in CLIENTS, run the shell COMMAND,
+      optionally as ROOT. If ASYNC is non-nil, appends the `&' to the
+      shell command in order to run it asynchronously. Runs the command
+      in the default home directory unless DIRECTORY is specified."
+        (if async
+            (setq command (concat command " &")))
+        (dolist (host clients)
+          (remote-shell-command host command root nil directory)))
+    #+END_SRC
+
+    The results of each command is stored in a separate buffer, and
+    since we know what the names are, this command will attempt to load
+    them on the side... yeah, this is a bit ugly.
+
+    #+BEGIN_SRC elisp
+      (defun remote-shell-commands-show (clients command)
+        "Shows each buffer of a previously executed command. For example:
+
+              (let ((my-favs '(\"os-controller\" \"contrail-controller\"
+                               \"compute\" \"nagios\" \"elk\"))
+                    (command \"chef-client\"))
+                (remote-shell-commands my-favs command t t)
+                (remote-shell-commands-show my-favs command))"
+
+        (delete-other-windows)
+        (let ((first-time t))
+          (dolist (host clients)
+            (if (not first-time)
+                (split-window-vertically)
+              (split-window-horizontally)
+              (setq first-time nil))
+
+            (other-window 1)
+            (switch-to-buffer (remote-shell-buffer-name host command))
+            (balance-windows)
+            (sit-for 0.5))))
+    #+END_SRC
+
+    All this work allows me to do magic:
+
+    #+BEGIN_SRC elisp :tangle no
+      (let ((my-favs '("os-controller" "contrail-controller"
+                       "compute" "nagios" "elk"))
+            (command "chef-client"))
+        (remote-shell-commands my-favs command t t)
+        (remote-shell-commands-show my-favs command))
+    #+END_SRC
+
+    Check out this [[https://www.youtube.com/watch?v=pSjrwSI4OHk][YouTube video recording]] of this section in action.
 
 * Tramp
 
