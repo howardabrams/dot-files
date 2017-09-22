@@ -27,13 +27,6 @@ coupled with some magic available to JavaScript.
 
 * Prerequisites
 
-  Need the extra =contrib= package:
-
-  #+BEGIN_SRC elisp
-    (use-package org-plus-contrib
-      :ensure t)
-  #+END_SRC
-
   And then require them:
 
   #+BEGIN_SRC elisp
@@ -184,7 +177,7 @@ coupled with some magic available to JavaScript.
 
 #+PROPERTY:    header-args:elisp  :tangle ~/.emacs.d/elisp/init-blog.el
 #+PROPERTY:    header-args:sh     :tangle no
-#+PROPERTY:    header-args:       :results silent   :eval no-export   :comments org
+#+PROPERTY:    header-args        :results silent   :eval no-export   :comments org
 
 #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
 #+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
