@@ -327,14 +327,14 @@ other systems with a graphical front-end.
   Now let's have a couple of functions that will /show/ and /hide/ the
   cursor (or at least, lessen its visibility):
   #+BEGIN_SRC elisp
-    (defun cursor-hide (arg)
+    (defun cursor-hide (&optional arg)
       "Hides cursor by setting the color to the background color.
     This only happens after a number of characters have been
     typed (defined by the `cursor-number-chars-before-hiding'
     variable)."
       (setq cursor-current-number-chars (1+ cursor-current-number-chars))
       (when (> cursor-current-number-chars cursor-number-chars-before-hiding)
-        (set-cursor-color (background-color-at-point))))
+        (set-cursor-color (or (background-color-at-point) "#1d1f21"))))
 
     (defun cursor-show ()
       "Shows the cursor. At least, sets it to a particular
