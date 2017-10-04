@@ -993,23 +993,25 @@
 
 *** Perspective
 
-    The [[https://github.com/nex3/perspective-el][perspective project]] and the
+    The [[https://github.com/nex3/perspective-el][perspective project]] and Batsov's [[https://github.com/bbatsov/projectile][projectile project]] are now
+    [[https://github.com/bbatsov/persp-projectile][joined together]] which means that each project has its own perspective.
 
     #+BEGIN_SRC elisp
       (use-package perspective
         :ensure t
         :bind ("C-x x x" . persp-switch-last)
-        :config (persp-mode)
-        (defun persp-update-modestring ()
-          "Update `persp-modestring' to reflect the current perspective."
-          (when persp-show-modestring
-              (setq persp-modestring (propertize (persp-name persp-curr) 'face 'persp-selected-face))))
+        :init (persp-mode)
 
         (use-package persp-projectile
           :ensure t
-          :bind (:map projectile-mode-map
-                      ("X" . projectile-persp-switch-project))))
+          :bind ("C-x x P" . projectile-persp-switch-project)))
     #+END_SRC
+
+    My workflow consists of:
+    - =C-x x P= to investigate a new project with its new perspective
+      (this also saves off whatever I was doing)
+    - =C-x x x= switches to whatever I was doing before
+    - =C-x x s= switches to a project's perspective based on its name
 
 *** Workgroups
 
