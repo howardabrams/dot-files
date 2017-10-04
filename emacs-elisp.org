@@ -273,9 +273,8 @@
 
   #+BEGIN_SRC elisp
     (use-package emr
-      :init
-      (add-hook 'emacs-lisp-mode-hook 'emr-initialize)
       :config
+      (add-hook 'emacs-lisp-mode-hook 'emr-initialize)
       (bind-key "R" #'emr-show-refactor-menu lisp-evaluation-map))
   #+END_SRC
 
