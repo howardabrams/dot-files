@@ -1004,7 +1004,10 @@
 
         (use-package persp-projectile
           :ensure t
-          :bind ("C-x x P" . projectile-persp-switch-project)))
+          :bind ("C-x x P" . projectile-persp-switch-project))
+
+        :config
+          (setq persp-interactive-completion-function #'ido-completing-read)))
     #+END_SRC
 
     My workflow consists of:
@@ -1381,7 +1384,8 @@
        (let ((last-ido "~/.emacs.d/ido.last"))
          (when (file-exists-p last-ido)
            (delete-file last-ido)))
-       :bind ("C-c f f" . recentf-open-files))
+
+       :bind ("C-c f r" . recentf-open-files))
    #+END_SRC
 
    We do not want to stat all the files when Emacs starts up because
