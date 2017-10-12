@@ -363,6 +363,7 @@ other systems with a graphical front-end.
     (use-package beacon
       :ensure t
       :defer  t
+      :diminish 'beacon-mode
       :init  (beacon-mode +1)
       :config (setq beacon-color cursor-initial-color))
   #+END_SRC
