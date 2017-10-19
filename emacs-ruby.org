@@ -163,9 +163,10 @@ developing Ruby in Emacs.
   #+BEGIN_SRC elisp
     (use-package smartparens
       :ensure t
+      :diminish (smartparens-mode .  "()")
       :init
-        (add-hook 'ruby-mode-hook 'smartparens-strict-mode)
-      :diminish smartparens-mode)
+        (use-package smartparens-ruby)
+        (add-hook 'ruby-mode-hook 'smartparens-strict-mode))
   #+END_SRC
 
 * Rubocop
