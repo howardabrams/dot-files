@@ -51,12 +51,15 @@ I find it a shame that I can not successfully use =use-package= with the
   setting means any other key will jump back to the prompt:
 
   #+BEGIN_SRC elisp
-      (setq eshell-scroll-to-bottom-on-input 'all
+    (use-package eshell
+      :init
+      (setq ;; eshell-buffer-shorthand t ...  Can't see Bug#19391
+            eshell-scroll-to-bottom-on-input 'all
             eshell-error-if-no-glob t
             eshell-hist-ignoredups t
             eshell-save-history-on-exit t
             eshell-prefer-lisp-functions nil
-            eshell-destroy-buffer-when-process-dies t)
+            eshell-destroy-buffer-when-process-dies t))
   #+END_SRC
 
    I can never seem to remember that =find= and =chmod= behave
@@ -70,9 +73,13 @@ I find it a shame that I can not successfully use =use-package= with the
   handling of ansiterm:
 
   #+BEGIN_SRC elisp
-      (add-hook 'eshell-mode-hook (lambda ()
-          (add-to-list 'eshell-visual-commands "ssh")
-          (add-to-list 'eshell-visual-commands "tail")))
+    (use-package eshell
+      :init
+      (add-hook 'eshell-mode-hook
+                (lambda ()
+                  (add-to-list 'eshell-visual-commands "ssh")
+                  (add-to-list 'eshell-visual-commands "tail")
+                  (add-to-list 'eshell-visual-commands "top"))))
   #+END_SRC
 
 * Aliases
@@ -88,19 +95,13 @@ I find it a shame that I can not successfully use =use-package= with the
 
           (eshell/alias "gd" "magit-diff-unstaged")
           (eshell/alias "gds" "magit-diff-staged")
+          (eshell/alias "d" "dired $1")
 
           ;; The 'ls' executable requires the Gnu version on the Mac
           (let ((ls (if (file-exists-p "/usr/local/bin/gls")
                         "/usr/local/bin/gls"
                       "/bin/ls")))
             (eshell/alias "ll" (concat ls " -AlohG --color=always")))))
-  #+END_SRC
-
-  Pull up dired, but without parameters, just use the current directory.
-
-  #+BEGIN_SRC elisp
-    (defun eshell/d (&rest args)
-      (dired (pop args) "."))
   #+END_SRC
 
 ** Git
@@ -168,6 +169,19 @@ I find it a shame that I can not successfully use =use-package= with the
        "Wrapper around the ‘find’ executable."
        (let ((cmd (concat "find " (string-join args))))
          (shell-command-to-string cmd)))
+   #+END_SRC
+
+** Clear
+
+   While deleting and recreating =eshell= may be just as fast, I always
+   forget and type =clear=, so let's implement it:
+
+   #+BEGIN_SRC elisp
+     (defun eshell/clear ()
+       "Clear the eshell buffer."
+       (let ((inhibit-read-only t))
+         (erase-buffer)
+         (eshell-send-input)))
    #+END_SRC
 
 * Predicate Filters and Modifiers
@@ -240,8 +254,7 @@ I find it a shame that I can not successfully use =use-package= with the
                (git-output (shell-command-to-string (concat "git rev-parse --abbrev-ref HEAD")))
                (git-branch (s-trim git-output))
                (git-icon  "\xe0a0")
-               (git-icon2 (propertize "\xf020" 'face `(:family "-*-github-octicons-normal-normal-normal-*-*-*-*-*-p-0-iso10646-1")))
-               (git-icon3 (all-the-icons-octicon "git-branch")))
+               (git-icon2 (propertize "\xf020" 'face `(:family "octicons"))))
           (concat git-repo " " git-icon2 " " git-branch))))
   #+END_SRC
 
@@ -301,16 +314,22 @@ I find it a shame that I can not successfully use =use-package= with the
       (let* ((executable "~/.rvm/bin/rvm-prompt")
              (command    (concat executable "v g")))
         (when (file-exists-p executable)
-          (s-replace "ruby-" "💎"
-                     (string-trim (shell-command-to-string executable))))))
+          (let* ((results (shell-command-to-string executable))
+                 (cleaned (string-trim results))
+                 (gem     (propertize "\xe92b" 'face `(:family "alltheicons"))))
+            (when (and cleaned (not (equal cleaned "")))
+              (s-replace "ruby-" gem cleaned))))))
 
     (defun python-prompt ()
       "Returns a string (may be empty) based on the current Python
-    Virtual Environment. Assuming the M-x command: `pyenv-mode-set'
-    has been called."
+       Virtual Environment. Assuming the M-x command: `pyenv-mode-set'
+       has been called."
       (when (fboundp #'pyenv-mode-version)
-        (if-let ((venv (pyenv-mode-version)))
-            (concat "🐍:" (pyenv-mode-version)))))
+        (let ((venv (pyenv-mode-version)))
+          (when venv
+            (concat
+             (propertize "\xe928" 'face `(:family "alltheicons"))
+             (pyenv-mode-version))))))
   #+END_SRC
 
   Now tie it all together with a prompt function can color each of the
@@ -327,15 +346,15 @@ I find it a shame that I can not successfully use =use-package= with the
                          (pwd-shorten-dirs
                           (pwd-replace-home pwd))))
              (parent (car directory))
-             (name (cadr directory))
+             (name   (cadr directory))
              (branch (curr-dir-git-branch-string pwd))
-             (ruby (when (not (file-remote-p pwd)) (ruby-prompt)))
+             (ruby   (when (not (file-remote-p pwd)) (ruby-prompt)))
              (python (when (not (file-remote-p pwd)) (python-prompt)))
 
              (dark-env (eq 'dark (frame-parameter nil 'background-mode)))
              (for-bars                 `(:weight bold))
-             (for-parent  (if dark-env `(:foreground "#8888FF") `(:foreground "blue")))
-             (for-dir     (if dark-env `(:foreground "#aaaaFF" :weight bold)
+             (for-parent  (if dark-env `(:foreground "dark orange") `(:foreground "blue")))
+             (for-dir     (if dark-env `(:foreground "orange" :weight bold)
                             `(:foreground "blue" :weight bold)))
              (for-git                  `(:foreground "green"))
              (for-ruby                 `(:foreground "red"))
@@ -426,6 +445,8 @@ I find it a shame that I can not successfully use =use-package= with the
    allow deleting a character? We can have it both (thanks to [[https://github.com/wasamasa/dotemacs/blob/master/init.org#eshell][wasamasa]]):
 
    #+BEGIN_SRC elisp
+     (use-package eshell
+       :config
        (defun ha/eshell-quit-or-delete-char (arg)
          (interactive "p")
          (if (and (eolp) (looking-back eshell-prompt-regexp))
@@ -434,10 +455,11 @@ I find it a shame that I can not successfully use =use-package= with the
                (ignore-errors
                  (delete-window)))
            (delete-forward-char arg)))
-
-       (add-hook 'eshell-mode-hook (lambda ()
-          (define-key eshell-mode-map (kbd "C-d")
-                                      'ha/eshell-quit-or-delete-char)))
+       :init
+       (add-hook 'eshell-mode-hook
+                 (lambda ()
+                   (bind-keys :map eshell-mode-map
+                              ("C-d" . ha/eshell-quit-or-delete-char)))))
    #+END_SRC
 
 ** Shell There
@@ -876,7 +898,7 @@ I find it a shame that I can not successfully use =use-package= with the
 
   #+BEGIN_SRC elisp
   (use-package eshell-fringe-status
-    :init
+    :config
     (add-hook 'eshell-mode-hook 'eshell-fringe-status-mode))
   #+END_SRC
 
@@ -892,7 +914,7 @@ I find it a shame that I can not successfully use =use-package= with the
 
 #+PROPERTY:    header-args:elisp  :tangle ~/.emacs.d/elisp/init-eshell.el
 #+PROPERTY:    header-args:sh :tangle no
-#+PROPERTY:    header-args:       :results silent   :eval no-export   :comments org
+#+PROPERTY:    header-args       :results silent   :eval no-export   :comments org
 
 #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
 #+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
