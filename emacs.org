@@ -1000,14 +1000,15 @@
       (use-package perspective
         :ensure t
         :bind ("C-x x x" . persp-switch-last)
-        :init (persp-mode)
+        :init (persp-mode +1)
 
         (use-package persp-projectile
           :ensure t
           :bind ("C-x x P" . projectile-persp-switch-project))
 
         :config
-          (setq persp-interactive-completion-function #'ido-completing-read)))
+          (setq persp-interactive-completion-function #'ido-completing-read)
+          (persp-turn-off-modestring))
     #+END_SRC
 
     My workflow consists of:
