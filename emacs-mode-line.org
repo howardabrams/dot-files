@@ -4,35 +4,6 @@
 #+DATE:   [2014-02-28 Fri]
 #+TAGS:   emacs
 
-* Which Function Mode
-
-  While this might make my mode line a bit too cluttered, I like
-  having the name of the function (or org-mode header) on the line:
-
-  #+BEGIN_SRC elisp
-    (setq which-func-unknown "")
-    (which-function-mode -1)
-  #+END_SRC
-
-  Let's "fix" the output of the function based on my mode line:
-
-  #+BEGIN_SRC elisp
-    (setq which-func-format
-          `(" "
-            (:propertize which-func-current local-map
-                         (keymap
-                          (mode-line keymap
-                                     (mouse-3 . end-of-defun)
-                                     (mouse-2 . narrow-to-defun)
-                                     (mouse-1 . beginning-of-defun)))
-                         face which-func
-                         mouse-face mode-line-highlight
-                         help-echo "mouse-1: go to beginning\n\
-    mouse-2: toggle rest visibility\n\
-    mouse-3: go to end")
-            " "))
-  #+END_SRC
-
 * PowerLine
 
   The [[http://www.emacswiki.org/emacs/PowerLine][PowerLine]] project can really clean up the mode line, but I'm
@@ -41,119 +12,196 @@
 
   #+BEGIN_SRC elisp
     (use-package powerline
-       :ensure t)
+      :ensure t
+      :init
+      (setq powerline-default-separator 'curve
+            powerline-default-separator-dir (quote (left . right))
+            powerline-height 28
+            powerline-display-buffer-size nil
+            powerline-display-hud nil
+            powerline-display-mule-info nil
+            powerline-gui-use-vcs-glyph t
+            powerline-inactive1 '((t (:background "grey11" :foreground "#c5c8c6")))
+            powerline-inactive2 '((t (:background "grey20" :foreground "#c5c8c6")))))
   #+END_SRC
 
-  Need the colors to be a bit more pronounced ... and grayer.
+  Let's make the modification status a bit more useful... and iconic:
 
   #+BEGIN_SRC elisp
-    (custom-set-faces
-     '(mode-line-buffer-id ((t (:foreground "#000000" :bold t))))
-     '(which-func ((t (:foreground "#77aaff"))))
-     '(mode-line ((t (:foreground "#000000" :background "#dddddd" :box nil))))
-     '(mode-line-inactive ((t (:foreground "#000000" :background "#bbbbbb" :box nil)))))
+    (defun powerline-get-icon (name alt-sym help-message)
+      "Returns a propertized icon if available, otherwise, returns ALT-SYM."
+      (propertize alt-sym 'help-echo help-message))
+
+    (defun powerline-modified ()
+      (condition-case ex
+          (let ((state (vc-git-state (buffer-file-name))))
+            (cond ((buffer-modified-p)  (powerline-get-icon "pencil" "✦" "Modified buffer"))
+                  ((eq state 'edited)   (powerline-get-icon "pencil" "✦" "Modified buffer, unregistered changes"))
+                  ((eq state 'unregistered) (powerline-get-icon "question" "❓" "Unregistered file in VCS"))
+                  ((eq state 'missing)  (powerline-get-icon "exclamation" "⁈" "File exists only in VCS, not on the hard disk"))
+                  ((eq state 'ignored)  (powerline-get-icon "ban" "♟" "Ignored file in VCS"))
+                  ((eq state 'added)    (powerline-get-icon "plus" "➕" "File will be registered in VCS in the next commit"))
+                  (t " ")))
+        (error (powerline-get-icon "exclamation" "⁈" (car ex)))))
   #+END_SRC
 
-  Now, let's create our own theme:
+  In order to check if the current mode matches a particular mode, we
+  need to do something like:
 
   #+BEGIN_SRC elisp
-  (defun powerline-simpler-vc-mode (s)
-    (if s
-        (replace-regexp-in-string "Git[:-]" "" s)
-      s))
+    (defun is-mode-p (mode)
+      "Predicate to return `true' if the current buffer's major mode matches the requested MODE."
+      (buffer-local-value 'major-mode (current-buffer))
+      (eq major-mode mode))
+  #+END_SRC
 
-  ;; Some point, we could change the text of the minor modes, but we
-  ;; need to get the text properties and sub them /back in/. To be
-  ;; figured out later... Like:
-  ;;   (let* ((props (text-properties-at 1 s))
-  ;;          (apple (set-text-properties 0 1 props "⌘"))
-  ;;          (fly-c (set-text-properties 0 1 props "✓"))
-  ;;          (news1 (replace-regexp-in-string "񓵸" apple s)))
-  ;;          (news2 (replace-regexp-in-string "FlyC" fly-c news1)))
+  Let's display the current Ruby version and Gemset, but only if the
+  buffer's mode is set to Ruby:
 
-  (defun powerline-simpler-minor-display (s)
-      (replace-regexp-in-string
-       (concat " " (mapconcat 'identity '("񓵸" "Projectile" "Fill" "BufFace") "\\|")) "" s))
+  #+BEGIN_SRC elisp :tangle no
+    (defun current-ruby-mode-line ()
+      "Display the Ruby version and Gemset (using RVM) if `ruby-mode' is enabled. Nil otherwise."
+      (ignore-errors
+        (when (is-mode-p 'ruby-mode)
+          (concat (replace-regexp-in-string "ruby-" "" rvm--current-ruby)
+                  (when rvm--current-gemset
+                    " 💎 ") rvm--current-gemset))))
+  #+END_SRC
 
-  (defun powerline-ha-theme ()
-    "A powerline theme that removes many minor-modes that don't serve much purpose on the mode-line."
-    (interactive)
+  #+BEGIN_SRC elisp
+    (defun current-ruby-mode-line ()
+      "Display the Ruby version and Gemset (using RVM) if `ruby-mode' is enabled. Nil otherwise."
+      (ignore-errors
+        (when (is-mode-p 'ruby-mode)
+          (concat (replace-regexp-in-string "ruby-" "" rvm--current-ruby)
+                  (propertize " \xe92b " ; "\xe92a"
+                              'face `(:family "all-the-icons" :height 1.2)
+                              'display '(raise -0.1))
+                  (when rvm--current-gemset
+                    rvm--current-gemset)))))
+  #+END_SRC
+
+  Display the current Python virtual environment, using =pyenv=:
+
+  #+BEGIN_SRC elisp :tangle no
+    (defun current-python-mode-line ()
+      "Display the Python virtual environment and version if `python-mode' is enabled. Nil otherwise."
+      (ignore-errors
+        (when (and (is-mode-p 'python-mode) (pyenv-mode-version))
+          (concat "🐍" (pyenv-mode-version)))))
+  #+END_SRC
+
+  #+BEGIN_SRC elisp
+    (defun current-python-mode-line ()
+      "Display the Python virtual environment and version if `python-mode' is enabled. Nil otherwise."
+      (ignore-errors
+        (when (and (is-mode-p 'python-mode) (pyenv-mode-version))
+          (concat
+           (propertize "\xe928 "
+                       'face `(:family "all-the-icons")
+                       'display '(raise -0.1))
+           (pyenv-mode-version)))))
+  #+END_SRC
+
+  Put everything together, where we will either display the Ruby,
+  Python, or if no particular language, display the eyebrowse:
+
+  #+BEGIN_SRC elisp
+    (defun powerline-lang-version ()
+      "docstring"
+      (or (current-python-mode-line)
+          (current-ruby-mode-line)
+          (when (derived-mode-p 'prog-mode)
+            which-func-format)
+          " "))
+  #+END_SRC
+
+  Clean up the project location:
+
+  #+BEGIN_SRC elisp
+    (defun powerline-project-vc ()
+      (ignore-errors
+        (when (projectile-project-p)
+          (propertize (projectile-project-name)
+                      'help-echo (format "Base: %s"
+                                         (projectile-project-root))))))
+  #+END_SRC
+
+  While the =use-package= project diminishes most minor modes, I still
+  have one left:
+
+  #+BEGIN_SRC elisp
+    (defun trim-minor-modes (s)
+      (replace-regexp-in-string "ARev" "↺" s))
+  #+END_SRC
+
+  Let's put everything together into our mode-line:
+
+  #+BEGIN_SRC elisp
     (setq-default mode-line-format
                   '("%e"
                     (:eval
-                     (let*
-                         ((active
-                           (powerline-selected-window-active))
-                          (mode-line
-                           (if active 'mode-line 'mode-line-inactive))
-                          (face1
-                           (if active 'powerline-active1 'powerline-inactive1))
-                          (face2
-                           (if active 'powerline-active2 'powerline-inactive2))
-                          (separator-left
-                           (intern
-                            (format "powerline-%s-%s" powerline-default-separator
-                                    (car powerline-default-separator-dir))))
-                          (separator-right
-                           (intern
-                            (format "powerline-%s-%s" powerline-default-separator
-                                    (cdr powerline-default-separator-dir))))
-                          (lhs
-                           (list
-                            (powerline-raw "%*" nil 'l)
-                            ;; (powerline-buffer-size nil 'l)
-                            (powerline-buffer-id nil 'l)
-                            (powerline-raw " ")
-                            (funcall separator-left mode-line face1)
-                            (powerline-narrow face1 'l)
-                            (powerline-simpler-vc-mode (powerline-vc face1))))
-                          (rhs
-                           (list
-                            (powerline-raw mode-line-misc-info face1 'r)
-                            (powerline-raw "%4l" face1 'r)
-                            (powerline-raw ":" face1)
-                            (powerline-raw "%3c" face1 'r)
-                            (funcall separator-right face1 mode-line)
-                            (powerline-raw " ")
-                            (powerline-raw "%6p" nil 'r)
-                            (powerline-hud face2 face1)))
-                          (center
-                           (list
-                            (powerline-raw " " face1)
-                            (funcall separator-left face1 face2)
-                            (when
-                                (boundp 'erc-modified-channels-object)
-                              (powerline-raw erc-modified-channels-object face2 'l))
-                            (powerline-major-mode face2 'l)
-                            (powerline-process face2)
-                            (powerline-raw " :" face2)
+                     (let* ((active (powerline-selected-window-active))
+                            (mode-line-buffer-id (if active 'mode-line-buffer-id 'mode-line-buffer-id-inactive))
+                            (mode-line (if active 'mode-line 'mode-line-inactive))
+                            (face1 (if active 'powerline-active1 'powerline-inactive1))
+                            (face2 (if active 'powerline-active2 'powerline-inactive2))
+                            (separator-left (intern (format "powerline-%s-%s"
+                                                            (powerline-current-separator)
+                                                            (car powerline-default-separator-dir))))
+                            (separator-right (intern (format "powerline-%s-%s"
+                                                             (powerline-current-separator)
+                                                             (cdr powerline-default-separator-dir))))
+                            (lhs (list
+                                  ;; Section 1: File status and whatnot
+                                  (powerline-raw (powerline-modified) face1 'l)
+                                  ;; (powerline-buffer-size mode-line 'l)
+                                  (powerline-raw mode-line-client face1 'l)
+                                  (powerline-raw "  " face1 'l)
 
-                            (powerline-simpler-minor-display
-                             (powerline-minor-modes face2 'l))
+                                  ;; Section 2: ( Buffer Name ) ... bright
+                                  (funcall separator-right face1 mode-line)
+                                  (powerline-buffer-id mode-line-buffer-id 'l)
+                                  (powerline-raw " " mode-line)
+                                  (funcall separator-left mode-line face1)
 
-                            (powerline-raw " " face2)
-                            (funcall separator-right face2 face1))))
-                       (concat
-                        (powerline-render lhs)
-                        (powerline-fill-center face1
-                                               (/
-                                                (powerline-width center)
-                                                2.0))
-                        (powerline-render center)
-                        (powerline-fill face1
-                                        (powerline-width rhs))
-                        (powerline-render rhs)))))))
+                                  ;; Section 3: Git ... dark
+                                  (powerline-narrow face1 'l)
+                                  (powerline-raw " " face1)
+                                  (powerline-raw (powerline-project-vc) face1 'l)
+                                  (powerline-vc face1 'l)))
 
-  (powerline-ha-theme)
+                            (rhs (list (powerline-raw global-mode-string face1 'r)
+                                       ;; Section 1: Language-specific ... optional
+                                       (powerline-raw (powerline-lang-version) face1 'r)
+                                       ;; Section 2: Function Name or Row Number
+                                       (funcall separator-right face1 mode-line)
+                                       (powerline-raw "%4l:%3c" mode-line 'r)))
+
+                            (center (list (powerline-raw " " face1)
+                                          (funcall separator-left face1 face2)
+                                          (when (and (boundp 'erc-track-minor-mode) erc-track-minor-mode)
+                                            (powerline-raw erc-modified-channels-object face2 'l))
+                                          (powerline-major-mode face2 'l)
+                                          (powerline-process face2)
+                                          (powerline-raw " :" face2)
+                                          (powerline-minor-modes face2 'l)
+                                          (powerline-raw " " face2)
+                                          (funcall separator-right face2 face1))))
+                       (concat (powerline-render lhs)
+                               (powerline-fill-center face1 (/ (powerline-width center) 2.0))
+                               (powerline-render center)
+                               (powerline-fill face1 (powerline-width rhs))
+                               (powerline-render rhs))))))
   #+END_SRC
 
 * Technical Artifacts
 
   Make sure that we can simply =require= this library.
 
-#+BEGIN_SRC elisp
+  #+BEGIN_SRC elisp
   (provide 'init-mode-line)
-#+END_SRC
+  #+END_SRC
 
   Before you can build this on a new system, make sure that you put
   the cursor over any of these properties, and hit: =C-c C-c=
@@ -161,7 +209,7 @@
 #+DESCRIPTION: A literate programming version of my Emacs ModeLine Initialization
 
 #+PROPERTY:    header-args:elisp  :tangle ~/.emacs.d/elisp/init-mode-line.el
-#+PROPERTY:    header-args:       :results silent   :eval no-export   :comments org
+#+PROPERTY:    header-args       :results silent   :eval no-export   :comments org
 
 #+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
 #+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
