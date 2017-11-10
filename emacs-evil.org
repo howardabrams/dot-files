@@ -1,0 +1,104 @@
+#+TITLE:  Evil Emacs
+#+AUTHOR: Howard Abrams
+#+EMAIL:  howard.abrams@gmail.com
+#+DATE:   2017 Nov 05
+#+TAGS:   evil
+
+Following along some [[https://blog.aaronbieber.com/2016/01/23/living-in-evil.html][nice tutorials]] on the subject, let's try building
+up a nice scenario with VI.  After a week or so, I'm quite digging my
+/fusion/ of Emacs and Vi.  What's left?
+
+  - Integration with my mode line
+  - Go crazy with simpler keys under the Leader project
+  - Program my new keyboard to jump to particular states based on
+    =particular keys...  especially =C-z= and =\= (which is hard to get to
+    with my new keyboard.io)
+
+* Evil Mode
+
+  #+BEGIN_SRC elisp
+    (use-package evil
+      :ensure t
+      :config
+      (evil-mode 1)
+      (dolist (mode '(ag-mode
+                      flycheck-error-list-mode
+                      git-rebase-mode))
+        (add-to-list 'evil-emacs-state-modes mode))
+      (evil-add-hjkl-bindings eww-mode-map 'emacs
+        (kbd "/")       'evil-search-forward
+        (kbd "n")       'evil-search-next
+        (kbd "N")       'evil-search-previous
+        (kbd "C-d")     'evil-scroll-down
+        (kbd "C-u")     'evil-scroll-up
+        (kbd "C-w C-w") 'other-window))
+  #+END_SRC
+
+* Goggles
+
+  The [[https://github.com/edkolev/evil-goggles][evil-goggles]] mode, while slightly slowing down editing, gives
+  some visual hints when making changes.  This will be useful while
+  I'm learning these new bindings.
+
+  #+BEGIN_SRC elisp
+    (use-package evil-goggles
+      :ensure t
+      :config
+      (evil-goggles-mode))
+  #+END_SRC
+
+* Surround
+
+  The [[https://github.com/emacs-evil/evil-surround][evil-surround]] project looks pretty useful with little extra
+  learning overhead.
+
+  #+BEGIN_SRC elisp
+    (use-package evil-surround
+       :ensure t
+       :config
+       (global-evil-surround-mode))
+  #+END_SRC
+
+  Essentially, enter a /command/, like =c=, and then
+  hit =s= to deal with what is surrounding the current text.
+  Obviously, see the last section on the web site for details.
+
+* Evil Leader
+
+  Not sure of the exact benefit that [[https://github.com/cofi/evil-leader][evil-leader]] confers, but I think
+  I can see where I would put all customization over here.
+
+  #+BEGIN_SRC elisp
+    (use-package evil-leader
+      :ensure t
+      :config
+      (evil-leader/set-leader "<SPC>")
+      (global-evil-leader-mode)
+      (evil-leader/set-key
+        "e" 'find-file
+        "b" 'switch-to-buffer
+        "k" 'kill-buffer))
+  #+END_SRC
+
+* Thoughts
+
+  - =evil-execute-in-emacs-state= executes the next command in Emacs
+    state without staying in there.
+
+* Technical Artifacts
+
+  Make sure that we can simply =require= this library.
+
+  #+BEGIN_SRC elisp
+    (provide 'init-evil)
+  #+END_SRC
+
+#+DESCRIPTION: A literate programming version of my Emacs Initialization of Evil (Vi configuration)
+
+#+PROPERTY:    header-args:elisp  :tangle ~/.emacs.d/elisp/init-evil.el
+#+PROPERTY:    header-args:sh :tangle no
+#+PROPERTY:    header-args       :results silent   :eval no-export   :comments org
+
+#+OPTIONS:     num:nil toc:nil todo:nil tasks:nil tags:nil
+#+OPTIONS:     skip:nil author:nil email:nil creator:nil timestamp:nil
+#+INFOJS_OPT:  view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
