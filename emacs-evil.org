@@ -21,17 +21,33 @@ up a nice scenario with VI.  After a week or so, I'm quite digging my
       :ensure t
       :config
       (evil-mode 1)
+
+      ;; Let's not bother with Evil in *every* mode...
       (dolist (mode '(ag-mode
                       flycheck-error-list-mode
                       git-rebase-mode))
         (add-to-list 'evil-emacs-state-modes mode))
+
       (evil-add-hjkl-bindings eww-mode-map 'emacs
         (kbd "/")       'evil-search-forward
         (kbd "n")       'evil-search-next
         (kbd "N")       'evil-search-previous
         (kbd "C-d")     'evil-scroll-down
         (kbd "C-u")     'evil-scroll-up
-        (kbd "C-w C-w") 'other-window))
+        (kbd "C-w C-w") 'other-window)
+
+      ;; I don't need 'q' to start recording a macro...  I'm more familiar
+      ;; with Emacs' way of doing things.
+      :bind (:map evil-normal-state-map
+                  ("q" . nil))
+      ;; While I'm still getting used to Evil, I'll eschew certain
+      ;; advanced features, and fall-back on my Emacs.  Setting to `nil'
+      ;; falls back to Emacs defaults.
+      :bind (:map evil-insert-state-map
+                  ("C-a" . nil)
+                  ("C-e" . nil)
+                  ("C-d" . nil)
+                  ("C-k" . nil)))
   #+END_SRC
 
 * Goggles
@@ -69,15 +85,24 @@ up a nice scenario with VI.  After a week or so, I'm quite digging my
   I can see where I would put all customization over here.
 
   #+BEGIN_SRC elisp
+    (defun ha/evil-insert ()
+      "Inserts a single character, and then returns to previous Evil state.
+
+    This is obviously not ideal, as I am getting the new character to
+    insert in the minibuffer, and I would rather do this in the
+    buffer directly. I'll do that later."
+      (interactive)
+      (insert (read-char "Character to insert: ")))
+
     (use-package evil-leader
       :ensure t
       :config
       (evil-leader/set-leader "<SPC>")
       (global-evil-leader-mode)
       (evil-leader/set-key
-        "e" 'find-file
-        "b" 'switch-to-buffer
-        "k" 'kill-buffer))
+        "j" 'avy-goto-char-timer
+        "o" 'ace-window
+        "<SPC>" 'ha/evil-insert))
   #+END_SRC
 
 * Thoughts
