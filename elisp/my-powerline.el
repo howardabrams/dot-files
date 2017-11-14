@@ -549,21 +549,21 @@ install the memoized function over the original function."
 
 (defpowerline project-vc
   (ignore-errors
-    (let* ((root (when (projectile-project-p)
-                   (projectile-project-root)))
-           (git (when root
-                  (vc-git-mode-line-string root)))
-           (icon (if (fboundp 'all-the-icons-octicon)
-                     (all-the-icons-octicon "git-branch")
-                   (propertize ""
-                               'face `(:height 0.4)
-                               'display '(raise -0.1)))))
+    (let* ((git (when (buffer-file-name)
+                  (vc-git-mode-line-string (buffer-file-name))))
+           (help (when git
+                   t))
+           (icon (propertize ""
+                             'face `(:height 0.4)
+                             'display '(raise -0.1))))
       (concat
        (projectile-project-name)
        (when git
          (replace-regexp-in-string "Git\\([:-]?\\)\\(@?\\)"
                                    (concat "\\1 " icon  " ")
                                    git))))))
+
+
 
 ;; In order to check if the current mode matches a particular mode, we
 ;; need to do something like:
@@ -581,8 +581,11 @@ install the memoized function over the original function."
   (ignore-errors
     (when (is-mode-p 'ruby-mode)
       (concat (replace-regexp-in-string "ruby-" "" rvm--current-ruby)
+              (propertize " \xe92b " ; "\xe92a"
+                          'face `(:family "all-the-icons" :height 1.2)
+                          'display '(raise -0.1))
               (when rvm--current-gemset
-                " 💎 ") rvm--current-gemset))))
+                rvm--current-gemset)))))
 
 ;; Display the current Python virtual environment, using =pyenv=:
 
@@ -590,7 +593,11 @@ install the memoized function over the original function."
   "Display the Python virtual environment and version if `python-mode' is enabled. Nil otherwise."
   (ignore-errors
     (when (and (is-mode-p 'python-mode) (pyenv-mode-version))
-      (concat "🐍" (pyenv-mode-version)))))
+      (concat
+       (propertize "\xe928 "
+                   'face `(:family "all-the-icons" :height 1.2)
+                   'display '(raise -0.1))
+       (pyenv-mode-version)))))
 
 (defpowerline lang-version
   (or (current-python-mode-line)
@@ -607,29 +614,90 @@ install the memoized function over the original function."
 
 (defpowerline display-time display-time-string)
 
+;; Evil Mode Details
+;;
+;; Change the bottom right corner of the mode line to not only display
+;; the textual details of the evil state, but also to colorize it to
+;; make it more obvious.
+
+(defface powerline-evil-insert-face
+  '((((class color))
+     (:background "green" :foreground "black" :weight bold))
+    (t (:weight bold)))
+  "face to fontify mode-line for Evil's `insert' state"
+  :group 'powerline)
+
+(defface powerline-evil-normal-face
+  '((((class color))
+     (:background "red" :foreground "black" :weight bold))
+    (t (:weight bold)))
+  "face to fontify mode-line for Evil's `normal' state"
+  :group 'powerline)
+
+(defface powerline-evil-visual-face
+  '((((class color))
+     (:background "yellow" :foreground "black" :weight bold))
+    (t (:weight bold)))
+  "face to fontify mode-line for Evil's `visual' state"
+  :group 'powerline)
+
+(defface powerline-evil-motion-face
+  '((((class color))
+     (:background "blue" :foreground "black" :weight bold))
+    (t (:weight bold)))
+  "face to fontify mode-line for Evil's `motion' state"
+  :group 'powerline)
+
+;; (defface powerline-evil-emacs-face
+;;   '((((class color))
+;;      (:background "blue violet" :foreground "black" :weight bold))
+;;     (t (:weight bold)))
+;;   "face to fontify mode-line for Evil's `emacs' state"
+;;   :group 'powerline)
+
+(defun powerline-evil-face (active)
+  (let ((face (intern (concat "powerline-evil-" (symbol-name evil-state) "-face"))))
+    (cond ((equal (symbol-name evil-state) "emacs") 'mode-line)
+          ((and active (facep face))
+           face)
+          (active 'mode-line)
+          (t 'powerline-inactive1))))
+
+(defun powerline-evil-state ()
+  "Displays *my* version of displaying the evil state."
+  (case evil-state
+    ('normal " Ⓝ")
+    ('insert " Ⓘ")
+    ('visual " Ⓥ")
+    ('motion " Ⓜ")
+    (t       " Ⓔ")))
+
+(defpowerline evil
+  (powerline-evil-state))
 
 ;; My customizations:
 (setq powerline-arrow-shape 'curve)
 ;; (setq display-time-format "%I:%M")
 ;; (display-time-mode)
 
-(setq-default mode-line-format
-              (list "%e"
-                    '(:eval (list
-                             (powerline-lcl           'left       powerline-color1)
-                             (powerline-modified      'left       powerline-color1)
-                             (powerline-arrow         'right  nil powerline-color1)
-                             (powerline-buffer-id     'left   nil powerline-color2)
-                             (powerline-project-vc    'left       powerline-color2)
-                             (powerline-arrow         'left       powerline-color2 powerline-color1)
-                             (powerline-major-mode    'left       powerline-color1)
-                             (powerline-minor-modes   'left       powerline-color1)
-                             (powerline-narrow        'left       powerline-color1 powerline-color2)
-                             (powerline-lang-version  'center     powerline-color2)
-                             (powerline-pull-right (list
-                                                    (powerline-which-function 'right nil powerline-color2))))
+(setq mode-line-format
+      (list "%e"
+            '(:eval (list
+                     (powerline-lcl           'left       powerline-color1)
+                     (powerline-modified      'left       powerline-color1)
+                     (powerline-arrow         'right  nil powerline-color1)
+                     (powerline-buffer-id     'left   nil powerline-color2)
+                     (powerline-project-vc    'left       powerline-color2)
+                     (powerline-arrow         'left       powerline-color2 powerline-color1)
+                     (powerline-major-mode    'left       powerline-color1)
+                     (powerline-minor-modes   'left       powerline-color1)
+                     (powerline-narrow        'left       powerline-color1 powerline-color2)
+                     (powerline-lang-version  'center     powerline-color2)
+                     (powerline-pull-right (list
+                                            (powerline-evil 'right nil (powerline-evil-face t))
+                                            (powerline-which-function nil nil (powerline-evil-face t)))))
 
-                            )))
+                    )))
 
 (provide 'my-powerline)
 
