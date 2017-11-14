@@ -25,9 +25,11 @@
             powerline-inactive2 '((t (:background "grey20" :foreground "#c5c8c6")))))
   #+END_SRC
 
-  Let's make the modification status a bit more useful... and iconic:
+** Icons for File Status
 
-  #+BEGIN_SRC elisp
+   Let's make the modification status a bit more useful... and iconic:
+
+   #+BEGIN_SRC elisp
     (defun powerline-get-icon (name alt-sym help-message)
       "Returns a propertized icon if available, otherwise, returns ALT-SYM."
       (propertize alt-sym 'help-echo help-message))
@@ -44,6 +46,8 @@
                   (t " ")))
         (error (powerline-get-icon "exclamation" "⁈" (car ex)))))
   #+END_SRC
+
+** Program Modes
 
   In order to check if the current mode matches a particular mode, we
   need to do something like:
@@ -116,6 +120,8 @@
           " "))
   #+END_SRC
 
+** Project Details
+
   Clean up the project location:
 
   #+BEGIN_SRC elisp
@@ -135,64 +141,131 @@
       (replace-regexp-in-string "ARev" "↺" s))
   #+END_SRC
 
+** Evil Mode Details
+
+   Change the bottom right corner of the mode line to not only display
+   the textual details of the evil state, but also to colorize it to
+   make it more obvious.
+
+   #+BEGIN_SRC elisp
+    (defface powerline-evil-insert-face
+      '((((class color))
+         (:background "green" :foreground "black" :weight bold))
+        (t (:weight bold)))
+      "face to fontify mode-line for Evil's `insert' state"
+      :group 'powerline)
+
+    (defface powerline-evil-normal-face
+      '((((class color))
+         (:background "red" :foreground "black" :weight bold))
+        (t (:weight bold)))
+      "face to fontify mode-line for Evil's `normal' state"
+      :group 'powerline)
+
+    (defface powerline-evil-visual-face
+      '((((class color))
+         (:background "yellow" :foreground "black" :weight bold))
+        (t (:weight bold)))
+      "face to fontify mode-line for Evil's `visual' state"
+      :group 'powerline)
+
+    (defface powerline-evil-motion-face
+      '((((class color))
+         (:background "blue" :foreground "black" :weight bold))
+        (t (:weight bold)))
+      "face to fontify mode-line for Evil's `motion' state"
+      :group 'powerline)
+
+    ;; (defface powerline-evil-emacs-face
+    ;;   '((((class color))
+    ;;      (:background "blue violet" :foreground "black" :weight bold))
+    ;;     (t (:weight bold)))
+    ;;   "face to fontify mode-line for Evil's `emacs' state"
+    ;;   :group 'powerline)
+
+    (defun powerline-evil-face (active)
+      (let ((face (intern (concat "powerline-evil-" (symbol-name evil-state) "-face"))))
+        (cond ((equal (symbol-name evil-state) "emacs") 'mode-line)
+              ((and active (facep face))
+               face)
+              (active 'mode-line)
+              (t 'powerline-inactive1))))
+
+    (defun powerline-evil-state ()
+      "Displays *my* version of displaying the evil state."
+      (case evil-state
+        ('normal " Ⓝ")
+        ('insert " Ⓘ")
+        ('visual " Ⓥ")
+        ('motion " Ⓜ")
+        (t       " Ⓔ")))
+
+    (defpowerline powerline-evil
+      (powerline-evil-state))
+   #+END_SRC
+
+** Mode Line Format
+
   Let's put everything together into our mode-line:
 
   #+BEGIN_SRC elisp
     (setq-default mode-line-format
-                  '("%e"
-                    (:eval
-                     (let* ((active (powerline-selected-window-active))
-                            (mode-line-buffer-id (if active 'mode-line-buffer-id 'mode-line-buffer-id-inactive))
-                            (mode-line (if active 'mode-line 'mode-line-inactive))
-                            (face1 (if active 'powerline-active1 'powerline-inactive1))
-                            (face2 (if active 'powerline-active2 'powerline-inactive2))
-                            (separator-left (intern (format "powerline-%s-%s"
-                                                            (powerline-current-separator)
-                                                            (car powerline-default-separator-dir))))
-                            (separator-right (intern (format "powerline-%s-%s"
-                                                             (powerline-current-separator)
-                                                             (cdr powerline-default-separator-dir))))
-                            (lhs (list
-                                  ;; Section 1: File status and whatnot
-                                  (powerline-raw (powerline-modified) face1 'l)
-                                  ;; (powerline-buffer-size mode-line 'l)
-                                  (powerline-raw mode-line-client face1 'l)
-                                  (powerline-raw "  " face1 'l)
+          '("%e"
+            (:eval
+             (let* ((active (powerline-selected-window-active))
+                    (mode-line-buffer-id (if active 'mode-line-buffer-id 'mode-line-buffer-id-inactive))
+                    (mode-line (if active 'mode-line 'mode-line-inactive))
+                    (face1 (if active 'powerline-active1 'powerline-inactive1))
+                    (face2 (if active 'powerline-active2 'powerline-inactive2))
+                    (eface (powerline-evil-face active))
+                    (separator-left (intern (format "powerline-%s-%s"
+                                                    (powerline-current-separator)
+                                                    (car powerline-default-separator-dir))))
+                    (separator-right (intern (format "powerline-%s-%s"
+                                                     (powerline-current-separator)
+                                                     (cdr powerline-default-separator-dir))))
+                    (lhs (list
+                          ;; Section 1: File status and whatnot
+                          (powerline-raw (powerline-modified) face1 'l)
+                          ;; (powerline-buffer-size mode-line 'l)
+                          (powerline-raw mode-line-client face1 'l)
+                          (powerline-raw "  " face1 'l)
 
-                                  ;; Section 2: ( Buffer Name ) ... bright
-                                  (funcall separator-right face1 mode-line)
-                                  (powerline-buffer-id mode-line-buffer-id 'l)
-                                  (powerline-raw " " mode-line)
-                                  (funcall separator-left mode-line face1)
+                          ;; Section 2: ( Buffer Name ) ... bright
+                          (funcall separator-right face1 mode-line)
+                          (powerline-buffer-id mode-line-buffer-id 'l)
+                          (powerline-raw " " mode-line)
+                          (funcall separator-left mode-line face1)
 
-                                  ;; Section 3: Git ... dark
-                                  (powerline-narrow face1 'l)
-                                  (powerline-raw " " face1)
-                                  (powerline-raw (powerline-project-vc) face1 'l)
-                                  (powerline-vc face1 'l)))
+                          ;; Section 3: Git ... dark
+                          (powerline-narrow face1 'l)
+                          (powerline-raw " " face1)
+                          (powerline-raw (powerline-project-vc) face1 'l)
+                          (powerline-vc face1 'l)))
 
-                            (rhs (list (powerline-raw global-mode-string face1 'r)
-                                       ;; Section 1: Language-specific ... optional
-                                       (powerline-raw (powerline-lang-version) face1 'r)
-                                       ;; Section 2: Function Name or Row Number
-                                       (funcall separator-right face1 mode-line)
-                                       (powerline-raw "%4l:%3c" mode-line 'r)))
+                    (rhs (list (powerline-raw global-mode-string face1 'r)
+                               ;; Section 1: Language-specific ... optional
+                               (powerline-raw (powerline-lang-version) face1 'r)
+                               ;; Section 2: Function Name or Row Number
+                               (funcall separator-right mode-line eface)
+                               (powerline-raw (powerline-evil-state) eface 'r)
+                               (powerline-raw "%4l:%3c" eface 'r)))
 
-                            (center (list (powerline-raw " " face1)
-                                          (funcall separator-left face1 face2)
-                                          (when (and (boundp 'erc-track-minor-mode) erc-track-minor-mode)
-                                            (powerline-raw erc-modified-channels-object face2 'l))
-                                          (powerline-major-mode face2 'l)
-                                          (powerline-process face2)
-                                          (powerline-raw " :" face2)
-                                          (powerline-minor-modes face2 'l)
-                                          (powerline-raw " " face2)
-                                          (funcall separator-right face2 face1))))
-                       (concat (powerline-render lhs)
-                               (powerline-fill-center face1 (/ (powerline-width center) 2.0))
-                               (powerline-render center)
-                               (powerline-fill face1 (powerline-width rhs))
-                               (powerline-render rhs))))))
+                    (center (list (powerline-raw " " face1)
+                                  (funcall separator-left face1 face2)
+                                  (when (and (boundp 'erc-track-minor-mode) erc-track-minor-mode)
+                                    (powerline-raw erc-modified-channels-object face2 'l))
+                                  (powerline-major-mode face2 'l)
+                                  (powerline-process face2)
+                                  (powerline-raw " :" face2)
+                                  (powerline-minor-modes face2 'l)
+                                  (powerline-raw " " face2)
+                                  (funcall separator-right face2 face1))))
+               (concat (powerline-render lhs)
+                       (powerline-fill-center face1 (/ (powerline-width center) 2.0))
+                       (powerline-render center)
+                       (powerline-fill face1 (powerline-width rhs))
+                       (powerline-render rhs))))))
   #+END_SRC
 
 * Technical Artifacts
