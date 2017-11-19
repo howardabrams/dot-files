@@ -28,6 +28,9 @@ up a nice scenario with VI.  After a week or so, I'm quite digging my
                       git-rebase-mode))
         (add-to-list 'evil-emacs-state-modes mode))
 
+      (dolist (mode '(text-mode))
+        (add-to-list 'evil-insert-state-modes mode))
+
       (evil-add-hjkl-bindings eww-mode-map 'emacs
         (kbd "/")       'evil-search-forward
         (kbd "n")       'evil-search-next
