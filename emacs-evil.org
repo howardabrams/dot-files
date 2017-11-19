@@ -28,21 +28,31 @@ up a nice scenario with VI.  After a week or so, I'm quite digging my
                       git-rebase-mode))
         (add-to-list 'evil-emacs-state-modes mode))
 
+      ;; Start in insert mode for small buffers
       (dolist (mode '(text-mode))
         (add-to-list 'evil-insert-state-modes mode))
 
       (evil-add-hjkl-bindings eww-mode-map 'emacs
         (kbd "/")       'evil-search-forward
         (kbd "n")       'evil-search-next
-        (kbd "N")       'evil-search-previous
-        (kbd "C-d")     'evil-scroll-down
-        (kbd "C-u")     'evil-scroll-up
-        (kbd "C-w C-w") 'other-window)
+        (kbd "N")       'evil-search-previous)
 
-      ;; I don't need 'q' to start recording a macro...  I'm more familiar
-      ;; with Emacs' way of doing things.
       :bind (:map evil-normal-state-map
-                  ("q" . nil))
+                  ;; Don't need 'q' to start recording a macro...
+                  ;; I'm more familiar with Emacs' way of doing things.
+                  ("q" . nil)
+                  ;; Why is 'f' line-bound?
+                  ;; Wanna rebind f to avy?
+                  ("f" . iy-go-to-char)
+                  ("F" . iy-go-to-char-backward)
+                  ;; How about avy to 't'?
+                  ("t" . avy-goto-char-timer)
+                  ("T" . avy-goto-word-timer)
+                  ;; Shame that meta keys don't work, so let's
+                  ;; use the 'z' prefix:
+                  ("z." . find-tag)
+                  ("z," . ha/xref-pop-marker-stack))
+
       ;; While I'm still getting used to Evil, I'll eschew certain
       ;; advanced features, and fall-back on my Emacs.  Setting to `nil'
       ;; falls back to Emacs defaults.
@@ -50,7 +60,10 @@ up a nice scenario with VI.  After a week or so, I'm quite digging my
                   ("C-a" . nil)
                   ("C-e" . nil)
                   ("C-d" . nil)
-                  ("C-k" . nil)))
+                  ("C-k" . nil)
+                  ("C-t" . nil)
+                  ("M-." . nil)
+                  ("M-," . nil)))
   #+END_SRC
 
 * Goggles
@@ -78,9 +91,17 @@ up a nice scenario with VI.  After a week or so, I'm quite digging my
        (global-evil-surround-mode))
   #+END_SRC
 
-  Essentially, enter a /command/, like =c=, and then
-  hit =s= to deal with what is surrounding the current text.
-  Obviously, see the last section on the web site for details.
+  Essentially, enter a /command/, like =c=, and then hit =s= to deal with
+  what is surrounding the current text.  *Note:* You don't need to be /on/
+  the surrounders, just /in/, as the first key after the =s= is the
+  surround character.
+
+  - =t= :: Deals with HTML and XML tags (use =>= if you want just the
+           angle brackets)
+  - =f= :: Surrounds the function
+  - =#= :: Deals with Ruby-variable string substitution, i.e.  #{...}
+
+  Obviously, see the last section on 'the web site' for details.
 
 * Evil Leader
 
@@ -88,14 +109,10 @@ up a nice scenario with VI.  After a week or so, I'm quite digging my
   I can see where I would put all customization over here.
 
   #+BEGIN_SRC elisp
-    (defun ha/evil-insert ()
-      "Inserts a single character, and then returns to previous Evil state.
-
-    This is obviously not ideal, as I am getting the new character to
-    insert in the minibuffer, and I would rather do this in the
-    buffer directly. I'll do that later."
+    (defun ha/evil-insert-single ()
+      "Inserts a single character, and then returns to previous Evil state."
       (interactive)
-      (insert (read-char "Character to insert: ")))
+      (insert (read-char)))
 
     (use-package evil-leader
       :ensure t
@@ -105,7 +122,12 @@ up a nice scenario with VI.  After a week or so, I'm quite digging my
       (evil-leader/set-key
         "j" 'avy-goto-char-timer
         "o" 'ace-window
-        "<SPC>" 'ha/evil-insert))
+        "n" 'org-next-visible-heading
+        "p" 'org-previous-visible-heading
+        "^" 'outline-up-heading
+        "." 'forward-sentence
+        "," 'backward-sentence
+        "<SPC>" 'ha/evil-insert-single))
   #+END_SRC
 
 * Thoughts
