@@ -122,11 +122,12 @@ up a nice scenario with VI.  After a week or so, I'm quite digging my
       (evil-leader/set-key
         "j" 'avy-goto-char-timer
         "o" 'ace-window
+        "b" 'ido-switch-buffer
         "n" 'org-next-visible-heading
         "p" 'org-previous-visible-heading
         "^" 'outline-up-heading
-        "." 'forward-sentence
-        "," 'backward-sentence
+        "." 'xref-find-definitions
+        "," 'xref-pop-marker-stack
         "<SPC>" 'ha/evil-insert-single))
   #+END_SRC
 
