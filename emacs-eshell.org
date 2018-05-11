@@ -2,7 +2,7 @@
 #+AUTHOR: Howard Abrams
 #+EMAIL:  howard.abrams@gmail.com
 #+DATE:   [2014-02-27 Thu]
-#+TAGS:   emacs
+#+TAGS:   emacs
 
 My frustration with shells makes me enjoy Emacs Shell, but there are
 some significant differences to address. To this end, I [[http://www.howardism.org/Technical/Emacs/eshell-fun.html][documented
@@ -591,7 +591,7 @@ I find it a shame that I can not successfully use =use-package= with the
    Finally
    #+BEGIN_SRC elisp
      (defun eshell-here-on-line (p)
-       "Search the current line for an IP address or hostname, and call the `eshell-there' function.
+       "Search the current line for an IP address or hostname, and call the `eshell-here' function.
 
      Call with PREFIX to connect with the `root' useraccount, via
      `sudo'."
