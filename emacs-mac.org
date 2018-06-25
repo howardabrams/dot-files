@@ -33,7 +33,7 @@ then, only during a graphical run.
 * Ligatures in Code
 
   With font that has symbolic ligatures, we can either use a prebuilt
-  Mac Port (see [[https://lists.gnu.org/archive/html/emacs-devel/2015-08/msg00882.html][this message]]) or [[https://github.com/tonsky/FiraCode/wiki/Setting-up-Emacs][use this code]] to set up particular
+  Mac Port (see [[https://lists.gnu.org/archive/html/emacs-devel/2015-08/msg00882.html][this message]]) or [[https://github.com/tonsky/FiraCode/wiki/Emacs-instructions][use this code]] to set up particular
   programming symbols to trigger those symbols.
 
   #+BEGIN_SRC elisp
