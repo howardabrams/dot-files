@@ -21,7 +21,7 @@ a shell-slut, and dabble between Zshell and Fish.
   if [ ! -d /usr/local/Cellar -a -n "$ON_A_MAC" ]
   then
     echo "ZOMG! No Homebrew installed! Installing now..."
-    ruby -e "`curl -fsSL https://raw.github.com/mxcl/homebrew/go/install`"
+    echo 'ruby -e "`curl -fsSL https://raw.github.com/mxcl/homebrew/go/install`"'
   fi
   #+END_SRC
 
@@ -57,11 +57,21 @@ a shell-slut, and dabble between Zshell and Fish.
 
 * Global Aliases
 
-  I dislike =more=, especially since =less= is now really sweet.
+  Just standard things that I keep typing:
 
-#+BEGIN_SRC shell
-  alias more=less
-#+END_SRC
+  #+BEGIN_SRC shell
+    alias e='emacsclient -nw'
+    alias ee='emacsclient'
+    alias gst='git status'
+
+    if type gls >/dev/null 2>&1
+    then
+        alias ls='gls --color'
+        alias ll='gls -al --color'
+    else
+        alias ll='ls -al'
+    fi
+  #+END_SRC
 
 * Python
 
@@ -203,6 +213,19 @@ a shell-slut, and dabble between Zshell and Fish.
   [[ -r $rvm_path/scripts/completion ]] && . $rvm_path/scripts/completion
   #+END_SRC
 
+* Completions
+
+  Assuming the location of all the Bash completions:
+
+  #+BEGIN_SRC shell
+    source /usr/local/etc/bash_completion.d/brew
+    # source /usr/local/etc/bash_completion.d/coreutils
+    # source /usr/local/etc/bash_completion.d/findutils
+    source /usr/local/etc/bash_completion.d/git-prompt.sh
+    source /usr/local/etc/bash_completion.d/git-completion.bash
+    # source /usr/local/etc/bash_completion.d/ssh
+  #+END_SRC
+
 * Prompt
 
   A helper function to help trim down lengthy directories:
@@ -223,6 +246,7 @@ a shell-slut, and dabble between Zshell and Fish.
       __git_ps1 " :%s" | sed 's|^ :review/.*/\([0-9]*\)$| :review-\1|'
     }
   #+END_SRC
+
   Better approach to displaying the current path, is to only display
   the first or second directory name ... any maybe the name of the Git
   project. Holy hell, so many exceptions and so few patterns...
@@ -250,12 +274,12 @@ a shell-slut, and dabble between Zshell and Fish.
         then
             name=$(sed -E "s|$HOME/Work/([[:alnum:]_-]+).*|\1|; s/ / /g" <<< $PWD)
             base=$(basename $PWD)
-            intr=$(basename `dirname $PWD`)
+            intr=$(basename "`dirname \"$PWD\"`")
 
-            if [[ $name == $base ]]
+            if [[ "$name" == "$base" ]]
             then
                 echo -n "Ⓦ/$name"
-            elif [[ $intr == $name ]]
+            elif [[ "$intr" == "$name" ]]
             then
                 echo -n "Ⓦ/$name/$base"
             else
@@ -265,9 +289,11 @@ a shell-slut, and dabble between Zshell and Fish.
              # In a home directory
         elif [[ $PWD == $HOME/* ]]
         then
-            if [[ $(basename `dirname $PWD`) == $(basename $HOME) ]]
+            base=$(basename $PWD)
+            intr=$(basename "`dirname \"$PWD\"`")
+            if [[ "$intr" == $(basename $HOME) ]]
             then
-                echo -n "~/$(basename $PWD)"
+                echo -n "~/$base"
             else
                 echo -n "~/$(_trim_dir $PWD)"
             fi
