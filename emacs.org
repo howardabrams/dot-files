@@ -189,16 +189,6 @@
     #+END_SRC
 
 * Variables
-
-  General settings about me that other packages can use. The biggest
-  problem is guessing my email address based on what computer I am using:
-
-  #+BEGIN_SRC elisp
-    (if (equal "howard.abrams" user-login-name)
-        (setq user-mail-address "howard.abrams@workday.com")
-      (setq user-mail-address "howard.abrams@gmail.com"))
-  #+END_SRC
-
 ** Tabs vs Spaces
 
    I have learned to distrust tabs in my source code, so let's make
