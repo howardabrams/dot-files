@@ -1,0 +1,10 @@
+#!/bin/sh
+
+NETWORK=$(iwgetid | sed 's/.*"\(.*\)"/\1/')
+IPADDR=$(hostname -I)
+
+while :
+do
+    echo "$NETWORK $IPADDR  |  `date '+%a %e %b  %I:%M'`  "
+    sleep 1
+done
