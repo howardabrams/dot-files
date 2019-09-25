@@ -106,10 +106,13 @@ bindsym $mod+a focus parent
 # focus the child container
 #bindsym $mod+d focus child
 
+bindsym $mod+Tab workspace next
+bindsym $mod+Shift+Tab workspace prev
+
 # switch to workspace
-bindsym $mod+1 workspace 1
-bindsym $mod+2 workspace 2
-bindsym $mod+3 workspace 3
+bindsym $mod+1 workspace 1:Emacs
+bindsym $mod+2 workspace 2:Web
+bindsym $mod+3 workspace 3:Other
 bindsym $mod+4 workspace 4
 bindsym $mod+5 workspace 5
 bindsym $mod+6 workspace 6
@@ -172,3 +175,16 @@ bar {
     status_command i3status -c ~/.config/i3/status.conf
     # status_command ~/.config/i3/statusbar
 }
+
+exec setxkbmap -option ctrl:nocaps
+
+# Wish I didn't have so many issues with xcape. This seems to work:
+exec xcape -e '#66=Escape'
+# exec xcape -e 'Control_L=Escape'
+
+exec dropbox start
+
+exec --no-startup-id i3-msg 'workspace 1:Emacs; exec /usr/bin/emacs'
+exec --no-startup-id i3-msg 'workspace 2:Web; exec /usr/bin/firefox'
+exec --no-startup-id i3-msg 'workspace 3:Other; exec /snap/bin/spotify'
+exec --no-startup-id i3-msg 'workspace 3:Other; exec /snap/bin/telegram-desktop'
